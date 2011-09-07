@@ -3,12 +3,42 @@
 	Description <- "
 		To load the data from the janus studies.  \n
 		Written by Ben Haley in March of 2011. \n
-		Script at C:/Users/Ben/Documents/My Dropbox/ben's bigish files/woloben/Tissue_Stats/scripts/load_janus_data.R  \n
+		janus/scripts/load_janus_data.R
 	"
+
+# A namespace for data
+#
+	j.data <- list()
+
+# Check for and install dependencies
+#
+	j.data$private.dependencies <- "RCurl"
+
+# @TODO move this install dependencies functions into a utility script
+# so it can be used widely
+	
+	temp.util.name <- function( dependencies ){
+		installed <- .packages( all=TRUE )
+		missing <- dependencies[ ! dependencies %in% installed ]
+		apply( 
+			as.matrix(missing), 
+			1, 
+			install.packages, 
+			repos="http://cran.r-project.org", 
+			dependencees=TRUE 
+		)
+		apply( 
+			as.matrix(dependencies), 
+			1, 
+			library, 
+			character.only=TRUE 
+		)
+	}
+
+	temp.util.name( j.data$private.dependencies )
 
 # Configuration Variables
 # 
-	# 
 	# Give ourselves the max amount of memory to play with
 	# 
 	rm(list = ls(all = TRUE))
@@ -16,8 +46,8 @@
 	
 	# Locatation of the janus data online
 	#
-	janusDataUri <- "http://janus.northwestern.edu/janus2/data/"
-	tableNames <- 
+	j.data$private.uri <- "http://janus.northwestern.edu/janus2/data/"
+	j.data$private.table.names <- 
 	c( 
 		"macro_pathologies",
 		"micro_pathologies",
@@ -26,7 +56,7 @@
 		"demographics",
 		"pathologies_key"
 	)
-	row.name.locations <-
+	j.data$private.table.header.rows <-
 	list(
 		1,
 		1,
@@ -35,19 +65,19 @@
 		1,
 		NULL
 	)
-	zipExtension <- ".zip"
-	fileExtension <- ".csv"
+	j.data$private.zip.extension <- ".zip"
+	j.data$private.file.extension <- ".csv"
 
 # Download, extract, and create dataframes
 #
-	uris = paste( janusDataUri, tableNames, zipExtension, sep="" )
-	downloadNames = paste( tableNames, zipExtension, sep="" )
-	fileNames = paste( tableNames, fileExtension, sep="" )
+	uris = paste( j.data$private.uri, j.data$private.table.names, j.data$private.zip.extension, sep="" )
+	downloadNames = paste( j.data$private.table.names, j.data$private.zip.extension, sep="" )
+	fileNames = paste( j.data$private.table.names, j.data$private.file.extension, sep="" )
 	mapply( download.file, uris, downloadNames )
 	mapply( unzip, downloadNames )
 	mapply( unlink, downloadNames )
-	data <- mapply( read.csv, fileNames, header = TRUE, skip=1, row.names = row.name.locations )
-	names( data ) <- tableNames 
+	data <- mapply( read.csv, fileNames, header = TRUE, skip=1, row.names = j.data$private.table.header.rows )
+	names( data ) <- j.data$private.table.names 
 	mapply( unlink, fileNames )
 
 
