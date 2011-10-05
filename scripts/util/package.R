@@ -3,7 +3,7 @@
 # bmh Sept 2011
 
 # Usage 
-#   source("package.R")
+#   source("../util/package.R")
 #   dependencies <- "RCurl"
 #   package$load(dependencies)
 
@@ -13,19 +13,23 @@ package$.__REPOS <- "http://cran.r-project.org"
 package$load <- function( dependencies ){
 	installed <- .packages( all=TRUE )
 	missing <- dependencies[ ! dependencies %in% installed ]
-	apply( 
-		as.matrix(missing), 
-		1, 
-		install.packages, 
-		repos=package$.__REPOS, 
-		dependencies=TRUE 
-	 )
+	any_missing <- length(missing) > 0
+	if(any_missing){
+		apply( 
+			as.matrix(missing), 
+			1, 
+			install.packages, 
+			repos=package$.__REPOS, 
+			dependencies=TRUE 
+		 )
+	}
 	apply( 
 		as.matrix(dependencies), 
 		1, 
 		library, 
 		character.only=TRUE 
 	 )
+	return("Success!")
 }
 
 

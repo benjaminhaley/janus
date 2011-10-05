@@ -16,12 +16,12 @@
 # 
 # bmh Sept 2011
 
-source('package.R')
+source('../util/package.R')
 dependencies = "RCurl"
 package$load(dependencies)
 
 cache = list()
-cache$.__DATA_DIR = '../data/'
+cache$.__DATA_DIR = '../../data/'
 
 cache$get <- function(url){
 	if(!cache$is_current(url)){
@@ -72,8 +72,8 @@ cache$.__url_2_time_filepath <- function(url){
 url <- "http://example.com"
 filepath <- cache$.__url_2_filepath(url)
 time_filepath <- cache$.__url_2_time_filepath(url)
-stopifnot(filepath == "../data/http%3a%2f%2fexample.com") 
-stopifnot(time_filepath == "../data/http%3a%2f%2fexample.com.time.rds") 
+stopifnot(filepath == "../../data/http%3a%2f%2fexample.com") 
+stopifnot(time_filepath == "../../data/http%3a%2f%2fexample.com.time.rds") 
 
 # We need functions to track when a file was cached
 #
