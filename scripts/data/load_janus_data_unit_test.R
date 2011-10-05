@@ -3,14 +3,22 @@
 # Also can be used as a reference for janus values
 # bmh Oct 2011
 #
-# @TODO left off with the mock treated field, strangely this has NA values where the other logicals dont
-# @TODO migrate the set of table and summary generators here into a general summary function that can be
-#       used on any sub or super set of radiobiology data
+# @TODO left off with the mock treated field, strangely this has NA values 
+#       where the other logicals dont
+# @TODO migrate the set of table and summary generators here into a general 
+#		summary function that can be used on any sub or super set of radiobiology 
+#		data
 
 # Basic Usage
 # Load a fresh copy of the data
 source('../data/load_janus_data.R')
-data <- j.data$load(from_cache=FALSE)
+data <- j.data$load(from_cache=TRUE)
+
+# CACHE TEST - slow
+# The cache shoult be as good as loading from source
+stopifnot(data == j.data$load(from_cache=FALSE))
+# Clear memory to prevent a logjam
+gc()
 
 # Tests
 # Check by ensuriring that the head looks like we expect
@@ -27,7 +35,7 @@ summary.dates <- c(
 	"3rd Qu."="1983-03-14",
 	"Max."="1989-07-28" 
 	)
-stopifnot(summary.dates == as.character(summary(data[["necroscopy_date"]])))
+stopifnot(summary.dates == as.character(summary(data[["necroscopy_date"]])))   
 
 table.proctor <- c(
 	9741,
