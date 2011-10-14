@@ -10,4 +10,19 @@ data <- j.data$load(from_cache=TRUE)
 source('../data/ontology.R')
 o <- ontology$load(data)
 
+# Define the dataset under analysis
+CONTROL     <- (o$FRACTIONS_60 & o$HAS_MACRO & o$CONTROL)
+G_100cGY    <- (o$FRACTIONS_60 & o$HAS_MACRO & o$GAMMA    & o$cGY_100)
+G_200cGY    <- (o$FRACTIONS_60 & o$HAS_MACRO & o$GAMMA    & o$cGY_200)
+G_300cGY    <- (o$FRACTIONS_60 & o$HAS_MACRO & o$GAMMA    & o$cGY_300)
+G_450cGY    <- (o$FRACTIONS_60 & o$HAS_MACRO & o$GAMMA    & o$cGY_450)
+G_600cGY    <- (o$FRACTIONS_60 & o$HAS_MACRO & o$GAMMA    & o$cGY_600)
+N_2.05cGY   <- (o$FRACTIONS_60 & o$HAS_MACRO & o$NEUTRON  & o$cGY_2.05)
+N_7.69cGY   <- (o$FRACTIONS_60 & o$HAS_MACRO & o$NEUTRON  & o$cGY_7.69)
+N_13.85cGY  <- (o$FRACTIONS_60 & o$HAS_MACRO & o$NEUTRON  & o$cGY_13.85)
+N_21.54cGY  <- (o$FRACTIONS_60 & o$HAS_MACRO & o$NEUTRON  & o$cGY_21.54)
+N_30.78cGY  <- (o$FRACTIONS_60 & o$HAS_MACRO & o$NEUTRON  & o$cGY_30.78)
+N_40.04cGY  <- (o$FRACTIONS_60 & o$HAS_MACRO & o$NEUTRON  & o$cGY_40.04)
+
+
 
