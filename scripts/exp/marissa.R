@@ -3,12 +3,19 @@
 # bmh Oct 2011
 
 # Load the janus data
-source('../data/load_janus_data.R')
-data <- j.data$load(from_cache=TRUE)
+source('../data/data.R')
+data <- data$load('janus', from_cache=TRUE)
+
+# Some helper functions
+source('../util/table_freq.R')
 
 # Load the annotations
 source('../data/ontology.R')
 o <- ontology$load(data)
+
+# Load translations
+source('../data/translations.R')
+t <- translations$load('janus', from_cache=TRUE)
 
 # Define the dataset under analysis
 CONTROL     <- (o$FRACTIONS_60 & o$HAS_MACRO & o$CONTROL)
@@ -23,6 +30,20 @@ N_13.85cGY  <- (o$FRACTIONS_60 & o$HAS_MACRO & o$NEUTRON  & o$cGY_13.85)
 N_21.54cGY  <- (o$FRACTIONS_60 & o$HAS_MACRO & o$NEUTRON  & o$cGY_21.54)
 N_30.78cGY  <- (o$FRACTIONS_60 & o$HAS_MACRO & o$NEUTRON  & o$cGY_30.78)
 N_40.04cGY  <- (o$FRACTIONS_60 & o$HAS_MACRO & o$NEUTRON  & o$cGY_40.04)
+ALL_TREATMENTS <- c(
+	CONTROL |
+	G_100cGY | G_200cGY | G_300cGY | G_450cGY | G_600cGY |
+	N_2.05cGY | N_7.69cGY | N_13.85cGY | N_21.54cGY | N_30.78cGY | N_40.04cGY
+	)
+
+# Get counts of the treatment groups
+counts <- table_freq(data[
+			ALL_TREATMENTS,
+			c("radn", "fractions", "total_dose", "dose_rate")
+			])
 
 
+
+
+))
 
