@@ -12,12 +12,14 @@ j.data <- list()
 #
 source('../util/webcache.R')
 source('../data/ontology.R')
+source('../util/localcache.R')
+source('../util/zipfile.R')
+c <- ontology$load_columns()
 
 # Configuration
 #
 j.data$.__URI <- "http://janus.northwestern.edu/janus2/data/"
-j.data$.__DATA.DIR <- "../../data/"
-j.data$.__CACHED.PATH <- "../../data/j.data.RDS"
+j.data$.__CACHED.NAME <- "j.data"
 j.data$.__TABLE.NAMES <- c("demographics", "macro_pathologies")
 j.data$.__TABLE.HEADER.ROWS <- 1
 j.data$.__ZIP.EXTENSION <- ".zip"
@@ -27,15 +29,23 @@ j.data$.__FILE.EXTENSION <- ".csv"
 
 # Our primary function, return a data frame,
 j.data$load <- function(from_cache=FALSE){
-	if(from_cache==FALSE){
+	is_cached <- localcache$is_cached(j.data$.__CACHED.NAME)
+	if(from_cache && is_cached){
+		data <- localcache$load(j.data$.__CACHED.NAME)
+	}
+	if(from_cache && !is_cached){
+		print( "Cache was empty.  Loading from source")
+		from_cache <- FALSE 
+	}
+	if(from_cache == FALSE){
 		uris <- j.data$.__get_uris()
-		zip_paths <- j.data$.__download(uris)
-		csv_paths <- j.data$.__unzip(zip_paths)
+		zip_paths <- webcache$get(uris)
+		csv_paths <- zipfile$unzip(zip_paths)
 		raw_data <- j.data$.__csv2data.frame(csv_paths, j.data$.__TABLE.HEADER.ROWS)
 		data <- j.data$.__normalize(raw_data)
-		saveRDS(data, j.data$.__CACHED.PATH) 
+		localcache$save(data, j.data$.__CACHED.NAME) 
 	}
-	data <- readRDS(j.data$.__CACHED.PATH)
+
 	return(data)
 }
 
@@ -46,10 +56,10 @@ j.data$.__normalize <- function(raw_data){
 	names(data) <- j.data$.__get_normalized_names(names(data))
 	data[['necroscopy_date']] <- as.Date(data[['necroscopy_date']], format="%Y-%m-%d" )
 	data[['expt']] <- as.factor(data[['expt']])
-	data[o$MACROS] <- data.frame(mapply(function(column){
+	data[c$MACROS] <- data.frame(mapply(function(column){
 		column[is.na(column)] <- c(FALSE)
 		return(column)
-	},data[o$MACROS]))
+	},data[c$MACROS]))
 	return(data)
 }
 
@@ -74,23 +84,6 @@ j.data$.__get_uris <- function(){
 			sep="" 
 			)
 	return(uris)
-}
-
-# Download w caching whoa!
-j.data$.__download <- function(uris){
-	local_paths <- mapply(cache$get, uris)
-	return(local_paths)
-}
-
-# Unzip and keep the originals
-j.data$.__unzip <- function(zip_paths){
-	csv_paths <- mapply(function(zip_path){
-		unzip(zip_path, exdir=j.data$.__DATA.DIR)
-		name <- as.character(unzip(zip_path, list=TRUE)[1,1])
-		csv_path <- paste(j.data$.__DATA.DIR, name, sep="")
-		return(csv_path)
-	}, zip_paths)
-	return(csv_paths )
 }
 
 # Convert the data into R and delete the file
