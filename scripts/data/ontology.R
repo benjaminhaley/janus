@@ -66,7 +66,7 @@ ontology$load_rows <- function(data){
 	return(r)
 }
 
-ontology$__get_macros(janus_translation_table){
+ontology$.__get_macros <- function(janus_translation_table){
 	macro_rows <- janus_translation_table["observation_category"]=="macro"
 	# though (confusinginly) labeled 'micro_code' these are actually 'macros'
 	# in this case

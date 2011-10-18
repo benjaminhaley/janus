@@ -21,7 +21,6 @@ source('../util/zipfile.R')
 j.translations$.__URI <- 
 	"http://janus.northwestern.edu/janus2/data/pathologies_key.zip"
 j.translations$.__CACHED.NAME <- "j.translations"
-j.translations$.__TABLE.HEADER.ROWS <- 1
 
 # Our primary function, return a data frame,
 j.translations$load <- function(from_cache=FALSE){
@@ -37,7 +36,7 @@ j.translations$load <- function(from_cache=FALSE){
 		uri <- j.translations$.__URI
 		zip_path <- webcache$get(uri)
 		csv_path <- zipfile$unzip(zip_path)
-		translations <- j.translations$.__csv2data.frame(csv_path, j.translations$.__TABLE.HEADER.ROWS)
+		translations <- j.translations$.__csv2data.frame(csv_path)
 		localcache$save(translations, j.translations$.__CACHED.NAME) 
 	}
 
@@ -45,20 +44,15 @@ j.translations$load <- function(from_cache=FALSE){
 }
 
 # Convert the data into R and delete the file
-j.translations$.__csv2data.frame <- function(paths){
-	translations <- mapply( 
-		read.table,
-		paths, 
+j.translations$.__csv2data.frame <- function(path){
+	translations <- read.table(
+		path, 
 		header=TRUE, 
 		skip=1, 
-		sep=","
+		sep=",",
 		as.is=TRUE
 	)
-	translations <- data.frame(translations)
-	mapply( 
-	   unlink, 
-	   paths 
-	)
+	unlink(path)
 	return(translations)
 }
 

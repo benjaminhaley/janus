@@ -56,6 +56,12 @@ j.data$.__normalize <- function(raw_data){
 	names(data) <- j.data$.__get_normalized_names(names(data))
 	data[['necroscopy_date']] <- as.Date(data[['necroscopy_date']], format="%Y-%m-%d" )
 	data[['expt']] <- as.factor(data[['expt']])
+
+	# We will add in macros which are not presented in the dataset
+	missing_macros <- c$MACROS[!c$MACROS %in% colnames(data)]
+	empty_matrix <- matrix(nrow=nrow(data), ncol=length(missing_macros))
+	colnames(empty_matrix) <- missing_macros
+	data <- cbind(data, empty_matrix)
 	data[c$MACROS] <- data.frame(mapply(function(column){
 		column[is.na(column)] <- c(FALSE)
 		return(column)
