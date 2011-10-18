@@ -8,10 +8,10 @@ data <- list()
 data$load <- function(datasets, from_cache=FALSE){
 	if(datasets == 'janus'){
 		source('../data/load_janus_data.R')
-		data <- j.data$load(from_cache)
+		this.data <- j.data$load(from_cache)
 	} else {
 		stop("I do not recognize the dataset entered")
 	}
-	return data
+	return(this.data)
 }
 
