@@ -3,3 +3,15 @@
 
 translations <- list()
 
+translations <- list()
+
+translations$load <- function(translations_sets, from_cache=FALSE){
+	if(translations_sets == 'janus'){
+		source('../data/load_janus_translations.R')
+		this.translations <- j.translations$load(from_cache)
+	} else {
+		stop("I do not recognize the translationsset entered")
+	}
+	return(this.translations)
+}
+
