@@ -7,44 +7,45 @@ source('../data/data.R')
 data <- data$load('janus', from_cache=TRUE)
 
 # Some helper functions
-source('../util/table_freq.R')
+source('../util/freq.R')
 
 # Load the annotations
 source('../data/ontology.R')
 c <- ontology$load_columns()
 r <- ontology$load_rows(data)
 
-# Load translations
-source('../data/translations.R')
-t <- translations$load('janus', from_cache=TRUE)
-
 # Define the dataset under analysis
-CONTROL     <- (r$FRACTIONS_60 & r$HAS_MACRO & r$CONTROL)
-G_100cGY    <- (r$FRACTIONS_60 & r$HAS_MACRO & r$GAMMA    & r$cGY_100)
-G_200cGY    <- (r$FRACTIONS_60 & r$HAS_MACRO & r$GAMMA    & r$cGY_200)
-G_300cGY    <- (r$FRACTIONS_60 & r$HAS_MACRO & r$GAMMA    & r$cGY_300)
-G_450cGY    <- (r$FRACTIONS_60 & r$HAS_MACRO & r$GAMMA    & r$cGY_450)
-G_600cGY    <- (r$FRACTIONS_60 & r$HAS_MACRO & r$GAMMA    & r$cGY_600)
-N_2.05cGY   <- (r$FRACTIONS_60 & r$HAS_MACRO & r$NEUTRON  & r$cGY_2.05)
-N_7.69cGY   <- (r$FRACTIONS_60 & r$HAS_MACRO & r$NEUTRON  & r$cGY_7.69)
-N_13.85cGY  <- (r$FRACTIONS_60 & r$HAS_MACRO & r$NEUTRON  & r$cGY_13.85)
-N_21.54cGY  <- (r$FRACTIONS_60 & r$HAS_MACRO & r$NEUTRON  & r$cGY_21.54)
-N_30.78cGY  <- (r$FRACTIONS_60 & r$HAS_MACRO & r$NEUTRON  & r$cGY_30.78)
-N_40.04cGY  <- (r$FRACTIONS_60 & r$HAS_MACRO & r$NEUTRON  & r$cGY_40.04)
-ALL_TREATMENTS <- c(
-	CONTROL |
-	G_100cGY | G_200cGY | G_300cGY | G_450cGY | G_600cGY |
-	N_2.05cGY | N_7.69cGY | N_13.85cGY | N_21.54cGY | N_30.78cGY | N_40.04cGY
-	)
+data["treatment"] <- NA
+data[r$FRACTIONS_60 & r$HAS_MACRO & r$CONTROL,                "treatment"] <- "CONTROL"
+data[r$FRACTIONS_60 & r$HAS_MACRO & r$GAMMA    & r$cGY_100,   "treatment"] <- "G_100cGY"
+data[r$FRACTIONS_60 & r$HAS_MACRO & r$GAMMA    & r$cGY_200,   "treatment"] <- "G_200cGY"
+data[r$FRACTIONS_60 & r$HAS_MACRO & r$GAMMA    & r$cGY_300,   "treatment"] <- "G_300cGY"
+data[r$FRACTIONS_60 & r$HAS_MACRO & r$GAMMA    & r$cGY_450,   "treatment"] <- "G_450cGY"
+data[r$FRACTIONS_60 & r$HAS_MACRO & r$GAMMA    & r$cGY_600,   "treatment"] <- "G_600cGY"
+data[r$FRACTIONS_60 & r$HAS_MACRO & r$NEUTRON  & r$cGY_2.05,  "treatment"] <- "N_2.05cGY"
+data[r$FRACTIONS_60 & r$HAS_MACRO & r$NEUTRON  & r$cGY_7.69,  "treatment"] <- "N_7.69cGY"
+data[r$FRACTIONS_60 & r$HAS_MACRO & r$NEUTRON  & r$cGY_13.85, "treatment"] <- "N_13.85cGY"
+data[r$FRACTIONS_60 & r$HAS_MACRO & r$NEUTRON  & r$cGY_21.54, "treatment"] <- "N_21.54cGY"
+data[r$FRACTIONS_60 & r$HAS_MACRO & r$NEUTRON  & r$cGY_30.78, "treatment"] <- "N_30.78cGY"
+data[r$FRACTIONS_60 & r$HAS_MACRO & r$NEUTRON  & r$cGY_40.04, "treatment"] <- "N_40.04cGY"
+ALL <- !is.na(data["treatment"])
+CON <- data["treatment"] == "CONTROL"
+EXP <- ALL & !CON
+
+# We are not discriminating between Lethal and Non-lethal
+MERGED_MACROS <- ontology$merge_macros(data)
+COMMON_TOXICITIES <- freq$get_columns(MERGED_MACROS[ALL,], c$MACROS, minimum_sum=30)
 
 # Get counts of the treatment groups
-counts <- table_freq(data[
-			ALL_TREATMENTS,
+table.1 <- freq$get_table(data[
+			ALL,
 			c("radn", "fractions", "total_dose", "dose_rate")
-			])
+		])
 
+# Get toxicity descriptions
+table.2 <- ontology$macro2description(COMMON_TOXICITIES)
 
+# Start some model building
+MERGED_MACROS[ALL,"OVE"]
 
-
-))
-
+# @TODO add km-curves

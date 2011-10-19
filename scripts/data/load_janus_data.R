@@ -58,14 +58,14 @@ j.data$.__normalize <- function(raw_data){
 	data[['expt']] <- as.factor(data[['expt']])
 
 	# We will add in macros which are not presented in the dataset
-	missing_macros <- c$MACROS[!c$MACROS %in% colnames(data)]
+	missing_macros <- c$MACROS_[!c$MACROS_ %in% colnames(data)]
 	empty_matrix <- matrix(nrow=nrow(data), ncol=length(missing_macros))
 	colnames(empty_matrix) <- missing_macros
 	data <- cbind(data, empty_matrix)
-	data[c$MACROS] <- data.frame(mapply(function(column){
+	data[c$MACROS_] <- data.frame(mapply(function(column){
 		column[is.na(column)] <- c(FALSE)
 		return(column)
-	},data[c$MACROS]))
+	},data[c$MACROS_]))
 	return(data)
 }
 
