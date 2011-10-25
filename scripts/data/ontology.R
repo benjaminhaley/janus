@@ -44,6 +44,10 @@ ontology$load_rows <- function(data){
 	r$GAMMA <- (data["radn"] == "G")
 	r$CONTROL <- (data["radn"] == "C")
 
+	#species
+	r$MUS.M <- (data['species'] == "Mus musculus")
+	r$PER.L <- (data['species'] == "Peromyscus leucopus")
+
 	# Doses
 	r$cGY_0        <- (data["total_dose"] == 0)
 	r$cGY_2.05     <- (data["total_dose"] == 2.05) 
@@ -68,6 +72,10 @@ ontology$load_rows <- function(data){
 	# Autopsy results
 	r$MACRO_COUNT <- rowSums(data[c$MACROS_])
 	r$HAS_MACRO <- (r$MACRO_COUNT != 0)
+
+	# Genders
+	r$MALE <- (data["sex"] == "M")
+	r$FEMALE <- (data["sex"] == "F")
 	return(r)
 }
 
@@ -90,6 +98,15 @@ ontology$merge_macros <- function(data, macros=ontology$.__get_macros(ontology$j
 	merge <- data.frame(lapply(macros, ontology$.__merge_macro, data))
 	return(merge)
 }
+
+# In janus cage numbers are in the ids
+# for example id=10.1 cage=10 
+ontology$id2cage <- function(ids){
+	cage_number <- sub('\\..*', '', ids)
+	return(cage_number)
+}
+# Test
+stopifnot(identical(ontology$id2cage(c("10.2", "59.6")), c("10", "59")))
 
 ontology$.__merge_macro <- function(macro, data){
 	macros_ <- ontology$.__add_lethalities(macro)
