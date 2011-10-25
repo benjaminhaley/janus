@@ -29,12 +29,14 @@ stopifnot( expected == result )
 
 # I want a function to see the counts by category
 # Motivated by Marissa's Characteriazation of her data
-freq$get_table <- function(data_frame){
+freq$get_table <- function(data_frame, remove_zero_counts=TRUE){
 	table_data <- table(data_frame)
 	freq_frame <- as.data.frame(table_data)
-	non_zero_freq_frame <- freq_frame[freq_frame["Freq"] != 0,]
-	rownames(non_zero_freq_frame) <- NULL
-	return(non_zero_freq_frame)
+	if(remove_zero_counts==TRUE){
+		freq_frame <- freq_frame[freq_frame["Freq"] != 0,]
+	}
+	rownames(freq_frame) <- NULL
+	return(freq_frame)
 }
 
 # get_table Test
