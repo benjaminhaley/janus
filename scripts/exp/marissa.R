@@ -8,6 +8,7 @@ data <- data$load('janus', from_cache=TRUE)
 
 # Some helper functions
 source('../util/freq.R')
+source('../util/odds_ratio.R')
 
 # Load the annotations
 source('../data/ontology.R')
@@ -29,14 +30,27 @@ data[r$FRACTIONS_60 & r$HAS_MACRO & r$NEUTRON  & r$cGY_21.54, "treatment"] <- "N
 data[r$FRACTIONS_60 & r$HAS_MACRO & r$NEUTRON  & r$cGY_30.78, "treatment"] <- "N_30.78cGY"
 data[r$FRACTIONS_60 & r$HAS_MACRO & r$NEUTRON  & r$cGY_40.04, "treatment"] <- "N_40.04cGY"
 ALL <- !is.na(data["treatment"])
-CON <- data["treatment"] == "CONTROL"
+CON <- data[["treatment"]] %in% "CONTROL"
 EXP <- ALL & !CON
 
-# We are not discriminating between Lethal and Non-lethal
-MERGED_MACROS <- ontology$merge_macros(data)
-COMMON_TOXICITIES <- freq$get_columns(MERGED_MACROS[ALL,], c$MACROS, minimum_sum=30)
+# Sometimes we will want to lump control genders info
+data['mod_gender'] <- data["sex"]
+data[CON, 'mod_gender'] <- 'N' 
 
-# Get counts of the treatment groups
+# combine lethal and non-lethal pathologies 
+merged_macros <- ontology$merge_macros(data)
+data <- cbind(data, merged_macros)
+COMMON_TOXICITIES <- freq$get_columns(data[ALL,], c$MACROS, minimum_sum=30)
+
+# Age is quantile by gender
+f.age <- data[ALL & r$FEMALE, "age"]
+m.age <- data[ALL & r$MALE, "age"]
+data[ALL & r$FEMALE, "q.age"] <- as.character(cut(f.age, quantile(f.age)))
+data[ALL & r$MALE, "q.age"] <- as.character(cut(m.age, quantile(m.age)))
+data[ALL, "mod.q.age"] <- data[ALL, "q.age"]
+data[CON, "mod.q.age"] <- NA
+
+# Get counts of the number of animals in each treatment group
 table.1 <- freq$get_table(data[
 			ALL,
 			c("radn", "fractions", "total_dose", "dose_rate")
@@ -46,6 +60,27 @@ table.1 <- freq$get_table(data[
 table.2 <- ontology$macro2description(COMMON_TOXICITIES)
 
 # Start some model building
-MERGED_MACROS[ALL,"OVE"]
+table.3.toxicities <- c("CLR","CYS","HGL","OVE", "TOVE", "TADN","TPYL","TSEC")
+table.3.fun <- function(pathology){
+	formula <- paste(pathology, "~ treatment*sex + q.age*sex -treatment -sex -q.age -1")
+	family <- binomial(link = "logit")
+	model <- glm( formula=formula, data=data[ALL & !r$NEUTRON ,], family = family )
+	coef_ <- coef(model)
+	f.coef <- coef_[1:6]
+	m.coef <- coef_[7:12]
+	f.odds <- odds_ratio$logit2or(f.coef, f.coef[1])
+	m.odds <- odds_ratio$logit2or(m.coef, m.coef[1])
+	return(rbind(f.odds,m.odds))
+}
+jable.3 <- 
+pathology <- "CLR"
+odds_ratio$logit2or(coef(model), coef(model)[1])
+
+# table 4
+pathology <- "BDY"
+formula <- paste(pathology, "~ treatment + q.age")
+family <- binomial(link = "logit")
+model <- glm( formula=formula, data=data[ALL & !r$NEUTRON ,], family = family )
+odds_ratio$logit2or(coef(model), coef(model)[1])
 
 # @TODO add km-curves
