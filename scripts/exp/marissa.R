@@ -9,11 +9,15 @@ data <- data$load('janus', from_cache=TRUE)
 # Some helper functions
 source('../util/freq.R')
 source('../util/odds_ratio.R')
+source("../util/package.R")
 
 # Load the annotations
 source('../data/ontology.R')
 c <- ontology$load_columns()
 r <- ontology$load_rows(data)
+
+# Extra packages
+package$load(c("aod"))
 
 # Define the dataset under analysis
 data["treatment"] <- NA
@@ -45,10 +49,8 @@ COMMON_TOXICITIES <- freq$get_columns(data[ALL,], c$MACROS, minimum_sum=30)
 # Age is quantile by gender
 f.age <- data[ALL & r$FEMALE, "age"]
 m.age <- data[ALL & r$MALE, "age"]
-data[ALL & r$FEMALE, "q.age"] <- as.character(cut(f.age, quantile(f.age)))
-data[ALL & r$MALE, "q.age"] <- as.character(cut(m.age, quantile(m.age)))
-data[ALL, "mod.q.age"] <- data[ALL, "q.age"]
-data[CON, "mod.q.age"] <- NA
+data[ALL & r$FEMALE, "q.age"] <- cut(f.age, quantile(f.age), labels=c("q1","q2","q3","q4"))
+data[ALL & r$MALE, "q.age"] <- cut(m.age, quantile(m.age), labels=c("q1","q2","q3","q4"))
 
 # Get counts of the number of animals in each treatment group
 table.1 <- freq$get_table(data[
@@ -72,11 +74,20 @@ table.3.fun <- function(pathology){
 	m.odds <- odds_ratio$logit2or(m.coef, m.coef[1])
 	return(rbind(f.odds,m.odds))
 }
-jable.3 <- 
-pathology <- "CLR"
-odds_ratio$logit2or(coef(model), coef(model)[1])
 
 # table 4
+table.4.toxicities <- c("ADR", "BDY", "DER", "HRG", "HTX", "JAU", "KID", "LIV", "TADR", "THGL")
+table.4.fun <- function(pathology){
+	formula <- paste(pathology, "~ treatment + q.age*sex -sex -q.age -1")
+	family <- binomial(link = "logit")
+	model <- glm( formula=formula, data=data[ALL & !r$NEUTRON ,], family = family )
+	coef_ <- coef(model)
+	f.coef <- coef_[1:6]
+	m.coef <- coef_[7:12]
+	f.odds <- odds_ratio$logit2or(f.coef, f.coef[1])
+	m.odds <- odds_ratio$logit2or(m.coef, m.coef[1])
+	return(rbind(f.odds,m.odds))
+}
 pathology <- "BDY"
 formula <- paste(pathology, "~ treatment + q.age")
 family <- binomial(link = "logit")
