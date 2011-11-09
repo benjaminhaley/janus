@@ -59,7 +59,7 @@ table.1 <- freq$get_table(data[
 		])
 
 # Get toxicity descriptions
-table.2 <- ontology$macro2description(COMMON_TOXICITIES)
+table.2 <- ontology$macro2janus_description(COMMON_TOXICITIES)
 
 # Start some model building
 table.3.toxicities <- c("CLR","CYS","HGL","OVE", "TOVE", "TADN","TPYL","TSEC")
