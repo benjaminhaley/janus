@@ -32,6 +32,13 @@ ontology$load_columns <- function(){
 	c$FRACTIONS = "fractions"
 	c$cGY_PER_MINUTE = "dose_rate"
 	c$cGY_TOTAL = "total_dose"
+	c$LIFESPAN_DAYS = "age"
+	c$SPECIES = "species"
+	c$SEX = "sex"
+	c$DEMOGRAPHICS = c(c$LIFESPAN_DAYS, c$SEX, c$SPECIES)
+	c$TREATMENT = c("first_irrad", "total_dose", "radn", "was_control_mock_treated", 
+	 			    "fractions", "time_min", "dose_rate")
+	c$AUTOPSY = c("necroscopy_date", "necrosopy_proctor")
 	return(c)
 }
 
