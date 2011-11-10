@@ -74,6 +74,7 @@ table.3.fun <- function(pathology){
 	m.odds <- odds_ratio$logit2or(m.coef, m.coef[1])
 	return(rbind(f.odds,m.odds))
 }
+table.3.fun("CLR")
 
 # table 4
 table.4.toxicities <- c("ADR", "BDY", "DER", "HRG", "HTX", "JAU", "KID", "LIV", "TADR", "THGL")
