@@ -56,6 +56,10 @@ j.data$.__normalize <- function(raw_data){
 	names(data) <- j.data$.__get_normalized_names(names(data))
 	data[['necroscopy_date']] <- as.Date(data[['necroscopy_date']], format="%Y-%m-%d" )
 	data[['expt']] <- as.factor(data[['expt']])
+	data[["sex"]] <- as.factor(data[["sex"]])
+	data[["species"]] <- as.factor(data[["species"]])
+	data[["radn"]] <- as.factor(data[["radn"]])
+	data[["necrosopy_proctor"]] <- as.factor(data[["necrosopy_proctor"]])
 
 	# We will add in macros which are not presented in the dataset
 	missing_macros <- c$MACROS_[!c$MACROS_ %in% colnames(data)]
@@ -66,6 +70,7 @@ j.data$.__normalize <- function(raw_data){
 		column[is.na(column)] <- c(FALSE)
 		return(column)
 	},data[c$MACROS_]))
+	data[is.na(data[,c$MOCK_TREATED]), c$MOCK_TREATED] <- FALSE
 	return(data)
 }
 
