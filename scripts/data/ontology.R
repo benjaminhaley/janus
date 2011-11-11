@@ -28,6 +28,9 @@ ontology$load_columns <- function(){
     #column cateogories
 	c$MACROS <- ontology$.__get_macros(ontology$j.t)
 	c$MACROS_ <- ontology$.__get_macros(ontology$j.t, with_lethality=TRUE)
+	c$TUMORS <- ontology$.__tumors_from_macros(c$MACROS_)
+	c$LETHAL_MACROS <- ontology$.__lethals_from_macros(c$MACROS_)
+	c$LETHAL_TUMORS <- ontology$.__tumors_from_macros(c$LETHAL_MACROS)
 	c$RADIATION_TYPE = "radn"
 	c$FRACTIONS = "fractions"
 	c$cGY_PER_MINUTE = "dose_rate"
@@ -35,8 +38,9 @@ ontology$load_columns <- function(){
 	c$LIFESPAN_DAYS = "age"
 	c$SPECIES = "species"
 	c$SEX = "sex"
+	c$MOCK_TREATED = "was_control_mock_treated"
 	c$DEMOGRAPHICS = c(c$LIFESPAN_DAYS, c$SEX, c$SPECIES)
-	c$TREATMENT = c("first_irrad", "total_dose", "radn", "was_control_mock_treated", 
+	c$TREATMENT = c("first_irrad", "total_dose", "radn", c$MOCK_TREATED, 
 	 			    "fractions", "time_min", "dose_rate")
 	c$AUTOPSY = c("necroscopy_date", "necrosopy_proctor")
 	return(c)
@@ -79,6 +83,8 @@ ontology$load_rows <- function(data){
 	# Autopsy results
 	r$MACRO_COUNT <- rowSums(data[c$MACROS_])
 	r$HAS_MACRO <- (r$MACRO_COUNT != 0)
+	r$DIED_FROM_TUMOR <- rowSums(data[c$LETHAL_TUMORS])
+	r$TUMOR_COUNT <- rowSums(data[c$TUMORS])
 
 	# Genders
 	r$MALE <- (data["sex"] == "M")
@@ -162,6 +168,35 @@ ontology$.__get_macros <- function(janus_translation_table, with_lethality=FALSE
 	}
 	return(macros)
 }
+
+# If the first letter of a macro is a T, it is a tumor
+ontology$.__tumors_from_macros <- function(macros){
+	first_letter <- substr(macros, 1, 1)
+	tumors <- macros[first_letter == "T"]
+	return(tumors)
+}
+
+# Test
+ontology$.__input <- c("TCOOL", "NCOL")
+ontology$.__expected <- c("TCOOL")
+ontology$.__result <- ontology$.__tumors_from_macros(ontology$.__input)
+stopifnot(identical(ontology$.__result, ontology$.__expected))
+
+
+# If the last letter is a L, it is lethal
+ontology$.__lethals_from_macros <- function(macros){
+	nchar <- nchar(macros)
+	last_letter <- substr(macros, nchar, nchar + 1)
+	tumors <- macros[last_letter == "L"]
+	return(tumors)
+}
+
+# Test
+ontology$.__input <- c("TCOO_L", "NCO_N")
+ontology$.__expected <- c("TCOO_L")
+ontology$.__result <- ontology$.__lethals_from_macros(ontology$.__input)
+stopifnot(identical(ontology$.__result, ontology$.__expected))
+
 
 ontology$.__add_lethalities <- function(macros){
 	macros <- c(
