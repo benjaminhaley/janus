@@ -25,10 +25,10 @@ f.builder$get_self_interactions <- function(parameter_vector){
 	return(interactions)
 }
 # Test 
-f.builder$._input <- c("x1", "x2")
-f.builder$._expected <- c("x1*x1", "x2*x2", "x1*x2")
-f.builder$._result <- f.builder$get_self_interactions(f.builder$._input)
-stopifnot(identical(f.builder$._result, f.builder$._expected))
+	f.builder$._input <- c("x1", "x2")
+	f.builder$._expected <- c("x1*x1", "x2*x2", "x1*x2")
+	f.builder$._result <- f.builder$get_self_interactions(f.builder$._input)
+	stopifnot(identical(f.builder$._result, f.builder$._expected))
 
 
 # Take a vector of ys and a right model
@@ -37,13 +37,12 @@ f.builder$get_all_formula <- function(ys, right_side){
 	all_formula <- paste(ys, right_side, sep=" ~ ")
 	return(all_formula)
 }
-
 # Test 
-f.builder$._input_ys <- c("y1", "y2")
-f.builder$._input_right <- "x1 + x2"
-f.builder$._expected <- c("y1 ~ x1 + x2", "y2 ~ x1 + x2") 
-f.builder$._result <- f.builder$get_all_formula(f.builder$._input_ys, f.builder$._input_right)
-stopifnot(identical(f.builder$._result, f.builder$._expected))
+	f.builder$._input_ys <- c("y1", "y2")
+	f.builder$._input_right <- "x1 + x2"
+	f.builder$._expected <- c("y1 ~ x1 + x2", "y2 ~ x1 + x2") 
+	f.builder$._result <- f.builder$get_all_formula(f.builder$._input_ys, f.builder$._input_right)
+	stopifnot(identical(f.builder$._result, f.builder$._expected))
 
 
 # Take a vector parameters and return the right
