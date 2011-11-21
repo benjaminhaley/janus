@@ -1,8 +1,19 @@
 Analysis Scripts
-updated: bmh Oct 2011
+updated: bmh Nov 2011
 
 Folder Purposes:
-	exp - analysis scripts
-	util - general utility scripts like caching
-	data - scripts for downloading, translating and annotating data
+
+	exp
+		 analysis scripts
+
+	util
+		 general utility scripts like caching
+
+	data
+		 scripts for downloading, translating and annotating data
+
+	fun 
+		 experimental work, not necessarily related to janus.
+	     kept here so I can use useful functions developed by 
+		 the janus project.
 
