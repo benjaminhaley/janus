@@ -1,14 +1,26 @@
-# Scripts should be able to check for packages and load them if they are not
-# found.  This script will do exactly that.
+############################################################################### 
+#
+# Scripts should be able to check for packages and 
+# download them if they are not found locally.
+# This script will support that.
+#
 # bmh Sept 2011
-
+#
 # Usage 
 #   source("../util/package.R")
 #   dependencies <- "RCurl"
 #   package$load(dependencies)
+#
+############################################################################### 
 
 package <- list()
-package$.__REPOS <- "http://cran.r-project.org"
+
+# Here we list all the trusted sources of repos
+#
+package$.__REPOS <- c(
+						"http://cran.r-project.org",
+						"http://www.omegahat.org/R"
+					 )
 
 package$load <- function( dependencies ){
 	installed <- .packages( all=TRUE )
