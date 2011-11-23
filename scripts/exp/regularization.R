@@ -80,15 +80,19 @@ validation <- r$HAS_MACRO & validation.vector
 #
 data["DIED.FROM.TUMOR"] <- r$DIED_FROM_TUMOR
 data["TUMOR.COUNT"] <- r$TUMOR_COUNT
-frequent.macros <- select$by_count(data, c$MACROS_, min=1, max=5)
+frequent.macros <- select$by_count(data, c$MACROS_, min=1, max=3)
 lifespan <- c$LIFESPAN_DAYS
 tumor.deaths <- "DIED.FROM.TUMOR"
 tumor.counts <- "TUMOR.COUNT"
 
 # Define model parameters
 #
+less_macro_parameters <- c(c$DEMOGRAPHICS, c$TREATMENT)
+less_macro_parameters <- less_macro_parameters[less_macro_parameters != "time_min"]
 macro_parameters <- c(c$DEMOGRAPHICS, c$TREATMENT, c$AUTOPSY)
 macro_parameters <- macro_parameters[macro_parameters != "time_min"]
+less_lifespan_parameters <- c(c$SPECIES, c$SEX, c$TREATMENT)
+less_lifespan_parameters <- less_lifespan_parameters[less_lifespan_parameters != "time_min"]
 lifespan_parameters <- c(c$SPECIES, c$SEX, c$TREATMENT, c$AUTOPSY)
 lifespan_parameters <- lifespan_parameters[lifespan_parameters != "time_min"]
 
@@ -126,7 +130,9 @@ report$simplified.proctors <- table(data[,"necrosopy_proctor"])
 
 # Simple models, "VOL_N ~ age + sex + species..." no interactions
 #
+formula_less_macro <- f.builder$get_right_from_parameters(less_macro_parameters)
 formula_simple_macro <- f.builder$get_right_from_parameters(macro_parameters)
+formula_less_lifespan <- f.builder$get_right_from_parameters(less_lifespan_parameters)
 formula_simple_lifespan <- f.builder$get_right_from_parameters(lifespan_parameters)
 
 # Complex models, "VOL_N ~ age + (age * age) + sex + (age * sex)..."
@@ -139,6 +145,7 @@ formula_complex_lifespan <- f.builder$get_right_from_parameters(c(lifespan_param
 # Add the formula to our report
 #
 report$formulas <- c(
+	 formula_less_macro, formula_less_lifespan,
 	 formula_simple_macro, formula_simple_lifespan, 
 	 formula_complex_macro, formula_complex_lifespan
 	 )
@@ -191,6 +198,7 @@ lifespan.reg <- function(right_formula, lambda){
 #
 all_macro <- c(frequent.macros, tumor.deaths)
 
+less.macro.models <- lapply(all_macro, FUN=macro.glm, formula_less_macro)
 simple.macro.models <- lapply(all_macro, FUN=macro.glm, formula_simple_macro)
 complex.macro.models <- lapply(all_macro, FUN=macro.glm, formula_complex_macro)
 under.regularized.macro.models <- lapply(all_macro, FUN=macro.reg, formula_complex_macro, 100)
@@ -198,9 +206,11 @@ over.regularized.macro.models <- lapply(all_macro, FUN=macro.reg, formula_comple
 
 # Run life models
 #
+less.life.model <- lifespan.lm(formula_less_lifespan)
 simple.life.model <- lifespan.lm(formula_simple_lifespan)
 complex.life.model <- lifespan.lm(formula_complex_lifespan)
-regularized.life.model <- lifespan.reg(formula_complex_lifespan, 0.0001)
+over.regularized.life.model <- lifespan.reg(formula_complex_lifespan, 30)
+
 
 
 ##############################################################################
@@ -235,7 +245,7 @@ get.auc <- function(macro, macro.model, subset){
 get.R2 <- function(model, subset){
 	is.penfit <- inherits(model, "penfit")
 	if(is.penfit){
-		predictions <- predict(model, data=data[subset,])
+		predictions <- predict(model, data = data[subset, ])[,1]
 	} else {
 		predictions <- predict(model, data[subset,])
 	}
@@ -246,10 +256,11 @@ get.R2 <- function(model, subset){
 	return(r2)
 }
 
-stop()
 # Get Macro AUCs
 # 
-report$simple.macro.training.auc <- mapply(FUN=get.auc, all_macro[3], simple.macro.models[3], MoreArgs=list(training)) # Happens here, #3 during predictions
+report$less.macro.training.auc <- mapply(FUN=get.auc, all_macro, less.macro.models, MoreArgs=list(training))
+report$less.macro.validation.auc <- mapply(FUN=get.auc, all_macro, less.macro.models, MoreArgs=list(validation))
+report$simple.macro.training.auc <- mapply(FUN=get.auc, all_macro, simple.macro.models, MoreArgs=list(training))
 report$simple.macro.validation.auc <- mapply(FUN=get.auc, all_macro, simple.macro.models, MoreArgs=list(validation))
 report$complex.macro.training.auc <- mapply(FUN=get.auc, all_macro, complex.macro.models, MoreArgs=list(training))
 report$complex.macro.validation.auc <- mapply(FUN=get.auc, all_macro, complex.macro.models, MoreArgs=list(validation))
@@ -260,6 +271,8 @@ report$over.regularized.macro.validation.auc <- mapply(FUN=get.auc, all_macro, o
 
 # Get Lifespan R2s
 #
+report$less.lifespan.training.r2 <- get.R2(less.life.model, training)
+report$less.lifespan.validation.r2 <- get.R2(less.life.model, validation)
 report$simple.lifespan.training.r2 <- get.R2(simple.life.model, training)
 report$simple.lifespan.validation.r2 <- get.R2(simple.life.model, validation)
 report$complex.lifespan.training.r2 <- get.R2(complex.life.model, training)
