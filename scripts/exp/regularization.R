@@ -209,7 +209,7 @@ over.regularized.macro.models <- lapply(all_macro, FUN=macro.reg, formula_comple
 less.life.model <- lifespan.lm(formula_less_lifespan)
 simple.life.model <- lifespan.lm(formula_simple_lifespan)
 complex.life.model <- lifespan.lm(formula_complex_lifespan)
-over.regularized.life.model <- lifespan.reg(formula_complex_lifespan, 30)
+regularized.life.model <- lifespan.reg(formula_complex_lifespan, 30)
 
 
 
@@ -279,15 +279,6 @@ report$complex.lifespan.training.r2 <- get.R2(complex.life.model, training)
 report$complex.lifespan.validation.r2 <- get.R2(complex.life.model, validation)
 report$regularized.lifespan.training.r2 <- get.R2(regularized.life.model, training)
 report$regularized.lifespan.validation.r2 <- get.R2(regularized.life.model, validation)
-
-
-##############################################################################
-# 
-# TODO
-#
-# We still need to get some more meaningful summary information. I will save 
-# this for the poster presentation.  
-# 
 
 
 
