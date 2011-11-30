@@ -30,6 +30,18 @@ f.builder$get_self_interactions <- function(parameter_vector){
 	f.builder$._result <- f.builder$get_self_interactions(f.builder$._input)
 	stopifnot(identical(f.builder$._result, f.builder$._expected))
 
+# Ineractions between any two parameter vectors
+f.builder$get_interactions <- function(p1, p2){
+	combinations <- expand.grid(p1, p2)
+	interactions <- paste( combinations[[1]], combinations[[2]], sep="*" )
+	return(interactions)
+}
+# Test 
+	f.builder$._input1 <- c("x1", "x2")
+	f.builder$._input2 <- c("y1", "y2")
+	f.builder$._expected <- c("x1*y1", "x2*y1", "x1*y2", "x2*y2")
+	f.builder$._result <- f.builder$get_interactions(f.builder$._input1, f.builder$._input2)
+	stopifnot(identical(f.builder$._result, f.builder$._expected))
 
 # Take a vector of ys and a right model
 # and create all the output formula
