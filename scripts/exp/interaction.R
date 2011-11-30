@@ -139,31 +139,23 @@ report$simplified.proctors <- table(data[,"necrosopy_proctor"])
 #
 parameters_general_macro_i0 = c(age_parameters, general_parameters)
 parameters_general_macro_i1 = f.builder$get_self_interactions(parameters_general_macro_i0)
-parameters_general_macro_i2 = f.builder$get_interactions(parameters_general_macro_i1, parameters_general_macro_i0)
 parameters_complete_macro_i0 = c(age_parameters, general_parameters, specific_parameters)
 parameters_complete_macro_i1 = f.builder$get_self_interactions(parameters_complete_macro_i0)
-parameters_complete_macro_i2 = f.builder$get_interactions(parameters_complete_macro_i1, parameters_complete_macro_i0)
 parameters_general_lifespan_i0 = c(general_parameters)
 parameters_general_lifespan_i1 = f.builder$get_self_interactions(parameters_general_lifespan_i0)
-parameters_general_lifespan_i2 = f.builder$get_interactions(parameters_general_lifespan_i1, parameters_general_lifespan_i0)
 parameters_complete_lifespan_i0 = c(general_parameters, specific_parameters)
 parameters_complete_lifespan_i1 = f.builder$get_self_interactions(parameters_complete_lifespan_i0)
-parameters_complete_lifespan_i2 = f.builder$get_interactions(parameters_complete_lifespan_i1, parameters_complete_lifespan_i0)
 
 # Compute the formula
 #
 formula_general_macro_i0 = f.builder$get_right_from_parameters(c(parameters_general_macro_i0))
 formula_general_macro_i1 = f.builder$get_right_from_parameters(c(parameters_general_macro_i0, parameters_general_macro_i1))
-formula_general_macro_i2 = f.builder$get_right_from_parameters(c(parameters_general_macro_i0, parameters_general_macro_i1, parameters_general_macro_i2))
 formula_complete_macro_i0 = f.builder$get_right_from_parameters(c(parameters_complete_macro_i0))
 formula_complete_macro_i1 = f.builder$get_right_from_parameters(c(parameters_complete_macro_i0, parameters_complete_macro_i1))
-formula_complete_macro_i2 = f.builder$get_right_from_parameters(c(parameters_complete_macro_i0, parameters_complete_macro_i1, parameters_complete_macro_i2))
 formula_general_lifespan_i0 = f.builder$get_right_from_parameters(c(parameters_general_lifespan_i0))
 formula_general_lifespan_i1 = f.builder$get_right_from_parameters(c(parameters_general_lifespan_i0, parameters_general_lifespan_i1))
-formula_general_lifespan_i2 = f.builder$get_right_from_parameters(c(parameters_general_lifespan_i0, parameters_general_lifespan_i1, parameters_general_lifespan_i2))
 formula_complete_lifespan_i0 = f.builder$get_right_from_parameters(c(parameters_complete_lifespan_i0))
 formula_complete_lifespan_i1 = f.builder$get_right_from_parameters(c(parameters_complete_lifespan_i0, parameters_complete_lifespan_i1))
-formula_complete_lifespan_i2 = f.builder$get_right_from_parameters(c(parameters_complete_lifespan_i0, parameters_complete_lifespan_i1, parameters_complete_lifespan_i2))
 
 
 # Add the formula to our report
@@ -171,16 +163,12 @@ formula_complete_lifespan_i2 = f.builder$get_right_from_parameters(c(parameters_
 report$formulas <- c(
 		  formula_general_macro_i0,
 		  formula_general_macro_i1,
-		  formula_general_macro_i2,
 		  formula_complete_macro_i0,
 		  formula_complete_macro_i1,
-		  formula_complete_macro_i2,
 		  formula_general_lifespan_i0,
 		  formula_general_lifespan_i1,
-		  formula_general_lifespan_i2,
 		  formula_complete_lifespan_i0,
-		  formula_complete_lifespan_i1,
-		  formula_complete_lifespan_i2
+		  formula_complete_lifespan_i1
 		 )
 
 
@@ -211,19 +199,15 @@ lifespan.lm <- function(right_formula){
 #
 model_general_macro_i0 <- macro.glm(formula_general_macro_i0)
 model_general_macro_i1 <- macro.glm(formula_general_macro_i1)
-model_general_macro_i2 <- macro.glm(formula_general_macro_i2)
 model_complete_macro_i0 <- macro.glm(formula_complete_macro_i0)
 model_complete_macro_i1 <- macro.glm(formula_complete_macro_i1)
-model_complete_macro_i2 <- macro.glm(formula_complete_macro_i2)
 
 # Run life models
 #
 model_general_lifespan_i0 <- lifespan.lm(formula_general_lifespan_i0)
 model_general_lifespan_i1 <- lifespan.lm(formula_general_lifespan_i1)
-model_general_lifespan_i2 <- lifespan.lm(formula_general_lifespan_i2)
 model_complete_lifespan_i0 <- lifespan.lm(formula_complete_lifespan_i0)
 model_complete_lifespan_i1 <- lifespan.lm(formula_complete_lifespan_i1)
-model_complete_lifespan_i2 <- lifespan.lm(formula_complete_lifespan_i2)
 
 
 
@@ -264,37 +248,29 @@ get.R2 <- function(model, subset){
 #
 report$general_macro_i0_v_r2<- get.auc(model_general_macro_i0, validation)
 report$general_macro_i1_v_r2<- get.auc(model_general_macro_i1, validation)
-report$general_macro_i2_v_r2<- get.auc(model_general_macro_i2, validation)
 report$complete_macro_i0_v_r2<- get.auc(model_complete_macro_i0, validation)
 report$complete_macro_i1_v_r2<- get.auc(model_complete_macro_i1, validation)
-report$complete_macro_i2_v_r2<- get.auc(model_complete_macro_i2, validation)
 
 # Run macro models trainings
 #
 report$general_macro_i0_t_r2<- get.auc(model_general_macro_i0, training)
 report$general_macro_i1_t_r2<- get.auc(model_general_macro_i1, training)
-report$general_macro_i2_t_r2<- get.auc(model_general_macro_i2, training)
 report$complete_macro_i0_t_r2<- get.auc(model_complete_macro_i0, training)
 report$complete_macro_i1_t_r2<- get.auc(model_complete_macro_i1, training)
-report$complete_macro_i2_t_r2<- get.auc(model_complete_macro_i2, training)
 
 # Run life models validations
 #
 report$general_lifespan_i0_v_r2<- get.R2(model_general_lifespan_i0, validation)
 report$general_lifespan_i1_v_r2<- get.R2(model_general_lifespan_i1, validation)
-report$general_lifespan_i2_v_r2<- get.R2(model_general_lifespan_i2, validation)
 report$complete_lifespan_i0_v_r2<- get.R2(model_complete_lifespan_i0, validation)
 report$complete_lifespan_i1_v_r2<- get.R2(model_complete_lifespan_i1, validation)
-report$complete_lifespan_i2_v_r2<- get.R2(model_complete_lifespan_i2, validation)
 
 # Run life models trainings
 #
 report$general_lifespan_i0_t_r2<- get.R2(model_general_lifespan_i0, training)
 report$general_lifespan_i1_t_r2<- get.R2(model_general_lifespan_i1, training)
-report$general_lifespan_i2_t_r2<- get.R2(model_general_lifespan_i2, training)
 report$complete_lifespan_i0_t_r2<- get.R2(model_complete_lifespan_i0, training)
 report$complete_lifespan_i1_t_r2<- get.R2(model_complete_lifespan_i1, training)
-report$complete_lifespan_i2_t_r2<- get.R2(model_complete_lifespan_i2, training)
 
 
 
