@@ -89,6 +89,9 @@ ontology$load_rows <- function(data){
 	# Genders
 	r$MALE <- (data["sex"] == "M")
 	r$FEMALE <- (data["sex"] == "F")
+
+	# Demographics
+	r$DOB <- (data["necroscopy_date"] - data["age"])
 	return(r)
 }
 
