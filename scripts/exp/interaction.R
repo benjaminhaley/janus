@@ -7,7 +7,8 @@
 #
 # This script is derived from regularization.R and conversations with Dave.
 #
-# bmh Nov 2011
+# bmh & dp Nov-Dec 2011
+# dp - added ggplot graphing code
 
 # load dependencies
 source('../data/data.R')
@@ -15,6 +16,7 @@ source('../data/ontology.R')
 source('../util/f.builder.R')
 source('../util/package.R')
 source('../util/select.R')
+package$load('ggplot2')
 
 
 #############################################################################
@@ -80,9 +82,12 @@ validation.vector <- runif(nrow(data)) < validation.percentage
 #
 # Only data with macro codes and documented experiments
 # will be analyzed.
+# exp 8 removed because its dose labels are incorrect
+# exp 11 removed because it is not documented in the Janus report
+# HC is removed because it behaves so strangely
 #
-training <- r$HAS_MACRO & !validation.vector & (data$exp != 11)
-validation <- r$HAS_MACRO & validation.vector & (data$exp != 11)
+training <- r$HAS_MACRO & !validation.vector & (data$exp != 11) & (data$exp != 8) & (data$tmt != "HC")
+validation <- r$HAS_MACRO & validation.vector & (data$exp != 11) & (data$exp != 8) & (data$tmt != "HC")
 
 # Define the outcomes, lifespan
 # and animals which died from tumors
@@ -112,7 +117,9 @@ report$original.proctors <- original.proctors
 report$simplified.proctors <- table(data[,"necrosopy_proctor"])
 
 
-######
+
+
+##############################################################################
 # 
 # MODEL FORMULA
 #
@@ -148,14 +155,19 @@ parameters_complete_lifespan_i1 = f.builder$get_self_interactions(parameters_com
 
 # Compute the formula
 #
+# TODO
+# Fix these aweful formulas
+# I had to handcode these variables because:
+#   1.) formula's do not include age*age in model unless it is coded as I(age*age)
+#	2.) formulas reject I(sex*sex) because factors cannot be multiplied
 formula_general_macro_i0 = f.builder$get_right_from_parameters(c(parameters_general_macro_i0))
-formula_general_macro_i1 = f.builder$get_right_from_parameters(c(parameters_general_macro_i0, parameters_general_macro_i1))
+formula_general_macro_i1 <- "age + sex + species + first_irrad + total_dose + radn + fractions + dose_rate + I(age*age) + I(first_irrad*first_irrad) + I(total_dose*total_dose) + I(fractions*fractions) + I(dose_rate*dose_rate) + age*sex + age*species + age*first_irrad + age*total_dose + age*radn + age*fractions + age*dose_rate + sex*species + sex*first_irrad + sex*total_dose + sex*radn + sex*fractions + sex*dose_rate + species*first_irrad + species*total_dose + species*radn + species*fractions + species*dose_rate + first_irrad*total_dose + first_irrad*radn + first_irrad*fractions + first_irrad*dose_rate + total_dose*radn + total_dose*fractions + total_dose*dose_rate + radn*fractions + radn*dose_rate + fractions*dose_rate"
 formula_complete_macro_i0 = f.builder$get_right_from_parameters(c(parameters_complete_macro_i0))
-formula_complete_macro_i1 = f.builder$get_right_from_parameters(c(parameters_complete_macro_i0, parameters_complete_macro_i1))
+formula_complete_macro_i1 <- "age + sex + species + first_irrad + total_dose + radn + fractions + dose_rate + necrosopy_proctor + DOB + expt + I(age*age) + I(first_irrad*first_irrad) + I(total_dose*total_dose) + I(fractions*fractions) + I(dose_rate*dose_rate) + age*sex + age*species + age*first_irrad + age*total_dose + age*radn + age*fractions + age*dose_rate + age*necrosopy_proctor + age*DOB + age*expt + sex*species + sex*first_irrad + sex*total_dose + sex*radn + sex*fractions + sex*dose_rate + sex*necrosopy_proctor + sex*DOB + sex*expt + species*first_irrad + species*total_dose + species*radn + species*fractions + species*dose_rate + species*necrosopy_proctor + species*DOB + species*expt + first_irrad*total_dose + first_irrad*radn + first_irrad*fractions + first_irrad*dose_rate + first_irrad*necrosopy_proctor + first_irrad*DOB + first_irrad*expt + total_dose*radn + total_dose*fractions + total_dose*dose_rate + total_dose*necrosopy_proctor + total_dose*DOB + total_dose*expt + radn*fractions + radn*dose_rate + radn*necrosopy_proctor + radn*DOB + radn*expt + fractions*dose_rate + fractions*necrosopy_proctor + fractions*DOB + fractions*expt + dose_rate*necrosopy_proctor + dose_rate*DOB + dose_rate*expt + necrosopy_proctor*DOB + necrosopy_proctor*expt + DOB*expt"
 formula_general_lifespan_i0 = f.builder$get_right_from_parameters(c(parameters_general_lifespan_i0))
-formula_general_lifespan_i1 = f.builder$get_right_from_parameters(c(parameters_general_lifespan_i0, parameters_general_lifespan_i1))
+formula_general_lifespan_i1 <- "sex + species + first_irrad + total_dose + radn + fractions + dose_rate + I(first_irrad*first_irrad) + I(total_dose*total_dose) + I(fractions*fractions) + I(dose_rate*dose_rate) + sex*species + sex*first_irrad + sex*total_dose + sex*radn + sex*fractions + sex*dose_rate + species*first_irrad + species*total_dose + species*radn + species*fractions + species*dose_rate + first_irrad*total_dose + first_irrad*radn + first_irrad*fractions + first_irrad*dose_rate + total_dose*radn + total_dose*fractions + total_dose*dose_rate + radn*fractions + radn*dose_rate + fractions*dose_rate"
 formula_complete_lifespan_i0 = f.builder$get_right_from_parameters(c(parameters_complete_lifespan_i0))
-formula_complete_lifespan_i1 = f.builder$get_right_from_parameters(c(parameters_complete_lifespan_i0, parameters_complete_lifespan_i1))
+formula_complete_lifespan_i1 <- "sex + species + first_irrad + total_dose + radn + fractions + dose_rate + necrosopy_proctor + DOB + expt + I(first_irrad*first_irrad) + I(total_dose*total_dose) + I(fractions*fractions) + I(dose_rate*dose_rate) + sex*species + sex*first_irrad + sex*total_dose + sex*radn + sex*fractions + sex*dose_rate + sex*necrosopy_proctor + sex*DOB + sex*expt + species*first_irrad + species*total_dose + species*radn + species*fractions + species*dose_rate + species*necrosopy_proctor + species*DOB + species*expt + first_irrad*total_dose + first_irrad*radn + first_irrad*fractions + first_irrad*dose_rate + first_irrad*necrosopy_proctor + first_irrad*DOB + first_irrad*expt + total_dose*radn + total_dose*fractions + total_dose*dose_rate + total_dose*necrosopy_proctor + total_dose*DOB + total_dose*expt + radn*fractions + radn*dose_rate + radn*necrosopy_proctor + radn*DOB + radn*expt + fractions*dose_rate + fractions*necrosopy_proctor + fractions*DOB + fractions*expt + dose_rate*necrosopy_proctor + dose_rate*DOB + dose_rate*expt + necrosopy_proctor*DOB + necrosopy_proctor*expt + DOB*expt"
 
 
 # Add the formula to our report
@@ -229,7 +241,7 @@ model_complete_lifespan_i1 <- lifespan.lm(formula_complete_lifespan_i1)
 # Helper functions
 #
 get.auc <- function(macro.model, subset){
-	predictions <- predict(macro.model, data[subset,])
+	predictions <- predict(macro.model, data[subset,], type="response")
 	positive <- predictions[data[subset,tumor.deaths]==TRUE]
 	negative <- predictions[data[subset,tumor.deaths]==FALSE]
 	auc <- mean(sample(positive,1e6,replace=T) > sample(negative,1e6,replace=T))
@@ -271,6 +283,115 @@ report$general_lifespan_i0_t_r2<- get.R2(model_general_lifespan_i0, training)
 report$general_lifespan_i1_t_r2<- get.R2(model_general_lifespan_i1, training)
 report$complete_lifespan_i0_t_r2<- get.R2(model_complete_lifespan_i0, training)
 report$complete_lifespan_i1_t_r2<- get.R2(model_complete_lifespan_i1, training)
+
+# Calculate standard deviations
+t_life <- data[training, lifespan]
+t_ss <- sum((t_life - mean(t_life))**2)
+report$sd_training <- (t_ss/length(t_life))**0.5
+v_life <- data[validation, lifespan]
+v_ss <- sum((v_life - mean(v_life))**2)
+report$sd_validation <- (v_ss/length(v_life))**0.5
+
+
+##############################################################################
+# 
+# GRAPHICAL REPRESENTATIONS
+#
+# We cannot capture all the variable's simultaneously, but we can explore
+# the relationship between dose and lethal tumorogenesis or lifespan.
+# Dave composed these charts to do that.
+#
+
+# Use the entire data set and aggregate by treatment
+#
+aggregation.factors <- c("total_dose","expt","radn","dose_rate","fractions")
+aggregate.by <- paste(aggregation.factors, collapse=" + ")
+all <- training | validation
+
+# Create aggregations
+#
+g_age <- aggregate( age ~ total_dose + expt + radn + dose_rate + fractions, data = data[validation,], mean)
+g_lethal_tumor <- aggregate( DIED.FROM.TUMOR ~ total_dose + expt + radn + dose_rate + fractions, data = data[all,], mean)
+g_count <- aggregate( age ~ total_dose + expt + radn + dose_rate + fractions, data = data[validation,], length)
+names(g_count)[which(names(g_count)=="age")] <- "count"
+
+g <- g_age
+g <- merge(g, g_count, by=aggregation.factors)
+g <- merge(g, g_sd, by=aggregation.factors)
+g <- merge(g, g_lethal_tumor, by=aggregation.factors)
+g <- merge(g, g_p_age_i0, by=aggregation.factors)
+
+
+# Create prediciton graphs for lethal tumor development
+#
+graph_t <- function(title, data, model, g, aggregation.factors){
+	data$prediction <- predict(model, data, type="response")
+	g_prediction <- aggregate( prediction ~ total_dose + expt + radn + dose_rate + fractions, data = data, mean)
+	g <- merge(g, g_prediction, by=aggregation.factors)
+	plot <- ggplot(melt(g, measure.vars=c("DIED.FROM.TUMOR", "prediction"))) +
+			geom_point(aes(total_dose, value, size=count, color=variable, alpha=0.4)) +
+			scale_x_log10('Total dose (cGy)') +
+			scale_y_continuous('Percent that died from tumors') +
+			facet_grid(.~radn) + 
+			opts(title = title)
+	return(plot)
+}
+
+graph_t(
+	"Predicting lethal tumors using treatment factors, species, and gender, and their interactions", 
+	data[validation,], model_general_macro_i1, g, aggregation.factors
+	)
+
+graph_t(
+	"Predicting lethal tumors as before while adding experiment number, date of birth, and necropsy proctor", 
+	data[validation,], model_complete_macro_i1, g, aggregation.factors
+	)	
+
+# Ben's talk
+# percent likelihood of dying of a tumor
+ggplot(g, aes(total_dose, DIED.FROM.TUMOR, size=count, color= radn)) + 
+	geom_point() +
+	facet_grid(.~radn) + 
+	scale_x_log10('Total dose (cGy)') +
+	scale_y_continuous('Chance of lethal tumor development') +
+	opts(title="Chance of lethal tumor development by dose")
+
+
+# Create prediction graphs for lifespan
+#
+graph_p <- function(title, data, model, g, aggregation.factors){
+	data$prediction <- predict(model, data)
+	g_prediction <- aggregate( prediction ~ total_dose + expt + radn + dose_rate + fractions, data = data, mean)
+	g <- merge(g, g_prediction, by=aggregation.factors)
+	plot <- ggplot(melt(g, measure.vars=c("age", "prediction"))) +
+			geom_point(aes(total_dose, value, size=count, color=variable, alpha=0.4)) +
+			scale_x_log10('Total dose (cGy)') +
+			scale_y_continuous('Lifespan (days)') +
+			facet_grid(.~radn) + 
+			opts(title = title)
+	return(plot)
+}
+
+#	predicting age with total dose
+#	single graph, experimental group averages
+ggplot(g, aes(total_dose, age, color=radn, size=count)) + 
+	geom_point() +
+	facet_grid(.~radn) + 
+	scale_x_log10('Total dose (cGy)') +
+	scale_y_continuous('Lifespan (days)') + 
+	opts(title="Age versus total dose by type of radiation")
+	
+
+graph_p(
+	"Predicting lifespan using treatment factors, species, and gender, and their interactions", 
+	data[validation,], model_general_lifespan_i1, g, aggregation.factors
+	)
+
+graph_p(
+	"Predicting lifespan as before while adding experiment number, date of birth, and necropsy proctor", 
+	data[validation,], model_complete_lifespan_i1, g, aggregation.factors
+	)
+
 
 
 

@@ -3,8 +3,8 @@
 #
 # For example it should be easy to produce formulas
 #
-#   y1 = x1 + x2 + x1*x1 + x1*x2 + x2*x2
-#   y2 = x1 + x2 + x1*x1 + x1*x2 + x2*x2
+#   y1 = x1 + x2 + I(x1^2) + x1*x2 + I(x2^2)
+#   y2 = x1 + x2 + I(x1^2) + x1*x2 + I(x2^2)
 #
 # starting from vectors c(y1, y2), c(x1, x2)
 #
@@ -20,28 +20,16 @@ f.builder <- list()
 f.builder$get_self_interactions <- function(parameter_vector){
 	combo_matrix <- t(combn(parameter_vector, 2))
 	outer_interactions <- paste(combo_matrix[,1], combo_matrix[,2], sep="*")
-	self_interactions <- paste(parameter_vector, parameter_vector, sep="*")
+	self_interactions <- paste("I(", parameter_vector, "*", parameter_vector, ")", sep="")
 	interactions <- c(self_interactions, outer_interactions)
 	return(interactions)
 }
 # Test 
 	f.builder$._input <- c("x1", "x2")
-	f.builder$._expected <- c("x1*x1", "x2*x2", "x1*x2")
+	f.builder$._expected <- c("I(x1*x1)", "I(x2*x2)", "x1*x2")
 	f.builder$._result <- f.builder$get_self_interactions(f.builder$._input)
 	stopifnot(identical(f.builder$._result, f.builder$._expected))
 
-# Ineractions between any two parameter vectors
-f.builder$get_interactions <- function(p1, p2){
-	combinations <- expand.grid(p1, p2)
-	interactions <- paste( combinations[[1]], combinations[[2]], sep="*" )
-	return(interactions)
-}
-# Test 
-	f.builder$._input1 <- c("x1", "x2")
-	f.builder$._input2 <- c("y1", "y2")
-	f.builder$._expected <- c("x1*y1", "x2*y1", "x1*y2", "x2*y2")
-	f.builder$._result <- f.builder$get_interactions(f.builder$._input1, f.builder$._input2)
-	stopifnot(identical(f.builder$._result, f.builder$._expected))
 
 # Take a vector of ys and a right model
 # and create all the output formula
@@ -85,8 +73,8 @@ f.builder$get_formula <- function(ys, xs, self.interaction=FALSE){
 f.builder$._input_xs <- c("x1", "x2")
 f.builder$._input_ys <- c("y1", "y2")
 f.builder$._expected <- c(
-						   "y1 ~ x1 + x2 + x1*x1 + x2*x2 + x1*x2",
-						   "y2 ~ x1 + x2 + x1*x1 + x2*x2 + x1*x2"
+						   "y1 ~ x1 + x2 + I(x1*x1) + I(x2*x2) + x1*x2",
+						   "y2 ~ x1 + x2 + I(x1*x1) + I(x2*x2) + x1*x2"
 						)
 f.builder$._result <- f.builder$get_formula(f.builder$._input_ys, f.builder$._input_xs, TRUE)
 stopifnot(identical(f.builder$._result, f.builder$._expected))
