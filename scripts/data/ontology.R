@@ -21,7 +21,7 @@ source('../data/translations.R')
 
 # A namespace
 ontology <- list()
-ontology$j.t <- translations$load('janus', from_cache=FALSE)
+ontology$j.t <- translations$load('janus', from_cache=TRUE)
 
 ontology$load_columns <- function(){
 	c <- list()
