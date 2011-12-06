@@ -96,10 +96,23 @@ data["DIED.FROM.TUMOR"] <- r$DIED_FROM_TUMOR
 lifespan <- c$LIFESPAN_DAYS
 tumor.deaths <- "DIED.FROM.TUMOR"
 
+# define gamma treatments for each animal
+data["gamma_dose"] <- 0
+data[data$radn == "G", "gamma_dose"] <- data[data$radn == "G", "total_dose"]
+data["gamma_rate"] <- 0
+data[data$radn == "G", "gamma_rate"] <- data[data$radn == "G", "dose_rate"]
+
+# define neutron treatments for each animal
+data["neutron_dose"] <- 0
+data[data$radn == "N", "neutron_dose"] <- data[data$radn == "N", "total_dose"]
+data["neutron_rate"] <- 0
+data[data$radn == "N", "neutron_rate"] <- data[data$radn == "N", "dose_rate"]
+
+
 # Define model parameters
 #
 age_parameters <- c("age")
-general_parameters <- c("sex", "species", "first_irrad", "total_dose", "radn", "fractions", "dose_rate")
+general_parameters <- c("sex", "species", "first_irrad", "neutron_dose", "gamma_dose", "neutron_rate", "gamma_rate", "fractions")
 specific_parameters <- c(c$MOCK_TREATEED, "necrosopy_proctor", "DOB", "expt")
 
 # Add independent variables
@@ -160,14 +173,26 @@ parameters_complete_lifespan_i1 = f.builder$get_self_interactions(parameters_com
 # I had to handcode these variables because:
 #   1.) formula's do not include age*age in model unless it is coded as I(age*age)
 #	2.) formulas reject I(sex*sex) because factors cannot be multiplied
+#
+# These are made using the following function, then hand edited to avoid multiplying factors
+# f.builder$get_right_from_parameters(parameters_general_macro_i1)
+#
+
 formula_general_macro_i0 = f.builder$get_right_from_parameters(c(parameters_general_macro_i0))
-formula_general_macro_i1 <- "age + sex + species + first_irrad + total_dose + radn + fractions + dose_rate + I(age*age) + I(first_irrad*first_irrad) + I(total_dose*total_dose) + I(fractions*fractions) + I(dose_rate*dose_rate) + age*sex + age*species + age*first_irrad + age*total_dose + age*radn + age*fractions + age*dose_rate + sex*species + sex*first_irrad + sex*total_dose + sex*radn + sex*fractions + sex*dose_rate + species*first_irrad + species*total_dose + species*radn + species*fractions + species*dose_rate + first_irrad*total_dose + first_irrad*radn + first_irrad*fractions + first_irrad*dose_rate + total_dose*radn + total_dose*fractions + total_dose*dose_rate + radn*fractions + radn*dose_rate + fractions*dose_rate"
+formula_general_macro_i1 <- paste( formula_general_macro_i0, "I(age*age) + I(first_irrad*first_irrad) + I(neutron_dose*neutron_dose) + I(gamma_dose*gamma_dose) + I(neutron_rate*neutron_rate) + I(gamma_rate*gamma_rate) + I(fractions*fractions) + age*sex + age*species + age*first_irrad + age*neutron_dose + age*gamma_dose + age*neutron_rate + age*gamma_rate + age*fractions + sex*species + sex*first_irrad + sex*neutron_dose + sex*gamma_dose + sex*neutron_rate + sex*gamma_rate + sex*fractions + species*first_irrad + species*neutron_dose + species*gamma_dose + species*neutron_rate + species*gamma_rate + species*fractions + first_irrad*neutron_dose + first_irrad*gamma_dose + first_irrad*neutron_rate + first_irrad*gamma_rate + first_irrad*fractions + neutron_dose*gamma_dose + neutron_dose*neutron_rate + neutron_dose*gamma_rate + neutron_dose*fractions + gamma_dose*neutron_rate + gamma_dose*gamma_rate + gamma_dose*fractions + neutron_rate*gamma_rate + neutron_rate*fractions + gamma_rate*fractions", sep = " + ")
+
+# old formula, 
+# TODO change back if gamma and neutron seperation seem stupid 
+# "age + sex + species + first_irrad + total_dose + radn + fractions + dose_rate + I(age*age) + I(first_irrad*first_irrad) + I(total_dose*total_dose) + I(fractions*fractions) + I(dose_rate*dose_rate) + age*sex + age*species + age*first_irrad + age*total_dose + age*radn + age*fractions + age*dose_rate + sex*species + sex*first_irrad + sex*total_dose + sex*radn + sex*fractions + sex*dose_rate + species*first_irrad + species*total_dose + species*radn + species*fractions + species*dose_rate + first_irrad*total_dose + first_irrad*radn + first_irrad*fractions + first_irrad*dose_rate + total_dose*radn + total_dose*fractions + total_dose*dose_rate + radn*fractions + radn*dose_rate + fractions*dose_rate"
 formula_complete_macro_i0 = f.builder$get_right_from_parameters(c(parameters_complete_macro_i0))
-formula_complete_macro_i1 <- "age + sex + species + first_irrad + total_dose + radn + fractions + dose_rate + necrosopy_proctor + DOB + expt + I(age*age) + I(first_irrad*first_irrad) + I(total_dose*total_dose) + I(fractions*fractions) + I(dose_rate*dose_rate) + age*sex + age*species + age*first_irrad + age*total_dose + age*radn + age*fractions + age*dose_rate + age*necrosopy_proctor + age*DOB + age*expt + sex*species + sex*first_irrad + sex*total_dose + sex*radn + sex*fractions + sex*dose_rate + sex*necrosopy_proctor + sex*DOB + sex*expt + species*first_irrad + species*total_dose + species*radn + species*fractions + species*dose_rate + species*necrosopy_proctor + species*DOB + species*expt + first_irrad*total_dose + first_irrad*radn + first_irrad*fractions + first_irrad*dose_rate + first_irrad*necrosopy_proctor + first_irrad*DOB + first_irrad*expt + total_dose*radn + total_dose*fractions + total_dose*dose_rate + total_dose*necrosopy_proctor + total_dose*DOB + total_dose*expt + radn*fractions + radn*dose_rate + radn*necrosopy_proctor + radn*DOB + radn*expt + fractions*dose_rate + fractions*necrosopy_proctor + fractions*DOB + fractions*expt + dose_rate*necrosopy_proctor + dose_rate*DOB + dose_rate*expt + necrosopy_proctor*DOB + necrosopy_proctor*expt + DOB*expt"
+formula_complete_macro_i1 <- paste(formula_complete_macro_i0, "I(age*age) + I(first_irrad*first_irrad) + I(neutron_dose*neutron_dose) + I(gamma_dose*gamma_dose) + I(neutron_rate*neutron_rate) + I(gamma_rate*gamma_rate) + I(fractions*fractions) + age*sex + age*species + age*first_irrad + age*neutron_dose + age*gamma_dose + age*neutron_rate + age*gamma_rate + age*fractions + age*necrosopy_proctor + age*DOB + age*expt + sex*species + sex*first_irrad + sex*neutron_dose + sex*gamma_dose + sex*neutron_rate + sex*gamma_rate + sex*fractions + sex*necrosopy_proctor + sex*DOB + sex*expt + species*first_irrad + species*neutron_dose + species*gamma_dose + species*neutron_rate + species*gamma_rate + species*fractions + species*necrosopy_proctor + species*DOB + species*expt + first_irrad*neutron_dose + first_irrad*gamma_dose + first_irrad*neutron_rate + first_irrad*gamma_rate + first_irrad*fractions + first_irrad*necrosopy_proctor + first_irrad*DOB + first_irrad*expt + neutron_dose*gamma_dose + neutron_dose*neutron_rate + neutron_dose*gamma_rate + neutron_dose*fractions + neutron_dose*necrosopy_proctor + neutron_dose*DOB + neutron_dose*expt + gamma_dose*neutron_rate + gamma_dose*gamma_rate + gamma_dose*fractions + gamma_dose*necrosopy_proctor + gamma_dose*DOB + gamma_dose*expt + neutron_rate*gamma_rate + neutron_rate*fractions + neutron_rate*necrosopy_proctor + neutron_rate*DOB + neutron_rate*expt + gamma_rate*fractions + gamma_rate*necrosopy_proctor + gamma_rate*DOB + gamma_rate*expt + fractions*necrosopy_proctor + fractions*DOB + fractions*expt + necrosopy_proctor*DOB + necrosopy_proctor*expt + DOB*expt", sep=" + ")
+# "age + sex + species + first_irrad + total_dose + radn + fractions + dose_rate + necrosopy_proctor + DOB + expt + I(age*age) + I(first_irrad*first_irrad) + I(total_dose*total_dose) + I(fractions*fractions) + I(dose_rate*dose_rate) + age*sex + age*species + age*first_irrad + age*total_dose + age*radn + age*fractions + age*dose_rate + age*necrosopy_proctor + age*DOB + age*expt + sex*species + sex*first_irrad + sex*total_dose + sex*radn + sex*fractions + sex*dose_rate + sex*necrosopy_proctor + sex*DOB + sex*expt + species*first_irrad + species*total_dose + species*radn + species*fractions + species*dose_rate + species*necrosopy_proctor + species*DOB + species*expt + first_irrad*total_dose + first_irrad*radn + first_irrad*fractions + first_irrad*dose_rate + first_irrad*necrosopy_proctor + first_irrad*DOB + first_irrad*expt + total_dose*radn + total_dose*fractions + total_dose*dose_rate + total_dose*necrosopy_proctor + total_dose*DOB + total_dose*expt + radn*fractions + radn*dose_rate + radn*necrosopy_proctor + radn*DOB + radn*expt + fractions*dose_rate + fractions*necrosopy_proctor + fractions*DOB + fractions*expt + dose_rate*necrosopy_proctor + dose_rate*DOB + dose_rate*expt + necrosopy_proctor*DOB + necrosopy_proctor*expt + DOB*expt"
 formula_general_lifespan_i0 = f.builder$get_right_from_parameters(c(parameters_general_lifespan_i0))
-formula_general_lifespan_i1 <- "sex + species + first_irrad + total_dose + radn + fractions + dose_rate + I(first_irrad*first_irrad) + I(total_dose*total_dose) + I(fractions*fractions) + I(dose_rate*dose_rate) + sex*species + sex*first_irrad + sex*total_dose + sex*radn + sex*fractions + sex*dose_rate + species*first_irrad + species*total_dose + species*radn + species*fractions + species*dose_rate + first_irrad*total_dose + first_irrad*radn + first_irrad*fractions + first_irrad*dose_rate + total_dose*radn + total_dose*fractions + total_dose*dose_rate + radn*fractions + radn*dose_rate + fractions*dose_rate"
+formula_general_lifespan_i1 <- paste(formula_general_lifespan_i0, "I(first_irrad*first_irrad) + I(neutron_dose*neutron_dose) + I(gamma_dose*gamma_dose) + I(neutron_rate*neutron_rate) + I(gamma_rate*gamma_rate) + I(fractions*fractions) + sex*species + sex*first_irrad + sex*neutron_dose + sex*gamma_dose + sex*neutron_rate + sex*gamma_rate + sex*fractions + species*first_irrad + species*neutron_dose + species*gamma_dose + species*neutron_rate + species*gamma_rate + species*fractions + first_irrad*neutron_dose + first_irrad*gamma_dose + first_irrad*neutron_rate + first_irrad*gamma_rate + first_irrad*fractions + neutron_dose*gamma_dose + neutron_dose*neutron_rate + neutron_dose*gamma_rate + neutron_dose*fractions + gamma_dose*neutron_rate + gamma_dose*gamma_rate + gamma_dose*fractions + neutron_rate*gamma_rate + neutron_rate*fractions + gamma_rate*fractions", sep=" + ")
+# "sex + species + first_irrad + total_dose + radn + fractions + dose_rate + I(first_irrad*first_irrad) + I(total_dose*total_dose) + I(fractions*fractions) + I(dose_rate*dose_rate) + sex*species + sex*first_irrad + sex*total_dose + sex*radn + sex*fractions + sex*dose_rate + species*first_irrad + species*total_dose + species*radn + species*fractions + species*dose_rate + first_irrad*total_dose + first_irrad*radn + first_irrad*fractions + first_irrad*dose_rate + total_dose*radn + total_dose*fractions + total_dose*dose_rate + radn*fractions + radn*dose_rate + fractions*dose_rate"
 formula_complete_lifespan_i0 = f.builder$get_right_from_parameters(c(parameters_complete_lifespan_i0))
-formula_complete_lifespan_i1 <- "sex + species + first_irrad + total_dose + radn + fractions + dose_rate + necrosopy_proctor + DOB + expt + I(first_irrad*first_irrad) + I(total_dose*total_dose) + I(fractions*fractions) + I(dose_rate*dose_rate) + sex*species + sex*first_irrad + sex*total_dose + sex*radn + sex*fractions + sex*dose_rate + sex*necrosopy_proctor + sex*DOB + sex*expt + species*first_irrad + species*total_dose + species*radn + species*fractions + species*dose_rate + species*necrosopy_proctor + species*DOB + species*expt + first_irrad*total_dose + first_irrad*radn + first_irrad*fractions + first_irrad*dose_rate + first_irrad*necrosopy_proctor + first_irrad*DOB + first_irrad*expt + total_dose*radn + total_dose*fractions + total_dose*dose_rate + total_dose*necrosopy_proctor + total_dose*DOB + total_dose*expt + radn*fractions + radn*dose_rate + radn*necrosopy_proctor + radn*DOB + radn*expt + fractions*dose_rate + fractions*necrosopy_proctor + fractions*DOB + fractions*expt + dose_rate*necrosopy_proctor + dose_rate*DOB + dose_rate*expt + necrosopy_proctor*DOB + necrosopy_proctor*expt + DOB*expt"
+formula_complete_lifespan_i1 <- paste(formula_complete_lifespan_i0, "I(first_irrad*first_irrad) + I(neutron_dose*neutron_dose) + I(gamma_dose*gamma_dose) + I(neutron_rate*neutron_rate) + I(gamma_rate*gamma_rate) + I(fractions*fractions) + sex*species + sex*first_irrad + sex*neutron_dose + sex*gamma_dose + sex*neutron_rate + sex*gamma_rate + sex*fractions + sex*necrosopy_proctor + sex*DOB + sex*expt + species*first_irrad + species*neutron_dose + species*gamma_dose + species*neutron_rate + species*gamma_rate + species*fractions + species*necrosopy_proctor + species*DOB + species*expt + first_irrad*neutron_dose + first_irrad*gamma_dose + first_irrad*neutron_rate + first_irrad*gamma_rate + first_irrad*fractions + first_irrad*necrosopy_proctor + first_irrad*DOB + first_irrad*expt + neutron_dose*gamma_dose + neutron_dose*neutron_rate + neutron_dose*gamma_rate + neutron_dose*fractions + neutron_dose*necrosopy_proctor + neutron_dose*DOB + neutron_dose*expt + gamma_dose*neutron_rate + gamma_dose*gamma_rate + gamma_dose*fractions + gamma_dose*necrosopy_proctor + gamma_dose*DOB + gamma_dose*expt + neutron_rate*gamma_rate + neutron_rate*fractions + neutron_rate*necrosopy_proctor + neutron_rate*DOB + neutron_rate*expt + gamma_rate*fractions + gamma_rate*necrosopy_proctor + gamma_rate*DOB + gamma_rate*expt + fractions*necrosopy_proctor + fractions*DOB + fractions*expt + necrosopy_proctor*DOB + necrosopy_proctor*expt + DOB*expt", sep=" + ")
+# "sex + species + first_irrad + total_dose + radn + fractions + dose_rate + necrosopy_proctor + DOB + expt + I(first_irrad*first_irrad) + I(total_dose*total_dose) + I(fractions*fractions) + I(dose_rate*dose_rate) + sex*species + sex*first_irrad + sex*total_dose + sex*radn + sex*fractions + sex*dose_rate + sex*necrosopy_proctor + sex*DOB + sex*expt + species*first_irrad + species*total_dose + species*radn + species*fractions + species*dose_rate + species*necrosopy_proctor + species*DOB + species*expt + first_irrad*total_dose + first_irrad*radn + first_irrad*fractions + first_irrad*dose_rate + first_irrad*necrosopy_proctor + first_irrad*DOB + first_irrad*expt + total_dose*radn + total_dose*fractions + total_dose*dose_rate + total_dose*necrosopy_proctor + total_dose*DOB + total_dose*expt + radn*fractions + radn*dose_rate + radn*necrosopy_proctor + radn*DOB + radn*expt + fractions*dose_rate + fractions*necrosopy_proctor + fractions*DOB + fractions*expt + dose_rate*necrosopy_proctor + dose_rate*DOB + dose_rate*expt + necrosopy_proctor*DOB + necrosopy_proctor*expt + DOB*expt"
 
 
 # Add the formula to our report
@@ -315,22 +340,24 @@ g_lethal_tumor <- aggregate( DIED.FROM.TUMOR ~ total_dose + expt + radn + dose_r
 g_count <- aggregate( age ~ total_dose + expt + radn + dose_rate + fractions, data = data[validation,], length)
 names(g_count)[which(names(g_count)=="age")] <- "count"
 
+# Compose g
+#
 g <- g_age
 g <- merge(g, g_count, by=aggregation.factors)
-g <- merge(g, g_sd, by=aggregation.factors)
+# g <- merge(g, g_sd, by=aggregation.factors)
 g <- merge(g, g_lethal_tumor, by=aggregation.factors)
-g <- merge(g, g_p_age_i0, by=aggregation.factors)
+# g <- merge(g, g_p_age_i0, by=aggregation.factors)
 
 
 # Create prediciton graphs for lethal tumor development
 #
 graph_t <- function(title, data, model, g, aggregation.factors){
-	data$prediction <- predict(model, data, type="response")
-	g_prediction <- aggregate( prediction ~ total_dose + expt + radn + dose_rate + fractions, data = data, mean)
-	g <- merge(g, g_prediction, by=aggregation.factors)
-	plot <- ggplot(melt(g, measure.vars=c("DIED.FROM.TUMOR", "prediction"))) +
-			geom_point(aes(total_dose, value, size=count, color=variable, alpha=0.4)) +
-			scale_x_log10('Total dose (cGy)') +
+	data$predicted_lethal_tumors <- predict(model, data, type="response")
+	g_predicted_lethal_tumors <- aggregate( predicted_lethal_tumors ~ total_dose + expt + radn + dose_rate + fractions, data = data, mean)
+	g <- merge(g, g_predicted_lethal_tumors, by=aggregation.factors)
+	plot <- ggplot(melt(g, measure.vars=c("DIED.FROM.TUMOR", "predicted_lethal_tumors"))) +
+			geom_point(aes(total_dose, value, size=count, color=variable), alpha=0.4) +
+			scale_x_log10('Total dose (cGy)', breaks=c(1, 10, 100, 1000)) +
 			scale_y_continuous('Percent that died from tumors') +
 			facet_grid(.~radn) + 
 			opts(title = title)
@@ -338,21 +365,21 @@ graph_t <- function(title, data, model, g, aggregation.factors){
 }
 
 graph_t(
-	"Predicting lethal tumors using treatment factors, species, and gender, and their interactions", 
+	"Predicting lethal tumors with general factors", 
 	data[validation,], model_general_macro_i1, g, aggregation.factors
 	)
 
 graph_t(
-	"Predicting lethal tumors as before while adding experiment number, date of birth, and necropsy proctor", 
+	"Predicting lethal tumors with all factors", 
 	data[validation,], model_complete_macro_i1, g, aggregation.factors
 	)	
 
 # Ben's talk
 # percent likelihood of dying of a tumor
 ggplot(g, aes(total_dose, DIED.FROM.TUMOR, size=count, color= radn)) + 
-	geom_point() +
+	geom_point(alpha=0.4) +
 	facet_grid(.~radn) + 
-	scale_x_log10('Total dose (cGy)') +
+	scale_x_log10('Total dose (cGy)', breaks=c(1,10,100,1000)) +
 	scale_y_continuous('Chance of lethal tumor development') +
 	opts(title="Chance of lethal tumor development by dose")
 
@@ -360,12 +387,12 @@ ggplot(g, aes(total_dose, DIED.FROM.TUMOR, size=count, color= radn)) +
 # Create prediction graphs for lifespan
 #
 graph_p <- function(title, data, model, g, aggregation.factors){
-	data$prediction <- predict(model, data)
-	g_prediction <- aggregate( prediction ~ total_dose + expt + radn + dose_rate + fractions, data = data, mean)
-	g <- merge(g, g_prediction, by=aggregation.factors)
-	plot <- ggplot(melt(g, measure.vars=c("age", "prediction"))) +
-			geom_point(aes(total_dose, value, size=count, color=variable, alpha=0.4)) +
-			scale_x_log10('Total dose (cGy)') +
+	data$predicted_age <- predict(model, data)
+	g_predicted_age <- aggregate( predicted_age ~ total_dose + expt + radn + dose_rate + fractions, data = data, mean)
+	g <- merge(g, g_predicted_age, by=aggregation.factors)
+	plot <- ggplot(melt(g, measure.vars=c(actual_age="age", "predicted_age"))) +
+			geom_point(aes(total_dose, value, size=count, color=variable), alpha=0.4) +
+			scale_x_log10('Total dose (cGy)', breaks=c(1, 10, 100, 1000)) +
 			scale_y_continuous('Lifespan (days)') +
 			facet_grid(.~radn) + 
 			opts(title = title)
@@ -375,23 +402,120 @@ graph_p <- function(title, data, model, g, aggregation.factors){
 #	predicting age with total dose
 #	single graph, experimental group averages
 ggplot(g, aes(total_dose, age, color=radn, size=count)) + 
-	geom_point() +
+	geom_point(alpha=0.4) +
 	facet_grid(.~radn) + 
-	scale_x_log10('Total dose (cGy)') +
+	scale_x_log10('Total dose (cGy)', breaks=c(1, 10, 100, 1000)) +
 	scale_y_continuous('Lifespan (days)') + 
 	opts(title="Age versus total dose by type of radiation")
 	
 
 graph_p(
-	"Predicting lifespan using treatment factors, species, and gender, and their interactions", 
+	"Predicting lifespan using general factors", 
 	data[validation,], model_general_lifespan_i1, g, aggregation.factors
 	)
 
 graph_p(
-	"Predicting lifespan as before while adding experiment number, date of birth, and necropsy proctor", 
+	"Predicting lifespan using all factors", 
 	data[validation,], model_complete_lifespan_i1, g, aggregation.factors
 	)
 
 
+# Build artificial data set for prediction
+
+# Add control
+p_data <- expand.grid(
+						sex=c("M", "F"),
+						species=c("Mus musculus"),
+						first_irrad=c(120),
+						fractions=c(1),
+						radn=c("N", "G"),
+						neutron_dose=seq(0, 1),
+						neutron_rate=c(0),
+						gamma_dose=c(0, 1),
+						gamma_rate=c(0)
+)
+# Add Neutrons
+p_data <- rbind(p_data, expand.grid(
+						sex=c("M", "F"),
+						species=c("Mus musculus"),
+						first_irrad=c(120),
+						fractions=c(1),
+						radn=c("N"),
+						neutron_dose=seq(1, 100, 1),
+						neutron_rate=c(0.01, 3, 10),
+						gamma_dose=c(0),
+						gamma_rate=c(0)
+))
+
+# Add gamma doses
+p_data <- rbind(p_data, expand.grid(
+						sex=c("M", "F"),
+						species=c("Mus musculus"),
+						first_irrad=c(120),
+						fractions=c(1),
+						radn=c("G"),
+						neutron_dose=c(0),
+						neutron_rate=c(0),
+						gamma_dose=seq(10, 1000, 10),
+						gamma_rate=c(0.01, 3, 10)
+))
+
+# Remove bad points
+p_data <- p_data[!(p_data$radn=="N" & p_data$fractions==1 & !(p_data$neutron_dose == 0) & (((p_data$neutron_dose + 0.0001) / (p_data$neutron_rate + 0.0001)) < 10)),]
+p_data <- p_data[!(p_data$radn=="N" & p_data$fractions==10 & !(p_data$neutron_dose == 0) & (((p_data$neutron_dose + 0.0001) / (p_data$neutron_rate +0.0001)) < 100)),]
+p_data <- p_data[!(p_data$radn=="G" & p_data$fractions==1 & !(p_data$gamma_dose == 0) & (((p_data$gamma_dose + 0.0001) / (p_data$gamma_rate +0.0001)) < 10)),]
+p_data <- p_data[!(p_data$radn=="G" & p_data$fractions==10 & !(p_data$gamma_dose == 0) & (((p_data$gamma_dose + 0.0001) / (p_data$gamma_rate +0.0001)) < 100)),]
+
+# Merge doses and dose rate axis
+p_data$total_dose <- 0
+p_data$total_dose[p_data$radn=="G"] <- p_data$gamma_dose[p_data$radn=="G"]
+p_data$total_dose[p_data$radn=="N"] <- p_data$neutron_dose[p_data$radn=="N"]
+p_data$dose_rate <- 0
+p_data$dose_rate[p_data$radn=="G"] <- p_data$gamma_rate[p_data$radn=="G"]
+p_data$dose_rate[p_data$radn=="N"] <- p_data$neutron_rate[p_data$radn=="N"]
+
+# add predictions
+p_data$age_prediction <- predict(model_general_lifespan_i1, p_data)
+
+# merge factors
+p_data$dose_rate <- as.factor(paste( 
+													p_data$dose_rate,
+													" cGy/min, ", 
+													sep=""
+												  ))
+# Sort levels for presentation
+levels(p_data$dose_rate) <- c("0 cGy/min, ", "0.01 cGy/min, ", "3 cGy/min, ", "10 cGy/min, " )
+												  
+# Predict age
+ggplot(p_data, aes(x=total_dose, y=age_prediction, color=dose_rate)) +
+			geom_path() +
+			facet_grid(radn ~ sex) +
+			scale_x_log10('Total dose (cGy)', breaks=c(1,10,100,1000), limits=c(1, 1000)) + 
+			ylim(0, 1600)
 
 
+
+
+# Display range of our data
+ggplot( 
+		data[training & data$species=="Mus musculus",], 
+		aes(x=(total_dose + 1), y=(dose_rate + 1), color=radn, size=sqrt(fractions + 1), alpha=(1/(fractions + 1)))
+	  ) + 
+	geom_point() + 
+	scale_x_log10(limits=c(.1, 5000)) + 
+	scale_y_log10(limits=c(.1, 40))
+
+
+
+# Display range of prediction data
+# to verify it is not crazy
+ggplot(
+		p_data, 
+		aes((total_dose + 1), (dose_rate + 1), color=radn, size=fractions, alpha=(1/(fractions + 1)))
+	  ) +
+	geom_point() + 
+	scale_x_log10(limits=c(.1, 5000)) + 
+	scale_y_log10(limits=c(.1, 40))
+
+
+	
