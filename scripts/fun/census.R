@@ -5,28 +5,41 @@
 # A test to try the census data loading package
 #
 # inspired by 
-#				http://stats.stackexchange.com/questions/12670/data-apis-feeds-available-as-packages-in-r
+#   http://stats.stackexchange.com/questions/12670/data-apis-feeds-available-as-packages-in-r
 #
 # documentation at 
-#					http://cran.r-project.org/web/packages/UScensus2000tract/UScensus2000tract.pdf
+#   http://cran.r-project.org/web/packages/UScensus2000tract/UScensus2000tract.pdf
 #
 # bmh Nov 2011
 # 
 ###############################################################################
 
 # Install the package
-#
 source('../util/package.R') 
-package$load(c("UScensus2000"))
+package$load(c("UScensus2000", "ggplot2"))
 
-# Load data about any state
-#
-data(new_york.tract)
+# load ggplot maps
+try_require("maps")
 
-# See population demographics by tract (about 5000 people/tract)
-#
-head(new_york.tract@data)
+# load data
+data(illinois.cdp)
 
-# There is also tract geospacial data that can be used for mapping
-# but I can't play with it for lack of X11 support.  I really need
-# to fix this one day.
+# assemble coordinates and population 
+# by census designated place (cdp)
+d <- cbind(
+	data.frame(coordinates(illinois.cdp)),
+	data.frame(illinois.cdp),
+	p.not.white=(1 - illinois.cdp$white / illinois.cdp$pop2000)
+	)
+	
+# plot illinois racial breakdown
+qplot(
+	X1, X2, data=d, 
+	geom="point", 
+	size=pop2000, 
+	alpha=p.not.white
+	) + 
+	opts(title = expression("Ethnicity by area"))
+
+
+
