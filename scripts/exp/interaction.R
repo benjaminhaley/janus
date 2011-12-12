@@ -82,12 +82,9 @@ validation.vector <- runif(nrow(data)) < validation.percentage
 #
 # Only data with macro codes and documented experiments
 # will be analyzed.
-# exp 8 removed because its dose labels are incorrect
-# exp 11 removed because it is not documented in the Janus report
-# HC is removed because it behaves so strangely
 #
-training <- r$HAS_MACRO & !validation.vector & (data$exp != 11) & (data$exp != 8) & (data$tmt != "HC")
-validation <- r$HAS_MACRO & validation.vector & (data$exp != 11) & (data$exp != 8) & (data$tmt != "HC")
+training <- r$HAS_MACRO & !validation.vector & (data$exp != 11)
+validation <- r$HAS_MACRO & validation.vector & (data$exp != 11)
 
 # Define the outcomes, lifespan
 # and animals which died from tumors
@@ -483,9 +480,7 @@ p_data$dose_rate <- as.factor(paste(
 													" cGy/min, ", 
 													sep=""
 												  ))
-# Sort levels for presentation
-levels(p_data$dose_rate) <- c("0 cGy/min, ", "0.01 cGy/min, ", "3 cGy/min, ", "10 cGy/min, " )
-												  
+							  
 # Predict age
 ggplot(p_data, aes(x=total_dose, y=age_prediction, color=dose_rate)) +
 			geom_path() +
