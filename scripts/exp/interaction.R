@@ -18,6 +18,8 @@ source('../util/package.R')
 source('../util/select.R')
 package$load('ggplot2')
 
+# set working directory
+setwd('janus/scripts/exp')
 
 #############################################################################
 #
@@ -82,9 +84,12 @@ validation.vector <- runif(nrow(data)) < validation.percentage
 #
 # Only data with macro codes and documented experiments
 # will be analyzed.
+# JM-11 is removed because it is undocumented
+# JM-8 is removed because lifetime doses
+#   i.e. doses are correlated with lifepan
 #
-training <- r$HAS_MACRO & !validation.vector & (data$exp != 11)
-validation <- r$HAS_MACRO & validation.vector & (data$exp != 11)
+training <- r$HAS_MACRO & !validation.vector & (data$exp != 11) & (data$exp != 8)
+validation <- r$HAS_MACRO & validation.vector & (data$exp != 11) & (data$exp != 8)
 
 # Define the outcomes, lifespan
 # and animals which died from tumors
