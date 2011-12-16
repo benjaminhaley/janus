@@ -1,3 +1,11 @@
 #Anything in the data folder
 data/*
+
+# Any private keys
 scripts/keys/*
+
+# Ignore Apples's folder customization file 
+.DS_Store
+
+# Ignore R history
+.Rapp.history
