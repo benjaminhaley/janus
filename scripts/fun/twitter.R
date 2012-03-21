@@ -15,7 +15,7 @@
 ###############################################################################
 
 # Install the package
-source('../util/package.R') 
+source('scripts/util/package.R') 
 package$load(c("twitteR", "ggplot2", "reshape"))
 
 # Get today's trends

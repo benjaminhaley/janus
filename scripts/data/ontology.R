@@ -5,7 +5,7 @@
 
 # USAGE
 # *note - assumes you have loaded 'data' object that fits this ontology
-# source('../data/ontology.R')
+# source('scripts/data/ontology.R')
 # c <- ontology$load_columns()
 # r <- ontology$load_rows(data)
 # data[r$NEUTRON,c$MACROS_]
@@ -13,7 +13,7 @@
 # ...there are many other selectors shown below
 
 # Load translations
-source('../data/translations.R')
+source('scripts/data/translations.R')
 
 # TODO: this should include an option to turn off caching
 #       in general caching should be controlled by the calling

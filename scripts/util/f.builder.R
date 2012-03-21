@@ -8,6 +8,17 @@
 #
 # starting from vectors c(y1, y2), c(x1, x2)
 #
+# Basic usage:
+#
+#     source('scripts/util/f.builder.R')
+#     ys = c("y1", "y2")
+#     xs = c("x1", "x2")
+#     f.builder$get_formula(ys, xs, outer.interaction=TRUE, self.interaction=TRUE)
+#
+#     output:
+#         "y1 ~ x1 + x2 + I(x1*x1) + I(x2*x2) + x1*x2" 
+#         "y2 ~ x1 + x2 + I(x1*x1) + I(x2*x2) + x1*x2"
+#
 # bmh Nov 2011
 
 
@@ -16,17 +27,25 @@ f.builder <- list()
 
 
 
-# All possible interactions in a parameter vector 
-f.builder$get_self_interactions <- function(parameter_vector){
+# Interactions between partners (not self interactions)
+f.builder$get_outer_interactions <- function(parameter_vector){
 	combo_matrix <- t(combn(parameter_vector, 2))
-	outer_interactions <- paste(combo_matrix[,1], combo_matrix[,2], sep="*")
-	self_interactions <- paste("I(", parameter_vector, "*", parameter_vector, ")", sep="")
-	interactions <- c(self_interactions, outer_interactions)
+	interactions <- paste(combo_matrix[,1], combo_matrix[,2], sep="*")
 	return(interactions)
 }
 # Test 
 	f.builder$._input <- c("x1", "x2")
-	f.builder$._expected <- c("I(x1*x1)", "I(x2*x2)", "x1*x2")
+	f.builder$._expected <- c("x1*x2")
+	f.builder$._result <- f.builder$get_outer_interactions(f.builder$._input)
+	stopifnot(identical(f.builder$._result, f.builder$._expected))
+
+f.builder$get_self_interactions <- function(parameter_vector){
+	interactions <- paste("I(", parameter_vector, "*", parameter_vector, ")", sep="")
+	interactions	
+}
+# Test 
+	f.builder$._input <- c("x1", "x2")
+	f.builder$._expected <- c("I(x1*x1)", "I(x2*x2)")
 	f.builder$._result <- f.builder$get_self_interactions(f.builder$._input)
 	stopifnot(identical(f.builder$._result, f.builder$._expected))
 
@@ -59,10 +78,14 @@ f.builder$._result <- f.builder$get_right_from_parameters(f.builder$._input)
 stopifnot(identical(f.builder$._result, f.builder$._expected))
 
 # A quick way to get a series of formulas
-f.builder$get_formula <- function(ys, xs, self.interaction=FALSE){
+f.builder$get_formula <- function(ys, xs, outer.interactions=FALSE, self.interactions=FALSE){
 	parameters <- xs
-	if(self.interaction){
+	if(self.interactions){
 		interactions <- f.builder$get_self_interactions(xs)
+		parameters <- c(parameters, interactions)
+	}
+	if(outer.interactions){
+		interactions <- f.builder$get_outer_interactions(xs)
 		parameters <- c(parameters, interactions)
 	}
 	right_side <- f.builder$get_right_from_parameters(parameters)
@@ -76,6 +99,6 @@ f.builder$._expected <- c(
 						   "y1 ~ x1 + x2 + I(x1*x1) + I(x2*x2) + x1*x2",
 						   "y2 ~ x1 + x2 + I(x1*x1) + I(x2*x2) + x1*x2"
 						)
-f.builder$._result <- f.builder$get_formula(f.builder$._input_ys, f.builder$._input_xs, TRUE)
+f.builder$._result <- f.builder$get_formula(f.builder$._input_ys, f.builder$._input_xs, TRUE, TRUE)
 stopifnot(identical(f.builder$._result, f.builder$._expected))
 

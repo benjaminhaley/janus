@@ -3,8 +3,8 @@
 
 
 # load the janus data
-source('../data/data.R')
-source('../data/ontology.R')
+source('scripts/data/data.R')
+source('scripts/data/ontology.R')
 
 # Define the dataset under analysis
 data <- data$load('janus', from_cache=TRUE)
@@ -20,14 +20,14 @@ p.cage <- cage[r$PER.L]
 # Generate histogram of the count of fighting
 # deaths by cage
 fit.count.by.cage <- aggregate(p.fit, by=list(p.cage), FUN=sum)[[2]]
-pdf("../../Analysis/fighting_deaths_by_cage.pdf")
+pdf("analysis/fighting_deaths_by_cage.pdf")
 hist(fit.count.by.cage)
 dev.off()
 
 # Generate a permuted graph for comparison
 p2.fit <- sample(p.fit)
 fit.count.by.cage <- aggregate(p2.fit, by=list(p.cage), FUN=sum)[[2]]
-pdf("../../Analysis/fighting_deaths_by_cage_permute.pdf")
+pdf("analysis/fighting_deaths_by_cage_permute.pdf")
 hist(fit.count.by.cage)
 dev.off()
 

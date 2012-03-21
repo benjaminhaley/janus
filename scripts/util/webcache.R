@@ -9,19 +9,19 @@
 # if the header does not conform to its expectations.
 # 
 # USE
-# source('../util/webcache.R')
+# source('scripts/util/webcache.R')
 # url <- http://example.zip
 # filepath <- webcache$get(url)
 # TRUE == webcache$is_current(url)
 # 
 # bmh Sept 2011
 
-source('../util/package.R')
+source('scripts/util/package.R')
 dependencies = "RCurl"
 package$load(dependencies)
 
 webcache = list()
-webcache$.__DATA_DIR = '../../data/'
+webcache$.__DATA_DIR = 'data/'
 
 webcache$get <- function(uris){
 	local_paths <- mapply(webcache$.__get_one, uris)
@@ -78,8 +78,8 @@ webcache$.__url_2_time_filepath <- function(url){
 url <- "http://example.com"
 filepath <- webcache$.__url_2_filepath(url)
 time_filepath <- webcache$.__url_2_time_filepath(url)
-stopifnot(filepath == "../../data/http%3a%2f%2fexample.com") 
-stopifnot(time_filepath == "../../data/http%3a%2f%2fexample.com.time.rds") 
+stopifnot(filepath == "data/http%3a%2f%2fexample.com") 
+stopifnot(time_filepath == "data/http%3a%2f%2fexample.com.time.rds") 
 
 # We need functions to track when a file was cached
 #

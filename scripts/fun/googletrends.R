@@ -15,7 +15,7 @@
 ###############################################################################
 
 # Install the package
-source('../util/package.R') 
+source('scripts/util/package.R') 
 package$load(c("RGoogleTrends", "ggplot2", "reshape"))
 
 # Update

@@ -10,10 +10,10 @@ j.data <- list()
 
 # Dependencies 
 #
-source('../util/webcache.R')
-source('../data/ontology.R')
-source('../util/localcache.R')
-source('../util/zipfile.R')
+source('scripts/util/webcache.R')
+source('scripts/data/ontology.R')
+source('scripts/util/localcache.R')
+source('scripts/util/zipfile.R')
 c <- ontology$load_columns()
 
 # Configuration
@@ -41,36 +41,11 @@ j.data$load <- function(from_cache=FALSE){
 		uris <- j.data$.__get_uris()
 		zip_paths <- webcache$get(uris)
 		csv_paths <- zipfile$unzip(zip_paths)
-		raw_data <- j.data$.__csv2data.frame(csv_paths, j.data$.__TABLE.HEADER.ROWS)
-		data <- j.data$.__normalize(raw_data)
+		data <- j.data$.__csv2data.frame(csv_paths, j.data$.__TABLE.HEADER.ROWS)
+		names(data) <- j.data$.__get_normalized_names(names(data))
 		localcache$save(data, j.data$.__CACHED.NAME) 
 	}
 
-	return(data)
-}
-
-# Convert types where needed
-#
-j.data$.__normalize <- function(raw_data){
-	data <- raw_data
-	names(data) <- j.data$.__get_normalized_names(names(data))
-	data[['necroscopy_date']] <- as.Date(data[['necroscopy_date']], format="%Y-%m-%d" )
-	data[['expt']] <- as.factor(data[['expt']])
-	data[["sex"]] <- as.factor(data[["sex"]])
-	data[["species"]] <- as.factor(data[["species"]])
-	data[["radn"]] <- as.factor(data[["radn"]])
-	data[["necrosopy_proctor"]] <- as.factor(data[["necrosopy_proctor"]])
-
-	# We will add in macros which are not presented in the dataset
-	missing_macros <- c$MACROS_[!c$MACROS_ %in% colnames(data)]
-	empty_matrix <- matrix(nrow=nrow(data), ncol=length(missing_macros))
-	colnames(empty_matrix) <- missing_macros
-	data <- cbind(data, empty_matrix)
-	data[c$MACROS_] <- data.frame(mapply(function(column){
-		column[is.na(column)] <- c(FALSE)
-		return(column)
-	},data[c$MACROS_]))
-	data[is.na(data[,c$MOCK_TREATED]), c$MOCK_TREATED] <- FALSE
 	return(data)
 }
 

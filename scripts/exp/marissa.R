@@ -3,16 +3,17 @@
 # bmh Oct 2011
 
 # Load the janus data
-source('../data/data.R')
+setwd('janus')
+source('scripts/data/data.R')
 data <- data$load('janus', from_cache=TRUE)
 
 # Some helper functions
-source('../util/freq.R')
-source('../util/odds_ratio.R')
-source("../util/package.R")
+source('scripts/util/freq.R')
+source('scripts/util/odds_ratio.R')
+source("scripts/util/package.R")
 
 # Load the annotations
-source('../data/ontology.R')
+source('scripts/data/ontology.R')
 c <- ontology$load_columns()
 r <- ontology$load_rows(data)
 

@@ -7,7 +7,7 @@
 # bmh Sept 2011
 #
 # Usage 
-#   source("../util/package.R")
+#   source("scripts/util/package.R")
 #   dependencies <- "RCurl"
 #   package$load(dependencies)
 #

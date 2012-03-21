@@ -5,11 +5,11 @@
 # bmh Oct 2011
 # 
 # Usage:
-#	source('../util/zipfile.R')
+#	source('scripts/util/zipfile.R')
 #   filepaths <- zipfile$unzip(c("file1.zip", "file2.zip"))
 
 zipfile <- list()
-zipfile$.__DATA.DIR <- '../../data/'
+zipfile$.__DATA.DIR <- 'data/'
 
 zipfile$unzip <- function(zip_paths){
 	file_paths <- mapply(function(zip_path){

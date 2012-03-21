@@ -2,7 +2,7 @@
 # codes used in the janus studies. 
 # Written by Ben Haley in October of 2011.
 # Usage:
-#   source('../data/load_janus_translations.R')
+#   source('scripts/data/load_janus_translations.R')
 #	t <- j.translations$load(from_cache=TRUE)
 #   t$get_description(c("NTYG_L", "PNC_N"))
 
@@ -12,9 +12,9 @@ j.translations <- list()
 
 # Dependencies 
 #
-source('../util/webcache.R')
-source('../util/localcache.R')
-source('../util/zipfile.R')
+source('scripts/util/webcache.R')
+source('scripts/util/localcache.R')
+source('scripts/util/zipfile.R')
 
 # Configuration
 #

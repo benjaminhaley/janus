@@ -15,7 +15,7 @@
 ###############################################################################
 
 # Install the package
-source('../util/package.R') 
+source('scripts/util/package.R') 
 package$load(c("WDI", "ggplot2", "reshape"))
 
 # list first 10 indicators

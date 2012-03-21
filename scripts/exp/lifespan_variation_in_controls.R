@@ -9,7 +9,7 @@
 # 
 	# Report location
 	#
-		data.summary.file <- "../analysis/bmh_janus_control_summary.txt"
+		data.summary.file <- "analysis/bmh_janus_control_summary.txt"
 
 	#
 	# Load Data

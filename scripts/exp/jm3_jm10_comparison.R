@@ -274,8 +274,8 @@ glm.result <- function( formula, data )
 	gamma.report <- data.frame( gamma.result, row.names=names(gamma.result[[1]]) )
 	neutron.report <- data.frame( neutron.result, row.names=names(neutron.result[[1]]) )
 
-	write.csv( gamma.report , "../analysis/jm10_vs_jm3_gamma.csv" )
-	write.csv( neutron.report , "../analysis/jm10_vs_jm3_neutron.csv" )
+	write.csv( gamma.report , "analysis/jm10_vs_jm3_gamma.csv" )
+	write.csv( neutron.report , "analysis/jm10_vs_jm3_neutron.csv" )
 	
 
 # Produce a table of grouped pathological outcomes 
@@ -314,7 +314,7 @@ glm.result <- function( formula, data )
 		species=data$demographics$species, 
 		dose=data$dose.description 
 	)
-	write.csv( report , "../analysis/jm3_jm10_outcome_counts.csv" )
+	write.csv( report , "analysis/jm3_jm10_outcome_counts.csv" )
 
 
 

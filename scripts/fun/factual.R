@@ -16,11 +16,11 @@
 ###############################################################################
 
 # Install the package
-source('../util/package.R') 
+source('scripts/util/package.R') 
 package$load(c("rdatamarket", "ggplot2"))
 
 # need a devoloper key
-key <- source('../keys/factual')[[1]]
+key <- source('scripts/keys/factual')[[1]]
 
 # Connect to factual
 factual <- createFactualConnection(key)

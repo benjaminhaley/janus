@@ -13,7 +13,7 @@
 
 # Install the package
 #
-source('../util/package.R') 
+source('scripts/util/package.R') 
 package$load(c("zoo"))
 
 # Load data about any state

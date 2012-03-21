@@ -4,7 +4,7 @@
 # bmh Oct 2011
 #
 # Usage:
-#   source('../util/localcache.R')
+#   source('scripts/util/localcache.R')
 #   object <- list(1,2,3)
 #   objectname <- "Cool R shit"
 #   localcache$save(object, objectname)
@@ -15,7 +15,7 @@
 # A namspace
 localcache <- list()
 
-localcache$.__CACHED.DIR <- "../../data/"
+localcache$.__CACHED.DIR <- "data/"
 
 localcache$is_cached <- function(objectname){
 	filepath <- localcache$.__get_filepath(objectname)

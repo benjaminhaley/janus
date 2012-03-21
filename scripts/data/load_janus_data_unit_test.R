@@ -11,7 +11,7 @@
 
 # Basic Usage
 # Load a fresh copy of the data
-source('../data/load_janus_data.R')
+source('scripts/data/load_janus_data.R')
 data <- j.data$load(from_cache=TRUE)
 
 # CACHE TEST - slow

@@ -11,11 +11,11 @@
 # dp - added ggplot graphing code
 
 # load dependencies
-source('../data/data.R')
-source('../data/ontology.R')
-source('../util/f.builder.R')
-source('../util/package.R')
-source('../util/select.R')
+source('scripts/data/data.R')
+source('scripts/data/ontology.R')
+source('scripts/util/f.builder.R')
+source('scripts/util/package.R')
+source('scripts/util/select.R')
 package$load('ggplot2')
 
 # set working directory
