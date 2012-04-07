@@ -634,6 +634,7 @@
 		formula       <- f.builder$get_formula("age_days", model.factors)
 		model         <- glm( formula, data = df[df$set == 'train',])
 		df$p          <- predict(model, df)
+		
 		df
 	})
     write.table(daply(data, .(species), function(df){
@@ -802,10 +803,13 @@
 	cost$show(data$age_days, data$p, data$set, cost$r2)      # "cost 0.621 over-fit by -0.0536"
 	plot_p(val())
 	plot_all(val())
+	cost$show(data$age_days, data$p, data$set, cost$r2)
 	write.table(daply(data, .(species), function(df){
 		cost$show(df$age_days, df$p, df$set, cost$r2)
 	}))
 
+#   Overall               "cost 0.577 overfit by -0.0738"       (0.336 before)
+#
 #   "beagle"              "cost 0.589 over-fit by -0.123"       (0.56 before)
 #   "Mus musculus"        "cost 0.311 over-fit by -0.000453"    (0.293 before)
 #   "Peromyscus leucopus" "cost 0.0612 over-fit by -0.0583"     (0.0674 before)

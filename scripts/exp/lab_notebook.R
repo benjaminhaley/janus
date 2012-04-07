@@ -17,6 +17,12 @@
 	hash <- function(object) {
 		digest(object, "md5")
 	}
+	checkpoint <- function(object, previous_hash) {
+        if(! identical(hash(object), previous_hash)) {
+        	print("Checkpoint Failed, the object has changed")
+        }
+	}
+
 
 #   Because this work is chronological, dependencies and constants will
 #   be loaded as they are used.  It may be necessary to cleanup existing data
@@ -26,7 +32,64 @@
     run_all = FALSE       # set to true to run every script all time
     
 #
-#   Often I will want to reference outside resources.  This is completely fine.
 #
 ##############################################################################
+#
+# 20 March 2012 - generalize overview
+#
+#    Last week I ran a preliminary analysis in the generalize vein.  It is
+#    available in the script 'generalize.R'.  The main result is that gbm
+#    modeling did the best, but that inter-species effects were not helpful
+#    and my ignorance of censoring made the data difficult to interepret.
+#    For example it looked as if control dogs lived less than treatment dogs
+#    but this is probably owing to the fact that they were assigned as control
+#    dogs at birth whereas treatment dogs were not assigned to their treatment
+#    until they reached a certain minimum age.  Similarly, animals that were 
+#    given a huge number of fractions were sometimes predicted to live longer.
+#    However, this is a result of the fact that they had to live such a long 
+#    time to recieve so many fractions.  In the future, I will try to predict
+#    how long an animal will live past assignment to a treatment condition given
+#    their current age.  I will not include how much of a treatment the animal
+#    lived to recieve, just what condition they were assigned to.
+#
+#    A copy of this script as it is when this was written is available at:
+#       http://bit.ly/GHU1Jb
+#
+##############################################################################
+#
+# 21 March 2012 - lifespan from survival times
+#
+#    One of the problems I ran into in the generalize report was my inability
+#    to predict lifespan on a validation set using cox regressions.  Today I
+#    will try to do that again, because I need to be able to prove it is
+#    possible so that I can address my thesis aim, showing how the current models
+#    predict lifespan.
 
+	setwd('~/janus')						# All includes rely on this
+	source('scripts/data/data.R')			# loads janus and beagle data
+	source("scripts/util/package.R")		# load and install libraries
+	source("scripts/util/cv.R")             # build test and validation sets
+	source("scripts/util/cost.R")           # How to calculate common cost functions
+	
+	package$load(c(
+		"survival"                          # Calculate survival curves
+	))
+
+	data   <- data$load(from_cache=TRUE)    # load janus data
+	data   <- data[data$experiment == 2,]   # lets limit ourselves to experiment 2
+	data   <- cv$subset(data, 0.2, 0)       # make validation set	
+	data$p <- 0                             # Set up predictions column
+	
+	# Be sure we know that the underlying data is stable
+	checkpoint(data, "64edb7e743e8c1ac6324e7884303b888")
+	
+	# Now lets build a cox model on the training set
+	data$sex <- factor(data$sex)
+	model <- coxph(Surv(age_days) ~ sex, data[data$set == "train",])
+	h0 <- survfit(model, newdata=data.frame(sex="F"), se.fit=FALSE, conf.type="none")
+	h0$dt <- h0$time - c(0, h0$time[1:length(h0$time) - 1])
+	mean <- sum(h0$dt * h0$surv)
+	plot(h0, xlab="Days", ylab="Survival")
+	
+	
+aaply(1:100, function(a){length(unique(sample(1:4, 12, replace =TRUE))) == 4})

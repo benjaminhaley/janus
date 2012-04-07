@@ -9,3 +9,4 @@ scripts/keys/*
 
 # Ignore R history
 .Rapp.history
+
