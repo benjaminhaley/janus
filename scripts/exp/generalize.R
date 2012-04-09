@@ -908,18 +908,33 @@
 #     The rates I found are dubious.  When I derive it on my own, it seems clear
 #     that they were showing the cumulative hazard rate.  
 
-	my.hazard           <- count(data$age_days)
-	names(my.hazard)    <- c("time", "deaths")
-	my.hazard$surviving <- sum(my.hazard$deaths) - cumsum(my.hazard$deaths)
-	my.hazard$dt        <- c(my.hazard$time[2:nrow(my.hazard)] - 
-	                         my.hazard$time[1:nrow(my.hazard) - 1], 1e100)
-	my.hazard$hazard    <- my.hazard$deaths / (my.hazard$dt * my.hazard$surviving)
+	hazards_table <- function(timings) {
+		haz_table         <- count(timings)
+		names(haz_table)  <- c("time", "events")
+		
+		# Add in the zero time point if it is not already there
+		if(min(haz_table$time) > 0) { haz_table <- rbind(c(0,0), haz_table)}
+		
+		surviving         <- sum(haz_table$events) - cumsum(haz_table$events)
+		haz_table$dt      <- c(haz_table$time[2:nrow(haz_table)] - 
+		                       haz_table$time[1:nrow(haz_table) - 1], 1e100)
+		haz_table$hazard  <- haz_table$events / (haz_table$events + surviving)
+		                   
+		haz_table
+	}
+	
+	my.hazard <- hazards_table(data$age_days)
 	
 	ggplot(my.hazard[1:2000,]) + 
 		geom_point(aes(time, hazard), size=0.5, alpha=0.5)
 	
 	head(my.hazard)
 	tail(my.hazard)
+	
+# One thing to note here is that dt is not constant,
+# so the hazard rate is defined over different emails
+# this is nice for the math, but perhaps decieving at 
+# first glance.
 
 
 # Median Lifespan
@@ -929,14 +944,32 @@
 	haz.median         <- function(time, hazard) {
 		                      n        <- length(time)
 		                      dt       <- c(time[2:n] - time[1:n - 1], 1e100)
-                              survival <- cumprod((1 - hazard)^dt)
+                              survival <- 1 - cumprod(1 - hazard)
                               median   <- time[which.min(abs(survival - 0.5))]
-                              median
+                                                            
+                              median                              
+                          }
+    
+    haz.median(time=c(0,2,5), hazard=c(1/4, 1/3, 1)) == 2
+    
+	haz.median(my.hazard$time, my.hazard$hazard); median(data$age_days)
+
+# Mean lifespan
+#
+#     Lets take another crack, this time at means.
+
+	haz.mean           <- function(time, hazard) {
+		                      n        <- length(time)
+		                      dt       <- c(time[2:n] - time[1:n - 1], 1e100)
+                              survival <- cumprod(1 - hazard)
+                              mean     <- sum((dt * survival)[1:length(dt) - 1])
+                              
+                              mean
                           }
                           
-    median <- haz.median(my.hazard$time, my.hazard$hazard)
-
-	median; median(data$age_days)
+    haz.mean(time=c(0,2,5), hazard=c(1/4, 1/3, 1)) == 2 
+    
+    haz.mean(my.hazard$time, my.hazard$hazard); mean(data$age_days)
 		
 # Simple Cox
 #
@@ -968,13 +1001,13 @@
 		model <- coxph(Surv(df$age_days) ~ sex, data = df)
 
 		df$p  <- aaply(model$linear.predictors, 1, function(x){
-	                 haz.median(my.hazard$time, my.hazard$hazard * exp(x))
+	                 haz.mean(my.hazard$time, my.hazard$hazard * exp(x))
 	             })
 		df
 	})
 	
 	# more stabalizers
-	cost$show(data$age_days, data$p, data$set, cost$r2)      # "cost -0.00571 overfit by -0.000879"
+	cost$show(data$age_days, data$p, data$set, cost$r2)      # "cost 0.000042 overfit by -0.000401"
 	                                                         # best 0.621
 	plot_p(val())
 	plot_all(val())
@@ -982,15 +1015,46 @@
 		cost$show(df$age_days, df$p, df$set, cost$r2)
 	}))
 	
-	
+
 # Interaction Hazards 
 #
 #     Lets trying getting a decent performance using the interaction models.
 
+		
+	my.hazard <- hazards_table(data$age_days)
+		
+	formula <- f.builder$get_formula("Surv(data$age_days)", model.factors)
+	model <- coxph(formula(formula), data = data)
+
+	data$p  <- aaply(model$linear.predictors, 1, function(x){
+                 haz.median(my.hazard$time, my.hazard$hazard * exp(x))
+             })
+	
+	# more stabalizers
+	cost$show(data$age_days, data$p, data$set, cost$r2)      # "cost -0.0503 overfit by 0.0482"
+	                                                         # best 0.621
+	plot_p(val())
+	plot_all(val())
+	write.table(daply(data, .(species), function(df){
+		cost$show(df$age_days, df$p, df$set, cost$r2)
+	}))
+
+
+#   "beagle"              "cost -0.622 over-fit by  0.0768"     (0.589 best)
+#   "Mus musculus"        "cost  0.256 over-fit by  0.0107"     (0.311 best)
+#   "Peromyscus leucopus" "cost -0.322 over-fit by  0.0436"     (0.0612 best)
+#
+	
+# Interaction Hazards by species
+#
+#     Lets trying getting a decent performance using the interaction models.
+
 	data <- ddply(data, .(species), function(df){
+		
+		my.hazard <- hazards_table(df$age_days)
 			
 		formula <- f.builder$get_formula("Surv(df$age_days)", model.factors)
-		model <- coxph(formula(formula) ~ sex, data = df)
+		model <- coxph(formula(formula), data = df)
 
 		df$p  <- aaply(model$linear.predictors, 1, function(x){
 	                 haz.median(my.hazard$time, my.hazard$hazard * exp(x))
@@ -999,7 +1063,7 @@
 	})
 	
 	# more stabalizers
-	cost$show(data$age_days, data$p, data$set, cost$r2)      # 
+	cost$show(data$age_days, data$p, data$set, cost$r2)      # "cost 0.286 overfit by 0.0184"
 	                                                         # best 0.621
 	plot_p(val())
 	plot_all(val())
@@ -1008,26 +1072,10 @@
 	}))
 
 
-		model.factors <- c(model.factors, outer, inner)
-		formula <- f.builder$get_formula("Surv(data$age_days)", model.factors)
-		
-		
-		formula <- f.builder$get_formula("Surv(data[data$species == 'beagle',]$age_days)", model.factors)
-		model <- coxph(formula(formula) 
-		, data = data[data$species == "beagle",])
-		val.predict  <- aaply(model$linear.predictors[data$species == "beagle"], 1, function(x){
-                        haz.median(my.hazard$time, my.hazard$hazard * exp(x))
-                    })
-                    
-        table(val.predict)
-	
-		if(df$species[[1]] == "Peromyscus leucopus"){
-			model.factors <- model.factors[! model.factors %in% c("species", "sex")]
-		}
-		formula       <- f.builder$get_formula("age_days", model.factors)
-		model         <- glm( formula, data = df[df$set == 'train',])
-		df$p          <- predict(model, df)
-		df
+#   "beagle"              "cost 0.0106 over-fit by  0.0345"     (0.589 best)
+#   "Mus musculus"        "cost 0.28   over-fit by  0.0162"     (0.311 best)
+#   "Peromyscus leucopus" "cost 0.0485 over-fit by -0.0378"     (0.0612 best)
+#
 
-
-
+#    It is interesting to learn that the mean measurement is unstable.  I am forced to use
+#    the median.

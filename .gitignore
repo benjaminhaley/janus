@@ -10,3 +10,5 @@ scripts/keys/*
 # Ignore R history
 .Rapp.history
 
+# Ignore Autosaved files
+*(Autosaved)*
