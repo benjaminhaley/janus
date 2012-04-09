@@ -814,6 +814,7 @@
 #   This suggests that we still have a ways to go to find the perfect model and we
 #   still are not at an ideal model where the results of one species can inform another.
 
+
 #
 # Future directions
 #
@@ -889,173 +890,144 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-### bric-a-brac ##############################################################
-
-# Miscellaneous drivle that I might want to use in the future
-# Built a cost model
-# haz.cost <- function(timings, hazards) {
-	# # sort by increasing timing
-	# hazards <- hazards[order(timings)]
-	# timings <- timings[order(timings)]
-	
-	# L  <- sum(hazards - log(cumsum(hazards)))
-	# L
-# }
-
-# # A nice survival function
-# survive <- function(timings) {
-	# n <- length(timings)
-	# u <- unique(timings)
-	
-	# u.survival <- sapply(u, function(time){sum(timings > time) / n})
-	
-	# survival <- sapply(timings, function(t){u.survival[which(u == t)]})
-	# survival
-# }
-
-# events <- function(timings) {
-	# u <- unique(timings)
-	
-	# u.events <- sapply(u, function(time){sum(timings == time)})
-	# events <- sapply(timings, function(t){u.events[which(u == t)]})
-	# events
-# }
-
-# hazard <- function(timings) {
-	# hazard <- events(timings) / survive(timings)
-	# hazard
-# }
-
-# cum.hazard <- function(timings) {
-	# -log(survive(timings))
-# }
-
-# First lets see what our total survival curve looks like
+# Survival
+#     Here I want to use cox regressions to predict lifespan.
 #
-# ggplot() +
- 	# geom_step(
- 		# data=ddply(data, .(), function(d){d$p <- survive(d$age_days); d}), 
- 		# aes(y=p, x=age_days)) + 
- 	# scale_y_continuous("% surviving")
-# #
-# # Its obvious that we have two populations and lots of datasets.
-# #
-# # What if we break them apart by species
-# #
-# ggplot() +
-	# geom_step(
- 		# data=ddply(data, .(), function(d){d$p <- survive(d$age_days); d}), 
- 		# aes(y=p, x=age_days)) +
- 	# geom_step(
- 		# data=ddply(data, .(species), function(d){d$p <- survive(d$age_days); d}), 
- 		# aes(y=p, x=age_days, colour=species)) + 
- 	# scale_y_continuous("% surviving")
-# #
-# # And how well do the training and validation sets overlap
-# #
-# ggplot() +
- 	# geom_step(
- 		# data=ddply(data, .(set), function(d){d$p <- survive(d$age_days); d}), 
- 		# aes(y=p, x=age_days, colour=set)) + 
- 	# scale_y_continuous("% surviving")
-# #
-# # At this broad scale they overlap excellently
-# #
-# # How about the effects of radiation?
-# #
-# ggplot() +
-	# geom_step(
- 		# data=ddply(data, .(), function(d){d$p <- survive(d$age_days); d}), 
- 		# aes(y=p, x=age_days)) +
- 	# geom_step(
- 		# data=ddply(data, .(experiment), function(d){d$p <- survive(d$age_days); d}), 
- 		# aes(y=p, x=age_days, colour=experiment)) + 
- 	# scale_y_continuous("% surviving")
-# # These seem more self coherent.
+# Hazards
+#
+#     I will start by building the simplest model that I can and using it to 
+#     derive the baseline hazard function.  This will be useful for all 
+#     subsequent models.
 
-# 	* note: model matrix is helpful for finding the guys with only one factor
-#           formula <- f.builder$get_formula("", model.factors.4)
-#           a <- data.frame(model.matrix(as.formula(formula), data[set == 'train',]))
-#           llply(a, function(c){print(length(unique(c)))})
+	hazard <- basehaz(coxph(Surv(data$age_days) ~ 1, data = data))
+	ggplot(hazard) + 
+		geom_point(aes(time, hazard))
+
+# My Hazards
+#
+#     The rates I found are dubious.  When I derive it on my own, it seems clear
+#     that they were showing the cumulative hazard rate.  
+
+	my.hazard           <- count(data$age_days)
+	names(my.hazard)    <- c("time", "deaths")
+	my.hazard$surviving <- sum(my.hazard$deaths) - cumsum(my.hazard$deaths)
+	my.hazard$dt        <- c(my.hazard$time[2:nrow(my.hazard)] - 
+	                         my.hazard$time[1:nrow(my.hazard) - 1], 1e100)
+	my.hazard$hazard    <- my.hazard$deaths / (my.hazard$dt * my.hazard$surviving)
+	
+	ggplot(my.hazard[1:2000,]) + 
+		geom_point(aes(time, hazard), size=0.5, alpha=0.5)
+	
+	head(my.hazard)
+	tail(my.hazard)
 
 
-# # Fit a cox model to all of the data 
-# a <- coxph(Surv(age_days) ~ species, data[set == 'train',])
-# b <- survfit(
-	# a 
-	# , newdata=data[set == 'val' & as.numeric(rownames(data)) %% 17 == 0,]
-	# , se.fit = FALSE
-	# , conf.type = FALSE
-	# )
-# c <- survfit(a)
-# ggplot() +
- 	# geom_step(aes(y=-log(c$surv), x=c$time))
-# plot(b, conf.int=FALSE, mark.time=FALSE)
-# # 
-# # Determine the cost on the validation set
-# #
-# hazards <- predict(a, data[set == 'val',], type="risk")
-# timings <- data[set == 'val', 'age_days']
-# cost(timings, hazards)
-# # species = -62885.73
-# # + experiment = -63344.23
-# # + first_ex.. = -63339.47
-# # + gamma_to.. = -63875.65
-# # + neutron..  = -64381.54
-# # + neuton_rate= -64547.41
-# #
-# # Ok, we've seen the cost, what would the resulting survival curve look like?
-# #
+# Median Lifespan
+#
+#     Lets try using cox to find the median lifespans
 
-	# ggplot(
-		# data=data[set=="val",], 
-		# aes(y=survive(age_days), x=age_days)
-	# ) +
- 	# geom_step() +
- 	# opts(title=title) +
- 	# scale_x_continuous("age in days") +
- 	# scale_y_continuous("# surviving")
+	haz.median         <- function(time, hazard) {
+		                      n        <- length(time)
+		                      dt       <- c(time[2:n] - time[1:n - 1], 1e100)
+                              survival <- cumprod((1 - hazard)^dt)
+                              median   <- time[which.min(abs(survival - 0.5))]
+                              median
+                          }
+                          
+    median <- haz.median(my.hazard$time, my.hazard$hazard)
+
+	median; median(data$age_days)
+		
+# Simple Cox
+#
+#     Now lets build a simple species based model and calculate the median age
+#     for each species 
+#
+#     * note:
+#         We only use validation predictions because predicting the whole set
+#         is slow.
+
+	model        <- coxph(Surv(data$age_days) ~ species, data = data)
+	val.predict  <- aaply(model$linear.predictors[data$set == "val"], 1, function(x){
+	                        haz.median(my.hazard$time, my.hazard$hazard * exp(x))
+	                    })
+	                    
+	data.frame(
+		predict=head(val.predict, 20), 
+		age=head(val()$age_days, 20), 
+		species=head(val()$species, 20)
+		)
+
+# Simple Cox - Stim to stern
+#
+#     The final step here is to add the species stratification and outcome
+#     measurements.  We will add sex this time as species is irrelevant.
+
+	data <- ddply(data, .(species), function(df){
+			
+		model <- coxph(Surv(df$age_days) ~ sex, data = df)
+
+		df$p  <- aaply(model$linear.predictors, 1, function(x){
+	                 haz.median(my.hazard$time, my.hazard$hazard * exp(x))
+	             })
+		df
+	})
+	
+	# more stabalizers
+	cost$show(data$age_days, data$p, data$set, cost$r2)      # "cost -0.00571 overfit by -0.000879"
+	                                                         # best 0.621
+	plot_p(val())
+	plot_all(val())
+	write.table(daply(data, .(species), function(df){
+		cost$show(df$age_days, df$p, df$set, cost$r2)
+	}))
+	
+	
+# Interaction Hazards 
+#
+#     Lets trying getting a decent performance using the interaction models.
+
+	data <- ddply(data, .(species), function(df){
+			
+		formula <- f.builder$get_formula("Surv(df$age_days)", model.factors)
+		model <- coxph(formula(formula) ~ sex, data = df)
+
+		df$p  <- aaply(model$linear.predictors, 1, function(x){
+	                 haz.median(my.hazard$time, my.hazard$hazard * exp(x))
+	             })
+		df
+	})
+	
+	# more stabalizers
+	cost$show(data$age_days, data$p, data$set, cost$r2)      # 
+	                                                         # best 0.621
+	plot_p(val())
+	plot_all(val())
+	write.table(daply(data, .(species), function(df){
+		cost$show(df$age_days, df$p, df$set, cost$r2)
+	}))
 
 
-
-# hist(p)
-
-	# ggplot(
-		# data=data[set == 'train',], 
-		# aes(y=survive(p), x=p)
-	# ) +
- 	# geom_step() +
- 	# geom_step(
- 		# aes(y=survive(age_days), x=age_days)
- 		# )
- 	# opts(title=title) +
- 	# scale_x_continuous("age in days") +
- 	# scale_y_continuous("% survival")
-# plot(survfit(a))
-
-
-# # A simple model as a filler
-# model <- glm(
-	# age_days ~ cgy_total_neutron + cgy_total_gamma + species + experiment,
-	# data = data
-# )
-
-# # Make prediction
-# data$p <- predict(model, data)
-# data$r2 <- (age_days - p)^2
-
-# # quantify how we did
-# cost$show(data)
+		model.factors <- c(model.factors, outer, inner)
+		formula <- f.builder$get_formula("Surv(data$age_days)", model.factors)
+		
+		
+		formula <- f.builder$get_formula("Surv(data[data$species == 'beagle',]$age_days)", model.factors)
+		model <- coxph(formula(formula) 
+		, data = data[data$species == "beagle",])
+		val.predict  <- aaply(model$linear.predictors[data$species == "beagle"], 1, function(x){
+                        haz.median(my.hazard$time, my.hazard$hazard * exp(x))
+                    })
+                    
+        table(val.predict)
+	
+		if(df$species[[1]] == "Peromyscus leucopus"){
+			model.factors <- model.factors[! model.factors %in% c("species", "sex")]
+		}
+		formula       <- f.builder$get_formula("age_days", model.factors)
+		model         <- glm( formula, data = df[df$set == 'train',])
+		df$p          <- predict(model, df)
+		df
 
 
 
