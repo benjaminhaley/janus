@@ -308,9 +308,9 @@
 	mouse   <- function(){data[data$species == 'Mus musculus',]} 
 	peromyscus <- function(){data[data$species == 'Peromyscus leucopus',]}  
 	
-	plot_all <- function(data, y=NULL, x=NULL) {
+	plot_all <- function(data, x=NULL, y=NULL) {
 		
-		if(! is.null(y)){ data$y <- y }            # Allow the user to override x and y
+		if(! is.null(y)){ data$p <- y }            # Allow the user to override x and y
 		if(! is.null(x)){ data$age_days <- x }
 		
 		data$sieverts <- 0.01 * data$cgy_total_gamma + 10*0.01*data$cgy_total_neutron
@@ -331,7 +331,7 @@
 	
 	
 	}
-	plot_all(val())
+	#plot_all(val())
 	
 	plot_p <- function(data) {
 		ggplot() + 
@@ -344,6 +344,11 @@
 	# Prediction object to store results as we go
 	#
 	predictions <- data.frame()
+	
+	#
+	# Also save summaries of the models
+	#
+	summaries <- list()
 
 
 
@@ -481,8 +486,9 @@
 	model  <- glm( formula, data=train())
 	data$p <- predict(model, data)
 	
-#   Archive the prediction
+#   Archive the results
 	predictions$simple.linear <- data$p
+	summaries <- c(summaries, linear.model=paste(capture.output(summary(model)), collapse="\r\n"))
 
 #   Next we measure the cost
 
@@ -642,20 +648,35 @@
 #   From these r2 values we can infer that our performance will probably improve
 #   if we build a model for each species seperately.  We test that inference next.
 #
-	data <- ddply(data, .(species), function(df){
+
+	# Build models
+	m <- 
+	dlply(data, .(species), function(df){
 		model.factors <- model.factors[! model.factors %in% c("species")]
 		if(df$species[[1]] == "Peromyscus leucopus"){
 			model.factors <- model.factors[! model.factors %in% c("species", "sex")]
 		}
 		formula       <- f.builder$get_formula("age_days", model.factors)
 		model         <- glm( formula, data = df[df$set == 'train',])
-		df$p          <- predict(model, df)
-		df
+		
+		model
 	})
 	
-#   Archive the prediction
-	predictions$simple.linear.by.species <- data$p
+	# Make predictions	
+	data <- ddply(data, .(species), function(df){
+		df$p <- predict(m[[df$species[1]]], df)
+		
+		df
+	})
+
+	# Summarize
+	s <- 
+	laply(m, function(model){paste(capture.output(summary(model)), collapse="\r\n")})
+	names(s) <- paste("linear.model", names(s), sep=".")
+	summaries <- c(summaries, s)
 	
+    # Archive the results
+	predictions$simple.linear.by.species <- data$p
 	
     write.table(daply(data, .(species), function(df){
     	cost$show(df$age_days, df$p, df$set, cost$r2)
@@ -696,8 +717,10 @@
     model  <- glm( formula, data = data[data$set == 'train',])
     data$p <- predict(model, data)
     
-#   Archive the prediction
+    # archive the results
 	predictions$linear.interactions <- data$p
+	summaries <- c(summaries, linear.interactions=paste(capture.output(summary(model)), collapse="\r\n"))
+
 
     cost$show(data$age_days, data$p, data$set, cost$r2)          
 #
@@ -716,7 +739,10 @@
 #    much.  It appears that separating by species already delivered most of the value.
 #    But what happens if we model each species independently using this interaction model?
 #
-	data <- ddply(data, .(species), function(df){
+
+	# Make models
+	m <- 
+	dlply(data, .(species), function(df){
 		model.factors <- model.factors[! model.factors %in% c("species")]
 		outer.factors <- model.factors[! model.factors %in% c("experiment" , "sex")]
 		inner.factors <- model.factors[! model.factors %in% c("experiment", "species", "sex")]
@@ -730,15 +756,32 @@
 		}
 		formula       <- f.builder$get_formula("age_days", model.factors)
 		model         <- glm( formula, data = df[df$set == 'train',])
-		df$p          <- predict(model, df)
+		
+		model
+	})
+	
+	# Make predictions	
+	data <- 
+	ddply(data, .(species), function(df){
+		df$p <- predict(m[[df$species[1]]], df)
+		
 		df
 	})
-	predictions$linear.interactions.by.species <- data$p	
+	
+	# archive results
+	predictions$lin.inter.by.sp <- data$p	
+	s <- laply(m, function(model){paste(capture.output(summary(model)), collapse="\r\n")})
+	names(s) <- paste("lin.inter.by.sp", names(s), sep=".")
+	summaries <- c(summaries, s)
+		
+	# show results
 	plot_p(val())
 	cost$show(data$age_days, data$p, data$set, cost$r2)
 	write.table(daply(data, .(species), function(df){
 		cost$show(df$age_days, df$p, df$set, cost$r2)
 	}))
+	
+
 #
 #   Overall               "cost 0.336 overfit by 0.00434"
 #
@@ -768,8 +811,9 @@
 #   revisit this script again.  But just to show what a strong modeling technique this 
 #   is we will run it.
 
-	# more stabilizers
-	set.seed(69)
+
+	# build models
+	set.seed(69)                          # stabalize results
 	trees <- 500
 	model   <- gbm(
 		formula = as.formula(f.builder$get_formula("age_days", model.factors)),
@@ -782,9 +826,16 @@
 		cv.folds = 5,
 		verbose = TRUE
 	)
+	
+	# Make predictions
 	best.iter <- gbm.perf(model, method="cv")
 	data$p <- predict(model, data, best.iter)
-	predictions$gbm <- data$p	
+	
+	# Archive results
+	predictions$gbm <- data$p
+	summaries <- c(summaries, gbm=paste(capture.output(summary(model)), collapse="\r\n") )
+	
+	# Print results	
 	cost$show(data$age_days, data$p, data$set, cost$r2)      
 #
 #   "cost 0.559 over-fit by -0.0574"    (0.384 before)
@@ -807,7 +858,10 @@
 #
 #   If we train our models species by species
 #
-	data <- ddply(data, .(species), function(df){
+
+	# build models
+	m <- 
+	dlply(data, .(species), function(df){
 		set.seed(69)
 		trees <- 500
 		model   <- gbm(
@@ -821,12 +875,27 @@
 			cv.folds = 5,
 			verbose = TRUE
 		)
+		
+		model
+	})
+	
+	# Make predictions	
+	data <- 
+	ddply(data, .(species), function(df){
+		model <- m[[df$species[1]]]
 		best.iter <- gbm.perf(model, method="cv")
 		df$p <- predict(model, df, best.iter)
+
 		df
 	})
 	
+	# archive results
 	predictions$gbm.by.species <- data$p	
+	s <- laply(m, function(model){paste(capture.output(summary(model)), collapse="\r\n")})
+	names(s) <- paste("gbm.by.sp", names(s), sep=".")
+	summaries <- c(summaries, s)	
+	
+	
 	cost$show(data$age_days, data$p, data$set, cost$r2)      # "cost 0.577 over-fit by -0.0738"
 	plot_p(val())
 	plot_all(val())
@@ -1007,28 +1076,43 @@
 #
 #     Lets trying getting a decent performance using the interaction models.
 
-	data <- ddply(data, .(species), function(df){
-		
-		my.hazard <- hazards_table(df$age_days)
-			
+
+	# build models
+	m <- 
+	dlply(data, .(species), function(df){
+					
 		formula <- f.builder$get_formula("Surv(df$age_days)", model.factors)
 		model <- coxph(formula(formula), data = df)
+		
+		model
+	})
+
+	# Make predictions	
+	data <- 
+	ddply(data, .(species), function(df){
+		model <- m[[df$species[1]]]
+		my.hazard <- hazards_table(df$age_days)
 
 		df$p  <- aaply(model$linear.predictors, 1, function(x){
 	                 haz.median(my.hazard$time, my.hazard$hazard * exp(x))
 	             })
 		df
 	})
+	
+	# archive results
+	predictions$cox.inter.by.sp <- data$p	
+	s <- laply(m, function(model){paste(capture.output(summary(model)), collapse="\r\n")})
+	names(s) <- paste("cox.inter.by.sp", names(s), sep=".")
+	summaries <- c(summaries, s)
 
-	predictions$cox.interactions.by.species <- data$p	
-	cost$show(data$age_days, data$p, data$set, cost$r2)      # "cost 0.286 overfit by 0.0184"
+	# show results
+	cost$show(data$age_days, data$p, data$set, cost$r2)      # "cost 0.203 overfit by 0.0116"
 	                                                         # best 0.621
 	plot_p(val())
 	plot_all(val())
 	write.table(daply(data, .(species), function(df){
 		cost$show(df$age_days, df$p, df$set, cost$r2)
 	}))
-
 
 #   "beagle"              "cost 0.0106 over-fit by  0.0345"     (0.589 best)
 #   "Mus musculus"        "cost 0.28   over-fit by  0.0162"     (0.311 best)
@@ -1042,7 +1126,66 @@
 #
 #     Lets look at what we have found!
 
+# Costs
+#
+#     What were all the costs again?
 
+llply(predictions, function(p){
+	cost$show(data$age_days, p, data$set, cost$r2)	
+})
+
+
+# Residuals
+#
+#    It will be helpful to know who did the best at what
+
+	residuals = predictions - data$age_days
+	residuals_sq <- data.frame(residuals ^ 2)
+
+# GBM vs simple linear
+#
+#     Lets compare our best model, gbm by species, with our worst model, the
+#     simple linear model.
+
+	plot_all(val(), 
+	    x=residuals_sq$simple.linear[data$set == "val"], 
+	    y=residuals_sq$gbm.by.species[data$set == "val"]
+	)
+
+#     From these graphs it is obvious that the simple linear model is failing
+#     drammatically when the total dose gets very high.  This is resulting in 
+#     a non-linear effect, acute radiation poisioning, which gbm can identify
+#     by proper cutoffs.
+
+# GBM vs cox
+#
+#    A more interesting comparison is the results of the best cox model vs
+#    the best gbm model.
+
+	plot_all(val(), 
+	    x=residuals_sq$cox.interactions.by.species[data$set == "val"], 
+	    y=residuals_sq$gbm.by.species[data$set == "val"]
+	)
+	
+	# Surprisingly GBM is not better in most cases, only 4193 / 8883 in the
+	# validation set.
+	
+	gbm_better <- residuals_sq$gbm.by.species / residuals_sq$cox.interactions.by.species > 1.0
+	sum(gbm_better & data$set == "val"); sum(data$set == "val")  # [1] 4193 [1] 8883
+	
+	# GBM performs better on studies 4, 14, and 2 but worse on most of the dog studies
+	sort(table(data$experiment[gbm_better]) / sum(gbm_better)) / (table(data$experiment[! gbm_better]) / sum(! gbm_better))
+	
+	# Gender was hardly different
+	sort(table(data$sex[gbm_better]) / sum(gbm_better)) / (table(data$sex[! gbm_better]) / sum(! gbm_better))
+	
+	
+	
+	
+
+
+	
+#   We can see all sorts of confusion.  The model is trying to 
 
 
 ### Future directions ########################################################
