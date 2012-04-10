@@ -308,7 +308,11 @@
 	mouse   <- function(){data[data$species == 'Mus musculus',]} 
 	peromyscus <- function(){data[data$species == 'Peromyscus leucopus',]}  
 	
-	plot_all <- function(data) {
+	plot_all <- function(data, y=NULL, x=NULL) {
+		
+		if(! is.null(y)){ data$y <- y }            # Allow the user to override x and y
+		if(! is.null(x)){ data$age_days <- x }
+		
 		data$sieverts <- 0.01 * data$cgy_total_gamma + 10*0.01*data$cgy_total_neutron
 		data$sieverts_rate <- 0.01 * data$cgy_per_min_gamma + 10*0.01*data$cgy_per_min_neutron
 		
@@ -327,7 +331,7 @@
 	
 	
 	}
-	# plot_all(val())
+	plot_all(val())
 	
 	plot_p <- function(data) {
 		ggplot() + 
@@ -335,6 +339,11 @@
 			facet_wrap(~ species, scales="free", ncol=1)
 	}
 	# plot_p(val())
+	
+	#
+	# Prediction object to store results as we go
+	#
+	predictions <- data.frame()
 
 
 
@@ -358,6 +367,10 @@
 	
 	set.seed(69)                                   # gbm requires that data is shuffled
 	data <- data[sample(nrow(data)),]
+	
+	predictions <- data.frame(
+	                   row.names=rownames(data)    # make predictions the correct size
+	               )     
 
 ##############################################################################
 #
@@ -467,6 +480,9 @@
 	formula <- f.builder$get_formula("age_days", model.factors)
 	model  <- glm( formula, data=train())
 	data$p <- predict(model, data)
+	
+#   Archive the prediction
+	predictions$simple.linear <- data$p
 
 #   Next we measure the cost
 
@@ -636,6 +652,11 @@
 		df$p          <- predict(model, df)
 		df
 	})
+	
+#   Archive the prediction
+	predictions$simple.linear.by.species <- data$p
+	
+	
     write.table(daply(data, .(species), function(df){
     	cost$show(df$age_days, df$p, df$set, cost$r2)
     }))
@@ -674,6 +695,10 @@
 
     model  <- glm( formula, data = data[data$set == 'train',])
     data$p <- predict(model, data)
+    
+#   Archive the prediction
+	predictions$linear.interactions <- data$p
+
     cost$show(data$age_days, data$p, data$set, cost$r2)          
 #
 #   "cost 0.313 overfit by -0.0085"   (0.269 before)
@@ -708,6 +733,7 @@
 		df$p          <- predict(model, df)
 		df
 	})
+	predictions$linear.interactions.by.species <- data$p	
 	plot_p(val())
 	cost$show(data$age_days, data$p, data$set, cost$r2)
 	write.table(daply(data, .(species), function(df){
@@ -727,6 +753,7 @@
 #   might help to explain the improvement.
 #
     plot_all(val())
+        
 #
 #   This improved model has exposed new oddities.  For instance, there is a class of mice
 #   with an exceptionally high prediction score, above even the control mice.  It turns out
@@ -757,6 +784,7 @@
 	)
 	best.iter <- gbm.perf(model, method="cv")
 	data$p <- predict(model, data, best.iter)
+	predictions$gbm <- data$p	
 	cost$show(data$age_days, data$p, data$set, cost$r2)      
 #
 #   "cost 0.559 over-fit by -0.0574"    (0.384 before)
@@ -798,8 +826,8 @@
 		df
 	})
 	
-	# more stabalizers
-	cost$show(data$age_days, data$p, data$set, cost$r2)      # "cost 0.621 over-fit by -0.0536"
+	predictions$gbm.by.species <- data$p	
+	cost$show(data$age_days, data$p, data$set, cost$r2)      # "cost 0.577 over-fit by -0.0738"
 	plot_p(val())
 	plot_all(val())
 	write.table(daply(data, .(species), function(df){
@@ -813,78 +841,6 @@
 #   We see small, but not meaningless, improvements, especially in the mouse data.
 #   This suggests that we still have a ways to go to find the perfect model and we
 #   still are not at an ideal model where the results of one species can inform another.
-
-
-#
-# Future directions
-#
-#   I certainly have a fair amount of work to do going forwards to find more meaning
-#   in the data.  My todo list is as follows:
-#
-#   Account for age biases
-#     The current models are biased because animals had to live to a certain age
-#     to receive a given treatment.  This makes the results of the analysis
-#     misleading.  Sometimes it looks like heavily irradiated animals are expected
-#     to live longer, when in fact they are likely to live shorter than equivalent 
-#     animals.
-#
-#     One way to overcome this bias would be to assign doses based on how much radiation the
-#     animal would have received had it lived a certain fixed amount of time.  This
-#     might remove a good deal of the bias we see now.
-#
-#   Look for experiment generalization
-#     My current measurements of generalization are based on data that was pulled 
-#     equally out of every experiment.  However, a really great radiation model
-#     should have the ability to view brand new experiments and perform well
-#     on them.  This measure of success is useful, because it prevents models from
-#     customizing their results to fit experimental bias and forces them to attack
-#     consistent effects of radiation.
-#
-#   Apply more advanced modeling
-#     I have explored linear interactions and gbm modeling which are two powerful
-#     techniques.  If I am going to go further down this path I will want to add
-#     neural network techniques and use ensembling to blend successful models
-#     together.  These are the type of models that win modeling contests.
-#
-#   Adding new variables
-#     Rather than directly attacking lifespan, I should probably attack some transformation
-#     of lifespan, like normalized lifespan.  I imagine that the results will be easier 
-#     to compare between species after making this change.  I also need to look at poorly
-#     fit data points to look for unaccounted variables that might explain their poor fit.
-#
-#   Accounting for current models
-#     The current radiobiology models typically use linear no-threshold models, ddref, and
-#     cox hazards regressions to estimate the effect or radiation on lifespan.  I need
-#     to apply these models to my data sets and see how well they generalize.
-#
-#   Communicating the models
-#     Modern complex models are often too complex to easily communicate.  To make these
-#     models useful to the world I need to 1.) post them on the internet so they can be
-#     readily explored.  2.) find useful approximations that can sub for the models we build
-#     here.  3.) note exceptions to these approximations which might be of interest for 
-#     biological exploration.
-#
-#   Tackle disease endpoints
-#     Lifespan is probably the most important endpoint of radiation, but excess tumorogenesis
-#     can ruin a long life.  I need to explore other outcomes, especially the rate of solid
-#     tumor cancers and leukemia's as its done in the literature.
-#
-#   Tackle human data
-#     If this effort proves worthwhile it will be of maximal importance to add human data to
-#     the analysis to make the outcome human relevant.  It will be much easier to do this if
-#     we have attracted some attention with the work and found collaborators who already
-#     have access to the human datasets.
-
-
-
-
-
-# TODO 
-#  look at the negative over-fit
-#  Dogs are labeled with 1 fraction if they received no radiation where mice are labeled with 0.
-#  Also, fix the NA dataset for the mice
-
-
 
 
 
@@ -1025,6 +981,8 @@
 		
 	formula <- f.builder$get_formula("Surv(data$age_days)", model.factors)
 	model <- coxph(formula(formula), data = data)
+	
+	temp <- cox.zph(model)
 
 	data$p  <- aaply(model$linear.predictors, 1, function(x){
                  haz.median(my.hazard$time, my.hazard$hazard * exp(x))
@@ -1061,8 +1019,8 @@
 	             })
 		df
 	})
-	
-	# more stabalizers
+
+	predictions$cox.interactions.by.species <- data$p	
 	cost$show(data$age_days, data$p, data$set, cost$r2)      # "cost 0.286 overfit by 0.0184"
 	                                                         # best 0.621
 	plot_p(val())
@@ -1079,3 +1037,82 @@
 
 #    It is interesting to learn that the mean measurement is unstable.  I am forced to use
 #    the median.
+
+### Summary ##################################################################
+#
+#     Lets look at what we have found!
+
+
+
+
+### Future directions ########################################################
+#
+#   I certainly have a fair amount of work to do going forwards to find more meaning
+#   in the data.  My todo list is as follows:
+#
+#   Account for age biases
+#     The current models are biased because animals had to live to a certain age
+#     to receive a given treatment.  This makes the results of the analysis
+#     misleading.  Sometimes it looks like heavily irradiated animals are expected
+#     to live longer, when in fact they are likely to live shorter than equivalent 
+#     animals.
+#
+#     One way to overcome this bias would be to assign doses based on how much radiation the
+#     animal would have received had it lived a certain fixed amount of time.  This
+#     might remove a good deal of the bias we see now.
+#
+#   Look for experiment generalization
+#     My current measurements of generalization are based on data that was pulled 
+#     equally out of every experiment.  However, a really great radiation model
+#     should have the ability to view brand new experiments and perform well
+#     on them.  This measure of success is useful, because it prevents models from
+#     customizing their results to fit experimental bias and forces them to attack
+#     consistent effects of radiation.
+#
+#   Apply more advanced modeling
+#     I have explored linear interactions and gbm modeling which are two powerful
+#     techniques.  If I am going to go further down this path I will want to add
+#     neural network techniques and use ensembling to blend successful models
+#     together.  These are the type of models that win modeling contests.
+#
+#   Adding new variables
+#     Rather than directly attacking lifespan, I should probably attack some transformation
+#     of lifespan, like normalized lifespan.  I imagine that the results will be easier 
+#     to compare between species after making this change.  I also need to look at poorly
+#     fit data points to look for unaccounted variables that might explain their poor fit.
+#
+#   Accounting for current models
+#     The current radiobiology models typically use linear no-threshold models, ddref, and
+#     cox hazards regressions to estimate the effect or radiation on lifespan.  I need
+#     to apply these models to my data sets and see how well they generalize.
+#
+#   Communicating the models
+#     Modern complex models are often too complex to easily communicate.  To make these
+#     models useful to the world I need to 1.) post them on the internet so they can be
+#     readily explored.  2.) find useful approximations that can sub for the models we build
+#     here.  3.) note exceptions to these approximations which might be of interest for 
+#     biological exploration.
+#
+#   Tackle disease endpoints
+#     Lifespan is probably the most important endpoint of radiation, but excess tumorogenesis
+#     can ruin a long life.  I need to explore other outcomes, especially the rate of solid
+#     tumor cancers and leukemia's as its done in the literature.
+#
+#   Tackle human data
+#     If this effort proves worthwhile it will be of maximal importance to add human data to
+#     the analysis to make the outcome human relevant.  It will be much easier to do this if
+#     we have attracted some attention with the work and found collaborators who already
+#     have access to the human datasets.
+
+
+
+
+
+# TODO 
+#  look at the negative over-fit
+#  Dogs are labeled with 1 fraction if they received no radiation where mice are labeled with 0.
+#  Also, fix the NA dataset for the mice
+
+
+
+
