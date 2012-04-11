@@ -31,7 +31,7 @@ webcache$get <- function(uris){
 webcache$is_current <- function(url){
 	ctime <- webcache$.__get_cached_time(url)
 	mtime <- webcache$.__get_modified_time(url)
-	is_current <- FALSE #webcache$.__cache_is_up_to_date(ctime, mtime)
+	is_current <- webcache$.__cache_is_up_to_date(ctime, mtime)
 	return(is_current)
 }
 

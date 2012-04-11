@@ -262,19 +262,20 @@
 		),
 	
 		experiment=c(                          # Exclude 3184 breeders and 
-	                                           # injection studies                             
+	                                           # injection studies and
+	                                           # any incomplete dog studies (most)                         
 			"2", "3", "4", "7", "8", "9"
 			#, "10"                            # Exclude peromyscus
 			, "11", "12", "13", "14"           
-			, "Acute Exposure and Reticuloendothelial System"
-			, "Gamma-Irradiation during Pregnancy"
-			, "Gamma-Irradiation until Death"
-			, "Hematological Changes"
-			, "Leukemogenesis: Whole Life Gamma-Irradiation"
+			#, "Acute Exposure and Reticuloendothelial System"
+			#, "Gamma-Irradiation during Pregnancy"
+			#, "Gamma-Irradiation until Death"
+			#, "Hematological Changes"
+			#, "Leukemogenesis: Whole Life Gamma-Irradiation"
 			, "Life-Span: Varioious continous Gamma-Irradiations"
 			, "Life-Span: Whole Life Gamma-Irradiation"
-			, "Lithium and Potassium Study"
-			, "RadioIodine Effects on Thyroid and Adrenal Gland"
+			#, "Lithium and Potassium Study"
+			#, "RadioIodine Effects on Thyroid and Adrenal Gland"
 		),
 		species=c(                             # 723 are labled blank
 			"beagle", "musculus"               #, "peromyscus"
@@ -294,7 +295,7 @@
 	# Column types
 	#
 	factors <- c( 
-		"cause_of_death", "sex", "species", "experiment", "data_set", "set"
+		"cause_of_death", "sex", "species", "experiment", "data_set", "set", "group"
 	) 
 	
 	#
@@ -381,12 +382,13 @@
 #
 # Data Overview
 #
-#   We have 42K animals total.  Here's what a typical record looks like:
+#   We have 41K animals total.  Here's what a typical record looks like:
 #
 #   $ sex                    : "M" 
 #   $ species                : "musculus"
 #   $ age_days               : 818
 #   $ experiment             : 4
+#   $ group                  : L5
 #   $ first_exposure_age_days: 131
 #   $ cgy_per_min_gamma      : 0
 #   $ cgy_per_min_neutron    : 0
@@ -409,18 +411,32 @@
 #
 #   Here is a little more information on the important fields.
 #
-#   $ sex                    : "F" (20694), "M" (21253)
-#   $ species                : "beagle" (1523), "musculus" (40424)
-#   $ age_days               : 0 - 6179 days
-#   $ experiment             : 18 experiments
-#   $ first_exposure_age_days: -63 to 3105
-#   $ cgy_per_min_gamma      : 0 to 190
-#   $ cgy_per_min_neutron    : 0 to 11
-#   $ cgy_total_gamma        : 0 to 1475
-#   $ cgy_total_neutron      : 0 to 323
-#   $ fractions_gamma        : 0 to 300
-#   $ fractions_neutron      : 0 to 180
-#   $ set                    : "test" (8553), "train" (24923), "val" (8471)
+#   $ sex                    : "F" (20269), "M" (20779)
+#   $ species                : "beagle" (624), "musculus" (40424)
+#   $ age_days               :   0%  25%  50%  75% 100% 
+#                               106  746  899 1040 5656 
+#   $ experiment             : 11 experiments (two dogs, rest mice)
+#   $ first_exposure_age_days:   0%  25%  50%  75% 100% 
+#                                93  108  114  117  817 
+#   $ cgy_per_min_gamma      :        0%       25%       50%       75%      100% 
+#                               0.000000  0.000000  0.000000  0.370222 37.785000 
+
+#   $ cgy_per_min_neutron    :      0%     25%     50%     75%    100% 
+#                               0.0000  0.0000  0.0000  0.1175 11.3040 
+
+#   $ cgy_total_gamma        :    0%   25%   50%   75%  100% 
+#                                  0     0     0   206 14745 
+
+#   $ cgy_total_neutron      :     0%    25%    50%    75%   100% 
+#                                0.00   0.00   0.00  18.84 323.79 
+
+#   $ fractions_gamma        :   0%  25%  50%  75% 100% 
+#                                0    0    0    1  300 
+
+#   $ fractions_neutron      :   0%  25%  50%  75% 100% 
+#                                 0    0    0    1  180
+
+#   $ set                    : "test" (8352), "train" (24416), "val" (8280)
 #
 #   Some things that are worth taking note of:  We have close to an even balance
 #   of males and females, though some of the experiments involved only male mice.
@@ -490,8 +506,14 @@
 #   Next we measure the cost
 
     cost$show(data$age_days, data$p, data$set, cost$r2) 
+    write.table(daply(data, .(species), function(df){
+    	cost$show(df$age_days, df$p, df$set, cost$r2)
+    }))
 #     
-#   "cost 0.26 overfit by 0.00547"
+#   "           cost  0.515  overfit by 0.0121"
+#
+#   "beagle"   "cost -0.0123 overfit by 0.0128"
+#   "musculus" "cost  0.251  overfit by 0.0042"
 #
 # The cost function
 #
