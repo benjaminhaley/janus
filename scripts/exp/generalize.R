@@ -264,8 +264,9 @@
 		experiment=c(                          # Exclude 3184 breeders and 
 	                                           # injection studies                             
 			"2", "3", "4", "7", "8", "9"
-			, "10", "11", "12", "13", "14"                    # janus
-			, "Acute Exposure and Reticuloendothelial System" # beagle
+			#, "10"                            # Exclude peromyscus
+			, "11", "12", "13", "14"           
+			, "Acute Exposure and Reticuloendothelial System"
 			, "Gamma-Irradiation during Pregnancy"
 			, "Gamma-Irradiation until Death"
 			, "Hematological Changes"
@@ -276,7 +277,7 @@
 			, "RadioIodine Effects on Thyroid and Adrenal Gland"
 		),
 		species=c(                             # 723 are labled blank
-			"beagle", "Mus musculus", "Peromyscus leucopus"
+			"beagle", "musculus"               #, "peromyscus"
 		),
 		sex=c("M", "F")                        # Remove the 25 un-gendered animals 
 	                                           # because they mess up function calls
@@ -305,8 +306,7 @@
 	test    <- function(){data[data$set == 'test',]}
 	
 	beagle  <- function(){data[data$species == 'beagle',]}    # various species
-	mouse   <- function(){data[data$species == 'Mus musculus',]} 
-	peromyscus <- function(){data[data$species == 'Peromyscus leucopus',]}  
+	mouse   <- function(){data[data$species == 'musculus',]} 
 	
 	plot_all <- function(data, x=NULL, y=NULL) {
 		
@@ -381,10 +381,10 @@
 #
 # Data Overview
 #
-#   We have 44K animals total.  Here's what a typical record looks like:
+#   We have 42K animals total.  Here's what a typical record looks like:
 #
 #   $ sex                    : "M" 
-#   $ species                : "Mus musculus"
+#   $ species                : "musculus"
 #   $ age_days               : 818
 #   $ experiment             : 4
 #   $ first_exposure_age_days: 131
@@ -409,11 +409,10 @@
 #
 #   Here is a little more information on the important fields.
 #
-#   $ sex                    : "F" (20694), "M" (23440)
-#   $ species                : "beagle" (1523), "Mus musculus" (40424), 
-#                              "Peromyscus leucopus" (2187)
+#   $ sex                    : "F" (20694), "M" (21253)
+#   $ species                : "beagle" (1523), "musculus" (40424)
 #   $ age_days               : 0 - 6179 days
-#   $ experiment             : 19 experiments
+#   $ experiment             : 18 experiments
 #   $ first_exposure_age_days: -63 to 3105
 #   $ cgy_per_min_gamma      : 0 to 190
 #   $ cgy_per_min_neutron    : 0 to 11
@@ -421,18 +420,16 @@
 #   $ cgy_total_neutron      : 0 to 323
 #   $ fractions_gamma        : 0 to 300
 #   $ fractions_neutron      : 0 to 180
-#   $ set                    : "test" (9051), "train" (26200), "val" (8883)
+#   $ set                    : "test" (8553), "train" (24923), "val" (8471)
 #
 #   Some things that are worth taking note of:  We have close to an even balance
 #   of males and females, though some of the experiments involved only male mice.
-#   There are 3 species in the dataset, and the Mouse is by far the most common.  
-#   The beagle is an ordinary beagle dog and the Peromyscus mouse is a North American 
-#   rodent that is a similar sized but only distantly related to Mus musculus, which 
-#   originated in Europe.
+#   There are 2 species in the dataset, and the Mouse is by far the most common.  
+#   The beagle is an ordinary beagle dog.
 #
 #   The animals had a wide range of lifespans.  Dogs lived much longer than either
 #   of the rodent species, usually around 3000 days.  Mus musculus lived about 1000 
-#   days and Peromyscus lived about 1500 days.
+#   days.
 #
 #   The data is divided into 19 experiments which cover a wide range of treatment
 #   conditions.  Doses of 14 Gy gamma or 3 Gy neutron would be quickly lethal, but
@@ -487,14 +484,14 @@
 	data$p <- predict(model, data)
 	
 #   Archive the results
-	predictions$simple.linear <- data$p
+	predictions$lin <- data$p
 	summaries <- c(summaries, linear.model=paste(capture.output(summary(model)), collapse="\r\n"))
 
 #   Next we measure the cost
 
     cost$show(data$age_days, data$p, data$set, cost$r2) 
 #     
-#   "cost 0.269 over-fit by 0.00453"
+#   "cost 0.26 overfit by 0.00547"
 #
 # The cost function
 #
@@ -553,8 +550,7 @@
 #     Which species do you think had the best fit based on how 'trapezoidal' their
 #     prediction fit looks.
 #       a.) beagle
-#       b.) Mus musculus
-#       c.) Peromyscus leucopus
+#       b.) musculus
 #
 #   Answer:
 #     c("a", "b", "c")[981 %% 7 %% 3 + 1]
@@ -598,6 +594,50 @@
 #   on its own.
 
 
+# Performance by study
+#
+#   Our ultimate goal is to accurately predict the results of a brand new experiment.
+#   Therefore it is important that we build a model using data from all of the other 
+#   experiments and check its performance on the left out experiment.
+
+
+	# Build models
+	m <- 
+	dlply(data, .(experiment), function(df){
+		
+		formula       <- f.builder$get_formula("age_days", model.factors)
+		subset        <- (data$set == 'train') & (data$experiment != df$experiment[1])
+		model         <- glm(formula, data = data[subset,])
+		
+		model
+	})
+	
+	# Make predictions	
+	data <- ddply(data, .(experiment), function(df){
+		df$p <- predict(m[[df$experiment[1]]], df)
+		
+		df
+	})
+
+	# Summarize
+	s <- 
+	laply(m, function(model){paste(capture.output(summary(model)), collapse="\r\n")})
+	names(s) <- paste("lin.by.exp", names(s), sep=".")
+	summaries <- c(summaries, s)
+	
+    # Archive the results
+	predictions$lin.by.exp <- data$p
+	
+	cost$show(data$age_days, data$p, data$set, cost$r2)
+    write.table(daply(data, .(species), function(df){
+    	cost$show(df$age_days, df$p, df$set, cost$r2)
+    }))
+
+#   overall               "cost 0.117 overfit by -0.0106"
+#
+#   "beagle"              "cost -0.157   over-fit by  -0.011"
+#   "musculus"            "cost  0.00852 over-fit by  -0.00209"
+
 # Performance by species
 #
 #   One basic question I want to address is whether using multiple species in the modeling
@@ -619,8 +659,7 @@
 	}))
 #
 #   "beagle"              "cost 0.0147 over-fit by  0.00978"
-#   "Mus musculus"        "cost 0.199  over-fit by  0.00862"
-#   "Peromyscus leucopus" "cost 0.0501 over-fit by -0.0169"
+#   "musculus"            "cost 0.199  over-fit by  0.00862"
 #
 
 # Performance by species
@@ -652,10 +691,8 @@
 	# Build models
 	m <- 
 	dlply(data, .(species), function(df){
+		
 		model.factors <- model.factors[! model.factors %in% c("species")]
-		if(df$species[[1]] == "Peromyscus leucopus"){
-			model.factors <- model.factors[! model.factors %in% c("species", "sex")]
-		}
 		formula       <- f.builder$get_formula("age_days", model.factors)
 		model         <- glm( formula, data = df[df$set == 'train',])
 		
@@ -676,15 +713,14 @@
 	summaries <- c(summaries, s)
 	
     # Archive the results
-	predictions$simple.linear.by.species <- data$p
+	predictions$lin.by.sp <- data$p
 	
     write.table(daply(data, .(species), function(df){
     	cost$show(df$age_days, df$p, df$set, cost$r2)
     }))
 #
-#   "beagle"              "cost 0.0526 over-fit by  0.011"    (0.0147 before)
-#   "Mus musculus"        "cost 0.264  over-fit by  0.0128"   (0.199 before)
-#   "Peromyscus leucopus" "cost 0.073  over-fit by -0.0294"   (0.0501 before)
+#   "beagle"              "cost 0.0439 over-fit by  -0.00682"
+#   "musculus"            "cost 0.268  over-fit by   0.0203"
 #
 #   This is a pretty substantial improvement.  Each species is modeled between 2% and 7%
 #   better than before.  It seems that our previous model was doing a lot of work to 
@@ -718,22 +754,21 @@
     data$p <- predict(model, data)
     
     # archive the results
-	predictions$linear.interactions <- data$p
-	summaries <- c(summaries, linear.interactions=paste(capture.output(summary(model)), collapse="\r\n"))
+	predictions$lin.inter <- data$p
+	summaries <- c(summaries, lin.inter=paste(capture.output(summary(model)), collapse="\r\n"))
 
 
     cost$show(data$age_days, data$p, data$set, cost$r2)          
 #
-#   "cost 0.313 overfit by -0.0085"   (0.269 before)
+#   "cost 0.306 overfit by -0.0129"
 #
     plot_p(val())
     write.table(daply(data, .(species), function(df){
     	cost$show(df$age_days, df$p, df$set, cost$r2)
     }))
 #
-#   "beagle"              "cost 0.0703 over-fit by -0.0152"   (0.0526 before)
-#   "Mus musculus"        "cost 0.265  over-fit by  0.0108"   (0.264 before)
-#   "Peromyscus leucopus" "cost 0.0697 over-fit by -0.0338"   (0.073 before)
+#   "beagle"              "cost 0.0675 over-fit by -0.0277"
+#   "musculus"            "cost 0.268  over-fit by  0.0167"
 #
 #    The interactions model performs slightly better than what came before, but not
 #    much.  It appears that separating by species already delivered most of the value.
@@ -751,10 +786,6 @@
 		model.factors <- c(model.factors, outer, inner)
 		formula <- f.builder$get_formula("age_days", model.factors)
 	
-		if(df$species[[1]] == "Peromyscus leucopus"){
-			model.factors <- model.factors[! model.factors %in% c("species", "sex")]
-		}
-		formula       <- f.builder$get_formula("age_days", model.factors)
 		model         <- glm( formula, data = df[df$set == 'train',])
 		
 		model
@@ -783,26 +814,114 @@
 	
 
 #
-#   Overall               "cost 0.336 overfit by 0.00434"
+#   Overall               "cost 0.331 overfit by 0.00437"
 #
-#   "beagle"              "cost 0.104  over-fit by  0.0125"   (0.0703 before)
-#   "Mus musculus"        "cost 0.292  over-fit by  0.0119"   (0.265 before)
-#   "Peromyscus leucopus" "cost 0.0602 over-fit by -0.0526"   (0.0697 before)
+#   "beagle"              "cost 0.1    over-fit by  0.00137"   (0.0703 before)
+#   "musculus"            "cost 0.297  over-fit by  0.0213"    (0.265 before)
 #
-#   With the notable exception of Peromyscus, we continue to improve.  This means that
+#   We continue to improve.  This means that
 #   there were portions of this model which, even when squared, were still species dependent.
 #   The first exposure age squared and the gamma exposure squared were both reasonably
 #   significant.  It is likely that these had different rates between species, and this 
 #   might help to explain the improvement.
 #
     plot_all(val())
-        
+
 #
 #   This improved model has exposed new oddities.  For instance, there is a class of mice
 #   with an exceptionally high prediction score, above even the control mice.  It turns out
 #   that all of these mice share a high number of fractions.  It seems likely that only 
 #   long-lived mice had the opportunity to receive so many fractions.  So there is some clear
 #   bias that makes the data rather deceiving.
+    
+    
+# Interactions by Experiment
+#
+#   Now it is time to look at how well these models do when tasked with predicting
+#   experiments which they did not have a chance to observe.
+
+
+	# Build models
+	m <- 
+	dlply(data, .(experiment), function(df){
+		
+    	formula       <- f.builder$get_formula("age_days", c(model.factors, outer, inner))
+		subset        <-(data$experiment != df$experiment[1] & data$set != "test")
+		model         <- glm(formula, data = data[subset,])
+		
+		model
+	})
+	
+	# Make predictions	
+	data <- ddply(data, .(experiment), function(df){
+		df$p <- predict(m[[df$experiment[1]]], df)
+		df
+	})
+
+	# Summarize
+	s <- 
+	laply(m, function(model){paste(capture.output(summary(model)), collapse="\r\n")})
+	names(s) <- paste("lin.by.exp", names(s), sep=".")
+	summaries <- c(summaries, s)
+	
+    # Archive the results
+	predictions$lin.by.exp <- data$p
+	
+	cost$show(data$age_days, data$p, data$set, cost$r2)
+    write.table(daply(data, .(experiment), function(df){
+    	cost$show(df$age_days, df$p, df$set, cost$r2)
+    }))
+
+	# [1] "cost -4.88 overfit by -3.93"
+
+#   This result shows an intense failing of the interactions model.  It is
+#   overfitting with respect to experiment.  When the test data was cut from multiple
+#   experiments it did just fine, now it is falling to peices.
+#
+#   What happens when we try seperating by species?
+
+
+	# Build models
+	m <- 
+	dlply(data, .(species), function(df.s){
+		dlply(df.s, .(experiment), function(df){
+			
+	    	formula       <- f.builder$get_formula("age_days", c(model.factors, outer, inner))
+			subset        <-(df.s$experiment != df$experiment[1] & df.s$set != "test")
+			model         <- glm(formula, data = data[subset,])
+			
+			model
+		})	
+	})
+	m <- c(m[[1]], m[[2]])
+	
+	# Make predictions	
+	data <- ddply(data, .(experiment), function(df){
+		df$p <- predict(m[[df$experiment[1]]], df)
+		df
+	})
+
+	# Summarize
+	s <- 
+	laply(m, function(model){paste(capture.output(summary(model)), collapse="\r\n")})
+	names(s) <- paste("lin.inter.by.exp", names(s), sep=".")
+	summaries <- c(summaries, s)
+	
+    # Archive the results
+	predictions$lin.inter.by.exp <- data$p
+	
+	cost$show(data$age_days, data$p, data$set, cost$r2)
+    write.table(daply(data, .(species), function(df){
+    	cost$show(df$age_days, df$p, df$set, cost$r2)
+    }))
+    
+    # [1] "cost 0.279 overfit by 0.00866"
+
+#   Amazing improvement, looks like pulling the species together was doing
+#   nothing but harm.  With them seperated our performance stays very high
+#   between species.
+
+
 #
 # GBM
 #   
@@ -847,8 +966,7 @@
 	}))
 #
 #   "beagle"              "cost 0.56   over-fit by -0.0975"   (0.104 before)
-#   "Mus musculus"        "cost 0.293  over-fit by  0.00751"  (0.292 before)
-#   "Peromyscus leucopus" "cost 0.0674 over-fit by -0.0296"   (0.067 before)
+#   "musculus"            "cost 0.293  over-fit by  0.00751"  (0.292 before)
 #
 #   We are gettings a really shocking improvement in the beagle scores.
 #   This gives us another thing to look into.  The linear models have a hard
@@ -890,7 +1008,7 @@
 	})
 	
 	# archive results
-	predictions$gbm.by.species <- data$p	
+	predictions$gbm.by.sp <- data$p	
 	s <- laply(m, function(model){paste(capture.output(summary(model)), collapse="\r\n")})
 	names(s) <- paste("gbm.by.sp", names(s), sep=".")
 	summaries <- c(summaries, s)	
@@ -904,16 +1022,129 @@
 	}))
 
 #   "beagle"              "cost 0.589 over-fit by -0.123"       (0.56 before)
-#   "Mus musculus"        "cost 0.311 over-fit by -0.000453"    (0.293 before)
-#   "Peromyscus leucopus" "cost 0.0612 over-fit by -0.0583"     (0.0674 before)
+#   "musculus"            "cost 0.311 over-fit by -0.000453"    (0.293 before)
 #
 #   We see small, but not meaningless, improvements, especially in the mouse data.
 #   This suggests that we still have a ways to go to find the perfect model and we
 #   still are not at an ideal model where the results of one species can inform another.
 
 
+# GBM by experiment
+#
+#     Now its time to see if the GBM results hold up.
+
+	# Build models
+	m <- 
+	dlply(data, .(experiment), function(df){
+		
+		subset        <- (data$experiment != df$experiment[1] & data$set != "test")
+		
+		# build models
+		set.seed(69)                          # stabalize results
+		trees <- 500
+		model   <- gbm(
+			formula = as.formula(f.builder$get_formula("age_days", model.factors)),
+			distribution = "gaussian",
+			data = data[subset,],
+			n.trees = trees,
+			interaction.depth = 4,
+			n.minobsinnode = 5,
+			shrinkage = 0.1,
+			cv.folds = 5,
+			verbose = TRUE
+		)
+		model
+	})	
+	
+	# Make predictions	
+	data <- ddply(data, .(experiment), function(df){
+		model     <- m[[df$experiment[1]]]
+		best.iter <- gbm.perf(model, method="cv")
+		df$p      <- predict(model, df, best.iter)
+		df
+	})
+
+	# Summarize
+	s <- 
+	laply(m, function(model){paste(capture.output(summary(model)), collapse="\r\n")})
+	names(s) <- paste("gbm.by.exp", names(s), sep=".")
+	summaries <- c(summaries, s)
+	
+    # Archive the results
+	predictions$gbm.by.exp <- data$p
+	
+	cost$show(data$age_days, data$p, data$set, cost$r2)
+    write.table(daply(data, .(species), function(df){
+    	cost$show(df$age_days, df$p, df$set, cost$r2)
+    }))
+    
+	# [1] "cost 0.179 overfit by -0.0234"
+	# "beagle" "cost -0.0799 overfit by -0.0448"
+	# "musculus"     "cost 0.0863 overfit by 0.0198"
+
+	
+# GBM by experiment by species
+
+	m <- 
+	dlply(data, .(species), function(df.s){
+		dlply(df.s, .(experiment), function(df){
+			
+	    	formula       <- f.builder$get_formula("age_days", c(model.factors, outer, inner))
+			subset        <-(df.s$experiment != df$experiment[1] & df.s$set != "test")
+					
+			# build models
+			set.seed(69)                          # stabalize results
+			trees <- 500
+			model   <- gbm(
+				formula = as.formula(f.builder$get_formula("age_days", model.factors)),
+				distribution = "gaussian",
+				data = data[subset,],
+				n.trees = trees,
+				interaction.depth = 4,
+				n.minobsinnode = 5,
+				shrinkage = 0.1,
+				cv.folds = 5,
+				verbose = TRUE
+			)
+			
+			model
+		})	
+	})
+	m <- c(m[[1]], m[[2]])
+	
+	# Make predictions	
+	data <- ddply(data, .(experiment), function(df){
+		model     <- m[[df$experiment[1]]]
+		best.iter <- gbm.perf(model, method="cv")
+		df$p      <- predict(model, df, best.iter)
+		df
+	})
+
+	# Summarize
+	s <- 
+	laply(m, function(model){paste(capture.output(summary(model)), collapse="\r\n")})
+	names(s) <- paste("gbm.by.sp.by.exp", names(s), sep=".")
+	summaries <- c(summaries, s)
+	
+    # Archive the results
+	predictions$gbm.by.sp.by.exp <- data$p
+	
+	cost$show(data$age_days, data$p, data$set, cost$r2)
+    write.table(daply(data, .(species), function(df){
+    	cost$show(df$age_days, df$p, df$set, cost$r2)
+    }))	
 
 
+	#                 cost 0.524 overfit by 0.00858"
+	#
+	# "beagle"       "cost 0.481 overfit by 0.0234"
+	# "musculus"     "cost 0.256 overfit by 0.0181"	#
+	# A surprising outcome, our overall improvement is better while our mus
+	# musculus is not as good at the linear interactions model.  
+	#
+	# I also don't understand why the overall cost is lower than its sub components
+	
+	
 
 # Survival
 #     Here I want to use cox regressions to predict lifespan.
@@ -1068,8 +1299,7 @@
 
 
 #   "beagle"              "cost -0.622 over-fit by  0.0768"     (0.589 best)
-#   "Mus musculus"        "cost  0.256 over-fit by  0.0107"     (0.311 best)
-#   "Peromyscus leucopus" "cost -0.322 over-fit by  0.0436"     (0.0612 best)
+#   "musculus"            "cost  0.256 over-fit by  0.0107"     (0.311 best)
 #
 	
 # Interaction Hazards by species
@@ -1115,8 +1345,7 @@
 	}))
 
 #   "beagle"              "cost 0.0106 over-fit by  0.0345"     (0.589 best)
-#   "Mus musculus"        "cost 0.28   over-fit by  0.0162"     (0.311 best)
-#   "Peromyscus leucopus" "cost 0.0485 over-fit by -0.0378"     (0.0612 best)
+#   "musculus"            "cost 0.28   over-fit by  0.0162"     (0.311 best)
 #
 
 #    It is interesting to learn that the mean measurement is unstable.  I am forced to use
@@ -1130,11 +1359,144 @@
 #
 #     What were all the costs again?
 
-llply(predictions, function(p){
-	cost$show(data$age_days, p, data$set, cost$r2)	
-})
+	costs <- llply(predictions, function(p){
+		cost$show(data$age_days, p, data$set, cost$r2)	
+	})
+	
+	costs
+	
+	# here are the most important ones
+	
+	# $lin.inter.by.sp
+	# [1] "cost 0.336 overfit by 0.00434"
+	
+	# $gbm
+	# [1] "cost 0.559 overfit by -0.0574"
+	
+	# $gbm.by.sp
+	# [1] "cost 0.577 overfit by -0.0738"
+	
+	# $cox.inter.by.sp
+	# [1] "cost 0.203 overfit by 0.0116"
 
 
+# Summaries
+#
+#    What really mattered
+
+	 l_ply(
+	     names(summaries), 
+	     function(s){cat('\r\n \r\n \r\n'); cat(s); cat('\r\n \r\n'); cat(summaries[[s]])}
+	 )
+	 
+	# Below we highlight the significant parts of the models.  For gbm, everything above 1% relative influence
+	 	 
+	# lin.inter.by.sp.beagle
+	 
+	# Deviance Residuals: 
+	    # Min       1Q   Median       3Q      Max  
+	# -1923.7  -1491.7   -392.3   1305.8   4569.8  
+	# Coefficients: (21 not defined because of singularities)
+	                                                       # Estimate Std. Error t value Pr(>|t|)    
+	# (Intercept)                                           2.373e+03  5.053e+04   0.047 0.962556    
+	
+	# I(first_exposure_age_days * first_exposure_age_days) -6.498e-04  2.352e-04  -2.763 0.005845 ** 
+	# I(cgy_per_min_gamma * cgy_per_min_gamma)              8.744e-01  2.441e-01   3.582 0.000359 ***
+	# I(cgy_total_gamma * cgy_total_gamma)                 -1.505e-05  7.230e-06  -2.081 0.037717 *  
+ 
+  
+	# lin.inter.by.sp.musculus
+	 
+	# Deviance Residuals: 
+	    # Min       1Q   Median       3Q      Max  
+	# -820.58  -120.58     8.77   131.68   555.03  
+	# Coefficients: (9 not defined because of singularities)
+	                                                       # Estimate Std. Error t value Pr(>|t|)    
+	# (Intercept)                                           9.218e+02  1.139e+01  80.958  < 2e-16 ***
+	# sexM                                                  2.512e+01  2.525e+00   9.948  < 2e-16 ***
+	# first_exposure_age_days                               4.365e-01  1.166e-01   3.743 0.000182 ***
+	# cgy_per_min_gamma                                    -2.496e+00  8.860e-01  -2.817 0.004848 ** 
+	# cgy_total_gamma                                      -3.094e-01  2.974e-02 -10.401  < 2e-16 ***
+	# cgy_total_neutron                                    -2.038e+00  4.799e-01  -4.247 2.18e-05 ***
+	# fractions_gamma                                       1.676e+00  3.797e-01   4.414 1.02e-05 ***
+	# fractions_neutron                                    -2.372e+00  1.362e+00  -1.741 0.081730 .  
+	# I(first_exposure_age_days * first_exposure_age_days) -7.552e-04  1.778e-04  -4.248 2.17e-05 ***
+	# I(cgy_per_min_gamma * cgy_per_min_gamma)              8.591e-01  1.243e-01   6.914 4.83e-12 ***
+	# I(cgy_per_min_neutron * cgy_per_min_neutron)         -1.716e+00  7.918e-01  -2.167 0.030221 *  
+	# I(cgy_total_gamma * cgy_total_gamma)                  6.674e-05  6.230e-06  10.713  < 2e-16 ***
+	# I(cgy_total_neutron * cgy_total_neutron)              4.915e-03  4.956e-04   9.918  < 2e-16 ***
+	# I(fractions_gamma * fractions_gamma)                 -1.706e-03  4.990e-04  -3.418 0.000631 ***
+	# I(fractions_neutron * fractions_neutron)              1.995e-02  2.337e-03   8.537  < 2e-16 ***
+	# first_exposure_age_days:cgy_per_min_gamma             1.219e-02  5.237e-03   2.328 0.019921 *  
+	# first_exposure_age_days:fractions_gamma              -9.773e-03  3.176e-03  -3.078 0.002089 ** 
+	# cgy_per_min_gamma:cgy_total_gamma                    -4.940e-02  6.280e-03  -7.865 3.84e-15 ***
+	# cgy_per_min_gamma:fractions_gamma                     7.701e-01  3.223e-01   2.390 0.016876 *  
+	# cgy_per_min_neutron:cgy_total_neutron                 1.090e-01  4.180e-02   2.609 0.009097 ** 
+	# cgy_per_min_neutron:fractions_neutron                -5.142e+00  1.742e+00  -2.952 0.003161 ** 
+	# cgy_total_gamma:fractions_gamma                       2.540e-04  1.080e-04   2.353 0.018650 *  
+	 
+	 	 
+	# gbm
+	 
+	                      # var     rel.inf
+	# 1         cgy_total_gamma 32.15901907
+	# 2 first_exposure_age_days 23.06594351
+	# 3       cgy_per_min_gamma 19.42900864
+	# 4                 species 19.38667725
+	# 5       cgy_total_neutron  2.72459269
+	# 6                     sex  2.46659372
+	 
+	 
+	# gbm.by.sp.beagle
+	 
+	                      # var    rel.inf
+	# 1         cgy_total_gamma 39.1733240
+	# 2 first_exposure_age_days 32.8251058
+	# 3       cgy_per_min_gamma 24.1942131
+	# 4                     sex  3.4178949
+	 
+	 
+	# gbm.by.sp.musculus
+	 
+	                      # var   rel.inf
+	# 1         cgy_total_gamma 35.401596
+	# 2       cgy_total_neutron 30.125410
+	# 3       cgy_per_min_gamma 10.650824
+	# 4 first_exposure_age_days  8.868773
+	# 5         fractions_gamma  5.462032
+	# 6       fractions_neutron  4.669025
+	# 7     cgy_per_min_neutron  3.536614
+	# 8                     sex  1.285726
+	 
+	 	 
+	# cox.inter.by.sp.beagle
+	 
+	# Call:
+	# coxph(formula = formula(formula), data = df)
+	  # n= 1523, number of events= 1523 
+	                                 # coef  exp(coef)   se(coef)      z Pr(>|z|)    
+	# sexM                       -9.456e-02  9.098e-01  5.172e-02 -1.828   0.0675 .  
+	# first_exposure_age_days    -4.266e-04  9.996e-01  1.048e-04 -4.073 4.65e-05 ***
+	# cgy_per_min_gamma           1.301e-02  1.013e+00  1.615e-03  8.056 7.77e-16 ***
+	# cgy_total_gamma            -3.218e-05  1.000e+00  1.420e-05 -2.267   0.0234 *  
+	 
+	 	 
+	# cox.inter.by.sp.musculus
+	 
+	# Call:
+	# coxph(formula = formula(formula), data = df)
+	  # n= 40424, number of events= 40424 
+	                                 # coef  exp(coef)   se(coef)       z Pr(>|z|)    
+	# sexM                       -1.700e-01  8.437e-01  1.027e-02 -16.552  < 2e-16 ***
+	# first_exposure_age_days    -1.149e-03  9.989e-01  8.154e-05 -14.087  < 2e-16 ***
+	# cgy_per_min_gamma           1.777e-02  1.018e+00  8.308e-04  21.394  < 2e-16 ***
+	# cgy_per_min_neutron        -5.814e-02  9.435e-01  3.269e-03 -17.785  < 2e-16 ***
+	# cgy_total_gamma             1.014e-03  1.001e+00  1.204e-05  84.269  < 2e-16 ***
+	# cgy_total_neutron           8.156e-03  1.008e+00  1.087e-04  75.054  < 2e-16 ***
+	# fractions_gamma            -3.620e-03  9.964e-01  1.938e-04 -18.677  < 2e-16 ***
+	# fractions_neutron          -1.081e-03  9.989e-01  2.460e-04  -4.394 1.11e-05 ***
+	 
+	 
 # Residuals
 #
 #    It will be helpful to know who did the best at what
@@ -1148,8 +1510,8 @@ llply(predictions, function(p){
 #     simple linear model.
 
 	plot_all(val(), 
-	    x=residuals_sq$simple.linear[data$set == "val"], 
-	    y=residuals_sq$gbm.by.species[data$set == "val"]
+	    x=residuals_sq$lin[data$set == "val"], 
+	    y=residuals_sq$gbm.by.sp[data$set == "val"]
 	)
 
 #     From these graphs it is obvious that the simple linear model is failing
@@ -1163,14 +1525,14 @@ llply(predictions, function(p){
 #    the best gbm model.
 
 	plot_all(val(), 
-	    x=residuals_sq$cox.interactions.by.species[data$set == "val"], 
-	    y=residuals_sq$gbm.by.species[data$set == "val"]
+	    x=residuals_sq$cox.interactions.by.sp[data$set == "val"], 
+	    y=residuals_sq$gbm.by.sp[data$set == "val"]
 	)
 	
 	# Surprisingly GBM is not better in most cases, only 4193 / 8883 in the
 	# validation set.
 	
-	gbm_better <- residuals_sq$gbm.by.species / residuals_sq$cox.interactions.by.species > 1.0
+	gbm_better <- residuals_sq$gbm.by.sp / residuals_sq$cox.interactions.by.sp > 1.0
 	sum(gbm_better & data$set == "val"); sum(data$set == "val")  # [1] 4193 [1] 8883
 	
 	# GBM performs better on studies 4, 14, and 2 but worse on most of the dog studies

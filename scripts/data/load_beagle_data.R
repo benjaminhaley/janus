@@ -39,6 +39,7 @@ b.data$load <- function(from_cache=FALSE){
 		from_cache <- FALSE 
 	}
 	if(from_cache == FALSE){
+		print( "Loading beagle data from source")		
 		uris <- b.data$.__get_uris()
 		csv_paths <- webcache$get(uris)
 		data <- b.data$.__csv2data.frame(csv_paths, b.data$.__TABLE.HEADER.ROWS)

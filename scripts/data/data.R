@@ -68,6 +68,7 @@ data$j.normalize <- function (j.data) {
 	# add/convert names
 	j.data[['age_days']]                <- j.data[['age']]
 	j.data[['experiment']]              <- j.data[['expt']]
+	j.data[['group']]                   <- j.data[['tmt']]
 	j.data[['first_exposure_age_days']] <- j.data[['first_irrad']]
 	b.data[['data_set']]                <- 'janus'
 
@@ -83,7 +84,10 @@ data$j.normalize <- function (j.data) {
 	j.data[j.data$radn == "G", 'fractions_gamma']     <- j.data[j.data$radn == "G", 'fractions']
 	j.data[['fractions_neutron']]                     <- 0
 	j.data[j.data$radn == "N", 'fractions_neutron']   <- j.data[j.data$radn == "N", 'fractions']
-		
+	
+	j.data[j.data$species == "Mus musculus", 'species']         <- 'musculus'
+	j.data[j.data$species == "Peromyscus leucopus", 'species']  <- 'peromyscus'
+
 	# remove unneeded names
 	drops   <- c(
 		"autopsy_type", "Comment", "has_micro", "necroscopy_date", "necrosopy_proctor", 
