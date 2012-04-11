@@ -241,7 +241,7 @@
 	source("scripts/util/package.R")		# load and install libraries
 	source("scripts/util/select.R")		    # filter data frames
 	source("scripts/util/cv.R")             # build test and validation sets
-	source("scripts/util/cost.R")           # How to calculate common cost functions
+	source("scripts/util/perform.R")        # How to calculate common performance functions
 	source("scripts/util/f.builder.R")      # Help us compose complex formula
 	
 	package$load(c(
@@ -503,21 +503,21 @@
 	predictions$lin <- data$p
 	summaries <- c(summaries, linear.model=paste(capture.output(summary(model)), collapse="\r\n"))
 
-#   Next we measure the cost
+#   Next we measure the performance
 
-    cost$show(data$age_days, data$p, data$set, cost$r2) 
+    perform$show(data$age_days, data$p, data$set, perform$r2) 
     write.table(daply(data, .(species), function(df){
-    	cost$show(df$age_days, df$p, df$set, cost$r2)
+    	perform$show(df$age_days, df$p, df$set, perform$r2)
     }))
 #     
-#   "           cost  0.515  overfit by 0.0121"
+#   "           performance  0.515  overfit by 0.0121"
 #
-#   "beagle"   "cost -0.0123 overfit by 0.0128"
-#   "musculus" "cost  0.251  overfit by 0.0042"
+#   "beagle"   "performance -0.0123 overfit by 0.0128"
+#   "musculus" "performance  0.251  overfit by 0.0042"
 #
-# The cost function
+# The performance function
 #
-#   It is worth talking about this cost function.  What we are measuring here is the 
+#   It is worth talking about this performance function.  What we are measuring here is the 
 #   r2 value.  Basically the % of variance explained by the data.  A bad model that
 #   just guesses the average will have a low r2 value, 0.  A perfect model that correctly
 #   predicts every outcome will have an r2 value of 1.
@@ -547,7 +547,7 @@
 
 # Prediction vs Age
 #
-#   The cost function gives us a single number to look at, but it is helpful to graph
+#   The performance function gives us a single number to look at, but it is helpful to graph
 #   the predictions to get a sense of where the model is correct and where it is misleading.
 #
 #   The y-axis represents the age that our model predicted while the x axis represents how
@@ -650,15 +650,15 @@
     # Archive the results
 	predictions$lin.by.exp <- data$p
 	
-	cost$show(data$age_days, data$p, data$set, cost$r2)
+	perform$show(data$age_days, data$p, data$set, perform$r2)
     write.table(daply(data, .(species), function(df){
-    	cost$show(df$age_days, df$p, df$set, cost$r2)
+    	perform$show(df$age_days, df$p, df$set, perform$r2)
     }))
 
-#   overall               "cost 0.117 overfit by -0.0106"
+#   overall               "performance 0.117 overfit by -0.0106"
 #
-#   "beagle"              "cost -0.157   over-fit by  -0.011"
-#   "musculus"            "cost  0.00852 over-fit by  -0.00209"
+#   "beagle"              "performance -0.157   over-fit by  -0.011"
+#   "musculus"            "performance  0.00852 over-fit by  -0.00209"
 
 # Performance by species
 #
@@ -677,11 +677,11 @@
 #   of the model we just tested on each species separately.
 #
 	write.table(daply(data, .(species), function(df){
-		cost$show(df$age_days, df$p, df$set, cost$r2)
+		perform$show(df$age_days, df$p, df$set, perform$r2)
 	}))
 #
-#   "beagle"              "cost 0.0147 over-fit by  0.00978"
-#   "musculus"            "cost 0.199  over-fit by  0.00862"
+#   "beagle"              "performance 0.0147 over-fit by  0.00978"
+#   "musculus"            "performance 0.199  over-fit by  0.00862"
 #
 
 # Performance by species
@@ -738,11 +738,11 @@
 	predictions$lin.by.sp <- data$p
 	
     write.table(daply(data, .(species), function(df){
-    	cost$show(df$age_days, df$p, df$set, cost$r2)
+    	perform$show(df$age_days, df$p, df$set, perform$r2)
     }))
 #
-#   "beagle"              "cost 0.0439 over-fit by  -0.00682"
-#   "musculus"            "cost 0.268  over-fit by   0.0203"
+#   "beagle"              "performance 0.0439 over-fit by  -0.00682"
+#   "musculus"            "performance 0.268  over-fit by   0.0203"
 #
 #   This is a pretty substantial improvement.  Each species is modeled between 2% and 7%
 #   better than before.  It seems that our previous model was doing a lot of work to 
@@ -780,17 +780,17 @@
 	summaries <- c(summaries, lin.inter=paste(capture.output(summary(model)), collapse="\r\n"))
 
 
-    cost$show(data$age_days, data$p, data$set, cost$r2)          
+    perform$show(data$age_days, data$p, data$set, perform$r2)          
 #
-#   "cost 0.306 overfit by -0.0129"
+#   "performance 0.306 overfit by -0.0129"
 #
     plot_p(val())
     write.table(daply(data, .(species), function(df){
-    	cost$show(df$age_days, df$p, df$set, cost$r2)
+    	perform$show(df$age_days, df$p, df$set, perform$r2)
     }))
 #
-#   "beagle"              "cost 0.0675 over-fit by -0.0277"
-#   "musculus"            "cost 0.268  over-fit by  0.0167"
+#   "beagle"              "performance 0.0675 over-fit by -0.0277"
+#   "musculus"            "performance 0.268  over-fit by  0.0167"
 #
 #    The interactions model performs slightly better than what came before, but not
 #    much.  It appears that separating by species already delivered most of the value.
@@ -829,17 +829,17 @@
 		
 	# show results
 	plot_p(val())
-	cost$show(data$age_days, data$p, data$set, cost$r2)
+	perform$show(data$age_days, data$p, data$set, perform$r2)
 	write.table(daply(data, .(species), function(df){
-		cost$show(df$age_days, df$p, df$set, cost$r2)
+		perform$show(df$age_days, df$p, df$set, perform$r2)
 	}))
 	
 
 #
-#   Overall               "cost 0.331 overfit by 0.00437"
+#   Overall               "performance 0.331 overfit by 0.00437"
 #
-#   "beagle"              "cost 0.1    over-fit by  0.00137"   (0.0703 before)
-#   "musculus"            "cost 0.297  over-fit by  0.0213"    (0.265 before)
+#   "beagle"              "performance 0.1    over-fit by  0.00137"   (0.0703 before)
+#   "musculus"            "performance 0.297  over-fit by  0.0213"    (0.265 before)
 #
 #   We continue to improve.  This means that
 #   there were portions of this model which, even when squared, were still species dependent.
@@ -889,12 +889,12 @@
     # Archive the results
 	predictions$lin.by.exp <- data$p
 	
-	cost$show(data$age_days, data$p, data$set, cost$r2)
+	perform$show(data$age_days, data$p, data$set, perform$r2)
     write.table(daply(data, .(experiment), function(df){
-    	cost$show(df$age_days, df$p, df$set, cost$r2)
+    	perform$show(df$age_days, df$p, df$set, perform$r2)
     }))
 
-	# [1] "cost -4.88 overfit by -3.93"
+	# [1] "performance -4.88 overfit by -3.93"
 
 #   This result shows an intense failing of the interactions model.  It is
 #   overfitting with respect to experiment.  When the test data was cut from multiple
@@ -932,12 +932,12 @@
     # Archive the results
 	predictions$lin.inter.by.exp <- data$p
 	
-	cost$show(data$age_days, data$p, data$set, cost$r2)
+	perform$show(data$age_days, data$p, data$set, perform$r2)
     write.table(daply(data, .(species), function(df){
-    	cost$show(df$age_days, df$p, df$set, cost$r2)
+    	perform$show(df$age_days, df$p, df$set, perform$r2)
     }))
     
-    # [1] "cost 0.279 overfit by 0.00866"
+    # [1] "performance 0.279 overfit by 0.00866"
 
 #   Amazing improvement, looks like pulling the species together was doing
 #   nothing but harm.  With them seperated our performance stays very high
@@ -977,18 +977,18 @@
 	summaries <- c(summaries, gbm=paste(capture.output(summary(model)), collapse="\r\n") )
 	
 	# Print results	
-	cost$show(data$age_days, data$p, data$set, cost$r2)      
+	perform$show(data$age_days, data$p, data$set, perform$r2)      
 #
-#   "cost 0.559 over-fit by -0.0574"    (0.384 before)
+#   "performance 0.559 over-fit by -0.0574"    (0.384 before)
 #
 	plot_p(val())
 	plot_all(val())
 	write.table(daply(data, .(species), function(df){
-		cost$show(df$age_days, df$p, df$set, cost$r2)
+		perform$show(df$age_days, df$p, df$set, perform$r2)
 	}))
 #
-#   "beagle"              "cost 0.56   over-fit by -0.0975"   (0.104 before)
-#   "musculus"            "cost 0.293  over-fit by  0.00751"  (0.292 before)
+#   "beagle"              "performance 0.56   over-fit by -0.0975"   (0.104 before)
+#   "musculus"            "performance 0.293  over-fit by  0.00751"  (0.292 before)
 #
 #   We are gettings a really shocking improvement in the beagle scores.
 #   This gives us another thing to look into.  The linear models have a hard
@@ -1036,15 +1036,15 @@
 	summaries <- c(summaries, s)	
 	
 	
-	cost$show(data$age_days, data$p, data$set, cost$r2)      # "cost 0.577 over-fit by -0.0738"
+	perform$show(data$age_days, data$p, data$set, perform$r2)      # "performance 0.577 over-fit by -0.0738"
 	plot_p(val())
 	plot_all(val())
 	write.table(daply(data, .(species), function(df){
-		cost$show(df$age_days, df$p, df$set, cost$r2)
+		perform$show(df$age_days, df$p, df$set, perform$r2)
 	}))
 
-#   "beagle"              "cost 0.589 over-fit by -0.123"       (0.56 before)
-#   "musculus"            "cost 0.311 over-fit by -0.000453"    (0.293 before)
+#   "beagle"              "performance 0.589 over-fit by -0.123"       (0.56 before)
+#   "musculus"            "performance 0.311 over-fit by -0.000453"    (0.293 before)
 #
 #   We see small, but not meaningless, improvements, especially in the mouse data.
 #   This suggests that we still have a ways to go to find the perfect model and we
@@ -1095,14 +1095,14 @@
     # Archive the results
 	predictions$gbm.by.exp <- data$p
 	
-	cost$show(data$age_days, data$p, data$set, cost$r2)
+	perform$show(data$age_days, data$p, data$set, perform$r2)
     write.table(daply(data, .(species), function(df){
-    	cost$show(df$age_days, df$p, df$set, cost$r2)
+    	perform$show(df$age_days, df$p, df$set, perform$r2)
     }))
     
-	# [1] "cost 0.179 overfit by -0.0234"
-	# "beagle" "cost -0.0799 overfit by -0.0448"
-	# "musculus"     "cost 0.0863 overfit by 0.0198"
+	# [1] "performance 0.179 overfit by -0.0234"
+	# "beagle" "performance -0.0799 overfit by -0.0448"
+	# "musculus"     "performance 0.0863 overfit by 0.0198"
 
 	
 # GBM by experiment by species
@@ -1151,20 +1151,20 @@
     # Archive the results
 	predictions$gbm.by.sp.by.exp <- data$p
 	
-	cost$show(data$age_days, data$p, data$set, cost$r2)
+	perform$show(data$age_days, data$p, data$set, perform$r2)
     write.table(daply(data, .(species), function(df){
-    	cost$show(df$age_days, df$p, df$set, cost$r2)
+    	perform$show(df$age_days, df$p, df$set, perform$r2)
     }))	
 
 
-	#                 cost 0.524 overfit by 0.00858"
+	#                 performance 0.524 overfit by 0.00858"
 	#
-	# "beagle"       "cost 0.481 overfit by 0.0234"
-	# "musculus"     "cost 0.256 overfit by 0.0181"	#
+	# "beagle"       "performance 0.481 overfit by 0.0234"
+	# "musculus"     "performance 0.256 overfit by 0.0181"	#
 	# A surprising outcome, our overall improvement is better while our mus
 	# musculus is not as good at the linear interactions model.  
 	#
-	# I also don't understand why the overall cost is lower than its sub components
+	# I also don't understand why the overall performance is lower than its sub components
 	
 	
 
@@ -1285,12 +1285,12 @@
 	})
 	
 	# more stabalizers
-	cost$show(data$age_days, data$p, data$set, cost$r2)      # "cost 0.000042 overfit by -0.000401"
+	perform$show(data$age_days, data$p, data$set, perform$r2)      # "performance 0.000042 overfit by -0.000401"
 	                                                         # best 0.621
 	plot_p(val())
 	plot_all(val())
 	write.table(daply(data, .(species), function(df){
-		cost$show(df$age_days, df$p, df$set, cost$r2)
+		perform$show(df$age_days, df$p, df$set, perform$r2)
 	}))
 	
 
@@ -1311,17 +1311,17 @@
              })
 	
 	# more stabalizers
-	cost$show(data$age_days, data$p, data$set, cost$r2)      # "cost -0.0503 overfit by 0.0482"
+	perform$show(data$age_days, data$p, data$set, perform$r2)      # "performance -0.0503 overfit by 0.0482"
 	                                                         # best 0.621
 	plot_p(val())
 	plot_all(val())
 	write.table(daply(data, .(species), function(df){
-		cost$show(df$age_days, df$p, df$set, cost$r2)
+		perform$show(df$age_days, df$p, df$set, perform$r2)
 	}))
 
 
-#   "beagle"              "cost -0.622 over-fit by  0.0768"     (0.589 best)
-#   "musculus"            "cost  0.256 over-fit by  0.0107"     (0.311 best)
+#   "beagle"              "performance -0.622 over-fit by  0.0768"     (0.589 best)
+#   "musculus"            "performance  0.256 over-fit by  0.0107"     (0.311 best)
 #
 	
 # Interaction Hazards by species
@@ -1358,16 +1358,16 @@
 	summaries <- c(summaries, s)
 
 	# show results
-	cost$show(data$age_days, data$p, data$set, cost$r2)      # "cost 0.203 overfit by 0.0116"
+	perform$show(data$age_days, data$p, data$set, perform$r2)      # "performance 0.203 overfit by 0.0116"
 	                                                         # best 0.621
 	plot_p(val())
 	plot_all(val())
 	write.table(daply(data, .(species), function(df){
-		cost$show(df$age_days, df$p, df$set, cost$r2)
+		perform$show(df$age_days, df$p, df$set, perform$r2)
 	}))
 
-#   "beagle"              "cost 0.0106 over-fit by  0.0345"     (0.589 best)
-#   "musculus"            "cost 0.28   over-fit by  0.0162"     (0.311 best)
+#   "beagle"              "performance 0.0106 over-fit by  0.0345"     (0.589 best)
+#   "musculus"            "performance 0.28   over-fit by  0.0162"     (0.311 best)
 #
 
 #    It is interesting to learn that the mean measurement is unstable.  I am forced to use
@@ -1377,29 +1377,29 @@
 #
 #     Lets look at what we have found!
 
-# Costs
+# Performances
 #
-#     What were all the costs again?
+#     What were all the performances again?
 
-	costs <- llply(predictions, function(p){
-		cost$show(data$age_days, p, data$set, cost$r2)	
+	performs <- llply(predictions, function(p){
+		perform$show(data$age_days, p, data$set, perform$r2)	
 	})
 	
-	costs
+	performs
 	
 	# here are the most important ones
 	
 	# $lin.inter.by.sp
-	# [1] "cost 0.336 overfit by 0.00434"
+	# [1] "performance 0.336 overfit by 0.00434"
 	
 	# $gbm
-	# [1] "cost 0.559 overfit by -0.0574"
+	# [1] "performance 0.559 overfit by -0.0574"
 	
 	# $gbm.by.sp
-	# [1] "cost 0.577 overfit by -0.0738"
+	# [1] "performance 0.577 overfit by -0.0738"
 	
 	# $cox.inter.by.sp
-	# [1] "cost 0.203 overfit by 0.0116"
+	# [1] "performance 0.203 overfit by 0.0116"
 
 
 # Summaries
