@@ -341,10 +341,22 @@
 	}
 	# plot_p(val())
 	
-	#
-	# Prediction object to store results as we go
-	#
-	predictions <- data.frame()
+	perform$show.by.sp <- function(){
+		# Overall
+		print(perform$show(data$age_days, data$p, data$set, perform$r2))
+		
+		# And by species
+		write.table(daply(data, .(species), function(df){
+	    	perform$show(df$age_days, df$p, df$set, perform$r2)
+	    }))
+	}
+	# perform$show.by.sp()
+	
+	# get a model summary as a character string
+	print.summary <- function(model){
+		paste(capture.output(summary(model)), collapse="\r\n")
+	}
+	# cat(print.summary(model))
 	
 	#
 	# Also save summaries of the models
@@ -370,13 +382,8 @@
 	for(f in factors){                             # Convert data types where needed 
 		data[[f]] <- factor(data[[f]])
 	}
-	
-	set.seed(69)                                   # gbm requires that data is shuffled
-	data <- data[sample(nrow(data)),]
-	
-	predictions <- data.frame(
-	                   row.names=rownames(data)    # make predictions the correct size
-	               )     
+
+	  
 
 ##############################################################################
 #
@@ -496,24 +503,21 @@
 		'fractions_gamma', 'fractions_neutron'
 	)
 	formula <- f.builder$get_formula("age_days", model.factors)
-	model  <- glm( formula, data=train())
-	data$p <- predict(model, data)
+	model   <- glm(formula, data=train())
+	data$p  <- predict(model, data)
 	
 #   Archive the results
-	predictions$lin <- data$p
-	summaries <- c(summaries, linear.model=paste(capture.output(summary(model)), collapse="\r\n"))
+	data$p.lin <- data$p
+	summaries <- c(summaries, lin=print.summary(model))
 
 #   Next we measure the performance
-
-    perform$show(data$age_days, data$p, data$set, perform$r2) 
-    write.table(daply(data, .(species), function(df){
-    	perform$show(df$age_days, df$p, df$set, perform$r2)
-    }))
+	perform$show.by.sp()
+	
 #     
-#   "           performance  0.515  overfit by 0.0121"
+#   "           performance  0.515  overfit by -0.0121"
 #
-#   "beagle"   "performance -0.0123 overfit by 0.0128"
-#   "musculus" "performance  0.251  overfit by 0.0042"
+#   "beagle"   "performance -0.0123 overfit by -0.0128"
+#   "musculus" "performance  0.251  overfit by -0.0042"
 #
 # The performance function
 #
@@ -642,23 +646,22 @@
 	})
 
 	# Summarize
-	s <- 
-	laply(m, function(model){paste(capture.output(summary(model)), collapse="\r\n")})
+	s <- laply(m, function(model){print.summary(model)})
 	names(s) <- paste("lin.by.exp", names(s), sep=".")
 	summaries <- c(summaries, s)
 	
     # Archive the results
-	predictions$lin.by.exp <- data$p
+	data$p.lin.by.exp <- data$p
 	
-	perform$show(data$age_days, data$p, data$set, perform$r2)
-    write.table(daply(data, .(species), function(df){
-    	perform$show(df$age_days, df$p, df$set, perform$r2)
-    }))
+	perform$show.by.sp()
 
-#   overall               "performance 0.117 overfit by -0.0106"
+#   overall               "performance 0.446 overfit by -0.0106"
 #
-#   "beagle"              "performance -0.157   over-fit by  -0.011"
-#   "musculus"            "performance  0.00852 over-fit by  -0.00209"
+#   "beagle"              "performance -0.174   over-fit by  -0.0122"
+#   "musculus"            "performance  0.158   over-fit by  -0.00724"
+
+	# plotting
+	plot_all(val())
 
 # Performance by species
 #
@@ -729,20 +732,19 @@
 	})
 
 	# Summarize
-	s <- 
-	laply(m, function(model){paste(capture.output(summary(model)), collapse="\r\n")})
-	names(s) <- paste("linear.model", names(s), sep=".")
+	s <- laply(m, function(model){print.summary(model)})
+	names(s) <- paste("lin.by.sp", names(s), sep=".")
 	summaries <- c(summaries, s)
 	
     # Archive the results
-	predictions$lin.by.sp <- data$p
+	data$p.lin.by.sp <- data$p
 	
-    write.table(daply(data, .(species), function(df){
-    	perform$show(df$age_days, df$p, df$set, perform$r2)
-    }))
+    perform$show.by.sp()
+
+#                         "performance 0.552 overfit  by   0.0262"
 #
-#   "beagle"              "performance 0.0439 over-fit by  -0.00682"
-#   "musculus"            "performance 0.268  over-fit by   0.0203"
+#   "beagle"              "performance 0.134 over-fit by   0.133"
+#   "musculus"            "performance 0.256 over-fit by   0.00159"
 #
 #   This is a pretty substantial improvement.  Each species is modeled between 2% and 7%
 #   better than before.  It seems that our previous model was doing a lot of work to 
@@ -754,6 +756,54 @@
 #   At this point it is clear that this model will not benefit from the inclusion
 #   of multiple species.  We need a more sophisticated set of models which is what we
 #   develop next.
+
+
+# Linear by species and experiment
+
+	# Build models
+	m <- 
+	dlply(data, .(species), function(df.s){
+		dlply(df.s, .(experiment), function(df){
+			model.factors <- model.factors[! model.factors %in% c("species")]
+			formula       <- f.builder$get_formula("age_days", model.factors)
+			subset        <-(
+			                 as.character(data$experiment) != as.character(df$experiment[1])
+			                 & data$species == df.s$species[1]
+			                 & data$set != "test"
+			                 )
+			
+			print(sum(subset))
+			model         <- glm(formula, data = data[subset,])
+			
+			model
+		})	
+	})
+	m <- c(m[[1]], m[[2]])
+	
+	# Make predictions	
+	data <- ddply(data, .(experiment), function(df){
+		df$p <- predict(m[[df$experiment[1]]], df)
+		df
+	})
+
+	# Summarize
+	s <- llply(m, function(model){print.summary(model)})
+	names(s) <- paste("lin.by.sp.by.exp", names(s), sep=".")
+	summaries <- c(summaries, s)
+	
+    # Archive the results
+	data$p.lin.by.sp.by.exp <- data$p
+	
+	# Show performance
+	perform$show.by.sp()
+
+
+#                         "performance -87.3  overfit by   13.8"
+#
+#   "beagle"              "performance -2.1  over-fit by   0.0394"
+#   "musculus"            "performance -279  over-fit by   46.8"
+
+# More attrocious behavior when the species are divided.
 
 #
 # Interactions model
@@ -768,29 +818,23 @@
 
     # Build up the formula
     inner.factors <- model.factors[! model.factors %in% c("species", "sex" )]
-    outer <- f.builder$get_outer_interactions(model.factors)
-    inner <- f.builder$get_self_interactions(inner.factors)
-    formula <- f.builder$get_formula("age_days", c(model.factors, outer, inner))
+    outer         <- f.builder$get_outer_interactions(model.factors)
+    inner         <- f.builder$get_self_interactions(inner.factors)
+    formula       <- f.builder$get_formula("age_days", c(model.factors, outer, inner))
 
-    model  <- glm( formula, data = data[data$set == 'train',])
-    data$p <- predict(model, data)
+    model         <- glm(formula, data = data[data$set == 'train',])
+    data$p        <- predict(model, data)
     
     # archive the results
-	predictions$lin.inter <- data$p
-	summaries <- c(summaries, lin.inter=paste(capture.output(summary(model)), collapse="\r\n"))
+	data$p.lin.inter <- data$p
+	summaries <- c(summaries, lin=print.summary(model))
 
-
-    perform$show(data$age_days, data$p, data$set, perform$r2)          
+	perform$show.by.sp()
 #
-#   "performance 0.306 overfit by -0.0129"
+#                         "performance 0.533  overfit by   0.0655"
 #
-    plot_p(val())
-    write.table(daply(data, .(species), function(df){
-    	perform$show(df$age_days, df$p, df$set, perform$r2)
-    }))
-#
-#   "beagle"              "performance 0.0675 over-fit by -0.0277"
-#   "musculus"            "performance 0.268  over-fit by  0.0167"
+#   "beagle"              "performance 0.0239 over-fit by  0.286"
+#   "musculus"            "performance 0.281  over-fit by  0.00114"
 #
 #    The interactions model performs slightly better than what came before, but not
 #    much.  It appears that separating by species already delivered most of the value.
@@ -800,13 +844,16 @@
 	# Make models
 	m <- 
 	dlply(data, .(species), function(df){
+		
 		model.factors <- model.factors[! model.factors %in% c("species")]
 		outer.factors <- model.factors[! model.factors %in% c("experiment" , "sex")]
 		inner.factors <- model.factors[! model.factors %in% c("experiment", "species", "sex")]
-		outer <- f.builder$get_outer_interactions(outer.factors)
-		inner <- f.builder$get_self_interactions(inner.factors)
+		
+		outer         <- f.builder$get_outer_interactions(outer.factors)
+		inner         <- f.builder$get_self_interactions(inner.factors)
 		model.factors <- c(model.factors, outer, inner)
-		formula <- f.builder$get_formula("age_days", model.factors)
+		
+		formula       <- f.builder$get_formula("age_days", model.factors)
 	
 		model         <- glm( formula, data = df[df$set == 'train',])
 		
@@ -822,24 +869,20 @@
 	})
 	
 	# archive results
-	predictions$lin.inter.by.sp <- data$p	
-	s <- laply(m, function(model){paste(capture.output(summary(model)), collapse="\r\n")})
-	names(s) <- paste("lin.inter.by.sp", names(s), sep=".")
-	summaries <- c(summaries, s)
+	data$p.lin.inter.by.sp <- data$p	
+	s                      <- laply(m, function(model){print.summary(model)})
+	names(s)               <- paste("lin.inter.by.sp", names(s), sep=".")
+	summaries              <- c(summaries, s)
 		
 	# show results
-	plot_p(val())
-	perform$show(data$age_days, data$p, data$set, perform$r2)
-	write.table(daply(data, .(species), function(df){
-		perform$show(df$age_days, df$p, df$set, perform$r2)
-	}))
-	
+	plot_all(val())
+	perform$show.by.sp()
 
 #
-#   Overall               "performance 0.331 overfit by 0.00437"
+#   Overall               "performance 0.585 overfit by    0.0247"
 #
-#   "beagle"              "performance 0.1    over-fit by  0.00137"   (0.0703 before)
-#   "musculus"            "performance 0.297  over-fit by  0.0213"    (0.265 before)
+#   "beagle"              "performance 0.233  over-fit by  0.123"
+#   "musculus"            "performance 0.282  over-fit by  0.000557"
 #
 #   We continue to improve.  This means that
 #   there were portions of this model which, even when squared, were still species dependent.
@@ -881,20 +924,16 @@
 	})
 
 	# Summarize
-	s <- 
-	laply(m, function(model){paste(capture.output(summary(model)), collapse="\r\n")})
-	names(s) <- paste("lin.by.exp", names(s), sep=".")
+	s <- laply(m, function(model){print.summary(model)})
+	names(s) <- paste("lin.inter.by.exp", names(s), sep=".")
 	summaries <- c(summaries, s)
 	
     # Archive the results
-	predictions$lin.by.exp <- data$p
+	data$p.lin.inter.by.exp <- data$p
 	
-	perform$show(data$age_days, data$p, data$set, perform$r2)
-    write.table(daply(data, .(experiment), function(df){
-    	perform$show(df$age_days, df$p, df$set, perform$r2)
-    }))
+	perform$show.by.sp()
 
-	# [1] "performance -4.88 overfit by -3.93"
+	# [1] "performance -0.904 overfit by 0.797"
 
 #   This result shows an intense failing of the interactions model.  It is
 #   overfitting with respect to experiment.  When the test data was cut from multiple
@@ -908,8 +947,21 @@
 	dlply(data, .(species), function(df.s){
 		dlply(df.s, .(experiment), function(df){
 			
+			model.factors <- model.factors[! model.factors %in% c("species")]
+			outer.factors <- model.factors[! model.factors %in% c("experiment" , "sex")]
+			inner.factors <- model.factors[! model.factors %in% c("experiment", "species", "sex")]
+	
+			outer         <- f.builder$get_outer_interactions(outer.factors)
+			inner         <- f.builder$get_self_interactions(inner.factors)
+			model.factors <- c(model.factors, outer, inner)
+			
 	    	formula       <- f.builder$get_formula("age_days", c(model.factors, outer, inner))
-			subset        <-(df.s$experiment != df$experiment[1] & df.s$set != "test")
+			subset        <-(
+			                 as.character(data$experiment) != as.character(df$experiment[1])
+			                 & data$species == df.s$species[1]
+			                 & data$set != "test"
+			                 )
+			
 			model         <- glm(formula, data = data[subset,])
 			
 			model
@@ -924,24 +976,19 @@
 	})
 
 	# Summarize
-	s <- 
-	laply(m, function(model){paste(capture.output(summary(model)), collapse="\r\n")})
-	names(s) <- paste("lin.inter.by.exp", names(s), sep=".")
+	s <- llply(m, function(model){print.summary(model)})
+	names(s) <- paste("lin.inter.by.sp.by.exp", names(s), sep=".")
 	summaries <- c(summaries, s)
 	
     # Archive the results
-	predictions$lin.inter.by.exp <- data$p
+	data$p.lin.inter.by.sp.by.exp <- data$p
 	
-	perform$show(data$age_days, data$p, data$set, perform$r2)
-    write.table(daply(data, .(species), function(df){
-    	perform$show(df$age_days, df$p, df$set, perform$r2)
-    }))
+	# Show performance
+	perform$show.by.sp()
     
-    # [1] "performance 0.279 overfit by 0.00866"
-
-#   Amazing improvement, looks like pulling the species together was doing
-#   nothing but harm.  With them seperated our performance stays very high
-#   between species.
+#   Overall               "performance -53235 overfit by   11158"
+#
+#   Absurdly aweful performance!
 
 
 #
@@ -955,40 +1002,37 @@
 
 	# build models
 	set.seed(69)                          # stabalize results
+	data <- data[sample(nrow(data)),]     # gbm requires that data is shuffled
+	
 	trees <- 500
 	model   <- gbm(
-		formula = as.formula(f.builder$get_formula("age_days", model.factors)),
+		formula      = as.formula(f.builder$get_formula("age_days", model.factors)),
 		distribution = "gaussian",
-		data = train(),
-		n.trees = trees,
+		data         = train(),
+		n.trees      = trees,
 		interaction.depth = 4,
 		n.minobsinnode = 5,
-		shrinkage = 0.1,
-		cv.folds = 5,
-		verbose = TRUE
+		shrinkage    = 0.1,
+		cv.folds     = 5,
+		verbose      = TRUE
 	)
 	
 	# Make predictions
 	best.iter <- gbm.perf(model, method="cv")
-	data$p <- predict(model, data, best.iter)
+	data$p    <- predict(model, data, best.iter)
 	
 	# Archive results
-	predictions$gbm <- data$p
-	summaries <- c(summaries, gbm=paste(capture.output(summary(model)), collapse="\r\n") )
+	data$p.gbm <- data$p
+	summaries  <- c(summaries, gbm=print.summary(model))
 	
 	# Print results	
-	perform$show(data$age_days, data$p, data$set, perform$r2)      
-#
-#   "performance 0.559 over-fit by -0.0574"    (0.384 before)
-#
-	plot_p(val())
 	plot_all(val())
-	write.table(daply(data, .(species), function(df){
-		perform$show(df$age_days, df$p, df$set, perform$r2)
-	}))
+	perform$show.by.sp()
+	
+#   Overall               "performance 0.652 overfit by    0.0675"
 #
-#   "beagle"              "performance 0.56   over-fit by -0.0975"   (0.104 before)
-#   "musculus"            "performance 0.293  over-fit by  0.00751"  (0.292 before)
+#   "beagle"              "performance 0.489  over-fit by  0.284"
+#   "musculus"            "performance 0.293  over-fit by  0.00276"
 #
 #   We are gettings a really shocking improvement in the beagle scores.
 #   This gives us another thing to look into.  The linear models have a hard
@@ -1000,9 +1044,12 @@
 #
 
 	# build models
+	set.seed(69)                          # stabalize results
+	data <- data[sample(nrow(data)),]     # gbm requires that data is shuffled
+
 	m <- 
 	dlply(data, .(species), function(df){
-		set.seed(69)
+		
 		trees <- 500
 		model   <- gbm(
 			formula = as.formula(f.builder$get_formula("age_days", model.factors)),
@@ -1030,25 +1077,22 @@
 	})
 	
 	# archive results
-	predictions$gbm.by.sp <- data$p	
-	s <- laply(m, function(model){paste(capture.output(summary(model)), collapse="\r\n")})
+	data$p.gbm.by.sp <- data$p	
+	s <- laply(m, function(model){print.summary(model)})
 	names(s) <- paste("gbm.by.sp", names(s), sep=".")
 	summaries <- c(summaries, s)	
 	
-	
-	perform$show(data$age_days, data$p, data$set, perform$r2)      # "performance 0.577 over-fit by -0.0738"
-	plot_p(val())
+	# show results	
 	plot_all(val())
-	write.table(daply(data, .(species), function(df){
-		perform$show(df$age_days, df$p, df$set, perform$r2)
-	}))
+	perform$show.by.sp()
 
-#   "beagle"              "performance 0.589 over-fit by -0.123"       (0.56 before)
-#   "musculus"            "performance 0.311 over-fit by -0.000453"    (0.293 before)
+
+#   Overall               "performance 0.649 overfit by    0.0962"
 #
-#   We see small, but not meaningless, improvements, especially in the mouse data.
-#   This suggests that we still have a ways to go to find the perfect model and we
-#   still are not at an ideal model where the results of one species can inform another.
+#   "beagle"              "performance 0.469  over-fit by  0.385"
+#   "musculus"            "performance 0.3    over-fit by  0.0125"
+#
+#   No real improvements over the species independent model.
 
 
 # GBM by experiment
@@ -1056,13 +1100,15 @@
 #     Now its time to see if the GBM results hold up.
 
 	# Build models
+	set.seed(69)                          # stabalize results
+	data <- data[sample(nrow(data)),]     # gbm requires that data is shuffled
+
 	m <- 
 	dlply(data, .(experiment), function(df){
 		
 		subset        <- (data$experiment != df$experiment[1] & data$set != "test")
 		
 		# build models
-		set.seed(69)                          # stabalize results
 		trees <- 500
 		model   <- gbm(
 			formula = as.formula(f.builder$get_formula("age_days", model.factors)),
@@ -1087,35 +1133,43 @@
 	})
 
 	# Summarize
-	s <- 
-	laply(m, function(model){paste(capture.output(summary(model)), collapse="\r\n")})
+	s <- laply(m, function(model){print.summary(model)})
 	names(s) <- paste("gbm.by.exp", names(s), sep=".")
 	summaries <- c(summaries, s)
 	
     # Archive the results
-	predictions$gbm.by.exp <- data$p
+	data$p.gbm.by.exp <- data$p
 	
-	perform$show(data$age_days, data$p, data$set, perform$r2)
-    write.table(daply(data, .(species), function(df){
-    	perform$show(df$age_days, df$p, df$set, perform$r2)
-    }))
-    
-	# [1] "performance 0.179 overfit by -0.0234"
-	# "beagle" "performance -0.0799 overfit by -0.0448"
-	# "musculus"     "performance 0.0863 overfit by 0.0198"
+	# Show results
+	perform$show.by.sp()
 
+    
+#   Overall               "performance -0.673 overfit by    0.0759"
+#
+#   omg, falling down.  Its all due to that damn really low dose exp.
+#
 	
 # GBM by experiment by species
 
+	set.seed(69)                          # stabalize results
+	data <- data[sample(nrow(data)),]     # gbm requires that data is shuffled
+
 	m <- 
 	dlply(data, .(species), function(df.s){
+		df.s$experiment <- factor(df.s$experiment)      # prevent model from running
+													    # experiments from the other 
+													    # species
 		dlply(df.s, .(experiment), function(df){
 			
 	    	formula       <- f.builder$get_formula("age_days", c(model.factors, outer, inner))
-			subset        <-(df.s$experiment != df$experiment[1] & df.s$set != "test")
+
+			subset        <-(
+			                 as.character(data$experiment) != as.character(df$experiment[1])
+			                 & data$species == df.s$species[1]
+			                 & data$set != "test"
+			                 )
 					
 			# build models
-			set.seed(69)                          # stabalize results
 			trees <- 500
 			model   <- gbm(
 				formula = as.formula(f.builder$get_formula("age_days", model.factors)),
@@ -1143,28 +1197,19 @@
 	})
 
 	# Summarize
-	s <- 
-	laply(m, function(model){paste(capture.output(summary(model)), collapse="\r\n")})
+	s <- llply(m, function(model){print.summary(model)})
 	names(s) <- paste("gbm.by.sp.by.exp", names(s), sep=".")
 	summaries <- c(summaries, s)
 	
     # Archive the results
-	predictions$gbm.by.sp.by.exp <- data$p
+	data$p.gbm.by.sp.by.exp <- data$p
 	
-	perform$show(data$age_days, data$p, data$set, perform$r2)
-    write.table(daply(data, .(species), function(df){
-    	perform$show(df$age_days, df$p, df$set, perform$r2)
-    }))	
+	perform$show.by.sp()
 
 
-	#                 performance 0.524 overfit by 0.00858"
+	# performance -9.3 overfit by -0.023"
 	#
-	# "beagle"       "performance 0.481 overfit by 0.0234"
-	# "musculus"     "performance 0.256 overfit by 0.0181"	#
-	# A surprising outcome, our overall improvement is better while our mus
-	# musculus is not as good at the linear interactions model.  
-	#
-	# I also don't understand why the overall performance is lower than its sub components
+	# More awefulness.  We can't generalize!
 	
 	
 
@@ -1210,8 +1255,8 @@
 	tail(my.hazard)
 	
 # One thing to note here is that dt is not constant,
-# so the hazard rate is defined over different emails
-# this is nice for the math, but perhaps decieving at 
+# so the hazard rate is defined over different time spans.
+# This is nice for the math, but perhaps decieving at 
 # first glance.
 
 
@@ -1259,15 +1304,27 @@
 #         is slow.
 
 	model        <- coxph(Surv(data$age_days) ~ species, data = data)
-	val.predict  <- aaply(model$linear.predictors[data$set == "val"], 1, function(x){
+	val.predict  <- aaply(model$linear.predictors, 1, function(x){
 	                        haz.median(my.hazard$time, my.hazard$hazard * exp(x))
 	                    })
+	data$p       <- val.predict
 	                    
-	data.frame(
-		predict=head(val.predict, 20), 
-		age=head(val()$age_days, 20), 
-		species=head(val()$species, 20)
-		)
+	perform$show.by.sp()
+
+
+# Cox with prediction
+#
+#     Lets try actually making a prediction
+#
+
+	model        <- coxph(Surv(train()$age_days) ~ species, data = train())
+	val.predict  <- aaply(predict(model, data), 1, function(x){
+	                        haz.median(my.hazard$time, my.hazard$hazard * exp(x))
+	                    })
+	data$p       <- val.predict
+	                    	                    
+	perform$show.by.sp()
+
 
 # Simple Cox - Stim to stern
 #
@@ -1279,7 +1336,7 @@
 		model <- coxph(Surv(df$age_days) ~ sex, data = df)
 
 		df$p  <- aaply(model$linear.predictors, 1, function(x){
-	                 haz.mean(my.hazard$time, my.hazard$hazard * exp(x))
+	                 haz.median(my.hazard$time, my.hazard$hazard * exp(x))
 	             })
 		df
 	})
@@ -1293,6 +1350,109 @@
 		perform$show(df$age_days, df$p, df$set, perform$r2)
 	}))
 	
+
+# Linear Hazards
+#
+	formula      <- f.builder$get_formula("Surv(train()$age_days)", model.factors)
+	model        <- coxph(formula(formula), data = train())
+	val.predict  <- aaply(predict(model, data), 1, function(x){
+	                        haz.median(my.hazard$time, my.hazard$hazard * exp(x))
+	                    })
+	data$p       <- val.predict
+	
+	# archive results
+	data$p.cox <- data$p	
+	summaries <- c(summaries, cox=print.summary(model))	
+
+	# show results	
+	plot_all(val())
+	perform$show.by.sp()     
+	
+#   Overall               "performance -0.0223 overfit by   0.172"
+#
+#   "beagle"              "performance -2.16  over-fit by  -0.607"
+#   "musculus"            "performance  0.237 over-fit by   0.00308"
+#
+#   Moderate performance on mouse, very poor on the dog.        	                    
+	                    	                    	
+# Linear Hazards by species
+#
+
+	# Make models	
+	m <- 
+	dlply(data, .(species), function(df){
+		
+		survive      <- "Surv(df[df$set == 'train',]$age_days)"
+		formula      <- f.builder$get_formula(survive, model.factors)
+		model        <- coxph(formula(formula), data = df[df$set == 'train',])
+		
+		model
+	})
+	
+	# Make predictions	
+	data <- 
+	ddply(data, .(species), function(df){
+		model <- m[[df$species[1]]]
+		df$p <- aaply(predict(model, df), 1, function(x){
+	                 haz.median(my.hazard$time, my.hazard$hazard * exp(x))
+	             })
+
+		df
+	})
+	
+	# archive results
+	data$p.cox.by.sp <- data$p	
+	s <- laply(m, function(model){print.summary(model)})
+	names(s) <- paste("cox.by.sp", names(s), sep=".")
+	summaries <- c(summaries, s)	
+
+	# show results	
+	plot_all(val())
+	perform$show.by.sp()
+
+#   Overall               "performance 0.0877 overfit by    0.00439"
+#
+#   "beagle"              "performance -1.72  over-fit by   0.0814"
+#   "musculus"            "performance  0.241 over-fit by   0.00195"
+#
+#   Moderate performance on mouse, very poor on the dog. 
+
+
+# Linear hazards by experiment
+#
+	# Make models	
+	m <- 
+	dlply(data, .(experiment), function(df){
+		
+		subset       <- data$set != 'test' & data$experiment != df$experiment[1]
+		survive      <- "Surv(data[subset,]$age_days)"
+		formula      <- f.builder$get_formula(survive, model.factors)
+		model        <- coxph(formula(formula), data = data[subset,])
+		
+		model
+	})
+	
+	# Make predictions	
+	data <- 
+	ddply(data, .(experiment), function(df){
+		model <- m[[df$experiment[1]]]
+		df$p <- aaply(predict(model, df), 1, function(x){
+	                 haz.median(my.hazard$time, my.hazard$hazard * exp(x))
+	             })
+
+		df
+	})
+	
+	# archive results
+	data$p.cox.by.exp <- data$p	
+	s <- laply(m, function(model){print.summary(model)})
+	names(s) <- paste("cox.by.exp", names(s), sep=".")
+	summaries <- c(summaries, s)	
+
+	# show results	
+	plot_all(val())
+	perform$show.by.sp()
+
 
 # Interaction Hazards 
 #
@@ -1352,7 +1512,7 @@
 	})
 	
 	# archive results
-	predictions$cox.inter.by.sp <- data$p	
+	data$p.cox.inter.by.sp <- data$p	
 	s <- laply(m, function(model){paste(capture.output(summary(model)), collapse="\r\n")})
 	names(s) <- paste("cox.inter.by.sp", names(s), sep=".")
 	summaries <- c(summaries, s)
