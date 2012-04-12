@@ -352,6 +352,44 @@
 	}
 	# perform$show.by.sp()
 	
+	perform$get.by <- function(
+		outcome=data$age_days, prediction=data$p, 
+		species=data$species, group=data$group, experiment=data$experiment,
+		set=data$set, measure=perform$r2,
+		by.sp=FALSE, by.exp=FALSE, by.group=FALSE){
+		
+		data <- data.frame(o=outcome, p=prediction, sp=species, 
+		                   group=group, exp=experiment, set=set)
+				
+		# Overall
+		result <- perform$get(data$o, data$p, data$set, measure)
+		
+		# By species
+		if(by.sp){
+			result <- ddply(data, .(sp), function(df){
+		    	perform$get(df$o, df$p, df$set, measure)
+		    })
+		}
+		
+		# By experiment
+		if(by.exp){
+			result <- ddply(data, .(exp), function(df){
+		    	perform$get(df$o, df$p, df$set, measure)
+		    })	
+		}
+		
+		# By group
+		if(by.group){
+			result <- ddply(data, .(group), function(df){
+		    	perform$get(df$o, df$p, df$set, measure)
+		    })
+		}
+		
+		result		
+	}	
+	# perform$get.by(by.sp=FALSE, by.group=TRUE, by.exp=FALSE)
+
+	
 	# get a model summary as a character string
 	print.summary <- function(model){
 		paste(capture.output(summary(model)), collapse="\r\n")

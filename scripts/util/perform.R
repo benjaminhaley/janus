@@ -36,16 +36,40 @@ perform$r2 <- function(actual, predicted){
 	perform$._result           <- perform$r2(perform$._input_actual, perform$._input_predicted)
 	stopifnot(identical(perform$._result, perform$._expected))
 
-# A well formatted report that shows overfit
-perform$show <- 
+
+# Results as an array
+perform$get <- 
 function(actual, predicted, set, perform.function){
 	perform.train      <- perform.function(actual[set == 'train'], predicted[set == 'train'])
 	perform.val        <- perform.function(actual[set == 'val'], predicted[set == 'val'])
 	overfit            <- perform.train - perform.val
 	
+	c(performance=perform.val, overfit=overfit)
+}
+
+# Test 
+	perform$._input_actual     <- c(0, 2, 3, 6)
+	perform$._input_predicted  <- c(0, 2, 3, 5)
+	perform$._input_set        <- c('train', 'train', 'val', 'val')
+	perform$._expected         <- c(performance=(7/9), overfit=(2/9))
+	perform$._result           <- perform$get(
+	                                  perform$._input_actual, 
+	                                  perform$._input_predicted, 
+	                                  perform$._input_set, 
+	                                  perform$r2
+	                              )
+	stopifnot(identical(perform$._result, perform$._expected))	
+	
+	
+# A well formatted report that shows overfit
+perform$show <- 
+function(actual, predicted, set, perform.function){
+	# get results
+	r                  <- perform$get(actual, predicted, set, perform.function)
+	
 	# gussy it up
-	pretty.perform.val <- format(perform.val, scientific = FALSE, digits = 3)
-	pretty.overfit     <- format(overfit, scientific = FALSE, digits = 3)
+	pretty.perform.val <- format(r["performance"], scientific = FALSE, digits = 3)
+	pretty.overfit     <- format(r["overfit"], scientific = FALSE, digits = 3)
 	report             <- paste("performance", pretty.perform.val, "overfit by", pretty.overfit)
 	
 	report
