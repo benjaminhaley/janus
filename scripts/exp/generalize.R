@@ -1579,189 +1579,115 @@
 #
 #     What were all the performances again?
 
-	performs <- llply(predictions, function(p){
-		perform$show(data$age_days, p, data$set, perform$r2)	
+	performances <- ldply(data[grep("^p\\.", names(data))], function(p){
+		perform$get(data$age_days, p, data$set, perform$r2)
 	})
-	
-	performs
-	
-	# here are the most important ones
-	
-	# $lin.inter.by.sp
-	# [1] "performance 0.336 overfit by 0.00434"
-	
-	# $gbm
-	# [1] "performance 0.559 overfit by -0.0574"
-	
-	# $gbm.by.sp
-	# [1] "performance 0.577 overfit by -0.0738"
-	
-	# $cox.inter.by.sp
-	# [1] "performance 0.203 overfit by 0.0116"
 
-
-# Summaries
+                        # .id   performance       overfit
+# 1                     p.cox -2.230827e-02 -1.719057e-01
+# 2              p.cox.by.exp -5.501050e-02 -1.576647e-01
+# 3               p.cox.by.sp  8.765189e-02  4.390260e-03
+# 4                     p.gbm  6.521162e-01  6.751996e-02
+# 5              p.gbm.by.exp -6.726940e-01  7.588299e-02
+# 6               p.gbm.by.sp  6.494334e-01  9.618151e-02
+# 7        p.gbm.by.sp.by.exp -9.304917e+00 -2.301176e-02
+# 8                     p.lin  5.146333e-01 -1.207797e-02
+# 9              p.lin.by.exp  4.455600e-01 -1.397710e-02
+# 10              p.lin.by.sp  5.524261e-01  2.622641e-02
+# 11       p.lin.by.sp.by.exp -8.726635e+01  1.376681e+01
+# 12              p.lin.inter  5.328988e-01  6.551211e-02
+# 13       p.lin.inter.by.exp -9.035393e-01  7.974985e-01
+# 14        p.lin.inter.by.sp  5.854092e-01  2.471505e-02
+# 15 p.lin.inter.by.sp.by.exp -5.323549e+04  1.115826e+04	
+# So 
+#   GBM and interactions by species do the best on studies they have already seen
+#   Only the linear model with merged species can generalize well
+#   Cox does surprisingly poorly.
 #
-#    What really mattered
+# Each of these findings demand some investigation.
 
-	 l_ply(
-	     names(summaries), 
-	     function(s){cat('\r\n \r\n \r\n'); cat(s); cat('\r\n \r\n'); cat(summaries[[s]])}
-	 )
-	 
-	# Below we highlight the significant parts of the models.  For gbm, everything above 1% relative influence
-	 	 
-	# lin.inter.by.sp.beagle
-	 
-	# Deviance Residuals: 
-	    # Min       1Q   Median       3Q      Max  
-	# -1923.7  -1491.7   -392.3   1305.8   4569.8  
-	# Coefficients: (21 not defined because of singularities)
-	                                                       # Estimate Std. Error t value Pr(>|t|)    
-	# (Intercept)                                           2.373e+03  5.053e+04   0.047 0.962556    
-	
-	# I(first_exposure_age_days * first_exposure_age_days) -6.498e-04  2.352e-04  -2.763 0.005845 ** 
-	# I(cgy_per_min_gamma * cgy_per_min_gamma)              8.744e-01  2.441e-01   3.582 0.000359 ***
-	# I(cgy_total_gamma * cgy_total_gamma)                 -1.505e-05  7.230e-06  -2.081 0.037717 *  
- 
-  
-	# lin.inter.by.sp.musculus
-	 
-	# Deviance Residuals: 
-	    # Min       1Q   Median       3Q      Max  
-	# -820.58  -120.58     8.77   131.68   555.03  
-	# Coefficients: (9 not defined because of singularities)
-	                                                       # Estimate Std. Error t value Pr(>|t|)    
-	# (Intercept)                                           9.218e+02  1.139e+01  80.958  < 2e-16 ***
-	# sexM                                                  2.512e+01  2.525e+00   9.948  < 2e-16 ***
-	# first_exposure_age_days                               4.365e-01  1.166e-01   3.743 0.000182 ***
-	# cgy_per_min_gamma                                    -2.496e+00  8.860e-01  -2.817 0.004848 ** 
-	# cgy_total_gamma                                      -3.094e-01  2.974e-02 -10.401  < 2e-16 ***
-	# cgy_total_neutron                                    -2.038e+00  4.799e-01  -4.247 2.18e-05 ***
-	# fractions_gamma                                       1.676e+00  3.797e-01   4.414 1.02e-05 ***
-	# fractions_neutron                                    -2.372e+00  1.362e+00  -1.741 0.081730 .  
-	# I(first_exposure_age_days * first_exposure_age_days) -7.552e-04  1.778e-04  -4.248 2.17e-05 ***
-	# I(cgy_per_min_gamma * cgy_per_min_gamma)              8.591e-01  1.243e-01   6.914 4.83e-12 ***
-	# I(cgy_per_min_neutron * cgy_per_min_neutron)         -1.716e+00  7.918e-01  -2.167 0.030221 *  
-	# I(cgy_total_gamma * cgy_total_gamma)                  6.674e-05  6.230e-06  10.713  < 2e-16 ***
-	# I(cgy_total_neutron * cgy_total_neutron)              4.915e-03  4.956e-04   9.918  < 2e-16 ***
-	# I(fractions_gamma * fractions_gamma)                 -1.706e-03  4.990e-04  -3.418 0.000631 ***
-	# I(fractions_neutron * fractions_neutron)              1.995e-02  2.337e-03   8.537  < 2e-16 ***
-	# first_exposure_age_days:cgy_per_min_gamma             1.219e-02  5.237e-03   2.328 0.019921 *  
-	# first_exposure_age_days:fractions_gamma              -9.773e-03  3.176e-03  -3.078 0.002089 ** 
-	# cgy_per_min_gamma:cgy_total_gamma                    -4.940e-02  6.280e-03  -7.865 3.84e-15 ***
-	# cgy_per_min_gamma:fractions_gamma                     7.701e-01  3.223e-01   2.390 0.016876 *  
-	# cgy_per_min_neutron:cgy_total_neutron                 1.090e-01  4.180e-02   2.609 0.009097 ** 
-	# cgy_per_min_neutron:fractions_neutron                -5.142e+00  1.742e+00  -2.952 0.003161 ** 
-	# cgy_total_gamma:fractions_gamma                       2.540e-04  1.080e-04   2.353 0.018650 *  
-	 
-	 	 
-	# gbm
-	 
-	                      # var     rel.inf
-	# 1         cgy_total_gamma 32.15901907
-	# 2 first_exposure_age_days 23.06594351
-	# 3       cgy_per_min_gamma 19.42900864
-	# 4                 species 19.38667725
-	# 5       cgy_total_neutron  2.72459269
-	# 6                     sex  2.46659372
-	 
-	 
-	# gbm.by.sp.beagle
-	 
-	                      # var    rel.inf
-	# 1         cgy_total_gamma 39.1733240
-	# 2 first_exposure_age_days 32.8251058
-	# 3       cgy_per_min_gamma 24.1942131
-	# 4                     sex  3.4178949
-	 
-	 
-	# gbm.by.sp.musculus
-	 
-	                      # var   rel.inf
-	# 1         cgy_total_gamma 35.401596
-	# 2       cgy_total_neutron 30.125410
-	# 3       cgy_per_min_gamma 10.650824
-	# 4 first_exposure_age_days  8.868773
-	# 5         fractions_gamma  5.462032
-	# 6       fractions_neutron  4.669025
-	# 7     cgy_per_min_neutron  3.536614
-	# 8                     sex  1.285726
-	 
-	 	 
-	# cox.inter.by.sp.beagle
-	 
-	# Call:
-	# coxph(formula = formula(formula), data = df)
-	  # n= 1523, number of events= 1523 
-	                                 # coef  exp(coef)   se(coef)      z Pr(>|z|)    
-	# sexM                       -9.456e-02  9.098e-01  5.172e-02 -1.828   0.0675 .  
-	# first_exposure_age_days    -4.266e-04  9.996e-01  1.048e-04 -4.073 4.65e-05 ***
-	# cgy_per_min_gamma           1.301e-02  1.013e+00  1.615e-03  8.056 7.77e-16 ***
-	# cgy_total_gamma            -3.218e-05  1.000e+00  1.420e-05 -2.267   0.0234 *  
-	 
-	 	 
-	# cox.inter.by.sp.musculus
-	 
-	# Call:
-	# coxph(formula = formula(formula), data = df)
-	  # n= 40424, number of events= 40424 
-	                                 # coef  exp(coef)   se(coef)       z Pr(>|z|)    
-	# sexM                       -1.700e-01  8.437e-01  1.027e-02 -16.552  < 2e-16 ***
-	# first_exposure_age_days    -1.149e-03  9.989e-01  8.154e-05 -14.087  < 2e-16 ***
-	# cgy_per_min_gamma           1.777e-02  1.018e+00  8.308e-04  21.394  < 2e-16 ***
-	# cgy_per_min_neutron        -5.814e-02  9.435e-01  3.269e-03 -17.785  < 2e-16 ***
-	# cgy_total_gamma             1.014e-03  1.001e+00  1.204e-05  84.269  < 2e-16 ***
-	# cgy_total_neutron           8.156e-03  1.008e+00  1.087e-04  75.054  < 2e-16 ***
-	# fractions_gamma            -3.620e-03  9.964e-01  1.938e-04 -18.677  < 2e-16 ***
-	# fractions_neutron          -1.081e-03  9.989e-01  2.460e-04  -4.394 1.11e-05 ***
-	 
-	 
-# Residuals
+# Significance?
 #
-#    It will be helpful to know who did the best at what
-
-	residuals = predictions - data$age_days
-	residuals_sq <- data.frame(residuals ^ 2)
-
-# GBM vs simple linear
+#     First we must ask, are the differences between these models actually
+#     significant. The answer is not straightforwards.  Modeling the
+#     uncertainty of a cross validated estimate of performance turns out to
+#     be very difficult.  http://www.jstor.org/stable/2965703
 #
-#     Lets compare our best model, gbm by species, with our worst model, the
-#     simple linear model.
-
-	plot_all(val(), 
-	    x=residuals_sq$lin[data$set == "val"], 
-	    y=residuals_sq$gbm.by.sp[data$set == "val"]
-	)
-
-#     From these graphs it is obvious that the simple linear model is failing
-#     drammatically when the total dose gets very high.  This is resulting in 
-#     a non-linear effect, acute radiation poisioning, which gbm can identify
-#     by proper cutoffs.
-
-# GBM vs cox
+#     However, we can use a simpler test to check whether the correlations
+#     between the model's predictions and the actual result is significant.
+#     The Fischer transformation (http://en.wikipedia.org/wiki/Fisher_transformation)
+#     allows us to convert an r value to a z score under the assumption that (X, Y)
+#     has a bivariate normal distribution, that is that the deviance in X and Y are 
+#     uncorrelated to eachother.
 #
-#    A more interesting comparison is the results of the best cox model vs
-#    the best gbm model.
+#     This assumption is clearly violated:
 
-	plot_all(val(), 
-	    x=residuals_sq$cox.interactions.by.sp[data$set == "val"], 
-	    y=residuals_sq$gbm.by.sp[data$set == "val"]
-	)
+	ggplot(val(), aes(x=age_days, y=p.gbm)) + geom_point(size=1, alpha=0.1)
+
+#   But we will still apply this assumption to get a ballpark picture
+#   of significance.  Here are the functions we will need:
+
+
+	fisher <- ldply(val()[grep("^p\\.", names(val()))], function(predictions){
+		p    <- 0.95
+		r    <- cor(predictions, val()$age_days)
+		z    <- 0.5 * (log(1 + r) - log(1 - r))
+		n    <- nrow(val())
+		
+		se   <- 1 / (n - 3)^0.5
+		zhigh<- z - qnorm(p) * se
+		zlow <- z + qnorm(p) * se
+		rhigh<- (exp(2 * zhigh) - 1) / (exp(2 * zhigh) + 1)
+		rlow <- (exp(2 * zlow ) - 1) / (exp(2 * zlow ) + 1)
+		
+		t    <- rs * sqrt(n - 2) / sqrt(1 - rs^2)
+
+		round(c(r=r, lower=rlow, upper=rhigh), 3)
+	})	
 	
-	# Surprisingly GBM is not better in most cases, only 4193 / 8883 in the
-	# validation set.
+	names(fisher)[1] <- "model"
+	fisher           <- fisher[order(fisher$r),]
+	fisher$model     <- factor(fisher$model, levels=(fisher$model))
+	rownames(fisher) <- 1:nrow(fisher)
+
+	model.number = 1:nrow(fisher)
+	ggplot(data=fisher) + geom_pointrange(aes(x=model.number, y=r, ymin=lower, ymax=upper, color=model))
+	fisher
+
+	                      # model      r lower  upper
+	# 1  p.lin.inter.by.sp.by.exp -0.002 0.016 -0.020
+	# 2        p.lin.by.sp.by.exp  0.026 0.044  0.008
+	# 3        p.gbm.by.sp.by.exp  0.073 0.091  0.055
+	# 4              p.gbm.by.exp  0.143 0.161  0.125
+	# 5               p.cox.by.sp  0.297 0.313  0.280
+	# 6        p.lin.inter.by.exp  0.400 0.415  0.385
+	# 7              p.cox.by.exp  0.642 0.653  0.632
+	# 8              p.lin.by.exp  0.670 0.680  0.660
+	# 9                     p.cox  0.681 0.690  0.671
+	# 10                    p.lin  0.719 0.727  0.710
+	# 11              p.lin.inter  0.732 0.740  0.724
+	# 12              p.lin.by.sp  0.744 0.752  0.735
+	# 13        p.lin.inter.by.sp  0.765 0.773  0.758
+	# 14              p.gbm.by.sp  0.806 0.812  0.800
+	# 15                    p.gbm  0.808 0.814  0.801
 	
-	gbm_better <- residuals_sq$gbm.by.sp / residuals_sq$cox.interactions.by.sp > 1.0
-	sum(gbm_better & data$set == "val"); sum(data$set == "val")  # [1] 4193 [1] 8883
+	# We don't want to take much from this evaluation, because we cannot 
+	# meet the full criteria for performing a valid fisher test, but in
+	# general we can see that the model's performances are significantly
+	# different from eachother.
+	#
+	# We also have the potential for increasing the confidence intervals
+	# 	
 	
-	# GBM performs better on studies 4, 14, and 2 but worse on most of the dog studies
-	sort(table(data$experiment[gbm_better]) / sum(gbm_better)) / (table(data$experiment[! gbm_better]) / sum(! gbm_better))
-	
-	# Gender was hardly different
-	sort(table(data$sex[gbm_better]) / sum(gbm_better)) / (table(data$sex[! gbm_better]) / sum(! gbm_better))
-	
-	
+
+# Linear generalization
+#
+#    Why does linear genearlize between experiments?
+#    Shouldn't the linear by species models generalize better?
+
+	# Because of species?
+	#   Perhaps other models generalize to the same species, but not
+	#   different species?
 	
 	
 
