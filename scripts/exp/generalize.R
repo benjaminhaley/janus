@@ -385,6 +385,8 @@
 		    })
 		}
 		
+		result[,2:3] <- round(result[,2:3], 3)
+		
 		result		
 	}	
 	# perform$get.by(by.sp=FALSE, by.group=TRUE, by.exp=FALSE)
@@ -820,7 +822,7 @@
 	
 	# Make predictions	
 	data <- ddply(data, .(experiment), function(df){
-		df$p <- predict(m[[df$experiment[1]]], df)
+		df$p <- predict(m[[as.character(df$experiment[1])]], df)
 		df
 	})
 
@@ -836,12 +838,11 @@
 	perform$show.by.sp()
 
 
-#                         "performance -87.3  overfit by   13.8"
+#                         "performance  0.177 overfit by    0.133"
 #
-#   "beagle"              "performance -2.1  over-fit by   0.0394"
-#   "musculus"            "performance -279  over-fit by   46.8"
+#   "beagle"              "performance -1.35 over-fit by    0.581"
+#   "musculus"            "performance  0.229 over-fit by   0.000475"
 
-# More attrocious behavior when the species are divided.
 
 #
 # Interactions model
@@ -957,7 +958,7 @@
 	
 	# Make predictions	
 	data <- ddply(data, .(experiment), function(df){
-		df$p <- predict(m[[df$experiment[1]]], df)
+		df$p <- predict(m[[as.character(df$experiment[1])]], df)
 		df
 	})
 
@@ -1009,7 +1010,7 @@
 	
 	# Make predictions	
 	data <- ddply(data, .(experiment), function(df){
-		df$p <- predict(m[[df$experiment[1]]], df)
+		df$p <- predict(m[[as.character(df$experiment[1])]], df)
 		df
 	})
 
@@ -1024,7 +1025,7 @@
 	# Show performance
 	perform$show.by.sp()
     
-#   Overall               "performance -53235 overfit by   11158"
+#   Overall               "performance -44.6 overfit by 32.9"
 #
 #   Absurdly aweful performance!
 
@@ -1125,10 +1126,10 @@
 	perform$show.by.sp()
 
 
-#   Overall               "performance 0.649 overfit by    0.0962"
+#   Overall               "performance 0.662  overfit by    0.0686"
 #
-#   "beagle"              "performance 0.469  over-fit by  0.385"
-#   "musculus"            "performance 0.3    over-fit by  0.0125"
+#   "beagle"              "performance 0.52   over-fit by  0.277"
+#   "musculus"            "performance 0.302  over-fit by  0.0105"
 #
 #   No real improvements over the species independent model.
 
@@ -1164,7 +1165,7 @@
 	
 	# Make predictions	
 	data <- ddply(data, .(experiment), function(df){
-		model     <- m[[df$experiment[1]]]
+		model     <- m[[as.character(df$experiment[1])]]
 		best.iter <- gbm.perf(model, method="cv")
 		df$p      <- predict(model, df, best.iter)
 		df
@@ -1182,7 +1183,7 @@
 	perform$show.by.sp()
 
     
-#   Overall               "performance -0.673 overfit by    0.0759"
+#   Overall               "performance -0.137 overfit by    0.043"
 #
 #   omg, falling down.  Its all due to that damn really low dose exp.
 #
@@ -1199,8 +1200,6 @@
 													    # species
 		dlply(df.s, .(experiment), function(df){
 			
-	    	formula       <- f.builder$get_formula("age_days", c(model.factors, outer, inner))
-
 			subset        <-(
 			                 as.character(data$experiment) != as.character(df$experiment[1])
 			                 & data$species == df.s$species[1]
@@ -1228,7 +1227,7 @@
 	
 	# Make predictions	
 	data <- ddply(data, .(experiment), function(df){
-		model     <- m[[df$experiment[1]]]
+		model     <- m[[as.character(df$experiment[1])]]
 		best.iter <- gbm.perf(model, method="cv")
 		df$p      <- predict(model, df, best.iter)
 		df
@@ -1245,11 +1244,13 @@
 	perform$show.by.sp()
 
 
-	# performance -9.3 overfit by -0.023"
-	#
-	# More awefulness.  We can't generalize!
-	
-	
+#   Overall               "performance  0.125  overfit by   0.0365"
+#
+#   "beagle"              "performance -1.46   over-fit by  0.204"
+#   "musculus"            "performance  0.152  over-fit by  0.000896"
+#
+#   Moderate performance.
+
 
 # Survival
 #     Here I want to use cox regressions to predict lifespan.
@@ -1332,61 +1333,6 @@
     
     haz.mean(my.hazard$time, my.hazard$hazard); mean(data$age_days)
 		
-# Simple Cox
-#
-#     Now lets build a simple species based model and calculate the median age
-#     for each species 
-#
-#     * note:
-#         We only use validation predictions because predicting the whole set
-#         is slow.
-
-	model        <- coxph(Surv(data$age_days) ~ species, data = data)
-	val.predict  <- aaply(model$linear.predictors, 1, function(x){
-	                        haz.median(my.hazard$time, my.hazard$hazard * exp(x))
-	                    })
-	data$p       <- val.predict
-	                    
-	perform$show.by.sp()
-
-
-# Cox with prediction
-#
-#     Lets try actually making a prediction
-#
-
-	model        <- coxph(Surv(train()$age_days) ~ species, data = train())
-	val.predict  <- aaply(predict(model, data), 1, function(x){
-	                        haz.median(my.hazard$time, my.hazard$hazard * exp(x))
-	                    })
-	data$p       <- val.predict
-	                    	                    
-	perform$show.by.sp()
-
-
-# Simple Cox - Stim to stern
-#
-#     The final step here is to add the species stratification and outcome
-#     measurements.  We will add sex this time as species is irrelevant.
-
-	data <- ddply(data, .(species), function(df){
-			
-		model <- coxph(Surv(df$age_days) ~ sex, data = df)
-
-		df$p  <- aaply(model$linear.predictors, 1, function(x){
-	                 haz.median(my.hazard$time, my.hazard$hazard * exp(x))
-	             })
-		df
-	})
-	
-	# more stabalizers
-	perform$show(data$age_days, data$p, data$set, perform$r2)      # "performance 0.000042 overfit by -0.000401"
-	                                                         # best 0.621
-	plot_p(val())
-	plot_all(val())
-	write.table(daply(data, .(species), function(df){
-		perform$show(df$age_days, df$p, df$set, perform$r2)
-	}))
 	
 
 # Linear Hazards
@@ -1473,7 +1419,7 @@
 	# Make predictions	
 	data <- 
 	ddply(data, .(experiment), function(df){
-		model <- m[[df$experiment[1]]]
+		model <- m[[as.character(df$experiment[1])]]
 		df$p <- aaply(predict(model, df), 1, function(x){
 	                 haz.median(my.hazard$time, my.hazard$hazard * exp(x))
 	             })
@@ -1491,85 +1437,63 @@
 	plot_all(val())
 	perform$show.by.sp()
 
-
-# Interaction Hazards 
+#   Overall               "performance -0.055 overfit by    0.158"
 #
-#     Lets trying getting a decent performance using the interaction models.
-
-		
-	my.hazard <- hazards_table(data$age_days)
-		
-	formula <- f.builder$get_formula("Surv(data$age_days)", model.factors)
-	model <- coxph(formula(formula), data = data)
-	
-	temp <- cox.zph(model)
-
-	data$p  <- aaply(model$linear.predictors, 1, function(x){
-                 haz.median(my.hazard$time, my.hazard$hazard * exp(x))
-             })
-	
-	# more stabalizers
-	perform$show(data$age_days, data$p, data$set, perform$r2)      # "performance -0.0503 overfit by 0.0482"
-	                                                         # best 0.621
-	plot_p(val())
-	plot_all(val())
-	write.table(daply(data, .(species), function(df){
-		perform$show(df$age_days, df$p, df$set, perform$r2)
-	}))
-
-
-#   "beagle"              "performance -0.622 over-fit by  0.0768"     (0.589 best)
-#   "musculus"            "performance  0.256 over-fit by  0.0107"     (0.311 best)
+#   "beagle"              "performance -2.24  over-fit by   0.55"
+#   "musculus"            "performance  0.194 over-fit by   0.00155"
 #
-	
-# Interaction Hazards by species
-#
-#     Lets trying getting a decent performance using the interaction models.
+# 
 
+# Linear hazards by experiment by species
 
-	# build models
 	m <- 
-	dlply(data, .(species), function(df){
+	dlply(data, .(species), function(df.s){
+		df.s$experiment <- factor(df.s$experiment)      # prevent model from running
+													    # experiments from the other 
+													    # species
+		dlply(df.s, .(experiment), function(df){
+			
+			subset        <-(
+			                 as.character(data$experiment) != as.character(df$experiment[1])
+			                 & data$species == df.s$species[1]
+			                 & data$set != "test"
+			                 )
 					
-		formula <- f.builder$get_formula("Surv(df$age_days)", model.factors)
-		model <- coxph(formula(formula), data = df)
-		
-		model
+			survive      <- "Surv(data[subset,]$age_days)"
+			formula      <- f.builder$get_formula(survive, model.factors)
+			model        <- coxph(formula(formula), data = data[subset,])
+			
+			model
+		})	
 	})
-
+	m <- c(m[[1]], m[[2]])
+	
 	# Make predictions	
 	data <- 
-	ddply(data, .(species), function(df){
-		model <- m[[df$species[1]]]
-		my.hazard <- hazards_table(df$age_days)
-
-		df$p  <- aaply(model$linear.predictors, 1, function(x){
+	ddply(data, .(experiment), function(df){
+		model <- m[[as.character(df$experiment[1])]]
+		df$p <- aaply(predict(model, df), 1, function(x){
 	                 haz.median(my.hazard$time, my.hazard$hazard * exp(x))
 	             })
 		df
 	})
-	
-	# archive results
-	data$p.cox.inter.by.sp <- data$p	
-	s <- laply(m, function(model){paste(capture.output(summary(model)), collapse="\r\n")})
-	names(s) <- paste("cox.inter.by.sp", names(s), sep=".")
+
+	# Summarize
+	s <- llply(m, function(model){print.summary(model)})
+	names(s) <- paste("cox.by.sp.by.exp", names(s), sep=".")
 	summaries <- c(summaries, s)
+	
+    # Archive the results
+	data$p.cox.by.sp.by.exp <- data$p
+	
+	perform$show.by.sp()
 
-	# show results
-	perform$show(data$age_days, data$p, data$set, perform$r2)      # "performance 0.203 overfit by 0.0116"
-	                                                         # best 0.621
-	plot_p(val())
-	plot_all(val())
-	write.table(daply(data, .(species), function(df){
-		perform$show(df$age_days, df$p, df$set, perform$r2)
-	}))
-
-#   "beagle"              "performance 0.0106 over-fit by  0.0345"     (0.589 best)
-#   "musculus"            "performance 0.28   over-fit by  0.0162"     (0.311 best)
+#   Overall               "performance -0.0062 overfit by   0.00171"
 #
-
-#    It is interesting to learn that the mean measurement is unstable.  I am forced to use
-#    the median.
+#   "beagle"              "performance -2.07  over-fit by   0.0782"
+#   "musculus"            "performance  0.22  over-fit by  -0.0024"
+#
+# 
 
 ### Summary ##################################################################
 #
@@ -1580,25 +1504,72 @@
 #     What were all the performances again?
 
 	performances <- ldply(data[grep("^p\\.", names(data))], function(p){
-		perform$get(data$age_days, p, data$set, perform$r2)
+		overall <- perform$get(data$age_days, p, data$set, perform$r2)
+		by.sp <- perform$get.by(prediction=p, by.sp=TRUE)
+		
+	
+		c(
+			overall=overall["performance"], 
+			overall=overall["overfit"], 
+			beagle.performance=by.sp[by.sp$sp == "beagle", "performance"], 	
+			mouse.performance=by.sp[by.sp$sp == "musculus", "performance"]
+		)
 	})
+	performances <- performances[order(performances$overall.performance),]
+	performances[,2:3] <- round(performances[,2:3],3)
+	performances
 
-                        # .id   performance       overfit
-# 1                     p.cox -2.230827e-02 -1.719057e-01
-# 2              p.cox.by.exp -5.501050e-02 -1.576647e-01
-# 3               p.cox.by.sp  8.765189e-02  4.390260e-03
-# 4                     p.gbm  6.521162e-01  6.751996e-02
-# 5              p.gbm.by.exp -6.726940e-01  7.588299e-02
-# 6               p.gbm.by.sp  6.494334e-01  9.618151e-02
-# 7        p.gbm.by.sp.by.exp -9.304917e+00 -2.301176e-02
-# 8                     p.lin  5.146333e-01 -1.207797e-02
-# 9              p.lin.by.exp  4.455600e-01 -1.397710e-02
-# 10              p.lin.by.sp  5.524261e-01  2.622641e-02
-# 11       p.lin.by.sp.by.exp -8.726635e+01  1.376681e+01
-# 12              p.lin.inter  5.328988e-01  6.551211e-02
-# 13       p.lin.inter.by.exp -9.035393e-01  7.974985e-01
-# 14        p.lin.inter.by.sp  5.854092e-01  2.471505e-02
-# 15 p.lin.inter.by.sp.by.exp -5.323549e+04  1.115826e+04	
+	graphable        <- performances[-grep("inter", performances$.id),]	
+	names(graphable) <- c("model", "R2", "overfit", "beagle.performance", "mouse.performance")
+	
+	graphable$model  <- c(
+			"gbm by exp.", "cox by exp.", "cox", "cox by species by exp.",
+			"cox by species", "gbm by species by exp.", "linear by species by exp.",
+			"linear by exp.", "linear", "linear by species", "gbm", "gbm by species"
+			) 
+	graphable$model  <- factor(graphable$model, levels=(graphable$model))
+	graphable$by.experiment <- c(TRUE, TRUE, FALSE, TRUE, FALSE, TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE)
+
+	model.number <- 1:nrow(graphable)
+	ggplot(data=graphable) + geom_pointrange(aes(
+		x=model.number, y=R2, ymin=R2, ymax=(R2), 
+		color=model, shape=by.experiment
+		))
+
+
+	                        # .id performance overfit
+	# 8  p.lin.inter.by.sp.by.exp     -44.644  32.870
+	# 7        p.lin.inter.by.exp      -0.904   0.797
+	# 11             p.gbm.by.exp      -0.137   0.043
+	# 15             p.cox.by.exp      -0.055  -0.158
+	# 13                    p.cox      -0.022  -0.172
+	# 16       p.cox.by.sp.by.exp      -0.006   0.002
+	# 14              p.cox.by.sp       0.088   0.004
+	# 12       p.gbm.by.sp.by.exp       0.125   0.037
+	# 4        p.lin.by.sp.by.exp       0.177   0.133
+	# 2              p.lin.by.exp       0.446  -0.014
+	# 1                     p.lin       0.515  -0.012
+	# 5               p.lin.inter       0.533   0.065
+	# 3               p.lin.by.sp       0.552   0.026
+	# 6         p.lin.inter.by.sp       0.585   0.025
+	# 9                     p.gbm       0.652   0.068
+	# 10              p.gbm.by.sp       0.662   0.069
+	
+# Experimental groups
+	experimental.description <- 
+	ddply(data, .(experiment), function(df){
+		data.frame(
+			experiment=df$experiment[1]
+			,n=nrow(df)
+			,n.groups=length(unique(df$group))
+			,mean.age=round(mean(df$age_days))
+			,min_gamma=range(df$cgy_total_gamma)[1]
+			,max_gamma=range(df$cgy_total_gamma)[2]			,min_neutron=range(df$cgy_total_neutron)[1]
+			,max_neutron=range(df$cgy_total_neutron)[2]
+		)
+	})
+	write.csv(experimental.description)
+	
 # So 
 #   GBM and interactions by species do the best on studies they have already seen
 #   Only the linear model with merged species can generalize well
@@ -1640,7 +1611,7 @@
 		rhigh<- (exp(2 * zhigh) - 1) / (exp(2 * zhigh) + 1)
 		rlow <- (exp(2 * zlow ) - 1) / (exp(2 * zlow ) + 1)
 		
-		t    <- rs * sqrt(n - 2) / sqrt(1 - rs^2)
+		t    <- r * sqrt(n - 2) / sqrt(1 - r^2)
 
 		round(c(r=r, lower=rlow, upper=rhigh), 3)
 	})	
@@ -1654,22 +1625,23 @@
 	ggplot(data=fisher) + geom_pointrange(aes(x=model.number, y=r, ymin=lower, ymax=upper, color=model))
 	fisher
 
-	                      # model      r lower  upper
-	# 1  p.lin.inter.by.sp.by.exp -0.002 0.016 -0.020
-	# 2        p.lin.by.sp.by.exp  0.026 0.044  0.008
-	# 3        p.gbm.by.sp.by.exp  0.073 0.091  0.055
-	# 4              p.gbm.by.exp  0.143 0.161  0.125
-	# 5               p.cox.by.sp  0.297 0.313  0.280
-	# 6        p.lin.inter.by.exp  0.400 0.415  0.385
-	# 7              p.cox.by.exp  0.642 0.653  0.632
-	# 8              p.lin.by.exp  0.670 0.680  0.660
-	# 9                     p.cox  0.681 0.690  0.671
-	# 10                    p.lin  0.719 0.727  0.710
-	# 11              p.lin.inter  0.732 0.740  0.724
-	# 12              p.lin.by.sp  0.744 0.752  0.735
-	# 13        p.lin.inter.by.sp  0.765 0.773  0.758
-	# 14              p.gbm.by.sp  0.806 0.812  0.800
-	# 15                    p.gbm  0.808 0.814  0.801
+	                      # model     r lower upper
+	# 1        p.cox.by.sp.by.exp 0.142 0.160 0.125
+	# 2  p.lin.inter.by.sp.by.exp 0.167 0.184 0.149
+	# 3              p.gbm.by.exp 0.263 0.280 0.246
+	# 4               p.cox.by.sp 0.297 0.313 0.280
+	# 5        p.gbm.by.sp.by.exp 0.375 0.390 0.359
+	# 6        p.lin.inter.by.exp 0.400 0.415 0.385
+	# 7        p.lin.by.sp.by.exp 0.477 0.491 0.463
+	# 8              p.cox.by.exp 0.642 0.653 0.632
+	# 9              p.lin.by.exp 0.670 0.680 0.660
+	# 10                    p.cox 0.681 0.690 0.671
+	# 11                    p.lin 0.719 0.727 0.710
+	# 12              p.lin.inter 0.732 0.740 0.724
+	# 13              p.lin.by.sp 0.744 0.752 0.735
+	# 14        p.lin.inter.by.sp 0.765 0.773 0.758
+	# 15                    p.gbm 0.808 0.814 0.801
+	# 16              p.gbm.by.sp 0.814 0.820 0.808
 	
 	# We don't want to take much from this evaluation, because we cannot 
 	# meet the full criteria for performing a valid fisher test, but in
@@ -1677,7 +1649,26 @@
 	# different from eachother.
 	#
 	# We also have the potential for increasing the confidence intervals
-	# 	
+	# by using full cross validation instead of a single cross validation
+	# group.  This step will be taken later.
+	#
+
+# Liner vs Cox
+#
+#   The r2 performance of the cox models are low, but their correlation
+#   coefficient is similar to the linear models.  Why the disparity?
+
+	hist(data$p.cox - data$age_days)
+	hist(data$p.lin - data$age_days)
+	
+	# the histograms tell the story that the cox model has a greater
+	# spread, especially towards the overestimate.
+	
+	perform$get.by(prediction=data$p.cox, by.sp=FALSE, by.group=FALSE, by.exp=TRUE)
+	perform$get.by(prediction=data$p.lin, by.sp=FALSE, by.group=FALSE, by.exp=TRUE)
+	
+	# these further data tell the story that the main failure is in the dog 
+	# data.
 	
 
 # Linear generalization
@@ -1685,15 +1676,24 @@
 #    Why does linear genearlize between experiments?
 #    Shouldn't the linear by species models generalize better?
 
-	# Because of species?
-	#   Perhaps other models generalize to the same species, but not
-	#   different species?
-	
-	
+	# By experiment
+	perform$get.by(prediction=data$p.lin.by.exp, by.sp=TRUE)
+	perform$get.by(prediction=data$p.lin.by.sp.by.exp, by.sp=TRUE)
 
-
+	        # sp performance overfit
+	# 1   beagle      -0.174  -0.012
+	# 2 musculus       0.158  -0.007
 	
-#   We can see all sorts of confusion.  The model is trying to 
+	        # sp performance overfit
+	# 1   beagle      -1.346   0.581
+	# 2 musculus       0.229   0.000
+	
+	# So this change in performance is due almost entirely to 
+	# improvements on the beagle, which are still bad.  It appears
+	# that the merged species model keeps the beagle results more
+	# sane.
+	
+	plot_all(val(), y=data[data$set=="val", "p.lin.by.sp.by.exp"])
 
 
 ### Future directions ########################################################
