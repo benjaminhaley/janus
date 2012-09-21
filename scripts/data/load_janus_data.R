@@ -24,6 +24,7 @@ j.data$.__TABLE.NAMES <- c("demographics", "macro_pathologies")
 j.data$.__TABLE.HEADER.ROWS <- 1
 j.data$.__ZIP.EXTENSION <- ".zip"
 j.data$.__FILE.EXTENSION <- ".csv"
+j.data$.__macros <- c("MACROS", "MACROS_", "TUMORS", "LETHAL_MACROS", "LETHAL_TUMORS")
 
 # @TODO replace this monstrocity with a function that loads the key and other translation features
 
@@ -43,10 +44,18 @@ j.data$load <- function(from_cache=FALSE){
 		csv_paths <- zipfile$unzip(zip_paths)
 		data <- j.data$.__csv2data.frame(csv_paths, j.data$.__TABLE.HEADER.ROWS)
 		names(data) <- j.data$.__get_normalized_names(names(data))
+		data <- j.data$.__clean(data)
 		localcache$save(data, j.data$.__CACHED.NAME) 
 	}
 
 	return(data)
+}
+
+j.data$.__clean <- function(data){
+	macros <- unique(unlist(c[j.data$.__macros]))
+	macros <- macros[macros %in% names(data)]
+	data[,macros] <- data.frame(llply(data[,macros], function(col){col[is.na(col)] <- 0; col}))
+	data
 }
 
 # Get the names from the mash of R

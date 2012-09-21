@@ -32,6 +32,7 @@ data$b.normalize <- function(b.data) {
 	b.data[b.data$fractions == 0, 'fractions'] <- 1      # fraction default is 1
 	
 	# add/convert names
+	b.data[['id']]                      <- '??'
 	b.data[['species']]                 <- 'beagle'
 	b.data[['cause_of_death']]          <- ''
 	b.data[['data_set']]                <- 'beagle'
@@ -66,6 +67,7 @@ data$j.normalize <- function (j.data) {
 	j.data <- j.data[1:18]
 	
 	# add/convert names
+	j.data[['id']]                      <- rownames(j.data)
 	j.data[['age_days']]                <- j.data[['age']]
 	j.data[['experiment']]              <- j.data[['expt']]
 	j.data[['group']]                   <- j.data[['tmt']]

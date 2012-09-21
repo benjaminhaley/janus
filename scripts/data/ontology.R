@@ -109,8 +109,6 @@ ontology$macro2janus_description <- function(janus_codes, t=ontology$j.t){
 # codes and merge it into simple macros
 ontology$merge_macros <- function(data, macros=ontology$.__get_macros(ontology$j.t)){
 	macros_ <- ontology$.__add_lethalities(macros)
-	macros_found <- macros_ %in% colnames(data)
-	stopifnot(all(macros_found))
 	merge <- data.frame(lapply(macros, ontology$.__merge_macro, data))
 	return(merge)
 }
@@ -126,7 +124,18 @@ stopifnot(identical(ontology$id2cage(c("10.2", "59.6")), c("10", "59")))
 
 ontology$.__merge_macro <- function(macro, data){
 	macros_ <- ontology$.__add_lethalities(macro)
-	merge <- data[macros_[1]] | data[macros_[2]]
+	if(macros_[1] %in% names(data) & macros_[2] %in% names(data)){
+		merge <- data[macros_[1]] + data[macros_[2]]	
+	} else if(macros_[1] %in% names(data)){
+		print(paste(macros_[2], "not found", macro, "will be built from", macros_[1]))
+		merge <- data[macros_[1]]
+	} else if(macros_[2] %in% names(data)){
+		print(paste(macros_[1], "not found", macro, "will be built from", macros_[2]))	
+		merge <- data[macros_[2]]
+	} else {
+		print(paste("Could not find", macros_[1], "or", macros_[2]))
+		merge <- data.frame(rep(NA, nrow(data)))
+	}
 	colnames(merge) <- macro
 	return(merge)
 }
@@ -237,9 +246,9 @@ ontology$.__data <- data.frame(
 	)
 ontology$.__macros <- c("macro", "m")
 ontology$.__expected <- data.frame(
-	macro = c(TRUE, TRUE, FALSE),
-	m = c(TRUE, TRUE, FALSE)
+	macro = c(1, 1, 0),
+	m = c(1, 1, 0)
 	)
 ontology$.__result <- ontology$merge_macros(ontology$.__data, ontology$.__macros)
-stopifnot(identical(ontology$.__expected, ontology$.__result))
+stopifnot(all.equal(ontology$.__expected, ontology$.__result))
 
