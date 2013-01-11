@@ -2,23 +2,30 @@
 # should exercise the new janus system
 # bmh Oct 2011 - Aug 2012
 
-# Load the janus data
-setwd('~/janus')
-source('scripts/data/load_janus_data.R')
-data <- j.data$load(from_cache=TRUE)
+# LIBRARIES
+	# Load the janus data
+	setwd('~/janus')
+	source('scripts/data/load_janus_data.R')
+	data <- j.data$load(from_cache=TRUE)
+	
+	# Some helper functions
+	source('scripts/util/freq.R')
+	source('scripts/util/odds_ratio.R')
+	source("scripts/util/package.R")
+	
+	# Load the annotations
+	source('scripts/data/ontology.R')
+	c <- ontology$load_columns()
+	#r <- ontology$load_rows(data)
+	
+	# Extra packages
+	package$load(c("aod", "plyr", "ggplot2", "reshape", "gbm", "penalized"))
 
-# Some helper functions
-source('scripts/util/freq.R')
-source('scripts/util/odds_ratio.R')
-source("scripts/util/package.R")
 
-# Load the annotations
-source('scripts/data/ontology.R')
-c <- ontology$load_columns()
-#r <- ontology$load_rows(data)
-
-# Extra packages
-package$load(c("aod", "plyr", "ggplot2", "reshape", "gbm", "penalized"))
+# CONFIGURATION
+	refresh_cache <- FALSE
+	table.3.baseline.cache <- 'table.3.baseline.data'
+	table.3.experimental.performance.cache <- 'table.3.experimental.performance.data'
 
 # DATA
 #
@@ -29,33 +36,33 @@ package$load(c("aod", "plyr", "ggplot2", "reshape", "gbm", "penalized"))
 # it means that we do not have to concern ourselves with study
 # to study variation.
 
-data <- data[data$expt == 13 & data$necroscopy_date != "",]
-data <- data[sample(1:nrow(data)),]
-
-# HELPER FUNCTIONS
-#
-pos <- function(x, cutoff){
-	# x minus some value where positive
-	x <- x - cutoff
-	x[x< 0] <- 0
-	x
-}
-
-# Link functions
-logit <- function(p){-log(1/p - 1)}
-unlogit <- function(p){1 / (1 + exp(-p))}
+	data <- data[data$expt == 13 & data$necroscopy_date != "",]
+	data <- data[sample(1:nrow(data)),]
 	
-plot_toxicity_incidence <- function(toxicity){
-	# Useful troubleshooting plot
-	ggplot(data[data[,toxicity] == 1,], aes(age, total_dose, color=sex)) + 
-	geom_point() + 
-	facet_wrap(~radn)
-}
-plot_predictions <- function(predictions, data){
-	# Useful troubleshooting plot
-	data$p <- predictions
-	ggplot(data, aes(age, p, color=sex)) + geom_point() + scale_y_log10()
-}
+	# HELPER FUNCTIONS
+	#
+	pos <- function(x, cutoff){
+		# x minus some value where positive
+		x <- x - cutoff
+		x[x< 0] <- 0
+		x
+	}
+	
+	# Link functions
+	logit <- function(p){-log(1/p - 1)}
+	unlogit <- function(p){1 / (1 + exp(-p))}
+		
+	plot_toxicity_incidence <- function(toxicity){
+		# Useful troubleshooting plot
+		ggplot(data[data[,toxicity] == 1,], aes(age, total_dose, color=sex)) + 
+		geom_point() + 
+		facet_wrap(~radn)
+	}
+	plot_predictions <- function(predictions, data){
+		# Useful troubleshooting plot
+		data$p <- predictions
+		ggplot(data, aes(age, p, color=sex)) + geom_point() + scale_y_log10()
+	}
 
 
 
@@ -70,50 +77,50 @@ plot_predictions <- function(predictions, data){
 # Note: some of these categories are sparsely populated
 #       namely skeletal, nervous, male, and cardio
 
-groups <- list(
-	cardio = c('MIC', 'MYO', 'PCD', 'THRT'),   # only has 7 members!
-	female = c('CGL', 'MET', 'MGL', 'OVE', 'TCGL', 'TMGL', 'TOVE', 'TUTE', 
-	           'TVAG', 'UTE', 'VAG', 'VOL'),
-	integument = c('DER', 'TCON', 'TSKN'),
-	lymph = c('NTYG', 'NTYL', 'TRD', 'TTRD', 'TTYG', 'TTYL'),
-	male = c('PEN', 'PST', 'SEM', 'TEP', 'TEPI', 'TPST', 'TSMV', 'TTST'),
-	nervous = c('BRN', 'CNS', 'PIT', 'TBRN', 'TCNS', 'TMIN', 'TPIT'),
-	resp = c('EMB', 'EMP', 'HTX', 'MIL', 'PNC', 'PNU', 'PRF', 'TADN', 'TMIL'),
-	skeletal = c('BON', 'TBON', 'TMUS'),
-	vascular = c('ANE', 'ANU', 'HEM', 'HRG', 'THR', 'TVAS')
-)
-
-# And the following factors will be treated as factors
-
-factors <- c('radn', 'sex', 'tmt')
-
-# And a minimum number of toxicities for significance
-min_toxicities <- 30
-
-# merge lethal and non_lethal results
-merged_macros <- ontology$merge_macros(data)
-data <- cbind(data[,!names(data) %in% c$MACROS_], merged_macros)
-
-# build grouped pathologies
-for(g in names(groups)){
-	data[,g] <- rowSums(data[,groups[[g]]])
-}
-
-# Remove toxicities with less than 30 representatives
-common_toxicities <- freq$get_columns(data, c$MACROS, minimum_sum=min_toxicities)
-common_toxicities <- common_toxicities[!is.na(common_toxicities)]
-data <- data[,!names(data) %in% c$MACROS | names(data) %in% common_toxicities]
-for(f in factors){
-	data[,f] <- factor(data[,f])
-}
-
-# List all toxicities 
-# and produce a long form table where each toxicity gets its own column
-all_toxicities = c(common_toxicities, names(groups))
-long <- melt(data, measure.vars=c(all_toxicities))
-long$p <- 0
-long$type <- 'toxicity'
-long$type[long$variable %in% names(groups)] <- 'grouped'
+	groups <- list(
+		cardio = c('MIC', 'MYO', 'PCD', 'THRT'),   # only has 7 members!
+		female = c('CGL', 'MET', 'MGL', 'OVE', 'TCGL', 'TMGL', 'TOVE', 'TUTE', 
+		           'TVAG', 'UTE', 'VAG', 'VOL'),
+		integument = c('DER', 'TCON', 'TSKN'),
+		lymph = c('NTYG', 'NTYL', 'TRD', 'TTRD', 'TTYG', 'TTYL'),
+		male = c('PEN', 'PST', 'SEM', 'TEP', 'TEPI', 'TPST', 'TSMV', 'TTST'),
+		nervous = c('BRN', 'CNS', 'PIT', 'TBRN', 'TCNS', 'TMIN', 'TPIT'),
+		resp = c('EMB', 'EMP', 'HTX', 'MIL', 'PNC', 'PNU', 'PRF', 'TADN', 'TMIL'),
+		skeletal = c('BON', 'TBON', 'TMUS'),
+		vascular = c('ANE', 'ANU', 'HEM', 'HRG', 'THR', 'TVAS')
+	)
+	
+	# And the following factors will be treated as factors
+	
+	factors <- c('radn', 'sex', 'tmt')
+	
+	# And a minimum number of toxicities for significance
+	min_toxicities <- 30
+	
+	# merge lethal and non_lethal results
+	merged_macros <- ontology$merge_macros(data)
+	data <- cbind(data[,!names(data) %in% c$MACROS_], merged_macros)
+	
+	# build grouped pathologies
+	for(g in names(groups)){
+		data[,g] <- rowSums(data[,groups[[g]]])
+	}
+	
+	# Remove toxicities with less than 30 representatives
+	common_toxicities <- freq$get_columns(data, c$MACROS, minimum_sum=min_toxicities)
+	common_toxicities <- common_toxicities[!is.na(common_toxicities)]
+	data <- data[,!names(data) %in% c$MACROS | names(data) %in% common_toxicities]
+	for(f in factors){
+		data[,f] <- factor(data[,f])
+	}
+	
+	# List all toxicities 
+	# and produce a long form table where each toxicity gets its own column
+	all_toxicities = c(common_toxicities, names(groups))
+	long <- melt(data, measure.vars=c(all_toxicities))
+	long$p <- 0
+	long$type <- 'toxicity'
+	long$type[long$variable %in% names(groups)] <- 'grouped'
 
 
 # TABLES
@@ -122,121 +129,126 @@ long$type[long$variable %in% names(groups)] <- 'grouped'
 #
 # Get counts of the number of animals in each treatment group
 
-table.1 <- ddply(data, .(radn, total_dose, dose_rate, fractions), function(df){
-	c(n=nrow(df))
-})
-table.1
+	table.1 <- ddply(data, .(radn, total_dose, dose_rate, fractions), function(df){
+		c(n=nrow(df))
+	})
+	table.1
 
 # TABLE 2.
 #
 # Get toxicity descriptions and counts
 
-table.2 <- 
-	data.frame(
-		symbol=all_toxicities,
-		description=ontology$macro2janus_description(all_toxicities),
-		n=laply(all_toxicities, function(t){sum(data[,t])})
-	)
-table.2
+	table.2 <- 
+		data.frame(
+			symbol=all_toxicities,
+			description=ontology$macro2janus_description(all_toxicities),
+			n=laply(all_toxicities, function(t){sum(data[,t])})
+		)
+	table.2
 
 # Figure 1.
 #
 # Lets look at toxicity results as a function of age
 
-plot.1.toxicities <- ggplot(long[long$type == 'toxicity' & long$radn == "C",], aes(age, value)) + 
-	geom_point(size=0.5, alpha=0.5) + 
-	geom_smooth(size=0.5, alpha=0.5) + 
-	facet_wrap(~ variable) + 
-	ylim(0, 1) +
-	opts(title="Toxicity vs Age in Control Animals")
-plot.1.toxicities
-plot.1.toxicities.url= "http://dl.dropbox.com/u/1131693/bloodrop/Screen%20Shot%202012-09-05%20at%202.06.58%20PM.png"
+if(refresh_cache){
 
-plot.1.grouped <- ggplot(long[long$type == 'grouped' & long$radn == "C",], aes(age, value)) + 
-	geom_point(size=0.5, alpha=0.5) + 
-	geom_smooth(size=0.5, alpha=0.5) + 
-	facet_wrap(~ variable) + 
-	ylim(0, 5) + 
-	opts(title="Grouped Toxicity counts vs Age in Control Animals")
-plot.1.grouped
-plot.1.grouped.url = "http://dl.dropbox.com/u/1131693/bloodrop/Screen%20Shot%202012-09-05%20at%202.18.56%20PM.png"
-
+		plot.1.toxicities <- ggplot(long[long$type == 'toxicity' & long$radn == "C",], aes(age, value)) + 
+			geom_point(size=0.5, alpha=0.5) + 
+			geom_smooth(size=0.5, alpha=0.5) + 
+			facet_wrap(~ variable) + 
+			ylim(0, 1) +
+			opts(title="Toxicity vs Age in Control Animals")
+		plot.1.toxicities
+		"http://dl.dropbox.com/u/1131693/bloodrop/Screen%20Shot%202012-09-05%20at%202.06.58%20PM.png"
+		
+		plot.1.grouped <- ggplot(long[long$type == 'grouped' & long$radn == "C",], aes(age, value)) + 
+			geom_point(size=0.5, alpha=0.5) + 
+			geom_smooth(size=0.5, alpha=0.5) + 
+			facet_wrap(~ variable) + 
+			ylim(0, 5) + 
+			opts(title="Grouped Toxicity counts vs Age in Control Animals")
+		plot.1.grouped
+		plot.1.grouped.url = "http://dl.dropbox.com/u/1131693/bloodrop/Screen%20Shot%202012-09-05%20at%202.18.56%20PM.png"
+		
 # Figure 2.
 #
 # Lets look at toxicity results as a function of age and gender
-
-plot.2.toxicities <- ggplot(long[long$type == 'toxicity' & long$radn == "C",], aes(age, value, color=sex)) + 
-	geom_point(size=0.5, alpha=0.5) + 
-	geom_smooth(size=0.5, alpha=0.5) + 
-	facet_wrap(~ variable) + 
-	ylim(0, 1) +
-	opts(title="Toxicity counts vs Age and Gender in Control Animals")
-
-plot.2.toxicities
-plot.2.toxicities.url = "http://dl.dropbox.com/u/1131693/bloodrop/Screen%20Shot%202012-09-05%20at%202.21.14%20PM.png"
-
-plot.2.grouped <- ggplot(long[long$type == 'grouped' & long$radn == "C",], aes(age, value, color=sex)) + 
-	geom_point(size=0.5, alpha=0.5) + 
-	geom_smooth(size=0.5, alpha=0.5) + 
-	facet_wrap(~ variable) + 
-	ylim(0, 5) + 
-	opts(title="Grouped Toxicity counts vs Age and Gender in Control Animals")
-
-plot.2.grouped
-plot.2.grouped.url = "http://dl.dropbox.com/u/1131693/bloodrop/Screen%20Shot%202012-09-05%20at%202.24.24%20PM.png"
-
+		
+		plot.2.toxicities <- ggplot(long[long$type == 'toxicity' & long$radn == "C",], aes(age, value, color=sex)) + 
+			geom_point(size=0.5, alpha=0.5) + 
+			geom_smooth(size=0.5, alpha=0.5) + 
+			facet_wrap(~ variable) + 
+			ylim(0, 1) +
+			opts(title="Toxicity counts vs Age and Gender in Control Animals")
+		
+		plot.2.toxicities
+		plot.2.toxicities.url = "http://dl.dropbox.com/u/1131693/bloodrop/Screen%20Shot%202012-09-05%20at%202.21.14%20PM.png"
+		
+		plot.2.grouped <- ggplot(long[long$type == 'grouped' & long$radn == "C",], aes(age, value, color=sex)) + 
+			geom_point(size=0.5, alpha=0.5) + 
+			geom_smooth(size=0.5, alpha=0.5) + 
+			facet_wrap(~ variable) + 
+			ylim(0, 5) + 
+			opts(title="Grouped Toxicity counts vs Age and Gender in Control Animals")
+		
+		plot.2.grouped
+		plot.2.grouped.url = "http://dl.dropbox.com/u/1131693/bloodrop/Screen%20Shot%202012-09-05%20at%202.24.24%20PM.png"
+	
 # Figure 3.
 #
 # Lets look at toxicity as a function of age and treatment
+		
+		plot.3.general.toxicity <- ggplot(long[long$type == 'toxicity',], aes(age, value, color=radn)) + 
+			geom_point(size=0.5, alpha=0.5) + 
+			geom_smooth(size=0.5, alpha=0.5) + 
+			facet_wrap(~ variable) + 
+			ylim(0, 1)
+		plot.3.general.toxicity
+		plot.3.general.toxicity.url = "http://dl.dropbox.com/u/1131693/bloodrop/Screen%20Shot%202012-08-23%20at%2011.37.17%20AM.png"
+		
+		plot.3.general.grouped <- ggplot(long[long$type == 'grouped',], aes(age, value, color=radn)) + 
+			geom_point(size=0.5, alpha=0.5) + 
+			geom_smooth(size=0.5, alpha=0.5) + 
+			facet_wrap(~ variable) + 
+			ylim(0, 5)
+		plot.3.general.grouped
+		plot.3.general.grouped.url = "http://dl.dropbox.com/u/1131693/bloodrop/Screen%20Shot%202012-08-23%20at%2011.38.29%20AM.png"
+		
+		plot.3.gamma.toxicity <- ggplot(long[long$radn %in% c('G', 'C') & long$type == 'toxicity',], aes(age, value, color=tmt)) + 
+			geom_point(size=0.5, alpha=0.5) + 
+			geom_smooth(size=0.5, alpha=0.5, se=FALSE) + 
+			facet_wrap(~ variable) + 
+			ylim(0, 1)
+		plot.3.gamma.toxicity
+		plot.3.gamma.toxicity.url = "http://dl.dropbox.com/u/1131693/bloodrop/Screen%20Shot%202012-08-23%20at%2011.40.29%20AM.png"
+		
+		plot.3.gamma.grouped <- ggplot(long[long$radn %in% c('G', 'C') & long$type == 'grouped',], aes(age, value, color=tmt)) + 
+			geom_point(size=0.5, alpha=0.5) + 
+			geom_smooth(size=0.5, alpha=0.5, se=FALSE) + 
+			facet_wrap(~ variable) + 
+			ylim(0, 5)
+		plot.3.gamma.grouped
+		plot.3.gamma.grouped.url = "http://dl.dropbox.com/u/1131693/bloodrop/Screen%20Shot%202012-08-23%20at%2011.41.53%20AM.png"
+		
+		plot.3.neutron.toxicities <- ggplot(long[long$radn %in% c('N', 'C') & long$type == 'toxicity',], aes(age, value, color=tmt)) + 
+			geom_point(size=0.5, alpha=0.5) + 
+			geom_smooth(size=0.5, alpha=0.5, se=FALSE) + 
+			facet_wrap(~ variable) + 
+			ylim(0, 1)
+		plot.3.neutron.toxicities
+		plot.3.neutron.toxicities.url = "http://dl.dropbox.com/u/1131693/bloodrop/Screen%20Shot%202012-08-23%20at%2011.44.06%20AM.png"
+		
+		plot.3.neutron.grouped <- ggplot(long[long$radn %in% c('N', 'C') & long$type == 'grouped',], aes(age, value, color=tmt)) + 
+			geom_point(size=0.5, alpha=0.5) + 
+			geom_smooth(size=0.5, alpha=0.5, se=FALSE) + 
+			facet_wrap(~ variable) + 
+			ylim(0, 5)
+		plot.3.neutron.grouped
+		plot.3.neutron.grouped.url = "http://dl.dropbox.com/u/1131693/bloodrop/Screen%20Shot%202012-08-23%20at%2011.44.55%20AM.png"
+		
+}
 
-plot.3.general.toxicity <- ggplot(long[long$type == 'toxicity',], aes(age, value, color=radn)) + 
-	geom_point(size=0.5, alpha=0.5) + 
-	geom_smooth(size=0.5, alpha=0.5) + 
-	facet_wrap(~ variable) + 
-	ylim(0, 1)
-plot.3.general.toxicity
-plot.3.general.toxicity.url = "http://dl.dropbox.com/u/1131693/bloodrop/Screen%20Shot%202012-08-23%20at%2011.37.17%20AM.png"
-
-plot.3.general.grouped <- ggplot(long[long$type == 'grouped',], aes(age, value, color=radn)) + 
-	geom_point(size=0.5, alpha=0.5) + 
-	geom_smooth(size=0.5, alpha=0.5) + 
-	facet_wrap(~ variable) + 
-	ylim(0, 5)
-plot.3.general.grouped
-plot.3.general.grouped.url = "http://dl.dropbox.com/u/1131693/bloodrop/Screen%20Shot%202012-08-23%20at%2011.38.29%20AM.png"
-
-plot.3.gamma.toxicity <- ggplot(long[long$radn %in% c('G', 'C') & long$type == 'toxicity',], aes(age, value, color=tmt)) + 
-	geom_point(size=0.5, alpha=0.5) + 
-	geom_smooth(size=0.5, alpha=0.5, se=FALSE) + 
-	facet_wrap(~ variable) + 
-	ylim(0, 1)
-plot.3.gamma.toxicity
-plot.3.gamma.toxicity.url = "http://dl.dropbox.com/u/1131693/bloodrop/Screen%20Shot%202012-08-23%20at%2011.40.29%20AM.png"
-
-plot.3.gamma.grouped <- ggplot(long[long$radn %in% c('G', 'C') & long$type == 'grouped',], aes(age, value, color=tmt)) + 
-	geom_point(size=0.5, alpha=0.5) + 
-	geom_smooth(size=0.5, alpha=0.5, se=FALSE) + 
-	facet_wrap(~ variable) + 
-	ylim(0, 5)
-plot.3.gamma.grouped
-plot.3.gamma.grouped.url = "http://dl.dropbox.com/u/1131693/bloodrop/Screen%20Shot%202012-08-23%20at%2011.41.53%20AM.png"
-
-plot.3.neutron.toxicities <- ggplot(long[long$radn %in% c('N', 'C') & long$type == 'toxicity',], aes(age, value, color=tmt)) + 
-	geom_point(size=0.5, alpha=0.5) + 
-	geom_smooth(size=0.5, alpha=0.5, se=FALSE) + 
-	facet_wrap(~ variable) + 
-	ylim(0, 1)
-plot.3.neutron.toxicities
-plot.3.neutron.toxicities.url = "http://dl.dropbox.com/u/1131693/bloodrop/Screen%20Shot%202012-08-23%20at%2011.44.06%20AM.png"
-
-plot.3.neutron.grouped <- ggplot(long[long$radn %in% c('N', 'C') & long$type == 'grouped',], aes(age, value, color=tmt)) + 
-	geom_point(size=0.5, alpha=0.5) + 
-	geom_smooth(size=0.5, alpha=0.5, se=FALSE) + 
-	facet_wrap(~ variable) + 
-	ylim(0, 5)
-plot.3.neutron.grouped
-plot.3.neutron.grouped.url = "http://dl.dropbox.com/u/1131693/bloodrop/Screen%20Shot%202012-08-23%20at%2011.44.55%20AM.png"
-
+# **** BAD ATTEMPT WILL NOT BE USED - DETAILS BELOW *****
 # Figure 4. 
 #
 # Lets make sure our models are well parameterized
@@ -246,29 +258,32 @@ plot.3.neutron.grouped.url = "http://dl.dropbox.com/u/1131693/bloodrop/Screen%20
 # We will do this by modeling the relationship between
 # age and disease with k-splines.
 
-formula <- value ~ age + I(pos(age, 877)^3) + I(pos(age, 1045)^3) + I(age^2) + I(age^3)
-models <- dlply(long[long$type == 'toxicity',], .(variable), function(df){	 
-	glm(
-		formula=formula, 
-		family=gaussian, 
-		data=df
-	); 
-})
-
-subset <- (long$type == 'toxicity')
-long[subset,]$p <- ddply(long[subset,], .(variable), function(df){
-	model <- models[[df$variable[1]]]
-	prediction <- predict(model)
-	data.frame(prediction)
-})[,2]
-
-plot.4.age.model.toxicities <- ggplot(long[long$type == 'toxicity',], aes(age, p)) + 
-	geom_point(size=0.5, alpha=0.5) + 
-	geom_line(size=0.5, alpha=0.5) + 
-	facet_wrap(~ variable) + 
-	ylim(0, 1)
-plot.4.age.model.toxicities
-plot.4.age.model.toxicities.url = "http://dl.dropbox.com/u/1131693/bloodrop/Screen%20Shot%202012-08-23%20at%201.33.03%20PM.png"
+# if(refresh_cache){
+		# formula <- value ~ age + I(pos(age, 877)^3) + I(pos(age, 1045)^3) + I(age^2) + I(age^3)
+	# models <- dlply(long[long$type == 'toxicity',], .(variable), function(df){	 
+		# glm(
+			# formula=formula, 
+			# family=gaussian, 
+			# data=df
+		# ); 
+	# })
+	
+	# subset <- (long$type == 'toxicity')
+	# long[subset,]$p <- ddply(long[subset,], .(variable), function(df){
+		# model <- models[[df$variable[1]]]
+		# prediction <- predict(model)
+		# data.frame(prediction)
+	# })[,2]
+	
+	# plot.4.age.model.toxicities <- ggplot(long[long$type == 'toxicity',], aes(age, p)) + 
+		# geom_point(size=0.5, alpha=0.5) + 
+		# geom_line(size=0.5, alpha=0.5) + 
+		# facet_wrap(~ variable) + 
+		# ylim(0, 1)
+	# plot.4.age.model.toxicities
+	# plot.4.age.model.toxicities.url = "http://dl.dropbox.com/u/1131693/bloodrop/Screen%20Shot%202012-08-23%20at%201.33.03%20PM.png"
+# }
+	
 # compare to plot.1.grouped.url
 # it looks really close.  By eye, I'd say this is a good model for the relationship
 # between lifespan and 
@@ -281,25 +296,25 @@ plot.4.age.model.toxicities.url = "http://dl.dropbox.com/u/1131693/bloodrop/Scre
 # First we will setup baseline incidence rates, in control
 # animals and then look for radiation responses
 
-subset <- (long$type == 'toxicity')
-control_models <- dlply(long[subset,], .(variable), function(df){
-	formula <- value ~ age + pos(age, 877) + pos(age, 1045) + sex
-	model <- glm(formula, family=binomial, data=df[df$radn == 'C',]) 
-})
-radiation_models <- dlply(long[subset,], .(variable), function(df){
-	formula <- value ~ offset(p) + total_dose - 1
-	control_model <- control_models[[df$variable[1]]]
-	df$p <- predict(control_model, df)
-	model <- glm(formula, family=binomial, data=df[df$radn %in% c('C', 'G'),]) 
-	model
-})
-experimental_models <- dlply(long[subset,], .(variable), function(df){
-	formula <- value ~ offset(p) + total_dose*sex - sex - total_dose - 1
-	rad_model <- radiation_models[[df$variable[1]]]
-	df$p <- predict(rad_model, df)
-	model <- glm(formula, family=binomial, data=df[df$radn %in% c('C', 'G'),]) 
-	model
-})
+# subset <- (long$type == 'toxicity')
+# control_models <- dlply(long[subset,], .(variable), function(df){
+	# formula <- value ~ age + pos(age, 877) + pos(age, 1045) + sex
+	# model <- glm(formula, family=binomial, data=df[df$radn == 'C',]) 
+# })
+# radiation_models <- dlply(long[subset,], .(variable), function(df){
+	# formula <- value ~ offset(p) + total_dose - 1
+	# control_model <- control_models[[df$variable[1]]]
+	# df$p <- predict(control_model, df)
+	# model <- glm(formula, family=binomial, data=df[df$radn %in% c('C', 'G'),]) 
+	# model
+# })
+# experimental_models <- dlply(long[subset,], .(variable), function(df){
+	# formula <- value ~ offset(p) + total_dose*sex - sex - total_dose - 1
+	# rad_model <- radiation_models[[df$variable[1]]]
+	# df$p <- predict(rad_model, df)
+	# model <- glm(formula, family=binomial, data=df[df$radn %in% c('C', 'G'),]) 
+	# model
+# })
 
 
 # Problems with table 3
@@ -308,15 +323,15 @@ experimental_models <- dlply(long[subset,], .(variable), function(df){
 # take for instance the pathology DER.  Our 'radiation model' is meant 
 # to capture the effect of radiation on incidence.
 
-	summary(radiation_models[['DER']])
+	# summary(radiation_models[['DER']])
 	
 # According to this result, as radiation increases the odds of DER
 # occurance drops to zero.  A graph of the DER data proves that this
 # is not so.
 
-	ggplot(data[data$DER == 1,], aes(age, total_dose, color=sex)) + 
-	geom_point() + 
-	facet_wrap(~radn)
+	# ggplot(data[data$DER == 1,], aes(age, total_dose, color=sex)) + 
+	# geom_point() + 
+	# facet_wrap(~radn)
 		
 # Clearly radiation has its fair share of DER entries.  Moreover,
 # the data for control animals has no female cases!  
@@ -324,11 +339,11 @@ experimental_models <- dlply(long[subset,], .(variable), function(df){
 # If we look at the expected odds by of the control models the results
 # are absurd.  Observe the following:
 
-	temp   <- data[data$radn %in% c('C'),]
-	temp$p <- 1 / (1 + exp(-predict(control_models[['DER']])))
+	# temp   <- data[data$radn %in% c('C'),]
+	# temp$p <- 1 / (1 + exp(-predict(control_models[['DER']])))
 	
-	quantile(temp$p)
-	ggplot(temp, aes(age, p, color=sex)) + geom_point() + scale_y_log10()
+	# quantile(temp$p)
+	# ggplot(temp, aes(age, p, color=sex)) + geom_point() + scale_y_log10()
 	
 # We predict odds of DER for middle aged females as low as
 # 1 in 20 billion.  Surely we cannot get this level of confidence
@@ -340,31 +355,31 @@ experimental_models <- dlply(long[subset,], .(variable), function(df){
 #  difference.  I dropped the use of caret because I could not get it to
 #  perform logistic regressions very well.)
 	
-	temp    <- data[data$radn %in% c('C'),]
-	input   <- ~ age + pos(age, 877) + pos(age, 1045) + sex
-	model 	<- penalized(DER, input, lambda1=1, lambda2=1, model='logistic', data=temp)
-	temp$p  <- predict(model, input, data=temp)
+	# temp    <- data[data$radn %in% c('C'),]
+	# input   <- ~ age + pos(age, 877) + pos(age, 1045) + sex
+	# model 	<- penalized(DER, input, lambda1=1, lambda2=1, model='logistic', data=temp)
+	# temp$p  <- predict(model, input, data=temp)
 	
-	quantile(temp$p)
-	ggplot(temp, aes(age, p, color=sex)) + geom_point() + scale_y_log10()
+	# quantile(temp$p)
+	# ggplot(temp, aes(age, p, color=sex)) + geom_point() + scale_y_log10()
 
 # The predictions are much more reasonable, bottoming out at 0.0004 or about
 # 1 in 3000 a much more reasonable value considering the sparsity of our observations
 #
 # But what about the performance of subsequent models
 
-	temp    <- data[data$radn %in% c('C', 'G'),]
-	temp$p  <- -log(1/predict(model, input, data=temp) - 1)
+	# temp    <- data[data$radn %in% c('C', 'G'),]
+	# temp$p  <- -log(1/predict(model, input, data=temp) - 1)
 
-	formula <- DER ~ offset(p) + total_dose - 1
-	model <- glm(formula, family=binomial, data=temp) 
-	summary(model)
+	# formula <- DER ~ offset(p) + total_dose - 1
+	# model <- glm(formula, family=binomial, data=temp) 
+	# summary(model)
 	
 # Notice the much more reasonable conclusion that radiation
 # has little effect on DER rates.  This is confirmed by a
 # table of radaition vs DER occurance
 
-	daply(data, .(radn), function(df){sum(df$DER) / nrow(df)})
+	# daply(data, .(radn), function(df){sum(df$DER) / nrow(df)})
 	
 
 # Lessons from table 3 mishap
@@ -390,26 +405,26 @@ experimental_models <- dlply(long[subset,], .(variable), function(df){
 # the baseline models.  We will also check our conclusions
 # by graphing the results.
 
-	# Find the robust effects of age and gender
-	subset <- (long$type == 'toxicity')
-	input <- ~ age + pos(age, 877) + pos(age, 1045) + sex
-	control_models <- dlply(long[subset,], .(variable), function(df){
-		data <- df[df$radn == 'C',]
-		model <- penalized(value, input, lambda1=4, lambda2=4, model='logistic', data=data)
-	})
+	# # Find the robust effects of age and gender
+	# subset <- (long$type == 'toxicity')
+	# input <- ~ age + pos(age, 877) + pos(age, 1045) + sex
+	# control_models <- dlply(long[subset,], .(variable), function(df){
+		# data <- df[df$radn == 'C',]
+		# model <- penalized(value, input, lambda1=4, lambda2=4, model='logistic', data=data)
+	# })
 	
-	# Make predictions using control data
-	temp <- data[data$radn %in% c('C', 'G'),]
-	control_predictions <- llply(control_models, function(m){
-		predict(m, input, data=temp)
-	})
+	# # Make predictions using control data
+	# temp <- data[data$radn %in% c('C', 'G'),]
+	# control_predictions <- llply(control_models, function(m){
+		# predict(m, input, data=temp)
+	# })
 	
-	# Make sure there is nothing weird going on
-	sort(unlist(llply(control_predictions, min)))
-	sort(unlist(llply(control_predictions, max)))
+	# # Make sure there is nothing weird going on
+	# sort(unlist(llply(control_predictions, min)))
+	# sort(unlist(llply(control_predictions, max)))
 	
-	plot_toxicity_incidence("KID")
-	plot_predictions(control_predictions[["KID"]], temp)
+	# plot_toxicity_incidence("KID")
+	# plot_predictions(control_predictions[["KID"]], temp)
 	
 	
 # Problems with the 2nd attempt
@@ -430,140 +445,140 @@ experimental_models <- dlply(long[subset,], .(variable), function(df){
 #
 # I could remedy this by avoiding cuts in sparse data like so:
 
-	temp    <- data[data$radn %in% c('C'),]
-	input   <- ~ age + sex
-	model 	<- penalized(KID, input, lambda1=.1, lambda2=.1, model='logistic', data=temp)
-	temp    <- data[data$radn %in% c('C', 'G'),]
-	temp$p  <- predict(model, input, data=temp)
+	# temp    <- data[data$radn %in% c('C'),]
+	# input   <- ~ age + sex
+	# model 	<- penalized(KID, input, lambda1=.1, lambda2=.1, model='logistic', data=temp)
+	# temp    <- data[data$radn %in% c('C', 'G'),]
+	# temp$p  <- predict(model, input, data=temp)
 	
-	quantile(temp$p)
-	plot_toxicity_incidence("KID")
-	table(data$KID, data$radn)
-	ggplot(temp, aes(age, p, color=sex)) + geom_point() + scale_y_log10()
+	# quantile(temp$p)
+	# plot_toxicity_incidence("KID")
+	# table(data$KID, data$radn)
+	# ggplot(temp, aes(age, p, color=sex)) + geom_point() + scale_y_log10()
 	
 # This looks more reasonble by many measures.  For the rest I will use
 # age limits based on the number of observations.
 
-
+# **** BAD ATTEMPT WILL NOT BE USED - DETAILS BELOW *****
 # Table 3 (3rd attempt)
 #
 # Now we are varying the number of age cuts that we use to fit
 # the data.  Dense data like NTYG will have 3 cuts, sparse data
 # like KID will have no cuts
 
-	# Link functions
-	logit <- function(p){-log(1/p - 1)}
-	unlogit <- function(p){1 / (1 + exp(-p))}
+	# # Link functions
+	# logit <- function(p){-log(1/p - 1)}
+	# unlogit <- function(p){1 / (1 + exp(-p))}
 	
-	# Useful troubleshooting plots
-	plot_toxicity_incidence <- function(toxicity){
-		ggplot(data[data[,toxicity] == 1,], aes(age, total_dose, color=sex)) + 
-		geom_point() + 
-		facet_wrap(~radn)
-	}
-	plot_predictions <- function(predictions, data){
-		data$p <- predictions
-		ggplot(data, aes(age, p, color=sex)) + geom_point() + scale_y_log10()
-	}
+	# # Useful troubleshooting plots
+	# plot_toxicity_incidence <- function(toxicity){
+		# ggplot(data[data[,toxicity] == 1,], aes(age, total_dose, color=sex)) + 
+		# geom_point() + 
+		# facet_wrap(~radn)
+	# }
+	# plot_predictions <- function(predictions, data){
+		# data$p <- predictions
+		# ggplot(data, aes(age, p, color=sex)) + geom_point() + scale_y_log10()
+	# }
 	
-	# the number and position of knots that we should use
-	get_input <- function(toxicity){
-		n <- sum(data[data$radn == 'C', as.character(toxicity)])
-		if(n > 200){
-			input <- ~ age + pos(age, 900) + pos(age, 1100) + sex		
-		}
-		else if(n > 100){
-			input <- ~ age + pos(age, 1000) + sex
-		}
-		else{
-			input <- ~ age + sex	
-		}
-		input
-	}
+	# # the number and position of knots that we should use
+	# get_input <- function(toxicity){
+		# n <- sum(data[data$radn == 'C', as.character(toxicity)])
+		# if(n > 200){
+			# input <- ~ age + pos(age, 900) + pos(age, 1100) + sex		
+		# }
+		# else if(n > 100){
+			# input <- ~ age + pos(age, 1000) + sex
+		# }
+		# else{
+			# input <- ~ age + sex	
+		# }
+		# input
+	# }
 
-	# Find the robust effects of age and gender
-	subset <- (long$type == 'toxicity')
-	control_models <- dlply(long[subset,], .(variable), function(df){
-		input   <- get_input(df$variable[1])
-		data    <- df[df$radn == 'C',]
-		model   <- penalized(value, input, lambda1=.2, lambda2=.5, model='logistic', data=data)
-	})
+	# # Find the robust effects of age and gender
+	# subset <- (long$type == 'toxicity')
+	# control_models <- dlply(long[subset,], .(variable), function(df){
+		# input   <- get_input(df$variable[1])
+		# data    <- df[df$radn == 'C',]
+		# model   <- penalized(value, input, lambda1=.2, lambda2=.5, model='logistic', data=data)
+	# })
 	
-	# Make predictions using control models
-	temp <- data[data$radn %in% c('C', 'G'),]
-	control_predictions <- llply(names(control_models), function(n){
-		input <- get_input(n)
-		predict(control_models[[n]], input, data=temp)
-	})
-	names(control_predictions) <- names(control_models)
+	# # Make predictions using control models
+	# temp <- data[data$radn %in% c('C', 'G'),]
+	# control_predictions <- llply(names(control_models), function(n){
+		# input <- get_input(n)
+		# predict(control_models[[n]], input, data=temp)
+	# })
+	# names(control_predictions) <- names(control_models)
 	
-	# Make sure there is nothing weird going on
-	sort(unlist(llply(control_predictions, min)))
-	sort(unlist(llply(control_predictions, max)))
+	# # Make sure there is nothing weird going on
+	# sort(unlist(llply(control_predictions, min)))
+	# sort(unlist(llply(control_predictions, max)))
 	
-	plot_toxicity_incidence("TADR")
-	plot_predictions(control_predictions[["TADR"]], temp)
+	# plot_toxicity_incidence("TADR")
+	# plot_predictions(control_predictions[["TADR"]], temp)
 	
-	# Add radiation 
-	radiation_models <- dlply(long[subset,], .(variable), function(df){
-		formula <- value ~ offset(p) + total_dose - 1
-		df      <- df[df$radn %in% c('C', 'G'),]
-		df$p    <- logit(control_predictions[[df$variable[1]]])
-		model   <- glm(formula, family=binomial, data=df) 
-		model
-	})
+	# # Add radiation 
+	# radiation_models <- dlply(long[subset,], .(variable), function(df){
+		# formula <- value ~ offset(p) + total_dose - 1
+		# df      <- df[df$radn %in% c('C', 'G'),]
+		# df$p    <- logit(control_predictions[[df$variable[1]]])
+		# model   <- glm(formula, family=binomial, data=df) 
+		# model
+	# })
 	
-	# Make predictions using radiation models
-	radiation_predictions <- llply(radiation_models, function(m){
-		unlogit(predict(m))
-	})	
+	# # Make predictions using radiation models
+	# radiation_predictions <- llply(radiation_models, function(m){
+		# unlogit(predict(m))
+	# })	
 	
-	# Make sure things are okay dokey
-	sort(unlist(llply(radiation_predictions, min)))
-	sort(unlist(llply(radiation_predictions, max)))
+	# # Make sure things are okay dokey
+	# sort(unlist(llply(radiation_predictions, min)))
+	# sort(unlist(llply(radiation_predictions, max)))
 	
-	# What is the effect of radiaiton
-	rad_effects <- ldply(radiation_models, function(m){data.frame(summary(m)$coefficients)})
-	rad_effects[order(rad_effects$Pr...z..),]
+	# # What is the effect of radiaiton
+	# rad_effects <- ldply(radiation_models, function(m){data.frame(summary(m)$coefficients)})
+	# rad_effects[order(rad_effects$Pr...z..),]
 	
-	tox <- "MET"
-	plot_toxicity_incidence(tox)
-	plot_predictions(radiation_predictions[[tox]], temp)
-	table(data$radn, data[,tox])
-
-	
-	llply(radiation_models, summary)
-	plot_toxicity_incidence("TOVE")
-	
-experimental_models <- dlply(long[subset,], .(variable), function(df){
-	formula <- value ~ offset(p) + total_dose*sex - sex - total_dose - 1
-	rad_model <- radiation_models[[df$variable[1]]]
-	df$p <- predict(rad_model, df)
-	model <- glm(formula, family=binomial, data=df[df$radn %in% c('C', 'G'),]) 
-	model
-})
+	# tox <- "MET"
+	# plot_toxicity_incidence(tox)
+	# plot_predictions(radiation_predictions[[tox]], temp)
+	# table(data$radn, data[,tox])
 
 	
+	# llply(radiation_models, summary)
+	# plot_toxicity_incidence("TOVE")
+	
+# experimental_models <- dlply(long[subset,], .(variable), function(df){
+	# formula <- value ~ offset(p) + total_dose*sex - sex - total_dose - 1
+	# rad_model <- radiation_models[[df$variable[1]]]
+	# df$p <- predict(rad_model, df)
+	# model <- glm(formula, family=binomial, data=df[df$radn %in% c('C', 'G'),]) 
+	# model
+# })
 
-	temp    <- data[data$radn %in% c('C', 'G'),]
-	temp$p  <- -log(1/predict(model, input, data=temp) - 1)
+	
 
-	formula <- DER ~ offset(p) + total_dose - 1
-	model <- glm(formula, family=binomial, data=temp) 
-	summary(model)
+	# temp    <- data[data$radn %in% c('C', 'G'),]
+	# temp$p  <- -log(1/predict(model, input, data=temp) - 1)
+
+	# formula <- DER ~ offset(p) + total_dose - 1
+	# model <- glm(formula, family=binomial, data=temp) 
+	# summary(model)
 	
 # Notice the much more reasonable conclusion that radiation
 # has little effect on DER rates.  This is confirmed by a
 # table of radaition vs DER occurance
 
-	daply(data, .(radn), function(df){sum(df$DER) / nrow(df)})
+	# daply(data, .(radn), function(df){sum(df$DER) / nrow(df)})
 	
 
 
-temp$p <- predict(model, temp)
+# temp$p <- predict(model, temp)
 
-formula <- OVE ~ p + total_dose + total_dose*sex - sex
-model <- glm(formula, family=binomial, data=temp[temp$radn %in% c('C', 'G'),]) 
+# formula <- OVE ~ p + total_dose + total_dose*sex - sex
+# model <- glm(formula, family=binomial, data=temp[temp$radn %in% c('C', 'G'),]) 
 
 
 # Table 3 - backing off
@@ -597,55 +612,60 @@ model <- glm(formula, family=binomial, data=temp[temp$radn %in% c('C', 'G'),])
 					     ,]
 					     #& long$variable %in% c('MET', 'OVE', 'PGL', 'TOVE', 'TUTE', 'UTE', 'PNU'),]
 	combinations <- expand.grid(f=baseline_formulas, l1=lambda1s, l2=lambda2s, stringsAsFactors=FALSE)
-
-	# Run models
-	performance <- ldply(1:bootstraps, function(b){
-		
-		# Bootstrap data
-		n <- nrow(control_long)
-		d <- control_long[sample(1:n, replace=TRUE),]
-		
-		# Add an intercept column, always 1
-		d$i <- 1
-		
-		# Try our models
-		p <- ddply(d, .(variable), function(df){
-			likelihoods <- adply(combinations, .(1), function(c){
-								
-				# debugging tool
-				"c  <- combinations[1,]
-				df <- d[d$variable == 'TADN',]"
-				
-				# Train model with cross validation
-				f <- as.formula(as.character(c$f[1]))
-				m <- cvl(
-					f, 
-					unpenalized = ~0,
-					lambda1=c$l1, 
-					lambda2=c$l2, 
-					model='logistic', 
-					data=df, 
-					maxiter=25, 
-					fold=5, 
-					standardize=TRUE
-				)
-				
-				m$cvl
+	
+	if(refresh_cache | !file.exists(table.3.baseline.cache)){
+		# Run models
+		performance <- ldply(1:bootstraps, function(b){
+			
+			# Bootstrap data
+			n <- nrow(control_long)
+			d <- control_long[sample(1:n, replace=TRUE),]
+			
+			# Add an intercept column, always 1
+			d$i <- 1
+			
+			# Try our models
+			p <- ddply(d, .(variable), function(df){
+				likelihoods <- adply(combinations, .(1), function(c){
+									
+					# debugging tool
+					"c  <- combinations[1,]
+					df <- d[d$variable == 'TADN',]"
+					
+					# Train model with cross validation
+					f <- as.formula(as.character(c$f[1]))
+					m <- cvl(
+						f, 
+						unpenalized = ~0,
+						lambda1=c$l1, 
+						lambda2=c$l2, 
+						model='logistic', 
+						data=df, 
+						maxiter=25, 
+						fold=5, 
+						standardize=TRUE
+					)
+					
+					m$cvl
+				})
 			})
+			p$bootstrap <- b
+			p
 		})
-		p$bootstrap <- b
-		p
-	})
-	
-	names(performance) <- c('tox', 'model', 'l1', 'l2', 'log.likelihood', 'bootstrap')
-	
-	# Make likelihood relative to intercept model
-	performance <- ddply(performance, .(tox, bootstrap), function(df){
-		baseline <- df$log.likelihood[df$model == 'value ~ i'][1]
-		df$relative.likelihood <- df$log.likelihood - baseline
-		df
-	})
-	
+		
+		names(performance) <- c('tox', 'model', 'l1', 'l2', 'log.likelihood', 'bootstrap')
+		
+		# Make likelihood relative to intercept model
+		performance <- ddply(performance, .(tox, bootstrap), function(df){
+			baseline <- df$log.likelihood[df$model == 'value ~ i'][1]
+			df$relative.likelihood <- df$log.likelihood - baseline
+			df
+		})
+		
+		saveRDS(performance, table.3.baseline.cache, ascii = TRUE, compress = FALSE)
+	}
+	performance <- readRDS(table.3.baseline.cache)
+
 	# Aggregate bootstraps
 	aggregate <- ddply(performance, .(tox, model, l1, l2), function(df){
 		o = df$relative.likelihood
@@ -739,48 +759,55 @@ model <- glm(formula, family=binomial, data=temp[temp$radn %in% c('C', 'G'),])
 					     #& long$variable %in% c('MET', 'OVE', 'PGL', 'TOVE', 'TUTE', 'UTE', 'PNU'),]
 	bootstraps <- 20
 
-	baseline_predictions <- ldply(1:bootstraps, function(b){
-		
-		# Bootstrap data
-		n <- nrow(ungrouped_long)
-		d <- ungrouped_long[sample(1:n, replace=TRUE),]
-		
-		# Scale necessary factors
-		d$age <- scale(d$age)
-		
-		# Add an intercept column, always 1
-		d$i <- 1
-		
-		# Try our models
-		p <- ddply(d, .(variable), function(df){
+	table.3.baseline_predictions.cache = 'table.3.baseline_predictions.data'	
+	if(refresh_cache | !file.exists(table.3.baseline_predictions.cache)){
+		baseline_predictions <- ldply(1:bootstraps, function(b){
 			
-			# debugging tool
-			"df <- d[d$variable == 'CRD',]"
+			# Bootstrap data
+			n <- nrow(ungrouped_long)
+			d <- ungrouped_long[sample(1:n, replace=TRUE),]
 			
-			# get the baseline formula
-			c <- baselines[baselines$tox == df$variable[1],]
-								
-			# Train model on control data
-			cd <- df[df$radn == 'C',] 
-			f <- as.formula(as.character(c$model[1]))
-			m <- penalized(
-					f, 
-					unpenalized = ~0,
-					lambda1=c$l1, 
-					lambda2=c$l2, 
-					model='logistic', 
-					data=df, 
-					maxiter=25, 
-					standardize=TRUE
-				)
+			# Scale necessary factors
+			d$age <- scale(d$age)
 			
-			# Predict all data and return the distribution
-			p <- predict(m, f, data=df)
-			quantile(p)
+			# Add an intercept column, always 1
+			d$i <- 1
+			
+			# Try our models
+			p <- ddply(d, .(variable), function(df){
+				
+				# debugging tool
+				"df <- d[d$variable == 'CRD',]"
+				
+				# get the baseline formula
+				c <- baselines[baselines$tox == df$variable[1],]
+									
+				# Train model on control data
+				cd <- df[df$radn == 'C',] 
+				f <- as.formula(as.character(c$model[1]))
+				m <- penalized(
+						f, 
+						unpenalized = ~0,
+						lambda1=c$l1, 
+						lambda2=c$l2, 
+						model='logistic', 
+						data=df, 
+						maxiter=25, 
+						standardize=TRUE
+					)
+				
+				# Predict all data and return the distribution
+				p <- predict(m, f, data=df)
+				quantile(p)
+			})
+			p$bootstrap <- b
+			p
 		})
-		p$bootstrap <- b
-		p
-	})
+		saveRDS(baseline_predictions, table.3.baseline_predictions.cache, ascii = TRUE, compress = FALSE)
+	}
+	baseline_predictions <- readRDS(table.3.baseline_predictions.cache)
+
+
 	
 	l <- melt(baseline_predictions[,!names(baseline_predictions) %in% 'bootstrap'])
 	names(l) <- c('tox', 'percentile', 'p')
@@ -819,65 +846,65 @@ model <- glm(formula, family=binomial, data=temp[temp$radn %in% c('C', 'G'),])
 # l2 regularization is sufficiently powerful and that we 
 # should try settings of 1.0, 0.3, and 0.1 in our regularization
 #
-	tempf <- function(n=1000, l1=0, l2=0, f=y ~ x, data=temp, folds=5, iter=25){		
+	# tempf <- function(n=1000, l1=0, l2=0, f=y ~ x, data=temp, folds=5, iter=25){		
 
-		m.cv <- cvl(
-				f, 
-				unpenalized = ~0,
-				lambda1=l1, 
-				lambda2=l2, 
-				model='logistic', 
-				data=data, 
-				maxiter=iter, 
-				standardize=TRUE,
-				fold=folds
-			)
+		# m.cv <- cvl(
+				# f, 
+				# unpenalized = ~0,
+				# lambda1=l1, 
+				# lambda2=l2, 
+				# model='logistic', 
+				# data=data, 
+				# maxiter=iter, 
+				# standardize=TRUE,
+				# fold=folds
+			# )
 			
-		m <- penalized(
-			f, 
-			unpenalized = ~0,
-			lambda1=l1, 
-			lambda2=l2, 
-			model='logistic', 
-			data=data, 
-			maxiter=iter, 
-			standardize=TRUE
-		)
+		# m <- penalized(
+			# f, 
+			# unpenalized = ~0,
+			# lambda1=l1, 
+			# lambda2=l2, 
+			# model='logistic', 
+			# data=data, 
+			# maxiter=iter, 
+			# standardize=TRUE
+		# )
 		
-		p <- predict(m, f, data=data)
+		# p <- predict(m, f, data=data)
 			
-		list(m.cv$cvl, quantile(p))
-	}
+		# list(m.cv$cvl, quantile(p))
+	# }
 	
-	temp <- data.frame(y=rep(0, n), x=rep(1, n))
-	temp$y[1] <- 1
+	# temp <- data.frame(y=rep(0, n), x=rep(1, n))
+	# temp$y[1] <- 1
 	
-	tempf()
-	tempf(l1=1e-2, l2=1e-1)
-	tempf(l1=1e-2, l2=1.5e-1)
-	tempf(iter=1000)
+	# tempf()
+	# tempf(l1=1e-2, l2=1e-1)
+	# tempf(l1=1e-2, l2=1.5e-1)
+	# tempf(iter=1000)
 
-	temp <- data.frame(y=rep(0, n), x=rep(1, n))
-	tempf(l1=1.0, l2=1.0)  # 0.006
-	tempf(l1=0.3, l2=1.0)  # 0.0054
-	tempf(l1=0.1, l2=1.0)  # 0.0053
-	tempf(l1=0.0, l2=1.0)  # 0.0052
-	tempf(l1=1.0, l2=0.3)  # 0.0027
-	tempf(l1=0.3, l2=0.3)  # 0.0021
-	tempf(l1=0.1, l2=0.3)  # 0.0019
-	tempf(l1=0.0, l2=0.3)  # 0.0018
-	tempf(l1=1.0, l2=0.1)  # 0.0016
-	tempf(l1=0.3, l2=0.1)  # 0.000999
-	tempf(l1=0.1, l2=0.1)  # 0.000811
-	tempf(l1=0.0, l2=0.1)  # 0.000723
-	tempf(l1=1.0, l2=0.0)  # 
-	tempf(l1=0.3, l2=0.0)
-	tempf(l1=0.1, l2=0.0)
-	tempf(l1=0.0, l2=0.0)
+	# temp <- data.frame(y=rep(0, n), x=rep(1, n))
+	# tempf(l1=1.0, l2=1.0)  # 0.006
+	# tempf(l1=0.3, l2=1.0)  # 0.0054
+	# tempf(l1=0.1, l2=1.0)  # 0.0053
+	# tempf(l1=0.0, l2=1.0)  # 0.0052
+	# tempf(l1=1.0, l2=0.3)  # 0.0027
+	# tempf(l1=0.3, l2=0.3)  # 0.0021
+	# tempf(l1=0.1, l2=0.3)  # 0.0019
+	# tempf(l1=0.0, l2=0.3)  # 0.0018
+	# tempf(l1=1.0, l2=0.1)  # 0.0016
+	# tempf(l1=0.3, l2=0.1)  # 0.000999
+	# tempf(l1=0.1, l2=0.1)  # 0.000811
+	# tempf(l1=0.0, l2=0.1)  # 0.000723
+	# tempf(l1=1.0, l2=0.0)  # 
+	# tempf(l1=0.3, l2=0.0)
+	# tempf(l1=0.1, l2=0.0)
+	# tempf(l1=0.0, l2=0.0)
 
-	# Predict all data and return the distribution
-	#p <- predict(m, f, data=temp)
-	#quantile(p)
+	# # Predict all data and return the distribution
+	# #p <- predict(m, f, data=temp)
+	# #quantile(p)
 
 
 # Experiment in using prediction to estimate
@@ -887,47 +914,47 @@ model <- glm(formula, family=binomial, data=temp[temp$radn %in% c('C', 'G'),])
 #  1. Add the p=logit(prediction) to the data frame
 #  2. Add ~p to the unpenalized argument in modeling and predicting
 
- 		n    <- 1000
-		x1   <- runif(n)
-		x2   <- runif(n)
-		e    <- runif(n)
-		i    <- rep(1, n)
-		y    <- (x1 + x2 + e) < 1.5
-		temp <- data.frame(y, x1, x2, e, i)
-		f    <- y ~ x1 + i
-		l1   <- 0
-		l2   <- 0
-		iter <- 25
-		m <- penalized(
-			f, 
-			unpenalized = ~0,
-			lambda1=l1, 
-			lambda2=l2, 
-			model='logistic', 
-			data=temp, 
-			maxiter=iter, 
-			standardize=TRUE
-		)
+ 		# n    <- 1000
+		# x1   <- runif(n)
+		# x2   <- runif(n)
+		# e    <- runif(n)
+		# i    <- rep(1, n)
+		# y    <- (x1 + x2 + e) < 1.5
+		# temp <- data.frame(y, x1, x2, e, i)
+		# f    <- y ~ x1 + i
+		# l1   <- 0
+		# l2   <- 0
+		# iter <- 25
+		# m <- penalized(
+			# f, 
+			# unpenalized = ~0,
+			# lambda1=l1, 
+			# lambda2=l2, 
+			# model='logistic', 
+			# data=temp, 
+			# maxiter=iter, 
+			# standardize=TRUE
+		# )
 		
-		p <- predict(m, f, data=temp)
-		quantile(p); coefficients(m)
+		# p <- predict(m, f, data=temp)
+		# quantile(p); coefficients(m)
 		
-		temp$p <- logit(p)
-		f      <- y ~ i
-		u      <- ~ p
-		l2     <- 1
-		m2 <- penalized(
-			f, 
-			unpenalized = u,
-			lambda1=l1, 
-			lambda2=l2, 
-			model='logistic', 
-			data=temp, 
-			maxiter=iter, 
-			standardize=TRUE
-		)
-		p2 <- predict(m2, f, u, data=temp)
-		quantile(p2); coefficients(m2)
+		# temp$p <- logit(p)
+		# f      <- y ~ i
+		# u      <- ~ p
+		# l2     <- 1
+		# m2 <- penalized(
+			# f, 
+			# unpenalized = u,
+			# lambda1=l1, 
+			# lambda2=l2, 
+			# model='logistic', 
+			# data=temp, 
+			# maxiter=iter, 
+			# standardize=TRUE
+		# )
+		# p2 <- predict(m2, f, u, data=temp)
+		# quantile(p2); coefficients(m2)
 
 	
 # Table 3 - final showdown
@@ -942,94 +969,116 @@ model <- glm(formula, family=binomial, data=temp[temp$radn %in% c('C', 'G'),])
 	# Control variables
 	experimental_formulas <- c(
 		'value ~ p',
+		'value ~ p + total_dose',
 		'value ~ p*total_dose',
-		'value ~ p*total_dose + p*I(total_dose^2)'
+		'value ~ p + total_dose + I(total_dose^2)',
+		'value ~ p*total_dose + p*I(total_dose^2)',
+		'value ~ p + total_dose*sex',
+		'value ~ p*total_dose*sex',
+		'value ~ p + total_dose*sex + I(total_dose^2)*sex',
+		'value ~ p*total_dose*sex + p*I(total_dose^2)*sex'
 	)
 	lambda1s <- c(0)
-	lambda2s <- c(1, 0.3, 0.1, 0.01)
+	lambda2s <- c(0.01)
 	bootstraps <- 20
 	
 	# Parse configuration settings
 	gamma_long <- long[long$radn %in% c("G", "C") & long$type == 'toxicity'
-					     #,]
-					     & long$variable %in% c('MET', 'OVE', 'PGL', 'TOVE', 'TUTE', 'UTE', 'PNU'),]
+				,]
+				#& long$variable %in% c("DER"),]
 	combinations <- expand.grid(f=experimental_formulas, l1=lambda1s, l2=lambda2s, stringsAsFactors=FALSE)
 
-	# Run models
-	performance <- ldply(1:bootstraps, function(b){
-		
-		# Bootstrap data
-		n <- nrow(gamma_long)
-		d <- gamma_long[sample(1:n, replace=TRUE),]
+	if(refresh_cache | !file.exists(table.3.experimental.performance.cache)){
 
-		# add and intercept
-		d$i <- 1
-				
-		# Try our models
-		p <- ddply(d, .(variable), function(df){
-			likelihoods <- adply(combinations, .(1), function(c){
-				
-				# debugging tool
-				"c  <- combinations[1,]
-				df <- d[d$variable == 'MET',]"
-
-				# get the baseline formula
-				b <- baselines[baselines$tox == df$variable[1],]
-									
-				# Train model on control data
-				cd <- df[df$radn == 'C',] 
-				f <- as.formula(as.character(b$model[1]))
-				m <- penalized(
-						f, 
-						unpenalized = ~0,
-						lambda1=b$l1, 
-						lambda2=b$l2, 
+		# Run models
+		performance <- ldply(1:bootstraps, function(b){
+			
+			# Bootstrap data
+			n <- nrow(gamma_long)
+			d <- gamma_long[sample(1:n, replace=TRUE),]
+	
+			# add and intercept
+			d$i <- 1
+					
+			# Try our models
+			p <- ddply(d, .(variable), function(df){
+				likelihoods <- adply(combinations, .(1), function(c){
+					
+					# debugging tool
+					"c  <- combinations[7,]
+					df <- d[d$variable == 'DER',]"
+	
+					# get the baseline formula
+					b <- baselines[baselines$tox == df$variable[1],]
+										
+					# Train model on control data
+					cd <- df[df$radn == 'C',] 
+					f <- as.formula(as.character(b$model[1]))
+					m <- penalized(
+							f, 
+							unpenalized = ~0,
+							lambda1=b$l1, 
+							lambda2=b$l2, 
+							model='logistic', 
+							data=cd, 
+							maxiter=25, 
+							standardize=TRUE
+						)
+					
+					# Predict all data
+					df$p <- predict(m, f, data=df)
+					
+					# Train model with cross validation
+					
+					f <- as.formula(as.character(c$f[1]))
+					hist(df$p, main=df$variable[1])
+					
+					m <- cvl(
+						f,
+						lambda1=c$l1, 
+						lambda2=c$l2, 
 						model='logistic', 
-						data=cd, 
+						data=df, 
 						maxiter=25, 
+						fold=5, 
 						standardize=TRUE
 					)
-				
-				# Predict all data
-				df$p <- predict(m, f, data=df)
-					
-				
-				# Train model with cross validation
-				f <- as.formula(as.character(c$f[1]))
-				u <- ~ p
-				m <- cvl(
-					f, 
-					unpenalized = u,
-					lambda1=c$l1, 
-					lambda2=c$l2, 
-					model='logistic', 
-					data=df, 
-					maxiter=25, 
-					fold=5, 
-					standardize=TRUE
-				)
-				
-				m$cvl
+					base <- sum(log(c(1 - df$p[df$value == 0],df$p[df$value == 1])))
+					c(log.likelihood=m$cvl, baseline=base)
+				})
+				print(likelihoods)
+				likelihoods
 			})
+			p$bootstrap <- b
+			p
 		})
-		p$bootstrap <- b
-		p
-	})
-	
-	names(performance) <- c('tox', 'model', 'l1', 'l2', 'log.likelihood', 'bootstrap')
-	
-	# Make likelihood relative to intercept model
-	performance <- ddply(performance, .(tox, bootstrap), function(df){
-		baseline <- df$log.likelihood[df$model == 'value ~ p'][1]
-		df$relative.likelihood <- df$log.likelihood - baseline
-		df
-	})
-	
+
+		names(performance) <- c('tox', 'model', 'l1', 'l2', 
+								'log.likelihood', 'baseline', 'bootstrap')
+					
+		# Make likelihood relative to intercept model
+		performance$relative.likelihood <- performance$log.likelihood - performance$baseline
+		
+
+		
+		saveRDS(performance, table.3.experimental.performance.cache, ascii = TRUE, compress = FALSE)
+	}
+	performance <- readRDS(table.3.experimental.performance.cache)
+
+
 	# Aggregate bootstraps
 	aggregate <- ddply(performance, .(tox, model, l1, l2), function(df){
 		o = df$relative.likelihood
-		c(mean=mean(o), sd=sd(o), z=mean(o)/sd(o))
+		mean = mean(o, na.rm = TRUE)
+		sd = sd(o, na.rm = TRUE)
+		sd[is.na(sd)] <- Inf
+		z = mean/sd
+		z[is.na(z)] <- -Inf
+		c(mean=mean, sd=sd, z=z)
 	})
+	
+	# Denote if gender was used in the model
+	aggregate$includes_sex <- grepl('sex', aggregate$model)
 	
 	# Choose the best models
 	experimental_baselines <- ddply(aggregate, .(tox), function(df){
@@ -1038,25 +1087,40 @@ model <- glm(formula, family=binomial, data=temp[temp$radn %in% c('C', 'G'),])
 		df <- df[df$z >= z.threshold,]
 		df[df$mean == max(df$mean, na.rm=T),]
 	})
+	
+	plot_performances(unique(aggregate$tox))
 
-
-# table 4
-table.4.toxicities <- c("ADR", "BDY", "DER", "HRG", "HTX", "JAU", "KID", "LIV", "TADR", "THGL")
-table.4.fun <- function(pathology){
-	formula <- paste(pathology, "~ treatment + q.age*sex -sex -q.age -1")
-	family <- binomial(link = "logit")
-	model <- glm( formula=formula, data=data[ALL & !r$NEUTRON ,], family = family )
-	coef_ <- coef(model)
-	f.coef <- coef_[1:6]
-	m.coef <- coef_[7:12]
-	f.odds <- odds_ratio$logit2or(f.coef, f.coef[1])
-	m.odds <- odds_ratio$logit2or(m.coef, m.coef[1])
-	return(rbind(f.odds,m.odds))
-}
-pathology <- "BDY"
-formula <- paste(pathology, "~ treatment + q.age")
-family <- binomial(link = "logit")
-model <- glm( formula=formula, data=data[ALL & !r$NEUTRON ,], family = family )
-odds_ratio$logit2or(coef(model), coef(model)[1])
-
-# @TODO add km-curves
+	plot_toxicity_incidence <- function(toxicity){
+		# Useful troubleshooting plot
+		ggplot(data[data[,toxicity] == 1,], aes(age, total_dose, color=sex)) + 
+		geom_jitter(alpha=0.5) + 
+		facet_wrap(~radn)
+	}
+	
+	
+	# Model performances
+	#
+	# Here we can see a small outcropping of results that are better than
+	# would be expected, just to the right of the normal curve
+	d <- performance[
+		abs(performance$relative.likelihood) < 1000 & 
+		!is.na(performance$relative.likelihood),
+	]
+	d$normal <- rnorm(nrow(d), sd=2.7)
+	ggplot(d) + 
+	geom_density(aes(relative.likelihood), color='blue') + 
+	geom_density(aes(normal), color='red')
+	
+	ggplot(aggregate[aggregate$z > -Inf,], aes(model, mean, color=includes_sex)) + 
+	geom_point() + 
+	geom_errorbar(aes(ymin=mean-sd, ymax=mean+sd), width=.1) +
+	facet_wrap(~ tox, scales="free_y") + 
+	opts(axis.text.x=theme_text(angle=-45, hjust=0))
+	
+plot_toxicity_incidence(c('DER'))
+BDY
+BSC
+CYS
+HNP
+HRT
+NTYG

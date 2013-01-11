@@ -93,3 +93,219 @@
 	
 	
 aaply(1:100, function(a){length(unique(sample(1:4, 12, replace =TRUE))) == 4})
+
+
+
+# TSNE on macro data
+#
+# bmh Dec 2012
+
+	library('tsne')
+	library('ggplot2')
+	
+	# load data
+	demographics = read.csv('~/Downloads/demographics.csv', skip=1)
+	macros = read.csv('~/Downloads/macro_pathologies.csv', skip=1)
+	macros[is.na(macros)] <- 0
+	macros <- macros[,2:ncol(macros)]
+	data = cbind(demographics, macros)
+	data <- data[data$necrosopy_proctor != "",]
+	
+	# modify data
+	n = nrow(data)
+	medium= data[sample(1:n),][1:1000,]
+	small = data[sample(1:n),][1:200,]
+	tiny  = data[sample(1:n),][1:50,]
+	to_graph = tiny
+	
+	# Compare datapoints
+	compare <- function(ids){
+		result <- data[data$animal_id %in% ids,]
+		demo   <- result[,!names(result) %in% names(macros)]
+		macro_ <- result[,names(macros)]
+		macro_ <- macro_[,colSums(macro_) > 0]
+		cbind(demo, macro_)
+	}
+	
+	# save ggplots
+	save <- function(filename){
+		ggsave(filename, width=11.3, height=6.71)
+	}
+	
+	# graphing function
+	# with TSNE
+	graph = function(x){ 
+		
+		# Merge data
+		x = data.frame(x)
+		names(x) = c('x', 'y')
+		x = cbind(to_graph, data.frame(x))
+		
+		# Helper
+		p <- function(plot, filename){
+			print(plot)
+			save(filename)
+		}
+		
+		# Base
+		q = ggplot(x, aes(x, y, label=animal_id))
+		
+		# Plots
+			base::save(x, file='temp')
+
+		p(q + geom_text(size=2, aes(color=sex)), 'tsne by sex.png')
+		p(q + geom_text(size=2, aes(color=age)), 'tsne by age.png')
+		p(q + geom_text(size=2, aes(color=necrosopy_proctor)), 'tsne by proctor.png')
+		p(q + geom_text(size=2, aes(color=species)), 'tsne by species.png')
+		p(q + geom_text(size=2, aes(color=expt)), 'tsne by experiment.png')
+		p(q + geom_text(size=2, aes(color=tmt)), 'tsne by treatment.png')
+		base::save(x, file='temp')
+	}
+
+	# run tsne
+	graph_data <- scale(to_graph[,names(macros)])
+	graph_data[is.na(graph_data)] <- 0
+	tsne_ = tsne(
+		graph_data, 
+		epoch_callback = graph, 
+		perplexity=50, 
+		max_iter=1000
+	)
+	
+	# distances
+	load('temp')  # x
+	distances = x
+		
+	# explore some results
+	# http://dl.dropbox.com/u/1131693/bloodrop/Screen%20Shot%202012-12-13%20at%2011.46.17%20PM.png
+	# 
+	# First off this method clearly detected the fact that 
+	# animals w/o a necropsy protocor were missing necropsy
+	# results, a fact which I knew, but neglected.  So this
+	# is a good method for finding clearly erroneous data.
+	#
+	# Lets look at a cluster on the top:
+	# This cluster doesn't have any one malady in common
+	# but most of them have TVAS_L
+	compare(c('15514.1', '1685.2', '441.5', '7311.4', '6758.3', '8483.9', '9101.3', '12404.2'))
+	
+	# The neighboring cluster below
+	# These are very similar, they all have TADN_L, BDY_N, and PNC_N, and
+	# very few other maladies.  Cool!
+	#
+	# Can we figure out why?  These mice appear unrelated in every other
+	# way, they jsut suffer a similar malady.  How intriguing.
+	compare(c('10096.5', '8121.3', '206.4', '1387.1', '2437.2', '4609.3'))
+	
+	# This group only shares scattered results
+	compare(c('1380.5', '15769.1', '5361.2', '15367.4', '10187.4', '5542.5', '9213.3', '15593.3'))
+	
+	# Ok, so we have some idea how the results look.
+	# Why do the clusters form as they do?
+	#
+	# We see a couple that are gender specific
+	# http://dl.dropbox.com/u/1131693/bloodrop/Screen%20Shot%202012-12-14%20at%2012.01.37%20AM.png		# These are males that all died of a lethal adrenal tumor and congestion of the lungs.  Is this generally more common in males?
+	# the table below suggests that is is mostly because adrenal
+	# tumors are more common in males
+	compare(c('1918.3', '1319.2', '319.5', '5471.3', '7108.2', '246.4', '15090.1', '4206.2'))
+	table(data$sex, paste(data$PNC_N, data$TADN_L))
+	
+	# By Proctor
+	#
+	# Some results seem to cluster by proctor
+	# http://dl.dropbox.com/u/1131693/bloodrop/tsne%20by%20proctor.png
+	# 
+	# Still hard to know what's going on here.
+	compare(c('7485.1', '55.4', '5375.1', '15021.2', '15507.3', '15507.4'))
+
+	# DIDIMOA
+	
+	to_graph = medium
+
+	# graphing function
+	# with TSNE
+	graph = function(x){ 
+		
+		# Merge data
+		x = data.frame(x)
+		names(x) = c('x', 'y')
+		x = cbind(to_graph, data.frame(x))
+		
+		# Helper
+		p <- function(plot, filename){
+			print(plot)
+			save(filename)
+		}
+		
+		# Base
+		q = ggplot(x, aes(x, y, label=animal_id))
+		
+		# Plots
+			base::save(x, file='temp')
+
+		p(q + geom_text(size=2, aes(color=sex)), 'tsne by sex.png')
+		p(q + geom_text(size=2, aes(color=age)), 'tsne by age.png')
+		p(q + geom_text(size=2, aes(color=necrosopy_proctor)), 'tsne by proctor.png')
+		p(q + geom_text(size=2, aes(color=species)), 'tsne by species.png')
+		p(q + geom_text(size=2, aes(color=expt)), 'tsne by experiment.png')
+		p(q + geom_text(size=2, aes(color=tmt)), 'tsne by treatment.png')
+		base::save(x, file='temp')
+	}
+
+	# selector functions
+	range <- function(x){max(x) - min(x)}
+	get_region <- function(x=0, y=0, t=100, d=distances){
+		dx = range(d$x)/t; 
+		dy = range(d$y)/t; 
+		d[d$x > (x - dx) & 
+		  d$x < (x + dx) & 
+		  d$y > (y - dy) & 
+		  d$y < (y + dy),
+		]
+	}
+
+	# run tsne
+	graph_data <- scale(to_graph[,names(macros)])
+	graph_data[is.na(graph_data)] <- 0
+	tsne_ = tsne(
+		graph_data, 
+		epoch_callback = graph, 
+		perplexity=50, 
+		max_iter=1000
+	)
+	
+	# distances
+	load('temp')  # x
+	distances = x
+	
+	cr <- function(x, y, t){compare(get_region(x, y, t)$animal_id)}
+	
+	# This big group has no macro assignments
+	cr(-5, -23, 100)
+	
+	# This big group has mostly PNU_L
+	cr(-22, -13, 100)
+	
+	# This big group has TADN_L and one of PNC_N, BDY_N, NTYG_N, TLIV_N.
+	names(cr(-10, -25, 50))
+
+
+	# This group of mostly younger animals
+	# usually had a SPL_N observation.
+	# Given that most others are grouped by COD
+	# I almost wonder if SPL is actually a cause of
+	# death in these animals?
+	cr(-15, 45, 30)
+	
+	
+	# TSNE by proctor is actually very encouraging
+	# there seems to be lots of mixing
+	
+	# There are many places missing Peromyscus
+	# but perhaps this is because they are
+	# undersampled
+
+	# This by experiment part shows little
+	cr(15, 40, 60)
+	
+	

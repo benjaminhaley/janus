@@ -1,5 +1,9 @@
 #Anything in the data folder
 data/*
+scripts/data/*
+
+# Cached data
+cache/*
 
 # Any private keys
 scripts/keys/*
