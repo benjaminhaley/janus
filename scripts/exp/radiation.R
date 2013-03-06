@@ -606,1201 +606,14 @@ c(
 
 
 #  Group.ID    n  age   type  dose   unit application
-#  1002-1-1   56  400 none c     0 unit c      not ap
-# 1002-1-10   23  400 X-rays   300 exposu      Extern
-# 1002-1-11   27  400 X-rays   300 exposu      Extern
-# 1002-1-12   23  400 X-rays   300 exposu      Extern
-# 1002-1-13   21  400 X-rays   300 exposu      Extern
-# 1002-1-14   22  400 X-rays   300 exposu      Extern
-# 1002-1-15   11  400 X-rays   300 exposu      Extern
-#  1002-1-2   22  400 X-rays   100 exposu      Extern
-#  1002-1-3   25  400 X-rays   100 exposu      Extern
-#  1002-1-4   20  400 X-rays   100 exposu      Extern
-#  1002-1-5   21  400 X-rays   100 exposu      Extern
-#  1002-1-6   21  400 X-rays   100 exposu      Extern
-#  1002-1-7   20  400 X-rays   100 exposu      Extern
-#  1002-1-8   19  400 X-rays   100 exposu      Extern
-#  1002-1-9   21  400 X-rays   300 exposu      Extern
-# 1002-1-99    6 <NA>   <NA>  <NA>   <NA>        <NA>
 
-#   Group.ID    n  age   type  dose   unit application
-# 1003-20-10  200  100 shamex     0  grays      Extern
-# 1003-20-11  200  100 gamma-  8.85  grays      Extern
-# 1003-20-12  200  100 gamma-  8.85  grays      Extern
-# 1003-20-13  200  100 gamma-  8.85  grays      Extern
-# 1003-20-14  200  100 gamma-  8.85  grays      Extern
-# 1003-20-15  200  100 gamma-  8.85  grays      Extern
-# 1003-20-16  200  100 gamma-  8.85  grays      Extern
-# 1003-20-17  200  100 gamma-  8.85  grays      Extern
-# 1003-20-18  200  100 gamma-  8.85  grays      Extern
-# 1003-20-19  200  100 gamma-  11.1  grays      Extern
-#  1003-20-2  200  100 shamex     0  grays      Extern
-# 1003-20-20    5  100 gamma-  11.1  grays      Extern
-#  1003-20-1  200  100 shamex     0  grays      Extern
-#  1003-20-3  200  100 shamex     0  grays      Extern
-#  1003-20-4  200  100 shamex     0  grays      Extern
-# 1003-20-42  187  100 neutro   2.4  grays      Extern
-# 1003-20-43  200  100 neutro   0.8  grays      Extern
-# 1003-20-44  200  100 neutro   0.8  grays      Extern
-# 1003-20-45  400  100 neutro   0.2  grays      Extern
-# 1003-20-46  400  100 neutro   0.2  grays      Extern
-# 1003-20-47  200  100 neutro   0.8  grays      Extern
-# 1003-20-48  200  100 neutro   0.8  grays      Extern
-# 1003-20-49  200  100 neutro   2.4  grays      Extern
-#  1003-20-5  200  100 shamex     0  grays      Extern
-# 1003-20-50  200  100 neutro   2.4  grays      Extern
-# 1003-20-51  200  194 neutro   0.8  grays      Extern
-# 1003-20-52  100  194 neutro   0.8  grays      Extern
-# 1003-20-53  200  194 neutro   2.4  grays      Extern
-# 1003-20-54  100  194 neutro   2.4  grays      Extern
-# 1003-20-55  200  287 neutro   0.8  grays      Extern
-# 1003-20-56   95  287 neutro   0.8  grays      Extern
-# 1003-20-57  200  287 neutro   2.4  grays      Extern
-# 1003-20-58  100  287 neutro   2.4  grays      Extern
-#  1003-20-6  200  100 shamex     0  grays      Extern
-#  1003-20-7  200  100 shamex     0  grays      Extern
-#  1003-20-8  200  100 shamex     0  grays      Extern
-#  1003-20-9  200  100 shamex     0  grays      Extern
-
- #   Group.ID    n  age   type  dose   unit application
-  # 1003-21-1  200  100 shamex     0  grays      Extern
-  # 1003-21-2  195  100 shamex     0  grays      Extern
-  # 1003-21-3  200  100 gamma-   0.9  grays      Extern
-  # 1003-21-4  200  100 gamma-   0.9  grays      Extern
-  # 1003-21-5  160  100 gamma-  1.43  grays      Extern
-  # 1003-21-6   80  100 gamma-  1.43  grays      Extern
-  # 1003-21-7  160  100 gamma-  2.06  grays      Extern
-  # 1003-21-8   80  100 gamma-  2.06  grays      Extern
-  # 1003-21-9  120  100 gamma-  4.17  grays      Extern
- # 1003-21-10   60  100 gamma-  4.17  grays      Extern
- # 1003-21-11  120  100 gamma-  5.69  grays      Extern
- # 1003-21-12  120  100 gamma-  5.69  grays      Extern
- # 1003-21-13  250  100 neutro   0.2  grays      Extern
- # 1003-21-14  250  100 neutro   0.2  grays      Extern
- # 1003-21-15  200  100 neutro   0.4  grays      Extern
- # 1003-21-16   80  100 neutro   0.4  grays      Extern
- # 1003-21-17  200  100 neutro   0.6  grays      Extern
- # 1003-21-18   80  100 neutro   0.6  grays      Extern
- # 1003-21-19  120  100 neutro   1.2  grays      Extern
- # 1003-21-20   60  100 neutro   1.2  grays      Extern
- # 1003-21-21  120  100 neutro   1.6  grays      Extern
- # 1003-21-22  120  100 neutro   1.6  grays      Extern
- # 1003-21-23   50  100 neutro   2.4  grays      Extern
- # 1003-21-24   50  100 neutro   2.4  grays      Extern
-
- #   Group.ID    n  age   type  dose   unit application
-  # 1003-22-1  280  100 shamex     0  grays      Extern
-  # 1003-22-2  200  100 shamex     0  grays      Extern
-  # 1003-22-3  675  100 gamma-  2.06  grays      Extern
-  # 1003-22-4  120  100 gamma-  2.06  grays      Extern
-  # 1003-22-5  455  100 gamma-  4.17  grays      Extern
-  # 1003-22-6  400  100 gamma-  4.17  grays      Extern
-  # 1003-22-7  275  100 gamma-  9.59  grays      Extern
-  # 1003-22-8   80  100 gamma-  9.59  grays      Extern
-  # 1003-22-9  225  100 gamma- 19.19  grays      Extern
- # 1003-22-10   60  100 gamma- 19.19  grays      Extern
- # 1003-22-11  190  100 gamma-  38.2  grays      Extern
- # 1003-22-12   30  100 gamma-  38.2  grays      Extern
- # 1003-22-13  140  100 gamma- 51.11  grays      Extern
- # 1003-22-14   40  100 gamma- 51.11  grays      Extern
- # 1003-22-15  675  100 neutro   0.2  grays      Extern
- # 1003-22-16  600  100 neutro   0.2  grays      Extern
- # 1003-22-17  475  100 neutro   0.4  grays      Extern
- # 1003-22-18   80  100 neutro   0.4  grays      Extern
- # 1003-22-19  275  100 neutro   0.6  grays      Extern
- # 1003-22-20   40  100 neutro   0.6  grays      Extern
- # 1003-22-21  225  100 neutro   1.2  grays      Extern
- # 1003-22-22   30  100 neutro   1.2  grays      Extern
- # 1003-22-23  190  100 neutro  1.68  grays      Extern
- # 1003-22-24  150  100 neutro  1.68  grays      Extern
- # 1003-22-25  140  100 neutro   3.2  grays      Extern
- # 1003-22-26   20  100 neutro   3.2  grays      Extern
- # 1003-22-27  400  100 shamex     0  grays      Extern
- # 1003-22-28  450  100 gamma-  8.07  grays      Extern
- # 1003-22-29  500  100 gamma-  26.9  grays      Extern
- # 1003-22-30  400  100 neutro   0.8  grays      Extern
- # 1003-22-31  450  100 neutro   2.4  grays      Extern
-
-
- #   Group.ID    n  age   type  dose   unit application
-  # 1003-23-1  200  100 shamex     0  grays      Extern
-  # 1003-23-2  200  100 gamma-  2.06  grays      Extern
-  # 1003-23-3  100  100 gamma-  4.17  grays      Extern
-  # 1003-23-4   80  100 gamma-  9.59  grays      Extern
-  # 1003-23-5   40  100 gamma- 19.18  grays      Extern
-  # 1003-23-6  175  100 shamex     0  grays      Extern
-  # 1003-23-7  175  100 gamma-  5.29  grays      Extern
-  # 1003-23-8  100  100 gamma-  10.7  grays      Extern
-  # 1003-23-9   75  100 gamma-  24.6  grays      Extern
-  
-  
- #   Group.ID    n  age   type  dose   unit application  
-  # 1003-24-1  330  100 shamex     0  grays      Extern
-  # 1003-24-2  180  100 shamex     0  grays      Extern
-  # 1003-24-3  135  100 gamma-  4.17  grays      Extern
-  # 1003-24-4   30  100 gamma-  4.17  grays      Extern
-  # 1003-24-5  180  100 gamma- 19.18  grays      Extern
-  # 1003-24-6  180  100 gamma- 19.18  grays      Extern
-  # 1003-24-7  150  100 neutro   0.4  grays      Extern
-  # 1003-24-8   30  100 neutro   0.4  grays      Extern
-  # 1003-24-9  200  100 neutro   1.6  grays      Extern
- # 1003-24-10  200  100 neutro   1.6  grays      Extern
- # 1003-24-11  150  515 gamma-  2.06  grays      Extern
- # 1003-24-12   50  515 gamma-  2.06  grays      Extern
- # 1003-24-13  180  515 gamma-  5.69  grays      Extern
- # 1003-24-14  180  515 gamma-  5.69  grays      Extern
- # 1003-24-15  150  515 neutro   0.4  grays      Extern
- # 1003-24-16   50  515 neutro   0.4  grays      Extern
- # 1003-24-17  180  515 neutro   1.6  grays      Extern
- # 1003-24-18  180  515 neutro   1.6  grays      Extern 
- 
- #   Group.ID    n  age   type  dose   unit application  
-  # 1003-25-1  140  100 shamex     0 millig      Extern
-  # 1003-25-2   50  100 shamex     0 millig      Extern
-  # 1003-25-3  260  100 gamma-  69.5 millig      Extern
-  # 1003-25-4  180  100 gamma-  69.5 millig      Extern
-  # 1003-25-5  200  100 gamma-   174 millig      Extern
-  # 1003-25-6   20  100 gamma-   174 millig      Extern
-  # 1003-25-7  170  100 gamma-   319 millig      Extern
-  # 1003-25-8   15  100 gamma-   319 millig      Extern
-  # 1003-25-9  260  100 neutro   6.7 millig      Extern
- # 1003-25-10  180  100 neutro   6.7 millig      Extern
- # 1003-25-11  200  100 neutro  16.7 millig      Extern
- # 1003-25-12   20  100 neutro  16.7 millig      Extern
- # 1003-25-13  170  100 neutro  26.7 millig      Extern
- # 1003-25-14   15  100 neutro  26.7 millig      Extern
- 
- 
- #   Group.ID    n  age   type  dose   unit application  
-  # 1003-26-1  200  100 shamex     0 milli       Extern
-  # 1003-26-2  200  100 shamex     0 milli       Extern
-  # 1003-26-3  200  100 shamex     0 milli       Extern
-  # 1003-26-4  300  100 neutro  0.05  grays      Extern
-  # 1003-26-5  200  100 neutro   0.1  grays      Extern
-  # 1003-26-6  200  100 neutro   0.1  grays      Extern
-  # 1003-26-7  200  100 neutro   0.1  grays      Extern
-  # 1003-26-8  750  100 shamex     0 milli       Extern
-  # 1003-26-9  500  100 gamma- 0.225  grays      Extern
- # 1003-26-10  350  100 gamma-  0.45  grays      Extern
- # 1003-26-11  200  100 gamma-   0.9  grays      Extern
- # 1003-26-12  750  100 neutro  0.01  grays      Extern
- # 1003-26-13  450  100 neutro 0.025  grays      Extern
- # 1003-26-14  350  100 neutro  0.05  grays      Extern
- # 1003-26-15  250  100 neutro   0.1  grays      Extern
- # 1003-26-16  200  100 neutro   0.2  grays      Extern
- # 1003-26-17  150  100 neutro   0.4  grays      Extern
- 
- #   Group.ID    n  age   type  dose   unit application   
-  # 1003-27-1  245  100 shamex     0  grays      Extern
-  # 1003-27-2  210  100 shamex     0  grays      Extern
-  # 1003-27-3  200  100 gamma-   0.9  grays      Extern
-  # 1003-27-4  200  100 gamma-  1.43  grays      Extern
-  # 1003-27-5  200  100 gamma-  2.06  grays      Extern
-  # 1003-27-6  170  100 gamma-  4.17  grays      Extern
-  # 1003-27-7  200  100 neutro   0.2  grays      Extern
-  # 1003-27-8  200  100 neutro   0.4  grays      Extern
-  # 1003-27-9  150  100 neutro   0.8  grays      Extern
- # 1003-27-10  150  100 neutro   1.6  grays      Extern
- # 1003-27-11  250  100 neutro   0.4  grays      Extern
- # 1003-27-12  215  100 neutro   1.6  grays      Extern
-
-
- #   Group.ID    n  age   type  dose   unit application    
-  # 1003-28-1  120  100 shamex     0  grays      Extern
-  # 1003-28-2  120  100 neutro   2.4  grays      Extern
-  # 1003-28-3  120  100 neutro   2.4  grays      Extern
-  # 1003-28-4  120  100 neutro   2.4  grays      Extern
-  # 1003-28-5  120  100 neutro   2.4  grays      Extern
- 
- #   Group.ID    n  age   type  dose   unit application    
-  # 1003-29-1  810  100 shamex     0  grays      Extern
-  # 1003-29-2  600  100 shamex     0  grays      Extern
-  # 1003-29-3  600  100 gamma-     1  grays      Extern
-  # 1003-29-4  600  100 gamma-     1  grays      Extern
-  # 1003-29-5  220  100 gamma-     2  grays      Extern
-  # 1003-29-6  180  100 gamma-     2  grays      Extern
-  # 1003-29-7  295  100 gamma-     3  grays      Extern
-  # 1003-29-8   80  100 gamma-     3  grays      Extern
-  # 1003-29-9  290  100 gamma-   4.5  grays      Extern
- # 1003-29-10   80  100 gamma-   4.5  grays      Extern
- # 1003-29-11  290  100 gamma-     6  grays      Extern
- # 1003-29-12   80  100 gamma-     6  grays      Extern
- # 1003-29-13  600  100 neutro  0.02  grays      Extern
- # 1003-29-14  600  100 neutro  0.02  grays      Extern
- # 1003-29-15  455  100 neutro 0.075  grays      Extern
- # 1003-29-16  250  100 neutro 0.075  grays      Extern
- # 1003-29-17  250  100 neutro 0.135  grays      Extern
- # 1003-29-18  250  100 neutro 0.135  grays      Extern
- # 1003-29-19  450  100 neutro  0.21  grays      Extern
- # 1003-29-20  250  100 neutro  0.21  grays      Extern
- # 1003-29-21  150  100 neutro   0.3  grays      Extern
- # 1003-29-22  150  100 neutro   0.3  grays      Extern
- # 1003-29-23  285  100 neutro   0.4  grays      Extern
- # 1003-29-24   80  100 neutro   0.4  grays      Extern
- 
-
- #   Group.ID    n  age   type  dose   unit application    
-  # 1003-30-1  200  100 saline  <NA> unit c      not ap
-  # 1003-30-2  200  100 saline  <NA> unit c      not ap
-  # 1003-30-3  200  100 WR-272  <NA> unit c      not ap
-  # 1003-30-4  200  100 WR-272  <NA> unit c      not ap
-  # 1003-30-5  200  100 gamma-  2.06  grays      Extern
-  # 1003-30-6  200  100 gamma-  2.06  grays      Extern
-  # 1003-30-7  400  100 gamma-  2.06  grays      Extern
-  # 1003-30-8  400  100 gamma-  2.06  grays      Extern
-  # 1003-30-9  400  100 gamma-  4.17  grays      Extern
- # 1003-30-10  400  100 gamma-  4.17  grays      Extern
- # 1003-30-11  200  100 neutro   0.1  grays      Extern
- # 1003-30-12  200  100 neutro   0.1  grays      Extern
- # 1003-30-13  400  100 neutro   0.1  grays      Extern
- # 1003-30-14  400  100 neutro   0.1  grays      Extern
- # 1003-30-15  400  100 neutro   0.1  grays      Extern
- # 1003-30-16  400  100 neutro   0.1  grays      Extern
- # 1003-30-17  400  100 neutro   0.4  grays      Extern
- # 1003-30-18  400  100 neutro   0.4  grays      Extern
- # 1003-30-19  400  100 neutro   0.4  grays      Extern
- # 1003-30-20  400  100 neutro   0.4  grays      Extern
-
-
- #   Group.ID    n  age   type  dose   unit application    
-   # 1003-5-2   92  400 gamma-   0.3 rads p      Extern
-   # 1003-5-3   46  400 gamma-   0.8 rads p      Extern
-   # 1003-5-4   47  400 gamma-   1.9 rads p      Extern
-   # 1003-5-5   24  400 gamma-   3.8 rads p      Extern
-   # 1003-5-6   16  400 gamma-   7.5 rads p      Extern
-   # 1003-5-7   13  400 gamma-  12.8 rads p      Extern
-   # 1003-5-8    8  400 gamma-  26.3 rads p      Extern
-
-
- #   Group.ID    n  age   type  dose   unit application    
-  # 1003-51-1    7 <NA> Undefi  <NA> unit c      not ap
-  # 1003-51-2    1 <NA> Undefi  <NA> unit c      not ap
-  # 1003-51-3    4 <NA> Undefi  <NA> unit c      not ap
-  # 1003-51-4    5 <NA> Undefi  <NA> unit c      not ap
-  # 1003-51-5   12 <NA> Undefi  <NA> unit c      not ap
-  # 1003-51-6   11 <NA> Undefi  <NA> unit c      not ap
-  # 1003-51-7   11 <NA> Undefi  <NA> unit c      not ap
-  # 1003-51-8    2 <NA> Undefi  <NA> unit c      not ap
-  # 1003-51-9    9 <NA> Undefi  <NA> unit c      not ap
- # 1003-51-10    2 <NA> Undefi  <NA> unit c      not ap
- # 1003-51-11   15 <NA> Undefi  <NA> unit c      not ap
- # 1003-51-12   24 <NA> Undefi  <NA> unit c      not ap
- # 1003-51-13   23 <NA> Undefi  <NA> unit c      not ap
- # 1003-51-14   64 <NA> Undefi  <NA> unit c      not ap
- # 1003-51-15   22 <NA> Undefi  <NA> unit c      not ap
- # 1003-51-16    1 <NA> Undefi  <NA> unit c      not ap
- # 1003-51-17   30 <NA> Undefi  <NA> unit c      not ap
- # 1003-51-18   41 <NA> Undefi  <NA> unit c      not ap
- # 1003-51-19    4 <NA> Undefi  <NA> unit c      not ap
- # 1003-51-20   10 <NA> Undefi  <NA> unit c      not ap
- 
-
- #   Group.ID    n  age   type  dose   unit application    
-  # 1003-52-1   25 <NA> Undefi  <NA> unit c      not ap
-  # 1003-52-2    2 <NA> Undefi  <NA> unit c      not ap
-  # 1003-52-3    2 <NA> Undefi  <NA> unit c      not ap
-  # 1003-52-4    2 <NA> Undefi  <NA> unit c      not ap
-  # 1003-52-5    6 <NA> Undefi  <NA> unit c      not ap
-  # 1003-52-6    6 <NA> Undefi  <NA> unit c      not ap
-  # 1003-52-7    6 <NA> Undefi  <NA> unit c      not ap
-  # 1003-52-8    6 <NA> Undefi  <NA> unit c      not ap
-  # 1003-52-9    6 <NA> Undefi  <NA> unit c      not ap
- # 1003-52-10    7 <NA> Undefi  <NA> unit c      not ap
- # 1003-52-11    7 <NA> Undefi  <NA> unit c      not ap
- # 1003-52-12    5 <NA> Undefi  <NA> unit c      not ap
- # 1003-52-13    6 <NA> Undefi  <NA> unit c      not ap
- # 1003-52-14    1 <NA> Undefi  <NA> unit c      not ap
- # 1003-52-15    3 <NA> Undefi  <NA> unit c      not ap
- # 1003-52-16    3 <NA> Undefi  <NA> unit c      not ap
- # 1003-52-17    6 <NA> Undefi  <NA> unit c      not ap
- # 1003-52-18    2 <NA> Undefi  <NA> unit c      not ap
- # 1003-52-19    6 <NA> Undefi  <NA> unit c      not ap
- # 1003-52-20    8 <NA> Undefi  <NA> unit c      not ap
- # 1003-52-21    7 <NA> Undefi  <NA> unit c      not ap
- # 1003-52-22    5 <NA> Undefi  <NA> unit c      not ap
- # 1003-52-23    8 <NA> Undefi  <NA> unit c      not ap
- # 1003-52-24    8 <NA> Undefi  <NA> unit c      not ap
- # 1003-52-25    2 <NA> Undefi  <NA> unit c      not ap
- 
-
- #   Group.ID    n  age   type  dose   unit application    
-  # 1003-54-1   16 <NA> Undefi  <NA> unit c      not ap
-  # 1003-54-2    4 <NA> Undefi  <NA> unit c      not ap
-  # 1003-54-3   13 <NA> Undefi  <NA> unit c      not ap
-  # 1003-54-4   15 <NA> Undefi  <NA> unit c      not ap
-  # 1003-54-5   11 <NA> Undefi  <NA> unit c      not ap
-  # 1003-54-6    2 <NA> Undefi  <NA> unit c      not ap
-  # 1003-54-7    2 <NA> Undefi  <NA> unit c      not ap
-  # 1003-54-8   15 <NA> Undefi  <NA> unit c      not ap
-  # 1003-54-9    1 <NA> Undefi  <NA> unit c      not ap
- # 1003-54-10   42 <NA> Undefi  <NA> unit c      not ap
- # 1003-54-11    4 <NA> Undefi  <NA> unit c      not ap
- # 1003-54-12    5 <NA> Undefi  <NA> unit c      not ap
- # 1003-54-13    1 <NA> Undefi  <NA> unit c      not ap
- 
- #   Group.ID    n  age   type  dose   unit application     
-  # 1003-55-1  136 <NA> Undefi  <NA> unit c      not ap
-  # 1003-55-2    6 <NA> Undefi  <NA> unit c      not ap
-  # 1003-55-3    2 <NA> Undefi  <NA> unit c      not ap
-  # 1003-55-4    4 <NA> Undefi  <NA> unit c      not ap
-  # 1003-55-5    1 <NA> Undefi  <NA> unit c      not ap
- 
-
- #   Group.ID    n  age   type  dose   unit application       
-   # 1003-6-2   20  463 gamma-   3.8 rads p      Extern
-   # 1003-6-3   24  463 gamma-   3.8 rads p      Extern
-   # 1003-6-4   20  463 gamma-   3.8 rads p      Extern
-   # 1003-6-5   20  463 gamma-   7.5 rads p      Extern
-   # 1003-6-6   24  463 gamma-   7.5 rads p      Extern
-   # 1003-6-7   19  463 gamma-   7.5 rads p      Extern
-   # 1003-6-8   20  463 gamma-   7.5 rads p      Extern
-   # 1003-6-9   21  463 gamma-  12.8 rads p      Extern
-  # 1003-6-10   21  463 gamma-  12.8 rads p      Extern
-  # 1003-6-11   19  463 gamma-  12.8 rads p      Extern
-  # 1003-6-12   10  463 gamma-  12.8 rads p      Extern
-  # 1003-6-13   20  463 gamma-  26.3 rads p      Extern
-  # 1003-6-14   25  463 gamma-  26.3 rads p      Extern
-  # 1003-6-99  129 <NA>   <NA>  <NA>   <NA>        <NA>
-
-
- #   Group.ID    n  age   type  dose   unit application         
-   # 1003-7-1   10   60 gamma-   2.5 Roentg      Extern
-   # 1003-7-2    8   61 gamma-     5 Roentg      Extern
-   # 1003-7-3    9   53 gamma-    10 Roentg      Extern
-
-
- #   Group.ID    n  age   type  dose   unit application            
-  # 1005-47-1   79 <NA> Undefi  <NA> unit c      not ap
-  # 1005-47-2   34 <NA> Undefi  <NA> unit c      not ap
-  # 1005-47-3   20 <NA> Undefi  <NA> unit c      not ap
-  # 1005-47-4   18 <NA> Undefi  <NA> unit c      not ap
-  # 1005-47-5   22 <NA> Undefi  <NA> unit c      not ap
-  # 1005-47-6   15 <NA> Undefi  <NA> unit c      not ap
-  # 1005-47-7   13 <NA> Undefi  <NA> unit c      not ap
-  # 1005-47-8    8 <NA>   <NA>  <NA>   <NA>        <NA>
-
-  
- #   Group.ID    n  age   type  dose   unit application            
-   # 1007-1-1  832   70 none c     0  grays      Extern
-   # 1007-1-2  834   70 gamma-   0.5  grays      Extern
-   # 1007-1-3  809   70 gamma-     2  grays      Extern
-   # 1007-1-4  745   70 none c     0  grays      Extern
-   # 1007-1-5  748   70 gamma-   0.5  grays      Extern
-   # 1007-1-6  759   70 gamma-     2  grays      Extern
-   
-   
- #   Group.ID    n  age   type  dose   unit application              
-   # 1007-2-1  492   70 none c     0  grays      Extern
-   # 1007-2-2  502   70 none c     0  grays      Extern
-   # 1007-2-3  253   70 gamma-   0.5  grays      Extern
-   # 1007-2-4  254   70 gamma-   0.5  grays      Extern
-   # 1007-2-5  251   70 gamma-     1  grays      Extern
-   # 1007-2-6  260   70 gamma-     1  grays      Extern
-   # 1007-2-7  255   70 gamma-     2  grays      Extern
-   # 1007-2-8  259   70 gamma-     2  grays      Extern
-   # 1007-2-9  501   70 gamma-     0  grays      Extern
-  # 1007-2-10  502   70 gamma-     0  grays      Extern
-  # 1007-2-11  251   70 gamma-   0.5  grays      Extern
-  # 1007-2-12  244   70 gamma-   0.5  grays      Extern
-  # 1007-2-13  250   70 gamma-     1  grays      Extern
-  # 1007-2-14  249   70 gamma-     1  grays      Extern
-  # 1007-2-15  258   70 gamma-     2  grays      Extern
-  # 1007-2-16  250   70 gamma-     2  grays      Extern
- 
-
- #   Group.ID    n  age   type  dose   unit application              
-   # 1007-3-1  430   70 none c     0   rads      Extern
-   # 1007-3-2  256   70 gamma-   0.1  grays      Extern
-   # 1007-3-3   94   70 gamma-  0.25  grays      Extern
-   # 1007-3-4  247   70 gamma-   0.5  grays      Extern
-   # 1007-3-5  230   70 gamma-     1  grays      Extern
-   # 1007-3-6  199   70 gamma-   1.5  grays      Extern
-   # 1007-3-7  571   70 gamma-   0.3  grays      Extern
-   # 1007-3-8 3713   70 none c     0   rads      Extern
-   # 1007-3-9 2696   70 gamma-   0.1  grays      Extern
-  # 1007-3-10  930   70 gamma-  0.25  grays      Extern
-  # 1007-3-11 1069   70 gamma-   0.5  grays      Extern
-  # 1007-3-12  237   70 gamma-  0.75  grays      Extern
-  # 1007-3-13 1045   70 gamma-     1  grays      Extern
-  # 1007-3-14 1005   70 gamma-   1.5  grays      Extern
-  # 1007-3-15  323   70 gamma-     2  grays      Extern
-  # 1007-3-16 2165   70 gamma-     3  grays      Extern
-  
-
- #   Group.ID    n  age   type  dose   unit application              
-   # 1008-3-1   46  -52 none c     0 roentg      Extern
-   # 1008-3-2   14  -52 none c     0 roentg      Extern
-   # 1008-3-3   46  -32 none c     0 roentg      Extern
-   # 1008-3-4   14  -32 none c     0 roentg      Extern
-   # 1008-3-5   46   -5 none c     0 roentg      Extern
-   # 1008-3-6   14   -5 none c     0 roentg      Extern
-   # 1008-3-7   46    2 none c     0 roentg      Extern
-   # 1008-3-8   14    2 none c     0 roentg      Extern
-   # 1008-3-9   46   70 none c     0 roentg      Extern
-  # 1008-3-10   14   70 none c     0 roentg      Extern
-  # 1008-3-11   46  365 none c     0 roentg      Extern
-  # 1008-3-12   14  365 none c     0 roentg      Extern
-  
-
- #   Group.ID    n  age   type  dose   unit application              
-     # 11-1-1   80   49 none c     0 unit c      not ap
-     # 11-1-2   40   49 estrog     4 millig      Implan
-     # 11-1-3   40   49 ovarec  <NA> unit c      not ap
-     # 11-1-4   80   49 estrog     2 millig      not ap     
-     # 11-1-5   40   56 X-rays  0.25  grays      Extern
-     # 11-1-6   80   56 X-rays  0.25  grays      Extern
-     # 11-1-7   80   56 X-rays  0.25  grays      Extern
-     # 11-1-8  120   56 X-rays  0.25  grays      Extern
-     # 11-1-9   50   56 X-rays     1  grays      Extern
-    # 11-1-10   40   56 X-rays     1  grays      Extern
-    # 11-1-11   36   56 X-rays     1  grays      Extern
-    # 11-1-12   57   56 X-rays     1  grays      Extern
-    # 11-1-13   35   56 X-rays     4  grays      Extern
-    # 11-1-14   40   56 X-rays     4  grays      Extern
-    # 11-1-15   52   56 X-rays     4  grays      Extern
-    # 11-1-16   60   56 X-rays     4  grays      Extern
-    # 11-1-17   39   56 accel.  0.05  grays      Extern
-    # 11-1-18   80   56 accel.  0.05  grays      Extern
-    # 11-1-19   76   56 accel.  0.05  grays      Extern
-    # 11-1-20  120   56 accel.  0.05  grays      Extern
-    # 11-1-21   38   56 accel.  0.15  grays      Extern
-    # 11-1-22   49   56 accel.   0.2  grays      Extern
-    # 11-1-23   40   56 accel.   0.2  grays      Extern
-    # 11-1-24   38   56 accel.   0.2  grays      Extern
-    # 11-1-25   60   56 accel.   0.2  grays      Extern
-    # 11-1-26   20   56 accel.   0.8  grays      Extern
-    # 11-1-27   40   56 accel.   0.8  grays      Extern
-    # 11-1-28   40   56 accel.   0.8  grays      Extern
-    # 11-1-29   60   56 accel.   0.8  grays      Extern
-    # 11-1-30   40   56 neutro   0.1  grays      Extern
-    # 11-1-31   80   56 neutro   0.1  grays      Extern
-    # 11-1-32   78   56 neutro   0.1  grays      Extern
-    # 11-1-33  120   56 neutro   0.1  grays      Extern
-    # 11-1-34  120   56 neutro  0.15  grays      Extern
-    # 11-1-35   50   56 neutro   0.3  grays      Extern
-    # 11-1-36   40   56 neutro   0.3  grays      Extern
-    # 11-1-37   40   56 neutro   0.3  grays      Extern
-    # 11-1-38   57   56 neutro   0.5  grays      Extern
-    # 11-1-39   40   56 neutro     1  grays      Extern
-    # 11-1-40   40   56 neutro     1  grays      Extern
-    # 11-1-41   40   56 neutro     1  grays      Extern
-    # 11-1-42   57   56 neutro     1  grays      Extern
-    # 11-1-43   60   56 neutro   1.5  grays      Extern
-    # 11-1-44   39   56 neutro  0.15  grays      Extern
-    # 11-1-45   80   56 neutro  0.15  grays      Extern
-    # 11-1-46   76   56 neutro  0.15  grays      Extern
-    # 11-1-47  120   56 neutro  0.15  grays      Extern
-    # 11-1-48   50   56 neutro   0.5  grays      Extern
-    # 11-1-49   40   56 neutro   0.5  grays      Extern
-    # 11-1-50   38   56 neutro   0.5  grays      Extern
-    # 11-1-51   60   56 neutro   0.5  grays      Extern
-    # 11-1-52   20   56 neutro   1.5  grays      not ap
-    # 11-1-53   40   56 neutro   1.5  grays      not ap
-    # 11-1-54   76   56 neutro   1.5  grays      Extern
-    # 11-1-55   57   56 neutro   1.5  grays      Extern
-    # 11-1-56   79   56 none c     0 unit c      not ap
-    # 11-1-57   40   49 estrog     2 millig      Implan
-    # 11-1-58   82   40 ovarec  <NA> unit c      not ap
-    # 11-1-59   78   49 estrog     2 millig      Implan
-    # 11-1-60   40   56 X-rays   0.1  grays      Extern
-    # 11-1-61   78   56 X-rays   0.1  grays      Extern
-    # 11-1-62   78   56 X-rays   0.1  grays      Extern
-    # 11-1-63  120   56 X-rays   0.1  grays      Extern
-    # 11-1-64   49   56 X-rays   0.3  grays      Extern
-    # 11-1-65   78   56 X-rays   0.3  grays      Extern
-    # 11-1-66   38   56 X-rays   0.3  grays      Extern
-    # 11-1-67   60   56 X-rays   0.3  grays      Extern
-    # 11-1-68   20   56 X-rays     1  grays      Extern
-    # 11-1-69   98   56 X-rays     1  grays      Extern
-    # 11-1-70   38   56 X-rays     1  grays      Extern
-    # 11-1-71   60   56 X-rays     1  grays      Extern
-    # 11-1-72   20   56 X-rays     2  grays      Extern
-    # 11-1-73   36   56 X-rays     2  grays      Extern
-    # 11-1-74   40   56 X-rays     2  grays      Extern
-    # 11-1-75   54   56 X-rays     2  grays      Extern
-    # 11-1-76   40   56 accel.  0.02  grays      Extern
-    # 11-1-77   80   56 accel.  0.02  grays      Extern
-    # 11-1-78   78   56 accel.  0.02  grays      Extern
-    # 11-1-79  117   56 accel.  0.02  grays      Extern
-    # 11-1-80   49   56 accel.  0.08  grays      Extern
-    # 11-1-81   40   56 accel.  0.08  grays      Extern
-    # 11-1-82   40   56 accel.  0.08  grays      Extern
-    # 11-1-83   60   56 accel.  0.08  grays      Extern
-    # 11-1-84   20   56 accel.  0.32  grays      Extern
-    # 11-1-85   40   56 accel.  0.32  grays      Extern
-    # 11-1-86   40   56 accel.  0.32  grays      Extern
-    # 11-1-87   57   56 accel.  0.32  grays      Extern
-    # 11-1-88   40   56 neutro  0.04  grays      Extern
-    # 11-1-89   80   56 neutro  0.04  grays      Extern
-    # 11-1-90   80   56 neutro  0.04  grays      Extern
-    # 11-1-91  120   56 neutro  0.04  grays      Extern
-    # 11-1-92  120   56 neutro  0.05  grays      Extern
-    # 11-1-93   50   56 neutro  0.12  grays      Extern
-    # 11-1-94   40   56 neutro  0.12  grays      Extern
-    # 11-1-95   36   56 neutro  0.12  grays      Extern
-    # 11-1-96   60   56 neutro  0.12  grays      Extern
-    # 11-1-97   20   56 neutro   0.4  grays      Extern
-    # 11-1-98   40   56 neutro     1  grays      Extern
-    # 11-1-99   40   56 neutro   0.4  grays      Extern
-   # 11-1-100   60   56 neutro   0.4  grays      Extern
-   # 11-1-101   38   56 neutro   0.5  grays      Extern
-   # 11-1-102   40   56 neutro  0.05  grays      Extern
-   # 11-1-103   80   56 neutro  0.05  grays      Extern
-   # 11-1-104  156   56 neutro  0.05  grays      Extern
-   # 11-1-105  117   56 neutro  0.05  grays      Extern
-   # 11-1-106   50   56 neutro  0.15  grays      Extern
-   # 11-1-107   40   56 neutro  0.15  grays      Extern
-   # 11-1-108   40   56 neutro  0.15  grays      Extern
-   # 11-1-109   57   56 neutro  0.15  grays      Extern
-   # 11-1-110   20   56 neutro   0.5  grays      Extern
-   # 11-1-111   40   56 neutro   0.5  grays      Extern
-   # 11-1-112   36   56 neutro   0.5  grays      Extern
-   # 11-1-113   57   56 neutro   0.5  grays      Extern
-   # 11-1-114  114   56 none c     0 unit c      not ap
-   # 11-1-115   40   49 estrog     2 millig      Inject
-   # 11-1-116   52   40 ovarec  <NA> unit c      not ap
-   # 11-1-117   84   49 estrog     2 millig      Implan
-   # 11-1-118   37   56 X-rays  0.25  grays      Extern
-   # 11-1-119   80   56 X-rays  0.25  grays      Extern
-   # 11-1-120   76   56 X-rays  0.25  grays      Extern
-   # 11-1-121  120   56 X-rays  0.25  grays      Extern
-   # 11-1-122   49   56 X-rays     1  grays      Extern
-   # 11-1-123   40   56 X-rays     1  grays      Extern
-   # 11-1-124   40   56 X-rays     1  grays      Extern
-   # 11-1-125   60   56 X-rays     1  grays      Extern
-   # 11-1-126   30   56 X-rays     2  grays      Extern
-   # 11-1-127   57   56 X-rays     2  grays      Extern
-   # 11-1-128   19   56 X-rays     4  grays      Extern
-   # 11-1-129   66   56 X-rays     4  grays      Extern
-   # 11-1-130   60   56 X-rays     4  grays      Extern
-   # 11-1-131   87   56 X-rays     4  grays      Extern
-   # 11-1-132   40   56 accel. 0.005  grays      Extern
-   # 11-1-133   80   56 accel. 0.005  grays      Extern
-   # 11-1-134   80   56 accel. 0.005  grays      Extern
-   # 11-1-135  123   56 accel. 0.005  grays      Extern
-   # 11-1-136   50   56 accel.  0.02  grays      Extern
-   # 11-1-137   40   56 accel.  0.02  grays      Extern
-   # 11-1-138   40   56 accel.  0.02  grays      Extern
-   # 11-1-139   60   56 accel.  0.02  grays      Extern
-   # 11-1-140   40   56 accel.  0.05  grays      Extern
-   # 11-1-141   19   56 accel.  0.08  grays      Extern
-   # 11-1-142   40   56 accel.  0.08  grays      Extern
-   # 11-1-143   18   40 ovarec  <NA> unit c      not ap
-   # 11-1-144   57   56 accel.  0.08  grays      Extern
-   # 11-1-145   38   56 neutro   0.1  grays      Extern
-   # 11-1-146   80   56 neutro   0.1  grays      Extern
-   # 11-1-147  152   56 neutro   0.1  grays      Extern
-   # 11-1-148  117   56 neutro   0.1  grays      Extern
-   # 11-1-149   51   56 neutro   0.3  grays      Extern
-   # 11-1-150   40   56 neutro   0.3  grays      Extern
-   # 11-1-151   78   56 neutro   0.3  grays      Extern
-   # 11-1-152   60   56 neutro   0.3  grays      Extern
-   # 11-1-153   20   56 neutro     1  grays      Extern
-   # 11-1-154   40   56 neutro     1  grays      Extern
-   # 11-1-155   40   56 neutro     1  grays      Extern
-   # 11-1-156   60   56 neutro     1  grays      Extern
-   # 11-1-157   51   56 neutro   1.5  grays      Extern
-   # 11-1-158   38   56 neutro  0.15  grays      Extern
-   # 11-1-159   78   56 neutro  0.15  grays      Extern
-   # 11-1-160   76   56 neutro  0.15  grays      Extern
-   # 11-1-161  120   56 neutro  0.15  grays      Extern
-   # 11-1-162   50   56 neutro   0.5  grays      Extern
-   # 11-1-163   40   56 neutro   0.5  grays      Extern
-   # 11-1-164   38   56 neutro   0.5  grays      Extern
-   # 11-1-165   60   56 neutro   0.5  grays      Extern
-   # 11-1-166   18   56 neutro   1.5  grays      Extern
-   # 11-1-167   40   56 neutro   1.5  grays      Extern
-   # 11-1-168   38   56 neutro   1.5  grays      Extern
-   # 11-1-169   60   56 neutro   1.5  grays      Extern
-   
- #   Group.ID    n  age   type  dose   unit application                 
-     # 11-2-1   44   56 none c     0  grays      not ap
-     # 11-2-2   40   56 X-rays     2  grays      Extern
-     # 11-2-3   40   56 X-rays     4  grays      Extern
-     # 11-2-4   40   56 accel.   0.2  grays      Extern
-     # 11-2-5   40   56 accel.   0.3  grays      Extern
-     # 11-2-6   40   56 accel.   0.3  grays      Extern
-     # 11-2-7  100   56 none c     0 unit c      not ap
-     # 11-2-8   60   56 X-rays   0.2  grays      Extern
-     # 11-2-9   60   56 X-rays     1  grays      Extern
-    # 11-2-10   60   56 X-rays     2  grays      Extern
-    # 11-2-11   60   56 X-rays     2  grays      Extern
-    # 11-2-12  120   49 estrog     2 millig      Implan
-    # 11-2-13   58   56 X-rays     2  grays      Extern
-    # 11-2-14   60   56 X-rays     2  grays      Extern
-    # 11-2-15   40   49 estrog     2 millig      Implan
-    # 11-2-16   40   56 gamma-     2  grays      Extern
-    # 11-2-17   60   56 gamma-     2  grays      Extern
-    # 11-2-18   60   56 gamma-     2  grays      Extern
-    # 11-2-19   60   56 gamma-     2  grays      Extern
-    # 11-2-20   60   56 accel.   0.1  grays      Extern    
-    # 11-2-21   60   56 accel.   0.2  grays      Extern
-    # 11-2-22   60   56 accel.   0.2  grays      Extern
-    # 11-2-23   40   56 none c     0 unit c      not ap
-    # 11-2-24   30   56 none c     0 unit c      not ap
-    # 11-2-25   40   56 accel.   0.1  grays      Extern
-    # 11-2-26   56   56 accel.   0.1  grays      Extern
-    # 11-2-27   40   56 accel.   0.1  grays      Extern
-    # 11-2-28   60   56 accel.   0.1  grays      Extern
-    # 11-2-29   59   56 X-rays   0.4  grays      Extern
-    # 11-2-30   60   56 X-rays   0.4  grays      Extern
-    # 11-2-31   40   56 none c     0 unit c      not ap
-    # 11-2-32   40   49 estrog     2 millig      Implan
-    # 11-2-33   60   49 estrog     2 millig      Implan
-    # 11-2-34   40   56 gamma-   0.3  grays      Extern
-    # 11-2-35   80   56 gamma-   0.3  grays      Extern
-    # 11-2-36   40  117 gamma-   0.3  grays      Extern
-    # 11-2-37   80  117 gamma-   0.3  grays      Extern
-    # 11-2-38   40   56 gamma-   0.3  grays      Extern
-    # 11-2-39   96   56 gamma-   0.3  grays      Extern
-    # 11-2-40   40   56 gamma-   1.2  grays      Extern
-    # 11-2-41   80   56 gamma-   1.2  grays      Extern
-    # 11-2-42   40  117 gamma-   1.2  grays      Extern
-    # 11-2-43   82  117 gamma-   1.2  grays      Extern
-    # 11-2-44   40  117 gamma-   1.2  grays      Extern
-    # 11-2-45   92  117 gamma-   1.2  grays      Extern
-    # 11-2-46   61   56 X-rays   0.8  grays      Extern
-    # 11-2-47   40   56 X-rays   1.2  grays      Extern
-    # 11-2-48  270   56 neutro     1  grays      Extern    
-    # 11-2-49   60   56 none c     0 unit c      not ap
-    # 11-2-50   60   56 none c     0 unit c      not ap
-    # 11-2-51  140   56 none c     0 unit c      not ap
-    # 11-2-52   40   49 estrog     2 millig      Implan
-    # 11-2-53   80   56 X-rays 0.025  grays      Extern
-    # 11-2-54   80   56 X-rays   0.1  grays      Extern
-    # 11-2-55   40   56 X-rays  0.25  grays      Extern
-    # 11-2-56   80   56 X-rays  0.25  grays      Extern    
-    # 11-2-57   80   56 X-rays   0.4  grays      Extern
-    # 11-2-58   80   56 X-rays   0.4  grays      Extern
-    # 11-2-59   20   56 X-rays     1  grays      Extern
-    # 11-2-60   40   56 X-rays     1  grays      Extern    
-    # 11-2-61   40   56 X-rays     2  grays      Extern
-    # 11-2-62   40   56 X-rays     2  grays      Extern
-    # 11-2-63   80   56 X-rays     2  grays      Extern
-    # 11-2-64   80   56 X-rays     2  grays      Extern
-    # 11-2-65   80   56 X-rays     2  grays      Extern
-    # 11-2-66   80   56 X-rays     2  grays      Extern
-    # 11-2-67   76   56 X-rays     2  grays      Extern
-    # 11-2-68   80   56 X-rays     2  grays      Extern
-    # 11-2-69   80   56 X-rays     2  grays      Extern
-    # 11-2-70   80   56 X-rays     2  grays      Extern
-    # 11-2-71   40   56 X-rays     2  grays      Extern
-    # 11-2-72   40   56 X-rays     2  grays      Extern
-    # 11-2-73   80   56 X-rays     2  grays      Extern
-    # 11-2-74   80   56 X-rays     2  grays      Extern
-    # 11-2-75   20   56 X-rays     4  grays      Extern
-    # 11-2-76   40   56 X-rays     4  grays      Extern
-    # 11-2-77   40   56 X-rays     4  grays      Extern
-    # 11-2-78   40   56 gamma-     4  grays      Extern
-    # 11-2-79   19   56 gamma-     1  grays      Extern
-    # 11-2-80    4   56 gamma-     1  grays      Extern
-    # 11-2-81    7   56 gamma-     2  grays      Extern
-    # 11-2-82   80   56 accel. 0.005  grays      Extern
-    # 11-2-83   80   56 accel.  0.02  grays      Extern
-    # 11-2-84  120   56 accel.  0.05  grays      Extern
-    # 11-2-85   80   56 accel.  0.05  grays      Extern
-    # 11-2-86   80   56 accel.   0.1  grays      Extern
-    # 11-2-87   20   56 accel.   0.2  grays      Extern
-    # 11-2-88   40   56 accel.   0.2  grays      Extern
-    # 11-2-89   20   56 neutro 0.075  grays      Extern
-    # 11-2-90   38   56 neutro  0.15  grays      Extern
-    # 11-2-91   78   56 neutro  0.15  grays      Extern
-    # 11-2-92   40   56 neutro   0.5  grays      Extern
-    # 11-2-93   39   56 neutro   0.5  grays      Extern
-    # 11-2-94   20   56 neutro   0.5  grays      Extern
-    # 11-2-95   42   56 neutro   0.5  grays      Extern
-    # 11-2-96   20   56 neutro   1.5  grays      Extern
-    # 11-2-97   40   56 neutro   1.5  grays      Extern
-    # 11-2-98  100   56 none c     0 unit c      not ap
-    # 11-2-99   84   56 none c     0 unit c      not ap
-   # 11-2-100   60   56 X-rays  0.02  grays      Extern
-   # 11-2-101   59   56 X-rays  0.02  grays      Extern
-   # 11-2-102   60   56 X-rays  0.08  grays      Extern
-   # 11-2-103   59   56 X-rays  0.08  grays      Extern
-   # 11-2-104   60   56 X-rays  0.08  grays      Extern
-   # 11-2-105   60   56 X-rays  0.08  grays      Extern
-   # 11-2-106   68   56 X-rays   0.1  grays      Extern
-   # 11-2-107   60   56 X-rays   0.1  grays      Extern
-   # 11-2-108   60   56 X-rays   0.4  grays      Extern
-   # 11-2-109   60   56 X-rays   0.4  grays      Extern
-   # 11-2-110   60   56 X-rays  0.04  grays      Extern
-   # 11-2-111   60   56 X-rays  0.04  grays      Extern
-   # 11-2-112   60   56 X-rays  0.04  grays      Extern
-   # 11-2-113   60   56 X-rays  0.04  grays      Extern
-   # 11-2-114   60   56 X-rays  0.04  grays      Extern
-   # 11-2-115   60   56 X-rays  0.04  grays      Extern
-   # 11-2-116   60   56 X-rays   1.6  grays      Extern
-   # 11-2-117   36   56 X-rays   1.6  grays      Extern
-   # 11-2-118   60   56 X-rays   1.6  grays      Extern
-   # 11-2-119   39   56 X-rays   1.6  grays      Extern
-   # 11-2-120   40   56 X-rays   1.6  grays      Extern
-   # 11-2-121   60   56 X-rays   1.6  grays      Extern
-   # 11-2-122   60   56 X-rays     2  grays      Extern
-   # 11-2-123   56   56 X-rays     2  grays      Extern
-   # 11-2-124   60   56  -rays   0.4  grays      Extern
-   # 11-2-125   60   56  -rays   0.4  grays      Extern
-   # 11-2-126    1   56  -rays   0.6  grays      Extern
-   # 11-2-127   43   56  -rays   1.6  grays      Extern
-   # 11-2-128    1   56  -rays   1.6  grays      Extern
-   # 11-2-129    9   56  -rays   1.6  grays      Extern
-   # 11-2-130   62   56 accel.  0.04  grays      Extern
-   # 11-2-131   84   56 accel.  0.04  grays      Extern
-   # 11-2-132   60   56 accel.  0.08  grays      Extern
-   # 11-2-133   58   56 accel.   0.2  grays      Extern
-   # 11-2-134   57   56 accel.   0.2  grays      Extern
-      
-   
- #   Group.ID    n  age   type  dose   unit application                 
-      # 2-1-1 1135 <NA> none c     0 workin      Inhala
-      # 2-1-2  688 <NA> none c     0 workin      Inhala
-      # 2-1-3  240 <NA> none c     0 workin      Inhala
-      # 2-1-4  313 <NA> none c     0 workin      Inhala
-      # 2-1-5  262 <NA> none c     0 workin      Inhala
-
-      
- #   Group.ID    n  age   type  dose   unit application                 
-     # 2-10-1   77   92 gamma-     6  grays      Extern
-     # 2-10-2   20   92 gamma-    10  grays      Extern
-     # 2-10-3   40   92 gamma-    12  grays      Extern
-     # 2-10-4   20   92 gamma-    13  grays      Extern
-     # 2-10-5   36   92 gamma-  16.5  grays      Extern
-     # 2-10-6   40   92 gamma-  18.5  grays      Extern
-     # 2-10-7   20   92 gamma-    20  grays      Extern
-     # 2-10-8   20   92 gamma-    26  grays      Extern
-     # 2-10-9   30   92 gamma-    28  grays      Extern
-    # 2-10-10   20   92 gamma-    31  grays      Extern
-    # 2-10-11   20   92 gamma-    39  grays      Extern
-    # 2-10-12   15   92 gamma-     8  grays      Extern
-    # 2-10-13   13   92 gamma-     9  grays      Extern
-    # 2-10-14   24   92 gamma-   9.5  grays      Extern
-    # 2-10-15   20   92 gamma-    12  grays      Extern
-    # 2-10-16   20   92 gamma-    19  grays      Extern
-    # 2-10-17   20   92 gamma-    24  grays      Extern
-    # 2-10-18   20   92 gamma-  28.5  grays      Extern
-    # 2-10-19   40   92 gamma-     6  grays      Extern
-    # 2-10-20   38   92 gamma-    10  grays      Extern
-    # 2-10-21   87   92 gamma-    12  grays      Extern
-    
- #   Group.ID    n  age   type  dose   unit application                 
-     # 2-11-1   10   92 gamma-  2.66  grays      Extern
-     # 2-11-2   20   92 gamma-  5.96  grays      Extern
-     # 2-11-3   10  -28 gamma-  2.66  grays      Extern
-     # 2-11-4    5  -28 gamma-  2.66  grays      Extern
-     # 2-11-5   65   -8 gamma-  2.66  grays      Extern
-     # 2-11-6   66   -8 gamma-  2.66  grays      Extern
-     # 2-11-7   63   -8 gamma-  5.96  grays      Extern
-     # 2-11-8   69   -8 gamma-  5.96  grays      Extern
-     # 2-11-9   56   92 gamma- 14.74  grays      Extern
-    # 2-11-10   48   92 gamma- 14.74  grays      Extern
-    # 2-11-11  505   92 gamma-     1  grays      Extern
-    # 2-11-12  289  275 gamma-  2.83  grays      Extern
-    # 2-11-13  120    9 gamma-     3  grays      Extern
-    # 2-11-14   60    9 gamma-     3  grays      Extern
-    # 2-11-15  120    9 gamma-    33  grays      Extern
-    
- #   Group.ID    n  age   type  dose   unit application                    
-     # 2-12-1  150   92 neutro 0.012  grays      Extern
-     # 2-12-2  150   92 neutro  0.02  grays      Extern
-     # 2-12-3   80   92 neutro  0.06  grays      Extern
-     # 2-12-4   78   92 neutro   0.1  grays      Extern
-     # 2-12-5   75   92 neutro  0.32  grays      Extern
-     # 2-12-6   75   92 neutro  0.49  grays      Extern
-     # 2-12-7  123   92 neutro   1.5  grays      Extern
-     # 2-12-8  104   92 neutro   2.3  grays      Extern
-     # 2-12-9   20   92 neutro   2.4  grays      Extern
-    # 2-12-10   20   92 neutro  2.54  grays      Extern
-    # 2-12-12   60   92 neutro   3.5  grays      Extern
-    # 2-12-13   20   92 neutro  3.86  grays      Extern
-    # 2-12-14   40   92 neutro   4.4  grays      Extern
-    # 2-12-15   40   92 neutro   5.3  grays      Extern
-    # 2-12-16   20   92 neutro     6  grays      Extern
-    # 2-12-17   20   92 neutro     8  grays      Extern
-    # 2-12-18  116   92 neutro   0.4  grays      Extern
-    # 2-12-19   79   92 neutro   0.6  grays      Extern
-    # 2-12-20  119   92 neutro   0.6  grays      Extern
-    # 2-12-21  392   92 neutro   0.6  grays      Extern
-    # 2-12-22   80   92 neutro  1.15  grays      Extern
-    # 2-12-23   50   92 neutro   1.2  grays      Extern
-    # 2-12-24   40   92 neutro  1.73  grays      Extern
-    # 2-12-25  120   92 neutro     2  grays      Extern
-    # 2-12-26   40   92 neutro  2.86  grays      Extern
-    # 2-12-27   58   92 neutro     4  grays      Extern
-    # 2-12-28   12   92 accel.     5  grays      Extern
-    # 2-12-29   36   92 accel.   7.5  grays      Extern
-    # 2-12-30   24   92 accel.   7.5  grays      Extern
-    # 2-12-31   11   92 accel.    10  grays      Extern
-    # 2-12-32   34   92 accel.    15  grays      Extern
-    # 2-12-33   10   92 accel.    20  grays      Extern
-    # 2-12-34    9   92 accel.    25  grays      Extern
-    # 2-12-35   12   92 accel.     5  grays      Extern
-    # 2-12-36   24   92 accel.   3.7  grays      Extern
-    # 2-12-37   24   92 accel.   3.7  grays      Extern
-    # 2-12-38   24   92 accel.  11.6  grays      Extern
-    # 2-12-39   24   92 accel.  18.4  grays      Extern
-    # 2-12-40   48   92 accel.  44.6  grays      Extern
-    # 2-12-41   60   92 Bremss   2.5  grays      Extern
-    # 2-12-42   26   92 Bremss   2.5  grays      Extern
-    # 2-12-43   24   92 neutro   3.5  grays      Extern
-    # 2-12-44   32   92 neutro     8  grays      Extern
-    # 2-12-45   23   92 neutro     2  grays      Extern
-    # 2-12-46   22   92 neutro     2  grays      Extern
-    # 2-12-47  566   92 none c     0  grays      Extern
-    # 2-12-48  152   92 neutro    25  grays      Extern
-    # 2-12-49  255  427 neutro    25  grays      Extern
-    # 2-12-50  249   92 neutro    25  grays      Extern
-    # 2-12-51   51   92 neutro    25  grays      Extern
-    
- #   Group.ID    n  age   type  dose   unit application                       
-     # 2-13-1   50   92 neutro   1.2  grays      Extern
-     # 2-13-2   50   92 para-d   500 parts       Inhala
-     # 2-13-3   50   92 para-d   500 parts       Inhala
-     # 2-13-4   56   92 para-d   500 parts       Inhala
-     # 2-13-5   50   92 para-d   500 parts       Inhala
-     # 2-13-6  100   92 neutro   1.2  grays      Extern
-     # 2-13-7  100   92 neutro   1.2  grays      Extern
-     # 2-13-8  100   92 neutro   1.2  grays      Extern
-     # 2-13-9   50   92 tetrac    15 parts       Inhala
-    # 2-13-10   60   92 tetrac    15 parts       Inhala
-    # 2-13-11   50   92 tetrac    50 millig      Inhala
-    # 2-13-12   50   92 tetrac    50 millig      Inhala
-    # 2-13-13   29   92 tetrac   150 millig      Inhala
-    # 2-13-14   28   92 tetrac   150 millig      Inhala
-    # 2-13-15   50   92 tetrac   150 millig      Inhala
-    # 2-13-16   50   92 tetrac   150 millig      Inhala
-    # 2-13-17  100   92 neutro   1.2  grays      Extern
-    # 2-13-18  100   92 neutro   1.2  grays      Extern
-    # 2-13-19  100   92 neutro   1.2  grays      Extern
-    # 2-13-20  100   92 neutro   1.2  grays      Extern
-
- #   Group.ID    n  age   type  dose   unit application                       
-     # 2-14-1   30   92 neutro   1.5  grays      Extern
-     # 2-14-2   40   92 neutro   2.3  grays      Extern
-     # 2-14-3   40   92 neutro   1.5  grays      Extern
-     # 2-14-4   40   92 neutro   1.5  grays      Extern
-     # 2-14-5   40   92 neutro   1.5  grays      Extern
-     # 2-14-6   40   92 neutro   2.3  grays      Extern
-     # 2-14-7   12   92 neutro   2.8  grays      Extern
-     # 2-14-8   10   92 neutro  0.15  grays      Extern
-     # 2-14-9   20   92 neutro  0.15  grays      Extern
-    # 2-14-10   10   92 neutro  0.23  grays      Extern
-    # 2-14-11   20   92 neutro  0.23  grays      Extern
-    # 2-14-12   10   92 neutro   0.3  grays      Extern
-    # 2-14-13   20   92 neutro   0.3  grays      Extern
-    # 2-14-14    9   92 neutro  0.45  grays      Extern
-    # 2-14-15   20   92 neutro  0.45  grays      Extern
-    # 2-14-16    8   92 neutro   0.4  grays      Extern
-    # 2-14-17    8   92 neutro  0.75  grays      Extern
-    # 2-14-18   32   92 neutro  0.75  grays      Extern
-    # 2-14-19    8   92 neutro   1.1  grays      Extern
-    # 2-14-20   32   92 neutro   1.1  grays      Extern
-    # 2-14-21   20   92 neutro   1.5  grays      Extern
-    # 2-14-22    8   92 neutro   1.5  grays      Extern
-    # 2-14-23   32   92 neutro   1.5  grays      Extern
-    # 2-14-24    8   92 neutro   2.2  grays      Extern
-    # 2-14-25   32   92 neutro   2.2  grays      Extern
-    # 2-14-26   30   92 neutro   2.3  grays      Extern
-    # 2-14-27   20   92 neutro   2.3  grays      Extern
-    # 2-14-28   40   92 neutro   2.3  grays      Extern
-    # 2-14-29   36   92 neutro     0  grays      Extern
-    # 2-14-30   40   92 neutro   1.5  grays      Extern
-    # 2-14-31   40   92 neutro   1.5  grays      Extern
-    # 2-14-32   10   92 neutro   1.5  grays      Extern
-    # 2-14-33   10   92 neutro   1.5  grays      Extern
-    # 2-14-34   30   92 neutro   2.3  grays      Extern
-    # 2-14-35   40   92 neutro   2.3  grays      Extern
-    # 2-14-36   20   92 neutro     0  grays      Extern
-    # 2-14-37   20   92 neutro   2.3  grays      Extern
-    # 2-14-38   30   92 neutro   2.3  grays      Extern
-    # 2-14-59   20   92 gamma-     4  grays      Extern
-    # 2-14-60   20   92 gamma-     8  grays      Extern
-    # 2-14-61   20   92 gamma-    12  grays      Extern
-    # 2-14-62   18   92 gamma-    16  grays      Extern
-    # 2-14-63   48   92 gamma-    20  grays      Extern
-    # 2-14-64   48   92 gamma-    15  grays      Extern
-    # 2-14-65   24   92 gamma-    20  grays      Extern
-    # 2-14-66   48   92 gamma-    20  grays      Extern
-
-
- #   Group.ID    n  age   type  dose   unit application                       
-      # 3-1-1  353   91 none c     0  grays      Extern
-      # 3-1-2  100   91 X-rays  0.04  grays      Extern
-      # 3-1-3   84   91 X-rays   0.8  grays      Extern
-      # 3-1-4   53   91 X-rays   1.6  grays      Extern
-      # 3-1-5   58   91 X-rays   3.2  grays      Extern
-      # 3-1-6   57   91 X-rays   6.4  grays      Extern
-      # 3-1-7   60   91 X-rays  1.28  grays      Extern
-      # 3-1-8   55   91 X-rays  2.56  grays      Extern
-      # 3-1-9  279   91 none c     0  grays      Extern
-     # 3-1-10  165   91 neutro  0.05  grays      Extern
-     # 3-1-11  150   91 neutro  0.01  grays      Extern
-     # 3-1-12   95   91 neutro  0.02  grays      Extern
-     # 3-1-13   96   91 neutro  0.04  grays      Extern
-     # 3-1-14   92   91 neutro  0.08  grays      Extern
-     # 3-1-15   48   91 neutro  0.16  grays      Extern
-
-
- #   Group.ID    n  age   type  dose   unit application                       
-      # 3-2-1  758   35 X-rays     0  grays      Extern
-      # 3-2-2   44   35 X-rays   0.5  grays      Extern
-      # 3-2-3  108   35 X-rays     1  grays      Extern
-      # 3-2-4  139   35 X-rays     2  grays      Extern
-      # 3-2-5  110   35 X-rays     3  grays      Extern
-      # 3-2-6  137   35 X-rays     4  grays      Extern
-      # 3-2-7  125   35 X-rays     5  grays      Extern
-      # 3-2-8   58   35 X-rays     6  grays      Extern
-      # 3-2-9  133   35 X-rays     7  grays      Extern
-     # 3-2-10  193   35 none c     0  grays      Extern
-     # 3-2-11   49   35 neutro  0.17  grays      Extern
-     # 3-2-12   47   35 neutro  0.36  grays      Extern
-     # 3-2-13   48   35 neutro  0.71  grays      Extern
-     # 3-2-14   49   35 neutro  1.07  grays      Extern
-     # 3-2-15   49   35 neutro  1.43  grays      Extern
-     # 3-2-16   96   35 neutro  1.79  grays      Extern
-     # 3-2-17   22   35 neutro  2.14  grays      Extern
-     # 3-2-18  202   35 neutro 0.025  grays      Extern
-     # 3-2-19  148   35 neutro  0.05  grays      Extern
-     # 3-2-20  105   35 neutro   0.1  grays      Extern
-     # 3-2-21   74   35 neutro  0.17  grays      Extern
-     # 3-2-22   53   35 neutro 0.025  grays      Extern
-     # 3-2-23   54   35 neutro 0.036  grays      Extern
-     # 3-2-24   54   35 neutro 0.535  grays      Extern
-     # 3-2-25   52   35 neutro  0.71  grays      Extern
-
- #   Group.ID    n  age   type  dose   unit application                           
-      # 3-3-1   60   92 none c     0  grays      Extern
-      # 3-3-2   60   92 X-rays     1  grays      Extern
-      # 3-3-3   60   92 X-rays     3  grays      Extern
-      # 3-3-4   59   92 X-rays     5  grays      Extern
-      # 3-3-5   57   92 X-rays     7  grays      Extern
-            
- #   Group.ID    n  age   type  dose   unit application                           
-      # 3-4-1  561   92 none c     0  grays      Extern
-      # 3-4-2   44   92 X-rays   0.5  grays      Extern
-      # 3-4-3  108   92 X-rays     1  grays      Extern
-      # 3-4-4  139   92 X-rays     2  grays      Extern
-      # 3-4-5  110   92 X-rays     3  grays      Extern
-      # 3-4-6  137   92 X-rays     4  grays      Extern
-      # 3-4-7  125   92 X-rays     5  grays      Extern
-      # 3-4-8   58   92 X-rays     6  grays      Extern
-      # 3-4-9  133   92 X-rays     7  grays      Extern
-     # 3-4-10  335   92 X-rays     9  grays      Extern
-     # 3-4-11   49   92 neutro  0.17  grays      Extern
-     # 3-4-12   47   92 neutro  0.36  grays      Extern
-     # 3-4-13   48   92 neutro  0.71  grays      Extern
-     # 3-4-14   49   92 neutro  1.07  grays      Extern
-     # 3-4-15   49   92 neutro  1.43  grays      Extern
-     # 3-4-16   96   92 neutro  1.79  grays      Extern
-     # 3-4-17   22   92 neutro  2.41  grays      Extern
-     
- #   Group.ID    n  age   type  dose   unit application                           
-      # 3-5-1   34   -4 none c     0  grays      Extern
-      # 3-5-2   39   -4 none c     0  grays      Extern
-      # 3-5-3   48   -4 X-rays   0.3  grays      Extern
-      # 3-5-4   40   -4 X-rays   0.3  grays      Extern
-      # 3-5-5   61   -4 X-rays   0.9  grays      Extern
-      # 3-5-6   44   -4 X-rays   0.9  grays      Extern
-      # 3-5-7   46   -4 X-rays   1.5  grays      Extern
-      # 3-5-8   50   -4 X-rays   1.5  grays      Extern
-      # 3-5-9   45   -4 X-rays   2.1  grays      Extern
-     # 3-5-10   38   -4 X-rays   2.1  grays      Extern
-     # 3-5-11   51   -4 neutro  0.09  grays      Extern
-     # 3-5-12   44   -4 neutro  0.09  grays      Extern
-     # 3-5-13   44   -4 neutro  0.27  grays      Extern
-     # 3-5-14   35   -4 neutro  0.27  grays      Extern
-     # 3-5-15   27   -4 neutro  0.45  grays      Extern
-     # 3-5-16   31   -4 neutro  0.45  grays      Extern
-     # 3-5-17   35   -4 neutro  0.62  grays      Extern
-     # 3-5-18   34   -4 neutro  0.62  grays      Extern
-     # 3-5-19  430   92 none c     0  grays      Extern
-     # 3-5-20   44   92 X-rays   0.5  grays      Extern
-     # 3-5-21   48   92 X-rays     1  grays      Extern
-     # 3-5-22   50   92 X-rays     2  grays      Extern
-     # 3-5-23   50   92 X-rays     3  grays      Extern
-     # 3-5-24   48   92 X-rays     4  grays      Extern
-     # 3-5-25   68   92 X-rays     5  grays      Extern
-     # 3-5-26   58   92 X-rays     6  grays      Extern
-     # 3-5-27   74   92 X-rays     7  grays      Extern
-     # 3-5-28   49   92 neutro  0.17  grays      Extern
-     # 3-5-29   47   92 neutro  0.36  grays      Extern
-     # 3-5-30   48   92 neutro  0.71  grays      Extern
-     # 3-5-31   49   92 neutro  1.07  grays      Extern
-     # 3-5-32   49   92 neutro  1.43  grays      Extern
-     # 3-5-33   96   92 neutro  1.79  grays      Extern
-     # 3-5-34   22   92 neutro  2.14  grays      Extern
-     # 3-5-35   46  580 none c     0  grays      Extern
-     # 3-5-36   47  580 X-rays   0.5  grays      Extern
-     # 3-5-37   44  580 X-rays     1  grays      Extern
-     # 3-5-38   47  580 X-rays     2  grays      Extern
-     # 3-5-39   48  580 X-rays     3  grays      Extern
-     # 3-5-40   46  580 X-rays     4  grays      Extern
-     # 3-5-41   71  580 X-rays     5  grays      Extern
-     # 3-5-42   85  580 X-rays     6  grays      Extern
-     # 3-5-43   58  580 X-rays     7  grays      Extern
-     # 3-5-44   50  580 neutro  0.17  grays      Extern
-     # 3-5-45   48  580 neutro  0.36  grays      Extern
-     # 3-5-46   51  580 neutro  0.71  grays      Extern
-     # 3-5-47   49  580 neutro  1.07  grays      Extern
-     # 3-5-48   49  580 neutro  1.43  grays      Extern
-     # 3-5-49   42  580 neutro  1.79  grays      Extern
-     # 3-5-50   46  580 neutro  2.14  grays      Extern
-     
-    
- #   Group.ID    n  age   type  dose   unit application                           
-      # 3-6-1   60   92 none c     0  grays      Extern
-      # 3-6-2   60   92 X-rays     1  grays      Extern
-      # 3-6-3   60   92 X-rays     2  grays      Extern
-      # 3-6-4   59   92 X-rays     5  grays      Extern
-      # 3-6-5   57   92 X-rays     7  grays      Extern
-      # 3-6-6   54   92 none c     0  grays      Extern
-      # 3-6-7   56   92 X-rays     1  grays      Extern
-      # 3-6-8   51   92 X-rays     2  grays      Extern
-      # 3-6-9   64   92 X-rays     5  grays      Extern
-     # 3-6-10   51   92 X-rays     7  grays      Extern
-     # 3-6-11   56   92 none c     0  grays      Extern
-     # 3-6-12   83   92 neutro  0.01  grays      Extern
-     # 3-6-13   81   92 neutro  0.02  grays      Extern
-     # 3-6-14   62   92 neutro  0.04  grays      Extern
-     # 3-6-15   66   92 neutro  0.08  grays      Extern
-     # 3-6-16   71   92 neutro  0.18  grays      Extern
-     # 3-6-17   71   92 none c     0  grays      Extern
-     # 3-6-18   60   92 neutro  0.01  grays      Extern
-     # 3-6-19   79   92 neutro  0.02  grays      Extern
-     # 3-6-20   75   92 neutro  0.04  grays      Extern
-     # 3-6-21   61   92 neutro  0.08  grays      Extern
-     # 3-6-22   71   92 neutro  0.12  grays      Extern
-     # 3-6-23   80   92 neutro  0.18  grays      Extern
-     # 3-6-24   74 <NA>   <NA>  <NA>   <NA>        <NA>
-     
- #   Group.ID    n  age   type  dose   unit application                           
-      # 9-4-1  155   84 none c     0 unit c      not ap
-      # 9-4-2  144   84 X-rays   100 roentg      Extern
-      # 9-4-3  149   84 X-rays   175 roentg      Extern
-      # 9-4-4  107   84 X-rays   350 roentg      Extern
-      # 9-4-5   76   84 X-rays   500 roentg      Extern
-      # 9-4-6  198   84 X-rays   650 roentg      Extern
-      # 9-4-7   57   84 X-rays   750 roentg      Extern
-      # 9-4-8   19   84 X-rays   900 roentg      Extern
-      
-     # 9-4-10  204   84 X-rays   650 roentg      Extern
-     # 9-4-11  154   84 X-rays  1000 roentg      Extern
-     # 9-4-12  196   84 X-rays  1100 roentg      Extern
-     # 9-4-13   74   84 X-rays  1200 roentg      Extern
-     # 9-4-14  290   84 X-rays   100 roentg      Extern
-     # 9-4-15  272   84 X-rays   175 roentg      Extern
-     # 9-4-16  182   84 X-rays   350 roentg      Extern
-     
-     # 9-4-18  260   84 X-rays   650 roentg      Extern
-     # 9-4-19  178   84 X-rays  1000 roentg      Extern
-     # 9-4-20  162   84 X-rays  1200 roentg      Extern
-     # 9-4-21   80   84 X-rays  1350 roentg      Extern
-     
-     
-     # 9-4-24  131   28 none c     0 unit c      not ap
-     # 9-4-25  100   28 X-rays   350 roentg      Extern
-     # 9-4-26   69   28 X-rays   650 roentg      Extern
-     # 9-4-27  196   28 X-rays   350 roentg      Extern
-     # 9-4-28  192   28 X-rays   650 roentg      Extern
-     # 9-4-29  101   28 X-rays   200 roentg      Extern
-     # 9-4-30   98   28 X-rays   300 roentg      Extern
-     # 9-4-31  143   28 X-rays   400 roentg      Extern
-     
-     # 9-4-33  102   28 X-rays   700 roentg      Extern
-     # 9-4-34  100   28 X-rays  1000 roentg      Extern
-     # 9-4-35    7   28 X-rays  1500 roentg      Extern
-     # 9-4-36  212   28 X-rays   200 roentg      Extern
-     # 9-4-37  216   28 X-rays   300 roentg      Extern
-     # 9-4-38  194   28 X-rays   400 roentg      Extern
-     # 9-4-39  196   28 X-rays   500 roentg      Extern
-     # 9-4-41  206   28 X-rays  1000 roentg      Extern
-     # 9-4-42   88   28 X-rays  1500 roentg      Extern
-     
-
- #   Group.ID    n  age   type  dose   unit application                           
-      # 9-5-1  324   84 none c  <NA> unit c      not ap
-      # 9-5-2  193   84 X-rays  0.25  grays      Extern
-      # 9-5-3  196   84 X-rays   0.5  grays      Extern
-      # 9-5-4  198   84 X-rays     1  grays      Extern
-      # 9-5-5  149   84 X-rays     2  grays      Extern
-      # 9-5-6   94   84 X-rays     4  grays      Extern
-      # 9-5-7  113   84 X-rays     6  grays      Extern
-      # 9-5-8  111   84 X-rays  0.25  grays      Extern
-      # 9-5-9  110   84 X-rays   0.5  grays      Extern
-     # 9-5-10  115   84 X-rays     1  grays      Extern
-     # 9-5-11   74   84 X-rays     2  grays      Extern
-     # 9-5-12   74   84 X-rays     4  grays      Extern
-     # 9-5-13   78   84 X-rays     6  grays      Extern
-     # 9-5-14  254   84 neutro  0.02  grays      Extern
-     # 9-5-15  225   84 neutro  0.06  grays      Extern
-     # 9-5-16  190   84 neutro  0.18  grays      Extern
-     # 9-5-17  176   84 neutro  0.54  grays      Extern
-     # 9-5-18  141   84 neutro  1.65  grays      Extern
-     # 9-5-19  130   84 neutro     3  grays      Extern
-          
- #   Group.ID    n  age   type  dose   unit application                                
-      # 9-6-1  473   84 none c     0 unit c      not ap
-      # 9-6-2  242   84 X-rays  0.25  grays      Extern
-      # 9-6-3  239   84 X-rays   0.5  grays      Extern
-      # 9-6-4  246   84 X-rays     1  grays      Extern
-      # 9-6-5  217   84 X-rays     2  grays      Extern
-      # 9-6-6  143   84 X-rays     4  grays      Extern
-      # 9-6-7  188   84 X-rays     6  grays      Extern
-      # 9-6-8  108   84 X-rays  0.25  grays      Extern
-      # 9-6-9  112   84 X-rays   0.5  grays      Extern
-     # 9-6-10  116   84 X-rays     1  grays      Extern
-     # 9-6-11  115   84 X-rays     2  grays      Extern
-     # 9-6-12  118   84 X-rays     4  grays      Extern
-     # 9-6-13  117   84 X-rays     6  grays      Extern
-     # 9-6-14  106   84 X-rays     1  grays      Extern
-     # 9-6-15   93   84 X-rays     2  grays      Extern
-     # 9-6-16  115   84 X-rays     4  grays      Extern
-     # 9-6-17  195   84 neutro  0.02  grays      Extern
-     # 9-6-18  182   84 neutro  0.18  grays      Extern
-     # 9-6-19  210   84 neutro  0.18  grays      Extern
-     # 9-6-20  135   84 neutro  1.65  grays      Extern
-     # 9-6-21   95   84 neutro     3  grays      Extern
-     # 9-6-22  196   84 neutro  0.18  grays      Extern
-     # 9-6-23  232   84 neutro  0.54  grays      Extern
-     # 9-6-24  196   84 neutro  1.65  grays      Extern
-     # 9-6-25   96   84 neutro  0.06  grays      Extern
-     # 9-6-26   94   84 neutro  0.18  grays      Extern
-     # 9-6-27   90   84 neutro  0.54  grays      Extern
-     
- #   Group.ID    n  age   type  dose   unit application                                    
-      # 9-7-1  105    7 none c     0 unit c      not ap
-      # 9-7-2   47    7 neutro 0.125  grays      Extern
-      # 9-7-3  102    7 neutro  0.25  grays      Extern
-      # 9-7-4  105    7 neutro   0.5  grays      Extern
-      # 9-7-5   84    7 neutro     1  grays      Extern
-      # 9-7-6   31   21 neutro 0.125  grays      Extern
-      # 9-7-7  112   21 neutro  0.25  grays      Extern
-      # 9-7-8  121   21 neutro   0.5  grays      Extern
-      # 9-7-9  102   21 neutro     1  grays      Extern
-     # 9-7-10   72    7 X-rays   0.5  grays      Extern
-     # 9-7-11   70    7 X-rays     1  grays      Extern
-     # 9-7-12   85    7 X-rays     3  grays      Extern
-     # 9-7-13   66   21 X-rays   0.5  grays      Extern
-     # 9-7-14   76   21 X-rays     1  grays      Extern
-     # 9-7-15   83   21 X-rays     3  grays      Extern
-     
- #   Group.ID    n  age   type  dose   unit application                                      
-      # 9-8-1   68   84 none c     0 unit c      not ap
-      # 9-8-2   57   84 X-rays   0.5  grays      Extern
-      # 9-8-3   57   84 X-rays     1  grays      Extern
-      # 9-8-4   54   84 X-rays     2  grays      Extern
-      # 9-8-5   58   84 X-rays     4  grays      Extern
-      # 9-8-6   57   84 X-rays     6  grays      Extern
-      # 9-8-7  120   84 X-rays   0.5  grays      Extern
-      # 9-8-8  112   84 X-rays     1  grays      Extern
-      # 9-8-9  112   84 X-rays     2  grays      Extern
-     # 9-8-10  114   84 X-rays     4  grays      Extern
-     # 9-8-11  112   84 X-rays     6  grays      Extern
-     # 9-8-12  112   84 X-rays   0.5  grays      Extern
-     # 9-8-13  116   84 X-rays     1  grays      Extern
-     # 9-8-14  226   84 X-rays     2  grays      Extern
-     # 9-8-15  226   84 X-rays     4  grays      Extern
-     # 9-8-16  118   84 X-rays     6  grays      Extern
-
-
+# Results
+# Checked n, age, lifespan or not, type, dose, unit and application
+# for most studies (more below) and developed a huge list of
+# discrepiances which I will be working through.
+#
+# Most notably, I found that some animals were repeated as multiple
+# rows if they recieved more than one treatment.  I fix that below.
 
 
 ###################################################################
@@ -1809,121 +622,708 @@ c(
 # 27 Feb 2013
 #
 # Introduction:
-# Now that I have a refined set of studies, its time to do some
-# more data checking.  In this section I will see if the number
-# of animals per group reported by the era matches with what
-# is reported in the study descriptions.
+# During my first close pass through the study groups, I discovered
+# that some of treatment groups included the same mouse more than
+# once, one time for each distinct treatment that they had.  I need
+# to find the extent of that problem and then reorder the data so
+# that each mice only has one row and each treatment is merged.
 #
+# Once that is done, I will resave the data so that future work will
+# not have to concern itself with such confusion.
 #
+
 	# Libraries
 	library(plyr)
 	
 	# Data
 	setwd('~/janus/scripts')
 	data <- readRDS('../data/external.rds')
-	groups <- data$Group.ID
-	file <- data$file
+
+
+	# Define Group Constants
+	# all of these should be the same for every
+	# mouse in a given group.
+	constants <- c(
+		"Group.Name", 
+		"Treatment.Sequence",
+		"Treatment.Age",
+		"Treatment.Type",
+		"Treatment.Quantity",
+		"Treatment.Unit",
+		"Treatment.Application",
+		"Treatment.Remarks",
+		"No.of.individuals.in.study",
+		"Species",
+		"Strain",
+		"Group.Endpoints"
+	)
+
 	
+	# Find constants per group
+	appearances <- ddply(data, .(Group.ID), function(df){
+		result <- laply(constants, function(col){
+			length(unique(df[,col]))
+		})
+		names(result) <- constants
+		result <- c(result, n=nrow(df))
+		result		
+	})
+
+	# Find groups with recurrent data
+	recurrent <- appearances[rowSums(appearances[2:13]) > 12,]
+	dim(recurrent)  # 256
+
+	
+	# Which columns recur?
+	names(appearances)[2:13][
+		colSums(appearances[2:13]) > length(unique(data$Group.ID))
+	]
+	# Answer - Only treatment columns
+	
+	# Add max recurrances by id
+	recurrent <- ddply(recurrent, .(Group.ID), function(df){
+		df$max <- max(df[,2:13])
+		df
+	})
+	
+	# Check multiples
+	# *each n should be an even multiple of the max number of
+	# recurrances
+	m <- recurrent$n / recurrent$max
+	sum(m != round(m))		# 0 - they are all even multiples
+	
+	# Look at a sample group
+	data[data$Group.ID == '11-1-10',]
+	
+	# What is the maximum number of repeats?
+	max(recurrent$max)		# 3
+	
+	# Strategy
+	# Our sample data and observations thusfar lay out a simple
+	# strategy.  Each group seems to be stacked atop one another
+	# animals share ids and time of death figures.  Treatment
+	# columns are the only columns that vary.
+	#
+	# Therefore we ought to merge the data for each recurrent
+	# id.  We will cut the data into X equal elements where
+	# x is the max number of recurrent values.  We will check that
+	# each of these divided data match on animal id and time of
+	# death and if they do then we will create extra treatement
+	# columns so that each animal will ultimately have three
+	# treatment columns.
+	
+	treatments <- c(
+		"Treatment.Sequence",
+		"Treatment.Age",
+		"Treatment.Type",
+		"Treatment.Quantity",
+		"Treatment.Unit",
+		"Treatment.Application",
+		"Treatment.Remarks"
+	)
+	empty_treatments <- data[1, treatments]
+	empty_treatments[1,treatments] <- NA
+	
+	merged <- ddply(data, .(Group.ID), function(df){
+		
+		id <- df$Group.ID[1]
+		max <- 1
+		n <- nrow(df)
+		
+		if(id %in% recurrent$Group.ID){
+			max <- recurrent$max[recurrent$Group.ID == id]
+		}
+
+		if(max == 1){
+			df <- data.frame(
+				df, 
+				empty_treatments, 
+				empty_treatments
+			)
+		}
+
+		if(max == 2){
+			d1 <- df[1:(n/2),]
+			d2 <- df[(n/2 + 1):n,]
+			if(!identical(
+				d1$Age.at.death, 
+				d2$Age.at.death
+			)){ print(id) }
+			df <- data.frame(
+				d1, 
+				d2[, treatments], 
+				empty_treatments
+			)
+		}
+		if(max == 3){
+			d1 <- df[1:(n/3),]
+			d2 <- df[(n/3 + 1):(2*n/3),]
+			d3 <- df[(2*n/3 + 1):n,]
+			if(!identical(
+				d1$Age.at.death, 
+				d2$Age.at.death,
+				d3$Age.at.death
+			)){ print(id) }
+			df <- data.frame(
+				d1, 
+				d2[, treatments], 
+				d3[, treatments]
+			)
+		}
+		df
+	})
+	
+	
+	## Proof ##
+	
+	# Proper column count
+	ncol(merged) == ncol(data) + length(treatments)*2
+	
+	# Proper row count
+	diff = sum(recurrent$n) - sum(recurrent$n / recurrent$max)
+	nrow(data) == nrow(merged) + diff
+	
+	# recurrances are gone
+	merged_appearances <- ddply(merged, .(Group.ID), function(df){
+		result <- laply(constants, function(col){
+			length(unique(df[,col]))
+		})
+		names(result) <- constants
+		result <- c(result, n=nrow(df))
+		result		
+	})
+	all(rowSums(merged_appearances[2:13]) == 12)
+
+	# Look at a sample group
+	merged[merged$Group.ID == '11-1-10',]	
+	
+	# How about treatment sequences
+	table(merged$Treatment.Sequence, useNA='always')	
+	# First sequences has mostly 1s, 18 2s, and 217 NAs
+	table(merged$Treatment.Sequence.1)		# All 2s
+	table(merged$Treatment.Sequence.2)		# All 3s
+		
+	# 2 sequences in first column
+	merged[
+		merged$Treatment.Sequence == 2 & 
+		!is.na(merged$Treatment.Sequence)
+	,]
+	data[data$Group.ID == '11-1-143',]
+	# The 2s are all from 11.1.143
+	# Their neutron treatment appears to be missing
+	# I've added this to problems
+	
+	# NAs in first sequence column
+	unique(merged[
+		is.na(merged$Treatment.Sequence)
+	,'Group.ID'])	
+	head(data[data$Group.ID == '1002-1-99',])
+	head(data[data$Group.ID == '1003-6-99',])
+	head(data[data$Group.ID == '1005-47-8',])
+	head(data[data$Group.ID == '3-6-24',])
+	# NAs are the beagle experiments with no treatment listed
+	# I noticed them before, no worries.
+	
+	# Treatment Sequences have twos but no ones?
+	table(
+		is.na(merged$Treatment.Sequence),
+		merged$Treatment.Sequence.1 == 2
+	)
+	# never
+
+	# Treatment Sequences have three but no twos?
+	table(
+		is.na(merged$Treatment.Sequence.1),
+		merged$Treatment.Sequence.2 == 3
+	)
+	# never
+	
+	# Write to file
+	# I am reasonbly confident that the treatment data is
+	# correctly widened now, I will write to file.
+	setwd('~/janus/scripts')
+	saveRDS(merged, '../data/external.rds')
+	data <- readRDS('../data/external.rds')
+	
+#
+# Results:
+# We successfully widened the treatment columns so that some
+# animals include more than one column of treatments, three at
+# most.
+#
+# This reduced the number of rows in the dataset from 130424 to
+# 118636, (about 10,000 mice).
+	
+
+###################################################################
+#
+# A rose by any other name
+# 28 Feb 2013
+#
+# Introduction:
+# With 39 columns and long names the data is painful to deal with
+# here I will make the column names simpler.  Mostly underlined and
+# a single word.
+
+	# Data
+	setwd('~/janus/scripts')
+	data <- readRDS('../data/external.rds')
+
+	# to drop
+	to_drop <- c(
+		"Treatment.Sequence",
+		"No.of.individuals.in.study",
+		"Group.ID.1",
+		"X",
+		"Treatment.Sequence.1",
+		"Treatment.Sequence.2"
+	)
+
+	# new names
+	new_names <- c(
+		"file",
+		"group.id",
+		"group.name",
+		"age.at.treatment.1",
+		"treatment.1",
+		"dose.1",
+		"unit.1",
+		"application.1",
+		"remarks.1",
+		"species",
+		"strain",
+		"sex",
+		"lifestage.at.treatment",
+		"endpoints",
+		"id",
+		"lifespan",
+		"pathology",
+		"location",
+		"pathology.description",
+		"n",
+		"in_era",
+		"age.at.treatment.2",
+		"treatment.2",
+		"dose.2",
+		"unit.2",
+		"application.2",
+		"remarks.2",
+		"age.at.treatment.3",
+		"treatment.3",
+		"dose.3",
+		"unit.3",
+		"application.3",
+		"remarks.3"
+	)
+	
+	new_order <- c(
+		"file",
+		"group.id",
+		"group.name",
+		"n",
+		"in_era",
+		"species",
+		"strain",
+		"endpoints",
+		"id",
+		"sex",
+		"lifespan",
+		"pathology",
+		"location",
+		"pathology.description",
+		"lifestage.at.treatment",
+		"age.at.treatment.1",
+		"treatment.1",
+		"dose.1",
+		"unit.1",
+		"application.1",
+		"remarks.1",
+		"age.at.treatment.2",
+		"treatment.2",
+		"dose.2",
+		"unit.2",
+		"application.2",
+		"remarks.2",
+		"age.at.treatment.3",
+		"treatment.3",
+		"dose.3",
+		"unit.3",
+		"application.3",
+		"remarks.3"	
+	)
+
+
+	data <- data[,!names(data) %in% to_drop]
+	names(data) <- new_names
+	data <- data[,new_order]
+
+	saveRDS(data, '../data/external2.rds')
+
+
+
+###################################################################
+#
+# Here we go again
+# 28 Feb 2013
+#
+# Introduction:
+# Time now to return to checking the basic facts from before
+
+	# Libraries
+	library(plyr)
+
+	# Data
+	setwd('~/janus/scripts')
+	data <- readRDS('../data/external2.rds')
+
 	# Helpers
 	clean <- function(s) gsub('[^0-9A-Za-z,._ -]', '', s)
 	truncate <- function(s) substr(s, 1, 6)
+
+	# cache some
+	groups <- data$group.id
+	file <- data$file
 	
 	# Clean for printing
 	data <- data.frame(llply(data, clean))
 	data <- data.frame(llply(data, truncate))
 	data <- data.frame(llply(data, as.character), stringsAsFactors=F)
-	data$Group.ID <- groups
+	data$group.id <- groups
 	data$file <- file
 
 	# Print Treatments
-	temp <- ddply(data, .(Group.ID), function(df){
+	temp <- ddply(data, .(group.id), function(df){
 		. <- df[1,]
 		c(
 			file=.$file,
 			n=nrow(df),
-			age=.$Treatment.Age,
-			type=.$Treatment.Type,
-			dose=.$Treatment.Quantity,
-			unit=.$Treatment.Unit,
-			application=.$Treatment.Application
+			age=.$age.at.treatment.1,
+			type=.$treatment.1,
+			dose=.$dose.1,
+			unit=.$unit.1,
+			application=.$application.1
 		)
 	})
 	temp <- ddply(temp, .(file), function(df){
-		n <- as.numeric(sub('[0-9]*-[0-9]*-','',df$Group.ID))
+		n <- as.numeric(sub('[0-9]*-[0-9]*-','',df$group.id))
 		df[order(n),]
 	})
 	temp <- temp[,!names(temp) %in% 'file']
 	print(temp, row.names=F)
 
+  
+###################################################################
+#
+# Expected Constants
+# 4 March 2013
+#
+# I expect that most of the values by experimental group will
+# be the same, but after seeing that multiple treatments were 
+# treated as multiple rows, its best that I check that assumption.
+
+	# Libraries
+	library(plyr)
+
+	# Data
+	setwd('~/janus/scripts')
+	data <- readRDS('../data/external2.rds')
+	
+	# Find Uniques
+	result <- ddply(data, .(group.id), function(df){
+		laply(df, function(col) length(unique(col)))
+	})
+	names(result) <- c('group', names(data))
+	
+	# Filter
+	ok <- c(
+		'id',
+		'lifespan',
+		'pathology',
+		'location',
+		'pathology.description'
+	)
+	filtered <- dlply(result, .(group), function(row){
+		row <- row[,row > 1]
+		row <- row[!names(row) %in% ok]
+		row
+	})
+	unusual <- laply(filtered, function(cell){length(cell) > 1})
+	
+	# Results
+	filtered[unusual]		# empty
 
 
-## It appears that animals which recieved multiple treatments appear in multiple rows.  This is clearly true in 11-1 and 11-2 and is probably a MAJOR GENERAL ISSUE.
-## Since I have discovered the doubled rows issue I will ignore n, type, dose, and unit from 11-2 onward.  I suggest these will need to be rechecked after fixing the afore problem.
+#
+# Results:
+# Nothing to see here.  It appears that groups have the same
+# number of every variable you would expect for them to have.
+
+
+ 
+###################################################################
+#
+# Expected Variables
+# 4 March 2013
+#
+# Elaborating on that last test, we do expect some variables to
+# change within a group, notably id, lifespan, pathology, location,
+# and pathology description.  Do they?
+
+	# Libraries
+	library(plyr)
+
+	# Data
+	setwd('~/janus/scripts')
+	data <- readRDS('../data/external2.rds')
+	
+	# Find Uniques
+	result <- ddply(data, .(group.id), function(df){
+		laply(df, function(col) length(unique(col)))
+	})
+	names(result) <- c('group', names(data))
+	
+	# Helper
+	did_not_change <- function(should_change){
+		# Filter
+		filtered <- dlply(result, .(group), function(row){
+			row <- row[,row < 2]
+			row <- row[names(row) %in% should_change]
+			row
+		})
+		unusual <- laply(filtered, function(cell){length(cell) > 0})
+		
+		# Results
+		names(filtered[unusual])
+	}
+	first_value <- function(groups, column){
+		subset <- data[data$group.id %in% groups,]
+		ddply(subset, .(group.id), function(df){
+			df[1, column]
+		})
+	}
+	
+	# Results
+	id <- did_not_change('id')  			# 8 studies with n=1
+	life <- did_not_change('lifespan')	 	
+	life[!life %in% id]						# 9 studies usually the
+											# same lifespans
+	
+#
+# Results:
+# A few studies were noted as having no change in lifespan.  More
+# appeared with only one pathology result, but I stopped processing 
+# these because this is not the data we are going for in this pass.
+
+
+	
+	
+###################################################################
+#
+# Second Pass - species, strain, gender, exposure, age
+# 5 March 2013
+#
+# I checked dose, n, and other factors on a first pass through the
+# groups, but was not able to check gender, species, strain, and
+# age at treatment.  Now it is time to do those things.
+
+
+	# Libraries
+	library(plyr)
+
+	# Data
+	setwd('~/janus/scripts')
+	data <- readRDS('../data/external2.rds')
+	
+	# Helpers
+	clean <- function(s) gsub('[^0-9A-Za-z,._ -]', '', s)
+	truncate <- function(s) substr(s, 1, 12)
+
+	# cache some
+	groups <- data$group.id
+	file <- data$file
+	
+	# Clean for printing
+	data$strain <- sub("^[^,]*, ", "", data$strain)
+	data <- data.frame(llply(data, clean))
+	data <- data.frame(llply(data, truncate))
+	data <- data.frame(llply(data, as.character), stringsAsFactors=F)
+	data$group.id <- groups
+	data$file <- file
+	
+	
+	# Group Summary
+	summary <- ddply(data, .(group.id), function(df){
+		c(
+			file=df$file[1],
+			males=sum(df$sex == 'Male', na.rm=T),
+			females=sum(df$sex== 'Female', na.rm=T),
+			other=sum(
+				is.na(df$sex) | 
+				!(df$sex %in% c('Male', 'Female'))
+			),
+			species = df$species[1],
+			strain = df$strain[1],
+			age = median(df$age.at.treatment.1, na.rm=T)
+		)
+	})
+	
+	# Sort Groups
+	summary <- ddply(summary, .(file), function(df){
+		n <- as.numeric(sub('[0-9]*-[0-9]*-','',df$group.id))
+		df[order(n),]
+	})
+	summary <- summary[,!names(summary) %in% c('file')]
+		
+	
+#
+# Results:
+# Found a few small descrepiancies.  Was not able to check age
+# because it was wrong so often.
 
 
 
-## I need to perform this same style of analysis for gender
+
+
+	
+###################################################################
+#
+# Treatment Age
+# 6 March 2013
+#
+# My last analysis found many NA values in treatment age.  I need
+# to see why this is true.
+
+
+	# Libraries
+	library(plyr)
+
+	# Data
+	setwd('~/janus/scripts')
+	data <- readRDS('../data/external2.rds')	
+	
+	# Group Summary
+	summary <- ddply(data, .(group.id), function(df){
+		age <- df$age.at.treatment.1
+		
+		c(
+			age=age[1],
+			same=all(age[1] == age[1]),
+			na=sum(is.na(age))
+		)
+	})
+	
+	summary[is.na(summary$same) | summary$same != 1 | summary$na > 0,]
+
+
+	summary[
+		!is.na(summary$same) & 
+		!summary$same != 1 &
+		!summary$na > 0,
+	]
+
+	
+#
+# Results:
+# There are about 100 groups without information about treatment age
+# these will generally need to be provided from other sources.  A few
+# small extra discrepiances were noticed.  I will need to know when
+# animals were garunteed alive, for my analysis, that is could they 
+# die during the investigation?
+
+
+
+
+###########################################################
+# 
+# Universal problems
+#
+# Problems with the data that affect a good portion of the
+# data in this dataset.
+
+## Go through the TODOs and prioritize again
+## Look at animals with 2nd treatment columns and be sure that all the treatements in combination are accurate (as opposed to looking exclusively at the first treatment as I am now)
+## All I need to check the database for missing treatment age values.
+## All is treatment age ever less than age at death?
+## Check mean and median exposure times vs the dataset (they frequently seem wrong)
+## Label those study groups which include a chemical treatment so I can easily discriminate them.
+## I need to label what controls for what.
+## reshape the data to include dose rate, number of fractions and any other information that you believe will be relevant here.
+## I need dose rate data for all these treatments
+## Lookup all the unique words in the dataset and learn their meanings
+
+
+
+## A really natural question to ask, perhaps to Gayle or Dave Grdina is how accurate they think these dose assessments are likely to be, especially in light of the reproted variation in group 2-12-41 where they say doses are between 1.5 and 3.5 Gy.  What a huge range.  Could they really be this unsure of the total dose?
+## Read all the descriptions for studies I am including.  Look up any words that I do not already know.
+## Why are some groups missing from the ERA?  Is there any systematic bias in the groups that are missing.  Maybe ask the ERA this.
 ## I need to spot check these results against original papers to see if I can find additional errors.
 ## All need to be checked to ensure that the age for controls matches the age for the animals they were used as control for.  The point here is that control animals were not likely to have been picked from birth.  Rather they probably entered the study at the same age as the other animals.
-## I need to check all of these for species and strain as well
-## Check mean and median exposure times vs the dataset (they frequently seem wrong)'
-
-
-
-## Age of exposure in study 1002-1 is consistently labled as 400 days yet the study protocol says that exposure was given between 8 and 15 months of age.  I should resolve this
-## There is no dose rate in study 1002-1 I should try to find what this was.
-## Study 1002-1 notes that some dogs were bred after exposure.  It would be useful to know which ones were.
-## 1002-1 has something called fractionation interval which is a bit mysterious to me.  But I think it needs to be encoded
-## I should remove this group 1002.1.99 which were 'not assigned'
-## 1003.20 I'm not sure the age at exposure is actually always 100.  I imagine that our data has more/better detail on the actual age of exposure
-## 1003.20.20 has only 5 animals, it should have 200
-## 1003.20.20-41 are missing or almost missing from the era.  Perhaps they are in janus?
-## 1003.20.42 has only 187 animals, it should have 200
-## 1003.20.47-48 claim they are 0.8 neutrons here, but they are listed as 0.2 neutrons in the era description.  Double check these.
-## double check age at first irradiation on janus 1003.21 (and all of janus, 1003)
-## 1003.22.1-14 have doses that are 10x lower in the description than in the data I have
-## 1003.22.22 has a dose of 12 in the table, but only 1.2 in the database.  Which is right?
-## 1003.23.7-8 are listed as gamma in the data but neutron in the descriptions
-## 1003.24.4 is listed as 4.17 in the data and 417 in the era description.  I am inclined to trust the data because it is consistent with treatment 1003.24.3
-## 1003.24.11-18 claim to have an age of first exposure of 515, but this does not jive well with the study description claiming a single test exposure at age 520, especially since the MAS in many of these groups is greater than 520
-## 1003.27.3 has 200 mice in the data but claims it should have 455 in the description
-## 1003.27.1 says its type sham exposure in the data but is listed as none in the description.  This is as opposed to 1003.27.2 which is listed as a sham exposure in both sources.
-## 1003.29.23 is listed as 4 Gy in the description, but as 0.4 Gy in the raw data.  I am inclined to believe the data because it is consistent with 1003.29.24, but I need to be sure.
-## 1003.30.1-4 dose is listed as <NA> but it should be zero as it is in other control cases.
-## 1003.30.3-4 and 7-10 and 13-20 are all injected with radioprotectors and should be removed from this analysis.  Also, the fact that these are listed as neutron and gamma exposures while the controls are listed as saline control and WR-2721 is decieving, this should be made consistent in the database.  The same problem occurs with the units which are sometimes grays and sometimes units of solution.  And the Application which is 'not applied' rather than 'external' 
+## Tell era that they need to remove newlines
 ## All - I've been looking for something that will clearly define what 'mean after survival' means.  The best I have found is an old Grahn paper that says 'The mean after-survival from the start of daily exposure is the endpoint statistic'.  I take that to mean that they are measuring days lived after the initiation of treatment. - (Grahn 1962 - http://www.osti.gov/energycitations/product.biblio.jsp?osti_id=4635223)
-## 1003.5.1, 7, and 8 are missing.  One is especially important because it is a control condition.
-## 1003.5.2 notes that '18 are terminated' this is rather important as these 18 will surely affect survival estiamtes.
-## 1003.5 doses in the data are in rads while the database is in mGy.  I should simply convert everything in rads over to mGy.
-## 1003.51-5 has no description.  I will need to cross check it using an alternate source.  Also doses, units, and application are clearly wrong, so I imagine I will have to import this data from the beagle dog archive.  However it might be worth removing this data.
-## 1003.6.1 and 15 appear to be missing.  But likely they have been combined into 1003.6.99.  They need to be seperated because 9 were terminated and the others were controls.  They also need to be given proper values for age, type, and so on.
-## 1003.6.9 claims to have 21 animal but on the website it is listed as having only 20.  I will need to check which is right.
-## 1003.6 the dose is given in rads per day.  Obviously days of treatment will need to be added.
-## 1003.6 age at exposure is given by the mean age of exposure, but we could get the actual true first age of exposure from the database.
-##  1003.7 The number of dogs in each group does not match whats stated in the description.
-## 1003.7 Units of Roentigen per day must be changed to gray if they can be
-## 1005.47 This data from ITRI has no description.  Also dose and age information are missing, so we probably need to fill in all of this guy if we are going to use it.
-## 1007.2.1 has one more mouse in the data than in the description
-## 1007.2.7 has two less mice in the data than in the description 
-## 1007.2.11 has two more mice in the data than in the description
-## 1007.2.16 has two less mice in the data than in the description
-## 1007.3.17, 18 and 19 missing, 18 and 19 are serial sacrifices, so its probalby fine.  17 is the highest dose group so it would be nice to find what happend to them.
-## 1007.3.16 the data has 2165 mice while the description reports that there are 3707
-## 1007.3.7 is reported to have 0.3 Gray doses in the data and 3 gray does in the description.  I think the description is more sensible here because it fits the progression.
-## 1007.3.1 and 8 have units in rads even though they are control animals with a dose of zero and the rest have units in grays
-## 1008.3 is insufficiently described in era to validate.  It must be checked against a third party if it is to be used at all.
-## 11-1-4 claims to have 40 mice in the description, but there are 80 in our dataset.
+## Tell era that 18.1, 19.2, 19.4-19.7, and 9.9 are missing the tag "No individual level data" in their csvs.
+## Add details to dog studies 1003.51, 1003.52, 1003.54, 1003.55, 1003.6, 1003.7, 1005.47 these might need to be removed completely
+## Cross reference janus materials against these
+## Add material from janus not in here
+## All be sure to record what was added before integrating new data so that I know to double check it.
+
+
+
+###########################################################
+# 
+# Study and Group problems
+#
+# A list of problems with individual groups or studies that
+# ought to be addressed.
+
+## 11-1-143 is missing its neutron treatment age of exposure.  Only ovarectomy is listed.
+## 1002-1 Age of exposure in study 1002-1 is consistently labled as 400 days yet the study protocol says that exposure was given between 8 and 15 months of age.  I should resolve this
+## 1002-1 There is no dose rate in study 1002-1.
+## 1002-1 notes that some dogs were bred after exposure.  It would be useful to know which ones were.
+## 1002-1 has something called fractionation interval which is a bit mysterious to me.  But I think it needs to be encoded
+## 1002-1-99 I should remove this group 1002-1-99 which were 'not assigned'
+## 1003-20 I'm not sure the age at exposure is actually always 100.  I imagine that our data has more/better detail on the actual age of exposure
+## 1003-20-20 has only 5 animals, it should have 200
+## 1003-20-20-41 are missing or almost missing from the era.  Perhaps they are in janus?
+## 1003-20-42 has only 187 animals, it should have 200
+## 1003-20-47 to 48 claim they are 0.8 neutrons here, but they are listed as 0.2 neutrons in the era description.  Double check these.
+## double check age at first irradiation on janus 1003-21 (and all of janus, 1003)
+## 1003-22-1 to 14 have doses that are 10x lower in the description than in the data I have
+## 1003-22-22 has a dose of 12 in the table, but only 1.2 in the database.  Which is right?
+## 1003-23-7 to 8 are listed as gamma in the data but neutron in the descriptions
+## 1003-24-4 is listed as 4.17 in the data and 417 in the era description.  I am inclined to trust the data because it is consistent with treatment 1003.24.3
+## 1003-27-3 has 200 mice in the data but claims it should have 455 in the description
+## 1003-27-1 says its type sham exposure in the data but is listed as none in the description.  This is as opposed to 1003.27.2 which is listed as a sham exposure in both sources.
+## 1003-29-23 is listed as 4 Gy in the description, but as 0.4 Gy in the raw data.  I am inclined to believe the data because it is consistent with 1003.29.24, but I need to be sure.
+## 1003-30-1 to 4 dose is listed as <NA> but it should be zero as it is in other control cases.
+## 1003-30-3 to 4 and 7 to 10 and 13 to 20 are all injected with radioprotectors and should be removed from this analysis.  Also, the fact that these are listed as neutron and gamma exposures while the controls are listed as saline control and WR-2721 is decieving, this should be made consistent in the database.  The same problem occurs with the units which are sometimes grays and sometimes units of solution.  And the Application which is 'not applied' rather than 'external' 
+## 1003-5-1, 7, and 8 are missing.  One is especially important because it is a control condition.
+## 1003-5-2 notes that '18 are terminated' this is rather important as these 18 will surely affect survival estiamtes.
+## 1003-5 doses in the data are in rads while the database is in mGy.  I should simply convert everything in rads over to mGy.
+## 1003-51-5 has no description.  I will need to cross check it using an alternate source.  Also doses, units, and application are clearly wrong, so I imagine I will have to import this data from the beagle dog archive.  However it might be worth removing this data.
+## 1003-6-1 and 15 appear to be missing.  But likely they have been combined into 1003.6.99.  They need to be seperated because 9 were terminated and the others were controls.  They also need to be given proper values for age, type, and so on.
+## 1003-6-9 claims to have 21 animal but on the website it is listed as having only 20.  I will need to check which is right.
+## 1003-6 the dose is given in rads per day.  Obviously days of treatment will need to be added.
+## 1003-6 age at exposure is given by the mean age of exposure, but we could get the actual true first age of exposure from the database.
+##  1003-7 The number of dogs in each group does not match whats stated in the description.
+## 1003-7 Units of Roentigen per day must be changed to gray if they can be
+## 1005-47 This data from ITRI has no description.  Also dose and age information are missing, so we probably need to fill in all of this guy if we are going to use it.
+## 1007-2-1 has one more mouse in the data than in the description
+## 1007-2-7 has two less mice in the data than in the description 
+## 1007-2-11 has two more mice in the data than in the description
+## 1007-2-16 has two less mice in the data than in the description
+## 1007-3-17, 18 and 19 missing, 18 and 19 are serial sacrifices, so its probalby fine.  17 is the highest dose group so it would be nice to find what happend to them.
+## 1007-3-16 the data has 2165 mice while the description reports that there are 3707
+## 1007-3-7 is reported to have 0.3 Gray doses in the data and 3 gray does in the description.  I think the description is more sensible here because it fits the progression.
+## 1007-3-1 and 8 have units in rads even though they are control animals with a dose of zero and the rest have units in grays
+## 1008-3 is insufficiently described in era to validate.  It must be checked against a third party if it is to be used at all.
 ## 11-1 has lots of estrogen and overectomy treatments that probably ought to be removed.
-## 11-1-6 and 7 claims to have 40 mice in the description, but there are 80 in our dataset.
-## 11-1-8 claims to have 40 mice in the description, but there are 120 in our dataset.
-## 11-1 I am not going to continue to proof n for now.  Suffice it to say that many are wrong.  It will be helpful to find a second source.
-## 11-1 I was not able to check the age at first exposure I will need an external source for this   
+## 11-1 I was not able to check the age at first exposure I will need an external source for this 
 ## 11-2-12 is listed as having 58 rats in the description, but the data has 120 examples
 ## 11-2-13 is listed as having 60 rats in the description, but the data has 58 examples.  Notably this is the (incorrect) number listed in the description for 11-2-12.  So maybe someone skipped 120 on data entry?
 ## 11-2-15 is listed as including 20 rats in the description.  In the data there are 40.
 ## 11-2-20 does not appear in the description.  Instead 21 appears twice.  I suggest that the first of these apperances at a dose of 0.1 Gy should actually be labeled 20
 ## 11-2-33 is listed has including 30 rats in the description, but includes 60 rats in the data
-## there are many mistakes in the number of rats listed from 11-2-34 to 48
+## 11-2-34 to 48 there are many mistakes in the number of rats listed from 11-2-34 to 48
 ## 11-2-56 is listed as including 40 rats in the description, but has 80 rats in the database.
 ## 11-2-60 is listed as including 20 rats in the description, but has 40 rats in the database.
 ## 11-2-61 - 70 have twice as many rats in the database as are listed in the description.
@@ -1938,11 +1338,81 @@ c(
 ## 3-6-20 to 24 are in the database but not in the description table.
 ## 9-4-9, 17, 22, 23, and 32 are missing from study 9-4.  In the description this is only labeled for 23 and 32.
 ## 9-5-17 is missing from the description
-## Add material from janus not in here
-## Cross reference janus materials against these
-## Tell era that they need to remove newlines
-## Add details to dog studies 1003.51, 1003.52, 1003.54, 1003.55, 1003.6, 1003.7, 1005.47 these might need to be removed completely
-## remove serial sacrifices from 1007.3
-## Tell era that 18.1, 19.2, 19.4-19.7, and 9.9 are missing the tag "No individual level data" in their csvs.
-## Label those study groups which include a chemical treatment so I can easily discriminate them.
-## What is the total dose rate in 1002.1
+## 1007-3 remove serial sacrifices from 1007.3
+## 1002-1 What is the total dose rate?
+## 11-2-12 and 13 seem to have their n's switched in the description.
+## 11-2-12 claims to have estrogen treatment but its not even close to the groups that were to recieve estrogen treatment which start at groups 32 and higher.  Given that this is wrong and its n value is wrong it seems quite suspicious like its from far later and suddenly inserted here.  However it is also possible that it's actually group 14 and the oestrad. treatment this group recieved is being labled as estrogen.  This is made more possible by the fact that 11-2-15 is wrongly labeled as an estrogen recieving animal, though it is in the same category that recieved oestrad in this treatment.
+## 11-2-15 is labeled as recieving estrogen treatment, but actually it got oestrad. treatment.  Possible error.
+## 11-2-21 appears twice in the descriptions.  I assume the first appearance is actually 20.  
+## 11-2-39 has 48 mice in our dataset and only 40 in the description.  The description seems more sane...    
+## 11-1-43 has 41 mice in our dataset and only 40 listed in the description
+## 11-1-45 has 46 mice in our dataset and only 40 listed in the description
+## 11-1-45 has 61 mice in our dataset and only 60 listed in the description
+## 11-2-31 - 48 are listed as included the proper radiation treatment, but many also recieved estrogren and oestrogen treatments.  I need to check if the other columns confirm these treatments.
+## 11-2-78 is listed as recieving gamma ray exposure in our data, but it recieved X-ray exposure in the data.
+## 11-2-110 to 115 are listed as 0.04 Gy in the data and 0.4 gray in the description.  The description strikes me as more accurate since it fits the progression.   
+## 11-2-129 has 9 in our data and 19 in the description
+## 11-2 some of these doses are in milligrams even though it appears at first glance that they would be rightly interpreted as a dose in gray instead.
+## 2-10-19 to 21 should have a split dose.  Each should have a second treatment of 6 and 21 should have a third treatment of 6 as well.  If this is true then the first treatments are correct.
+## 2-11-15 has a dose of 33 Gy in the data, but only 3 in the description, the description seems likely to be more accurate because it fits with the other treatments
+## 2-12-30 recieved doses localized to the abdomen.  They should be removed
+## 2-12-43 and 44 only recieved localized radiation they ought to be removed
+## 2-12-41 and 42 are listed as recieving 1.5-3.5 Gy in the description, but only 2.5 Gy in table.  What to do?
+## 2-12-51 is labled as recieving 25 Gy in the data and 53 mGy in the description
+## 2-12-47 to 51 have units in Grays in the data but have units in mGy in the description.  I think the description is probably correct.
+## 3-1-3 to 6 have doses in the data that are 10 times higher than those listed in the descriptions.  I am inclined to believe the data from the descriptions.     
+# 3-1-10 has a dose 10 times higher in the data than in the description.  I am inclined to believe the description.
+## 3-2-10 appears in the data appears to be missing from the table.  Everything below it appears to be shifted up one.
+## 3-2-22 and 23 have a 10x lower dose in the data than in the description.  The description seems more accurate as it fits the pattern.
+## 3-5-1 to 19 are nigh impossible to align to the descriptions.  It appears that there are at 2 groups in the data per one in the description with group 19 as a missing control from the 3 month cohort that appears pretty normal below.  The n values do not correspond to what would be expected even if these groups are somehow split.  I think I will need to go to an original source to get a better sense of what is happening to this data.      
+## 3-5-20 to 50 seem to correspond to groups 3-5-10 through 3-5-40 in the description.  They have all been shifted, however.
+## 3-6 the n's are almost all shit.  Never line up exactly.  The number of groups are different as well.  There are some similarties, but they are quite poor.  I need a second source.
+## 3-6-6 and 7 claims to be acute neutron exposure in the description but is listed as xrays in the data
+## 9-4-9 is missing from the data, though that is not noted in the description
+## 9-4-17 is missing from the data, though that is not noted in the description
+## 9-4-22 is missing from the data, though that is not noted in the description
+## 9-4-40 is missing from the data, though that is not noted in the description
+## 9-5-1 to 13 claim are listed as X-rays in the data and Gamma rays in the study description
+## 9-5-14 is missing its group id in the description table (small detail)
+## 9-6-2 to 16 are listed as X-ray exposures in the data but as Gamma ray exposures in the descriptions.
+## 9-6-19 is listed as 0.18 Gy in the data and 0.54 Gy in the table. I'd be inclined to trust the table.
+## 9-6-22 is listed as having 96 mice in the description, but has 196 mice in the data
+## 9-6-25 to 27 seem to be exposures just to the thorax, these should probably be removed.
+
+## 1003-54-12 supposedly all have a lifespan of 162 days, rather implausiable
+## 1003-54-6 supposedly both have a lifespan of 767 days, rather implausiable
+## look for rows that are too similar, like those with group.id 1003-54-6
+## 11-2-79 to 81 all have the same lifespan, 6993, rather implausiable
+## 2-14-10 all have the same lifespan, 541 days, rather implausiable
+## 2-14-22 all have the same lifespan, 317 days, rather implausiable
+## 2-14-23 all have the same lifespan, 423 days, rather implausiable
+
+
+## 1002-1-99 has 6 animals with an 'other' gender.  What are these?
+## 1003-27 is listed as species mouse, but this is inacurate these are peromyscus, strain leucopus.  They are more distant from mice than rats are.
+## 1003-51 to 55, 5, 6, 7, and 47  details missing from the dog studies as we already knew
+## 1007-1-4 to 6, strain is listed as BFM, the appears as RFM/Bd in the description
+## All once these studies have been checked and cleaned I should give them an indicator in the data frame noting this, that way it will be easy to return to cleaning and to select those studies which have been cleared.
+## 1007-3 these are listed as BFM mice here and RFM mice in the database (like another before)
+## 1008-3 is missing all data on gender as noted before
+## 11-2-67 is labeled as a Sprague Dawl strain in the data but is a WAG/RIJ according to the description which fits the general pattern.
+## 2-11-1, 2, 11, 12, and 13 have ambiguous gender assignments in the description.  They should be proofed against orignal sources.
+## 2-12-32 has a gender of other, it should be male if its like the rest
+## 3-5 there is not mention of females in the description, yet several groups in the data include females
+## 3-1 to 2 and 4 to 5 the strain is listed as BC3F1 C57BlC in the data, but as (C57Bl/Cne x C3H/Cne)F1 (BC3F1) in the description.  
+## 3-6 does not have sufficient data in the description to determine if the genders listed in the data are correct
+## 3-6 mice are listed as CBAH/Cne in the data and CBA/Cne in the description
+## 9-4-1 to 23 are listed as C57BL/Cnb in the data and BALB/c/Cnb in the description.  Notably these have different LD50/30s (whatever that means)?
+## 9-5 are listed as strain C57/BL6Bd in the data and as BALB/c/Cnb in the description
+
+## 1007-3 lists ages as 7 weeks +/- 0.5 weeks.  This seems like a reasonable standard error to assume
+## 1008-3 treatment ages imply that gestation is 60 days long, for example '8 d post coitus' in the description corresponds to -52 days in the data.  I should double check this gestation time for beagles.
+
+## 11-1 says that ages were usually 8 weeks with 'some older groups as indicated' but only ages of 56 (8 weeks), 40 (~5.5 weeks) and 49 (7 weeks) are in the data.  The older mice referred to in the description do not appear.
+## 11-2 the description does not indicate which groups are which age, it also indicates that some groups are 17 week and 4 weeks old.  The 17 week old animals appear in the data, but not the 4 week olds.
+## 2-1 have no treatment ages because they are control animals, but I wonderf when they were assigned to the control condition?  Did any of them die very young?  I should be able to check.  For example the next study 2-10 used mice at age 3 months.  I should suspect that none of its controls would have died at less than 3 months.  Right?
+## 2-11-1 and 2 says indicated that the treatment age was 'mothers 3 months'.  It is not clear if this means that the mothers were tracked or their offspring.  If its the offspring then the age indicator does not make much sense.  It might be designated as -??? to indicate a preconception event.
+## 2-11 the ages seem all wrong.  I will need to correct them from the original literature.
+## All I need a column for final treatment age (also something to denote if they were allowed to die in this time period)
+## 3-5 the description indicates that groups 10-... were irradiated at 3 months while the data indicates that they were irradiated at -4 days.  Also the table indicates that the gestation period for these mice is 21.5 days, for example the treatment age in the data is -4 for group 1 which is treated at 17.5 post conception according to the description.
+## 3-6-24 has no age of exposure in the data and does not exist in the data
