@@ -186,7 +186,7 @@
 
 ###################################################################
 #
-# Which Studyies?
+# Which Studies?
 # 4 Feb 2013
 #
 # Introduction:
@@ -1180,10 +1180,6 @@ c(
 # Found a few small descrepiancies.  Was not able to check age
 # because it was wrong so often.
 
-
-
-
-
 	
 ###################################################################
 #
@@ -1231,40 +1227,1696 @@ c(
 # die during the investigation?
 
 
+###################################################################
+#
+# Is Treatment ever Pre Death?
+# 6 March 2013
+#
+# A quick sanity check.
+
+	# Data
+	setwd('~/janus/scripts')
+	data <- readRDS('../data/external2.rds')	
+	
+	# Group Summary
+	diff <- data$lifespan - data$age.at.treatment.1
+	greater <- diff < 0
+	table(greater, useNA = 'ifany')   	# 722 are, 3788 NAs
+	length(unique(data$group.id[greater & !is.na(greater)]))
+	quantile(diff[greater & !is.na(greater)], na.rm=T)
+	
+	# 722 animals from 150 groups
+	# 416 to 1 day too soon, usually 41
+	
+#
+# Results:
+# This is clearly a problem, affecting 722 animals from 150
+# groups.  I should revisit the issue after proofing and see
+# if it continues to persist.
+
+
+
+###################################################################
+#
+# Multiple Treatments
+# 6 March 2013
+#
+# Prevoius analysis did not allow me to carefully check animals
+# that had recieved multiple treatments.  I will do that now.
+
+
+	# Libraries
+	library(plyr)
+
+	# Data
+	setwd('~/janus/scripts')
+	data <- readRDS('../data/external2.rds')
+	
+	# Helpers
+	clean <- function(s) gsub('[^0-9A-Za-z,._ -]', '', s)
+	truncate <- function(s) substr(s, 1, 15)
+
+	# cache some
+	groups <- data$group.id
+	file <- data$file
+	
+	# Clean for printing
+	data$strain <- sub("^[^,]*, ", "", data$strain)
+	data <- data.frame(llply(data, clean))
+	data <- data.frame(llply(data, truncate))
+	data <- data.frame(llply(data, as.character), stringsAsFactors=F)
+	data$group.id <- groups
+	data$file <- file
+	
+	
+	# Group Summary
+	subset <- data[!is.na(data$treatment.2),]
+	summary <- ddply(subset, .(group.id), function(df){
+		c(
+			file=df$file[1],
+			t1=df$treatment.1[1],
+			t2=df$treatment.2[1],
+			t3=df$treatment.3[1]
+		)
+	})
+	
+	# Sort Groups
+	summary <- ddply(summary, .(file), function(df){
+		n <- as.numeric(sub('[0-9]*-[0-9]*-','',df$group.id))
+		df[order(n),]
+	})
+	summary <- summary[,!names(summary) %in% c('file')]
+		
+	
+#
+# Results:
+# Found a few small descrepiancies.  Was not able to check age
+# because it was wrong so often.
+
 
 
 ###########################################################
 # 
-# Universal problems
+# Restructuring
 #
-# Problems with the data that affect a good portion of the
-# data in this dataset.
+# The current data structure is less than ideal, too much
+# information is given to chemical treatments, its not clear
+# what is controlling for what, and not enough information
+# is given about the details of radiation dosing.
+#
+# I will add columns as documented in the code.
 
-## Go through the TODOs and prioritize again
-## Look at animals with 2nd treatment columns and be sure that all the treatements in combination are accurate (as opposed to looking exclusively at the first treatment as I am now)
-## All I need to check the database for missing treatment age values.
-## All is treatment age ever less than age at death?
-## Check mean and median exposure times vs the dataset (they frequently seem wrong)
-## Label those study groups which include a chemical treatment so I can easily discriminate them.
-## I need to label what controls for what.
-## reshape the data to include dose rate, number of fractions and any other information that you believe will be relevant here.
-## I need dose rate data for all these treatments
-## Lookup all the unique words in the dataset and learn their meanings
+	# Libraries
+	library(plyr)
+
+	# Data
+	setwd('~/janus/scripts')
+	data <- readRDS('../data/external2.rds')
+	
+	# Columns to add 
+	to_add <- c(
+		'study.id',	# like group, but for study
+		'cluster',	# a group of groups wherein only radiation 
+					# treatment varies
+		'quality',	# Like treatment.1 now, but only radiation
+		'unit',		# like unit.1 now, but only radiation
+		'dose',		# like dose.1 now, but only radiation
+		'dose_rate',# unit / minute
+		'fractions',# exposure count
+		'fraction_time', # minutes / fraction
+		'age.at.treatment', # like age.at.treatment.1 now
+		'assignment_age', # age that an animal entered the study
+					# generally just age.at.treatment
+		'fraction_interval', # days between fractions
+		'remarks',  # like remarks.1 now, but only radiation
+		'other_treatments',	# a combination of descriptors about any
+					# secondary treatments which should be consistent
+					# within a cluster
+		'is_vetted' # a binary indicating if the data has been 
+					# checked thoroughly
+	)
+	
+	# Define Treatment columns
+	treatment_cols <- c(
+		'age.at.treatment',
+		'treatment',
+		'dose',
+		'unit',
+		'application',
+		'remarks'
+	)
+	
+	# Radiation treatments
+	rad_treatments <- c(
+		'X-rays whole body',
+		'gamma-rays Co-60',
+		'neutrons fission',
+		'gamma-rays Cs-137',
+		'neutrons 1-10 MeV',
+		'neutrons>10 MeV',
+		'accel. neutrons 0.1-10 MeV',
+		'X-rays local',
+		'ﬂ-rays',
+		'gamma-rays whole body',
+		'accel. alpha whole body',
+		'accel. alpha local',
+		'Bremsstrahlung > 3MeV.',
+		'neutrons C-252',
+		'gamma-rays local'	
+	)
+	
+	# Control treatments
+	control_treatments <- c(
+		'none (controls)',
+		'shamexposed'
+	)
+	
+	# Add columns
+	for(col in to_add){
+		data[,col] <- NA
+	}
+	
+	# Populate function
+	# This should replace when a value is NA, but concatenate
+	# with a seperator when it is not NA.  The purpose of this
+	# is to ensure that we never overwrite data.  For example
+	# if an animal is exposed to two different types of radiation
+	# we will want to know that
+	populate <- function(.in, .out){
+		na <- is.na(.out)
+		.out[na] <- as.character(.in[na])
+		.out[!na] <- paste(.out[!na], .in[!na], sep=', ')		
+		.out
+	}
+	
+	# Populate Radiation Treatment
+	# Radiation treatments are those defined by rad_treatments
+	# this function will select for those
+	populate_radiation_treatment <- function(.in, .out, treatment){
+		w <- which(
+			treatment %in% c(rad_treatments, control_treatments)
+		)
+		.out[w] <- populate(.in[w], .out[w])
+		.out
+	}
+	
+	# Populate all radiation treatments
+	# Radiation treatments might occur in any of three columns
+	# this will look for any of those
+	populate_all_radiation_treatments <- function(.in, .out){
+
+		range <- 1:3
+
+		.out <- data[, .out]
+		treatment_cols <- paste0('treatment.', range)
+		.in_cols <- paste0(.in, '.', range)
+		
+		for(i in range){
+			.in  <- data[,.in_cols[i]]
+			treatment <- data[,treatment_cols[i]]
+			
+			.out <- populate_radiation_treatment(
+				.in,
+				.out,
+				treatment
+			)
+		}
+		
+		.out	
+	}
+	
+	# Populate radiation variables
+	data$quality <- populate_all_radiation_treatments(
+		'treatment',
+		'quality'
+	)
+	data$unit <- populate_all_radiation_treatments(
+		'unit',
+		'unit'
+	)	
+	data$dose <- populate_all_radiation_treatments(
+		'dose',
+		'dose'
+	)	
+	data$remarks <- populate_all_radiation_treatments(
+		'remarks',
+		'remarks'
+	)
+	
+	# Populate other treatments
+	relevant_treatments <- c(rad_treatments, control_treatments)
+	for(i in 1:3){
+		treatment = data[,paste0('treatment', '.', i)]
+		for(col in treatment_cols){
+			col <- paste0(col, '.', i)
+			subset <- !treatment %in% relevant_treatments &
+					  !is.na(treatment)
+			data[subset,'other_treatments'] <- populate(
+				data[subset, col],
+				data[subset, 'other_treatments']
+			)
+		}
+	}
+	
+	# None are vetted yet
+	data$is_vetted <- FALSE
+		
+	# Compose study id
+	data$study.id <- sub('\\-[0-9]*$', '', data$group.id)
+	
+	# Age
+	data$age.at.treatment <- data$age.at.treatment.1
+	data$assignment.age <- data$age.at.treatment
+	
+	# Cluster 
+	# by group, other treatments, and species
+	# *note some of these will be wrong, they can be
+	#  corrected during the close pass
+	data <- ddply(data, .(file), function(df){
+		n <- as.numeric(as.factor(paste(
+			df$other_treatments,
+			df$species
+		)))
+		df$cluster <- paste0(df$study.id, '-', n)
+		df
+	})
+
+	saveRDS(data, '../data/external3.rds')
+
+# Results
+# 
+# We have a new file, better than ever (hopefully)
+
+###################################################################
+#
+# No Multiple Treatments
+# 8 March 2013
+#
+# I checked to be sure that multiple treatments actually recieved
+# multiple treatments, but I didn't check to be sure that single
+# treatments didn't actually recieve multiple treatments.  I will
+# do that now.
+
+	# Libraries
+	library(plyr)
+
+	# Data
+	setwd('~/janus/scripts')
+	data <- readRDS('../data/external3.rds')
+	
+	# Helpers
+	clean <- function(s) gsub('[^0-9A-Za-z,._ -]', '', s)
+	truncate <- function(s) substr(s, 1, 15)
+
+	# cache some
+	groups <- data$group.id
+	file <- data$file
+	
+	# Clean for printing
+	data$strain <- sub("^[^,]*, ", "", data$strain)
+	data <- data.frame(llply(data, clean))
+	data <- data.frame(llply(data, truncate))
+	data <- data.frame(llply(data, as.character), stringsAsFactors=F)
+	data$group.id <- groups
+	data$file <- file
+	
+	
+	# Group Summary
+	data <- ddply(data, .(file), function(df){
+		df$none <- all(is.na(df$treatment.2))
+		df
+	})
+	single_treatments <- unique(data$file[data$none])
+	
+	cat(paste(single_treatments, '\n'))
+		
+	
+# Results
+# Looking good, no problems to report.
 
 
 
-## A really natural question to ask, perhaps to Gayle or Dave Grdina is how accurate they think these dose assessments are likely to be, especially in light of the reproted variation in group 2-12-41 where they say doses are between 1.5 and 3.5 Gy.  What a huge range.  Could they really be this unsure of the total dose?
-## Read all the descriptions for studies I am including.  Look up any words that I do not already know.
-## Why are some groups missing from the ERA?  Is there any systematic bias in the groups that are missing.  Maybe ask the ERA this.
-## I need to spot check these results against original papers to see if I can find additional errors.
-## All need to be checked to ensure that the age for controls matches the age for the animals they were used as control for.  The point here is that control animals were not likely to have been picked from birth.  Rather they probably entered the study at the same age as the other animals.
-## Tell era that they need to remove newlines
-## All - I've been looking for something that will clearly define what 'mean after survival' means.  The best I have found is an old Grahn paper that says 'The mean after-survival from the start of daily exposure is the endpoint statistic'.  I take that to mean that they are measuring days lived after the initiation of treatment. - (Grahn 1962 - http://www.osti.gov/energycitations/product.biblio.jsp?osti_id=4635223)
-## Tell era that 18.1, 19.2, 19.4-19.7, and 9.9 are missing the tag "No individual level data" in their csvs.
-## Add details to dog studies 1003.51, 1003.52, 1003.54, 1003.55, 1003.6, 1003.7, 1005.47 these might need to be removed completely
-## Cross reference janus materials against these
-## Add material from janus not in here
-## All be sure to record what was added before integrating new data so that I know to double check it.
+
+
+###################################################################
+#
+# Merge in Janus
+# 8 March 2013
+#
+# The Janus mouse records are more complete than the ones available
+# from the ERA.  I will drop their records and add our own.
+
+	# Libraries
+	library(plyr)
+
+	# Data
+	setwd('~/janus/scripts')
+	data <- readRDS('../data/external3.rds')
+	janus <- read.csv('~/Downloads/demographics.csv', skip=1)
+	
+	# Constants
+	era_janus_study_id <- '1003'
+		
+	# Make names compatiable
+	names(janus) <- c(
+		'id',
+		'necroscopy_date',
+		'necrosopy_proctor',
+		'lifespan',
+		'cause_of_death',
+		'autopsy_type',
+		'has_micro',
+		'sex',
+		'species',
+		'study.id',	
+		'tmt',
+		'remarks',
+		'age.at.treatment',
+		'dose',
+		'quality',
+		'was_control_mock_treated',
+		'fractions',
+		'fraction_time',
+		'dose_rate'
+	)
+	
+	# Remove some
+	to_remove <- c(
+		'necroscopy_date',
+		'necrosopy_proctor',
+		'autopsy_type',
+		'has_micro',
+		'tmt',
+		'was_control_mock_treated'	
+	)
+	janus <- janus[,! names(janus) %in% to_remove]
+	
+	# Helper
+	recode_factor <- function(x, before, after){
+		x <- as.character(x)
+		x[x == before] <- after
+		as.factor(x)
+	}
+	
+	# Recode sex
+	janus$sex <- recode_factor(janus$sex, 'F', 'Female')
+	janus$sex <- recode_factor(janus$sex, 'M', 'Male')
+
+	# Recode species
+	janus$species <- recode_factor(
+		janus$species, 
+		'Mus musculus', 
+		'Mouse'
+	)
+	janus$species <- recode_factor(
+		janus$species, 
+		'Peromyscus leucopus', 
+		'Peromyscus'
+	)
+		
+	# Recode studies
+	cached_study.id <- janus$study.id
+	janus$study.id <- recode_factor(janus$study.id, '2', '1003-20')
+	janus$study.id <- recode_factor(janus$study.id, '3', '1003-21')
+	janus$study.id <- recode_factor(janus$study.id, '4', '1003-22')
+	janus$study.id <- recode_factor(janus$study.id, '7', '1003-24')
+	janus$study.id <- recode_factor(janus$study.id, '8', '1003-25')
+	janus$study.id <- recode_factor(janus$study.id, '9', '1003-26')
+	janus$study.id <- recode_factor(janus$study.id, '10','1003-27')
+	janus$study.id <- recode_factor(janus$study.id, '11','1003-xx')
+	janus$study.id <- recode_factor(janus$study.id, '12','1003-28')
+	janus$study.id <- recode_factor(janus$study.id, '13','1003-29')
+	janus$study.id <- recode_factor(janus$study.id, '14','1003-30')
+	
+	# recode quality
+	janus$quality <- recode_factor(
+		janus$quality, 
+		'G', 
+		'gamma-rays whole body'
+	)
+	janus$quality <- recode_factor(
+		janus$quality, 
+		'N', 
+		'neutrons fission'
+	)
+	janus$quality <- recode_factor(
+		janus$quality, 
+		'C', 
+		NA
+	)
+	    		
+	# add
+	janus$is_vetted <- F
+	janus$unit <- 'grays'
+	janus$assignment_age <- janus$age.at.treatment
+	janus$group.id <- paste0(janus$study.id, '-', cached_study.id)
+	janus$cluster <- paste0(janus$study.id, '-', 1)
+	janus$strain <- 'Mouse, B6CF1'
+	janus$strain[janus$species == 'Peromyscus'] <- 'leucopus'
+	
+	#   strain (based on species)
+	# 	group.id <- study.id + cached_study.id 
+	
+	
+	# Remove Janus from era
+	jdata <- grepl('1003.2', data$study.id)
+	data <- data[!jdata,]
+	
+	# Add Real Janus
+	data <- merge(data, janus, all=T)
+
+	# Save
+	saveRDS(data, '../data/external4.rds')
+
+	
+# Results
+# Janus is merged (fingers crossed)
+
+
+###########################################################
+# 
+# Outside Litarture
+#
+# The time is ripe to solve the problems I have found, 
+# consult the outside literature to arbitrate, fill in 
+# missing values.
+#
+# Its a complex process.  I will list the steps I can 
+# anticipate with the expectation that I will expand this
+# list.
+#
+# For each file:
+#	Check for noted problems
+# 	Check for NAs
+# 	Resolve these problems and NAs using the cited literature
+#	check cluster assignments
+# 	check that the age of assignment to control conditions is correct
+
+	# Libraries
+	library(plyr)
+
+	# Data
+	setwd('~/janus/scripts')
+	data <- readRDS('../data/external4.rds')
+	
+	
+	# Helpers
+	show_groups <- function(group.id, verbose=F){
+		
+		of_interest <- c(
+			'study.id',
+			'group.id',
+			'id',
+			'lifespan',
+			'species',
+			'strain',
+			'sex',
+			'cluster',
+			'application.1',
+			'quality',
+			'unit',
+			'dose',
+			'dose_rate',
+			'fractions',
+			'fraction_time',
+			'age.at.treatment',
+			'fraction_interval',
+			'assignment.age',
+			'lifestage.at.treatment',
+			'is_vetted',
+			'other_treatments',
+			'remarks',
+			'group.name',
+			'endpoints'
+		)
+		
+		# Verbose Variables
+		verbose_vars <- c('id', 'lifespan')
+		
+		# clean a little
+		subset <- data[data$study.id == group.id,of_interest]
+		
+		if(verbose){
+			subset$id <- sub('^[0-9]*.[0-9]*.[0-9]*.', '', subset$id)
+			subset$id <- as.numeric(subset$id)			
+		} else {
+			subset <- subset[!names(subset) %in% verbose_vars]
+		}
+		
+		temp <- dlply(subset, .(group.id), function(df){
+			cat('\n', df$group.id[1], '\n')
+			spacer = rep('\t', 7)
+			n = nrow(df)
+			cat('\t', 'n', spacer, n, '\n', sep='', collapse='')
+			for(i in 1:ncol(df)){
+				col <- df[,i]
+				u <- unique(paste(col))
+				name <- names(df)[i]
+				tabs <- max(ceiling(7 - (nchar(name)+1)/3), 1)
+				spacer <- rep('\t', tabs)
+				cat('\t', name, spacer, u, '\n', sep='', collapse='')
+			}
+		})
+		
+	}
+	
+
+	# Start with one
+	show_groups('9-6')
+	
+	### Develop concordance ###
+	
+	## concordance 9-6 C57bl/Cnb mice are a substrain of C57bl.  I cannot find much information on this particular substrain, but it is interesting to note that C57bl mice are the most common mice in use (specifically C57bl/6 mice) and are a little odd as mice go.  They like alcohol, don't like climbing stairs, and are quicker to go after food than other mice.  They've been called the alcoholic couch potatoe of mice. http://www.informatics.jax.org/external/festing/mouse/docs/C57BL.shtml
+	## concordance 9-6 SCK/CEN is the studiecentrum voor kernerergie (dutch) or the Center d'Etude l'energie Nucleair, a belgian facility with 600 employees that studies many aspects of radiation especially relevant to the construction and maintainance of power facilities.
+	## ERAD is the european radiobiology archive database, is a disk that was used to populate the ERA, originally held by GERBER. http://bit.ly/X0SqRU
+	## thorax, the part of the body between the neck and the abdomen.  From a greek work for chest
+	## deuteron, one proton and one neutron, a heavy hydrogen stripped of its electrons.  Notably it is believed that all deuterium is a product of the big bang as opposed to a star product.
+	## berilium can be used as a target shooting off neutrons when hit with gamma or alpha radiation.  http://en.wikipedia.org/wiki/Beryllium
+	## EULEP is the European Late Effects Project, presumabably to study the long term effects of radiation exposure.  They seem to have run out of funding round about 1995.  http://www.euradnews.org/storyfiles/130125.0.eulep_news_may_2005.pdf
+	## Late Effect, as supposed a late effect is one which arrives long after the acute effect, could be weeks, could be decades.  http://en.wikipedia.org/wiki/Late_effect
+	## An ionization chamber is a simple device used to measure radiation doses.  It consists of two opposingly charged plates or a wire surrounded by a cylindrical plate.  Ionizing events caused by incident radiation cause ionized particles to move to the charged elements inducing a current opposite to the charge of the plate which can be used to effectively measure the number of ioninzing events of the incident radiation.  However, it is not possible to understand the energetic characteristics of these events, the speed and concentration of the resulting particles.  Interestingly ionization chambers are also the principal that smoke detectors use, they have a constant radaition source which creates an ionization current but when smoke enters the chamber, it absorbs these ions and the alarm is signaled.
+	## Shonka tissue equiviliant ion chambers are specially designed with plastic and gas that mimics the atomic composition of living tissues.  This makes them ideal insturments to measure the absorbed doses in living tissues.  They are used for neutron and proton radiation, though I'm not sure why the same concerns do not apply to gamma irradaition?  http://www.orau.org/ptp/collection/ionchamber/shonkatissueequivalent.htm
+	## The thymus is a specialized imune organ located in the middle of the lungs that produces immune cells.
+	## Deterministic effects of radiation exposure occur only after some threshold exposure has been reached.  This would include sepsis which depends on a high enough dose to inactive the immune system which will recover if the dose is sufficiently low.  Or late effects of extensive lung damage.  http://www.imagewisely.org/Imaging-Professionals/Imaging-Physicians/Articles/Ionizing-Radiation-Effects-and-Their-Risk-to-Humans
+	## Sarcomas are tumors that arrise in connective tissues, like bone or cartilige, as opposed to epithelial tissues like the breast or skin.  These are rare in humans, presumbably because connective tissue multiplies much slower than epithelial tissues.
+	## Fast Neutrons, as opposed to thermal neutrons, have high individual energies.  Their energy is typically above 1 MeV.  By contrast fission neutrons which are released from atomic decay have mean energies less than 2 MeV.
+	## Penumbra is the space around a radiation target that recieves partial irraidaiton (20-80% ? whatever that means) it derives from the penumbra of an eclipse, the area of light that shines around the eclipsing body, it is defined as being fully sheilded from parts of the source and fully exposed to other parts giving it a partial total exposure.  
+	## A perspex cage is a transparent cage made of perspex plastic, an alternative to glass.
+	## Collimated refers to the process of making light parallel as is done for example with a laser.  
+	## isodose, the areas of an exposure which recieve equal doses
+	## fluence, the number of particles that pass through an area in a fixed unit of time.  For examples if 15 particles pass through 1 square meter over the time interval, fluence is 15 / m^2.  Fluence can also be considered in a volume where particles have a path length.  If their are 100 particples and the average path length of a given particle is 0.1 m in a meter cubed box over a given interval then the fluence is 100*0.1 m / 1 m^3 = 10 / m^2 that is, in any given square meter within the box we would expect 10 particles to pass through us. (this may only work at the limit of small, not sure).  http://en.wikipedia.org/wiki/Fluence
+	## Specific energy is the energy per unit mass.  For example, radiation doses are usually measured in Grays which represent one Joule absorbed per kilogram of mass.  However, as the mass is reduced (or volume equivilantly) the specific energy may become non-uniform.  For example neutrons produce a specific energy that is bi-modal at small scales (the size of cells for instance) such that some cell masses have high specific energy and others have essentially no specific energy.  By contrast gamma irradiation is more distributed.  http://en.wikipedia.org/wiki/Specific_energy
+	## Gamma vs Neutron, gamma radiation produces a more evenly distributed dose even when the total dose and energy per particle is the same as a neutron dose.  The reason is because gamma irradiation kicks off electrons which have a long path length, where Neutron irradiation kicks off protons which have a short path length. http://link.springer.com/article/10.1007%2FBF01323118?LI=true#page-6
+	## A secondary electron or delta electron is simply the electrons farther down the chain of some primary, high energy electron which caused a domino effect.  Some make the cutoff as those electrons with less than < 50 eV.  For reference, the ionization energy for the first electron of most biological molecules is somewhere between 5 and 10 eV.  So at minimum a primary electron should cause 5 ionization events, usually many more.
+	## Saturation effects.  It is possible that extremely high energy Neutrons will cause so much localized damage that they saturate the system, meaning that additional dose has no effect.  This is a good reason to include specific indicators of modal energy in these studies.
+	## Microdosimetry, the study of the distribution of dose in very small volumes of tissues.  This study is what has lead to the theory of dual action.  A good review is here http://link.springer.com/article/10.1007%2FBF01323118?LI=true#page-11
+	## Theory of Dual action, the belief that two sublesions must combine to form a lesion capable of damaging the cell, leading to death or promoting cancer.  The main evidence for this is the study of microdosimitry which shows that as events that might cause the smallest possible damage (a sublesion) are spread in space, the chance for biologically measurable damage (a lesion) gets smaller.  For instance comparing Neutron and Gamma irradiation.  http://link.springer.com/article/10.1007%2FBF01323118?LI=true#page-11
+	## Supposedly C57Bl Cnb mice have a 'lower spontaneous cancer incidence, particularly with respect to thymic lymphomas and lung cancer'.  I never found a good source that attests to this outside of the paper.  I suppose they are right, but I'm not sure to what degree.  Also I would guess this is not important for lifespan effects, but who knows?
+	## (F58) in a species name refers to the 'filial generations' that is how many inbred matings have been performed since the original two purebred strains were mated.
+	## Louvain-la Neuve holds the cyclotron used to bombard a beryillium target with deuterons in order to emit Neutron irradiation.  The city is a planned one, it was where the french speaking portion of the Catholic University of Leuven moved after disputes between french and flemish speakers came to a head in the 1960s.  The area is very much a university town and has an annual 24 hour bike ride in which students decorate bikes, get drunk and have a good old time.  I should like to attend some day.  http://en.wikipedia.org/wiki/Louvain-la-Neuve
+	## Specific pathogen free mice are those which are garunteed to be free of some given pathogen.  http://en.wikipedia.org/wiki/Specific_Pathogen_Free.  Interestingly these mice are more susceptiable to disease when exposed which is noted in this paper http://www.jstor.org/stable/pdfplus/3577205.pdf?acceptTC=true
+	## Corrected for competing risks is a technique that would be used when we are looking at the lifespan effects of radiation on a given disease.  For example if you were looking at the effects of radiation on Leukemia it is necessary to say that animals that left the study by dying of something other than leukemia 'left the study' so we would only focus on the surviving population and the incidence of leukemia within it.  This idea has important implications when we think about the effects of radiation exposure.  If an animal is in a high risk environment, say a war zone then its risk from radiation might be limited because it will be masked by the danger inherent in a war zone.  
+	## UNSCEAR the united nations scientific comittee on the effects of atomic radiation is a group established in the 1950s to measure the level of exposure to radaition of human populations.  They now also attempt to estimate the effects of that exposure.
+	## The most important point of the ??? studies to me is that these Berillium produced Neutrons have an RBE about equivilant to gamma irradiation.  I assume this is because their damage is so concentrated that its redundant (~10x too concentrated) the equivilant of launching a gernade at a sqirrel when a bb gun would do.
+	
+	
+	### Fix problems ###
+	
+	## 9-6-2 to 16 are listed as X-ray exposures in the data but as Gamma ray exposures in the descriptions.  RESOLVED - description is accurate, data is wrong.  I know because Maisin et al. 1988 refers to gamma rays.  http://www.jstor.org/stable/pdfplus/3577205.pdf?acceptTC=true.
+	data[
+		data$study.id == '9-6' & 
+		data$quality == 'X-rays whole body',
+		'quality'
+	] <- 'gamma-rays Co-60'
+	table(data[data$study.id == '9-6', c('dose', 'quality')])
+	
+	## 9-6-19 is listed as 0.18 Gy in the data and 0.54 Gy in the table. I'd be inclined to trust the table.  RESOLVED - description is accurate, data is wrong, I am confident because 9-6-19 has a n of 210 and Maisin et al. 1988 pg 305 Table IV lists a group with 210 animals that recieved a dose of 0.54 Gy.  http://www.jstor.org/stable/pdfplus/3577205.pdf?acceptTC=true.  Also the group name for 9-6-19 in the data indicates that it recieved 0.54 Gy.
+	data[
+		data$group.id == '9-6-19',
+		'dose'
+	] <- 0.54	
+	table(data[data$study.id == '9-6', c('dose', 'group.id')])
+	
+	## 9-6-22 is listed as having 96 mice in the description, but has 196 mice in the data.  RESOLVED data is correct, description is wrong.  I am confident because the group listed in Table V of Maisin et al 1988 had 196 mice as the data lists.  http://www.jstor.org/stable/pdfplus/3577205.pdf?acceptTC=true
+	# no action needed
+
+	## 9-6-25 to 27 seem to be exposures just to the thorax, these are indicated as external exposures in the data.  RESOLVED the description is correct the data is wrong.  I am confident because Table VI of Maisin et al 1988 includes groups with the same number of mice as groups 25 to 27 and is a table of thorax exposures.  http://www.jstor.org/stable/pdfplus/3577205.pdf?acceptTC=true
+	data[
+		data$group.id %in% c('9-6-25','9-6-26','9-6-27'),
+		'application.1'
+	] <- 'External exposure local'
+	table(data[data$study.id == '9-6', c('group.id', 'application.1')])
+	
+
+	### Resolve NAs ###
+
+	# 9-6-1 is a control, has no dose, and has a dose rate of NA
+	# I can update for all cases like this
+	data[
+		data$dose == 0 &
+		!is.na(data$dose) &
+		is.na(data$dose_rate),
+		'dose_rate'
+	] <- 0
+	
+	# 9-6-1 has NA values for fractions, but this can safely be 
+	# called 0 because the animal was not irradiated or mock 
+	# irradiated.  The other fractional values, fraction_time and
+	# fraction_interval may remain NA since they don't make sense
+	# when no fractions were delivered.
+	data[
+		data$group.id == '9-6-1',
+		'fractions'
+	] <- 0
+	table(data[data$study.id == '9-6', c('fractions', 'group.id')], useNA='ifany')
+
+	# 9-6-1 has NA values for other treatments.  This can be
+	# updated in all cases to None
+	
+	data[
+		is.na(data$other_treatments),
+		'other_treatments'
+	] <- 'none'
+	sum(is.na(data$other_treatments))
+	
+	# 9-6 dose rates were consistent across treatment mode
+	# Maisin et al 1988 lists a dose rate of 0.3 Gy/min for Gamma
+	# treatment, but I cannot find the dose rate of neutron exposure
+	# nor can I access the original sources which list these values
+	# so I am afraid I must leave them as they are.
+	data[
+		data$study.id == '9-6' & 
+		data$quality == 'gamma-rays Co-60',
+		'dose_rate'
+	] <- 0.3
+	table(data[data$study.id == '9-6', c('quality', 'dose_rate')], useNA='ifany')	
+	
+	
+	# 9-6 fractions differ by several study groups
+	# I define them here and use them to fill in fractions
+	# fraction_time, and fraction_interval
+	gamma_1 <- c('9-6-2', '9-6-3', '9-6-4', '9-6-5', 
+				 '9-6-6', '9-6-7')
+	gamma_8 <- c('9-6-14', '9-6-15', '9-6-16')
+	gamma_10 <- c('9-6-8', '9-6-9', '9-6-10', '9-6-11',
+				  '9-6-12', '9-6-13')
+	neutron_1 <- c('9-6-17', '9-6-18', '9-6-19', '9-6-20',
+				   '9-6-21')
+	neutron_8 <- c('9-6-22', '9-6-23', '9-6-24')
+	neutron_thorax <- c('9-6-25', '9-6-26', '9-6-27')
+	
+	temp <- function(data, groups, fractions, fraction_interval){
+		subset <- data$group.id %in% groups
+		data[subset, 'fractions'] <- fractions
+		data[subset, 'fraction_interval'] <- fraction_interval
+		data
+	}
+	
+	data <- temp(data, gamma_1, 1, NA)
+	data <- temp(data, gamma_8, 8, 60*3)
+	data <- temp(data, gamma_10, 10, 60*24)
+	data <- temp(data, neutron_1, 1, NA)
+	data <- temp(data, neutron_8, 8, 60*8)
+	data <- temp(data, neutron_thorax, 1, NA)
+
+	table(data[data$study.id == '9-6', c('fractions', 'group.id')], useNA='ifany')	
+	table(data[data$study.id == '9-6', c('fraction_interval', 'group.id')], useNA='ifany')	
+	
+	# 9-6 checked mean lifespans, these check out, standard error
+	# in lifespan, however, I cannot reproduced!
+	
+	
+	### Add more data ###
+	
+	# source 
+	# (from http://www.jstor.org/stable/pdfplus/3577205.pdf)
+	data$source <- NA
+	data[
+		data$study.id == '9-6' &
+		data$quality == 'gamma-rays Co-60',
+		'source'
+	] <- 'Cs137'
+	data[
+		data$study.id == '9-6' &
+		data$quality == 'neutrons>10 MeV',
+		'source'
+	] <- 'd(50)+Be'
+	
+	table(data[data$study.id == '9-6', c('group.id', 'source')], useNA='ifany')	
+	
+	# modal energy (MeV)
+	# from (https://era.bfs.de/studies_description_from_db.php?LabId=9&StudyId=6)
+	data$modal_energy <- NA
+	data[
+		data$study.id == '9-6' &
+		data$quality == 'neutrons>10 MeV',
+		'modal_energy'
+	] <- 23
+	table(data[data$study.id == '9-6', c('group.id', 'modal_energy')], useNA='ifany')	
+	
+	# gamma contamination (fraction)
+	# from http://www.jstor.org/stable/pdfplus/3577205.pdf?acceptTC=true
+	data$gamma_contamination <- NA
+	data[
+		data$study.id == '9-6' &
+		data$quality == 'neutrons>10 MeV',
+		'gamma_contamination'
+	] <- 0.07
+	table(data[data$study.id == '9-6', c('group.id', 'gamma_contamination')], useNA='ifany')	
+	# gamma contamination (fraction)
+	# from http://www.jstor.org/stable/pdfplus/3577205.pdf?acceptTC=true
+	data$gamma_contamination <- NA
+	data[
+		data$study.id == '9-6' &
+		data$quality == 'neutrons>10 MeV',
+		'gamma_contamination'
+	] <- 0.07
+	table(data[data$study.id == '9-6', c('group.id', 'gamma_contamination')], useNA='ifany')
+
+	# radiation protocol
+	# from https://era.bfs.de/studies_description_from_db.php?LabId=9&StudyId=6
+	data$radiation_protocol <- NA
+	data[
+		data$study.id == '9-6' &
+		data$quality == 'gamma-rays Co-60',
+		'radiation_protocol'
+	] <- 'EULEP'
+	table(data[data$study.id == '9-6', c('group.id', 'radiation_protocol')], useNA='ifany')
+
+	# radiation assessment
+	# from https://era.bfs.de/studies_description_from_db.php?LabId=9&StudyId=6
+	data$radiation_assessment <- NA
+	data[
+		data$study.id == '9-6' &
+		data$quality == 'gamma-rays Co-60',
+		'radiation_assessment'
+	] <- 'ionization chamber'
+	table(data[data$study.id == '9-6', c('group.id', 'radiation_assessment')], useNA='ifany')
+	data[
+		data$study.id == '9-6' &
+		data$quality == 'neutrons>10 MeV',
+		'radiation_assessment'
+	] <- 'Shonka plastic A150 Te'
+	table(data[data$study.id == '9-6', c('group.id', 'radiation_assessment')], useNA='ifany')
+	
+	# radiation cage 
+	# from http://www.jstor.org/stable/pdfplus/3577205.pdf
+	data$radiation_cage <- NA
+	data[
+		data$study.id == '9-6',
+		'radiation_cage'
+	] <- 'perspex cage'
+	table(data[data$study.id == '9-6', c('group.id', 'radiation_cage')], useNA='ifany')
+
+	# specific pathogen free? 
+	# from http://www.jstor.org/stable/pdfplus/3577205.pdf
+	data$specific_pathogen_free <- NA
+	data[
+		data$study.id == '9-6',
+		'specific_pathogen_free'
+	] <- TRUE
+	table(data[data$study.id == '9-6', c('group.id', 'specific_pathogen_free')], useNA='ifany')
+	
+	# Mock irraited?
+	# extrapolated from lack of mention in 
+	# http://www.jstor.org/stable/pdfplus/3577205.pdf
+	data$mock_irradiated <- NA
+	data[
+		data$study.id == '9-6' &
+		data$quality == 'none (controls)',
+		'mock_irradiated'
+	] <- FALSE
+	table(data[data$study.id == '9-6', c('group.id', 'mock_irradiated')], useNA='ifany')
+	
+	# Animals per cage
+	# from http://www.jstor.org/stable/pdfplus/3577205.pdf
+	data$animal_per_cage <- NA
+	data[
+		data$study.id == '9-6',
+		'animal_per_cage'
+	] <- 2
+	table(data[data$study.id == '9-6', c('group.id', 'animal_per_cage')], useNA='ifany')
+
+	### Vet it ###
+	data[
+		data$study.id == '9-6',
+		'is_vetted'
+	] <- TRUE
+	table(data[data$study.id == '9-6', c('group.id', 'is_vetted')], useNA='ifany')
+		
+
+
+
+
+	#### Start with one ####
+	study = '9-8'
+	show_groups(study)
+	
+	# *note this study involved only abdomen exposures, which I
+	# discovered while working on it.  I will cease efforst and
+	# set to dump to true for the rest of the study
+	
+	data$to_dump <- NA
+	data$to_dump[data$study.id == study] <- TRUE
+	
+	### Develop concordance ###
+
+## UCL Brussels is the University Catholique de Louvain, belgian's largest French speaking University.
+## Leuven a Belgian city only 25 km from Brussels, notable for its university and as the headquarters of Anheuser-Busch InBev and production center of Stella Artois.
+		
+				
+		
+		
+		
+		
+	 #### Start with one ####
+	 study = '9-5'
+	show_groups(study)
+	
+	### Develop concordance ###
+
+## BALB/c/CNB.  I can't actually find anything on the CNB substrain. I am going to assume that a paper will mention if the CNB denotes something particularly meaningful from a radiation resistance angle.  But BALB/c is an interesting mouse.  For one it produces lots of plasmacytomas, that is a malignant response, to mineral oil injection which somehow helps in the production of mono-clonal antibodies.  They are also rather resistant to mammary tumours but have extra trouble with lung tumors and renal tumors.
+## Positron is an electron anti-particle.  It has the same mass an an electron, but the opposite charge.  It was discovered in cloud chambers when observing particles that behaved like electrons but moved the opposite direction under the influence of a magnetic feild.  When an electron collides with a positron they may annihilate one anotherand produce at least two gamma rays.  However, they might simple bounce off one another in an elastic collision.  http://en.wikipedia.org/wiki/Electron%E2%80%93positron_annihilation
+## Beta-decay involved the emision of a positron or electron is emitted from an atomic nucleus.  In the case of an electron emission, B-, some neutron in the atomic center becomes a proton and the atomic number increases (though the atomic mass remains the same).  In the case of a positron emmission a proton becomes a neutron and the atomic number decreases.
+## CS-137 is a fission product of the nuclear fission of uranium-235.  It has a have life of about 30 years.  It decays by B- emission, releasing an electron and moving it up the atomic scale to Berillium 137 which is highly unstable and releases gamma radiation.  The most interesting factoid about CS-137 is that it has not existed on earth until the launch of the first atomic bombs which sprayed it into the atmosphere.  Now trace amount of CS-137 contaminate the atmosphere making it possible detect if the contents of containers were sealed from the external environment since the bomb blast.  For example we can see if supposed Jeffersonian wine was actually bottled in Jeffersons time.  source: http://en.wikipedia.org/wiki/Caesium-137
+## Gy - a unit, notably the LD50 to humans is about 3-6 Gy of ionizing radiation.  With medical intervention LD50 increases to 5-10 Gy.  http://en.wikipedia.org/wiki/Median_lethal_dose
+## Paraffin Wax, a long chain hydrocarbon with a flexible melting point either a little above or below room temperature.  Useful because it is resistant to chemical reactions, but can be burned readily.  Its produced when refining oils and is notable amoung other things for its use as a heat sink.  It captures heat by melting (without changing temperature) and releases it on solidifying.  This has been employed in drywall and cooling the electronic of the Lunar Rover.  The wax expansion on melting can also be used to build functional thermostats.  http://en.wikipedia.org/wiki/Wax_thermostatic_element
+## Deterministic effects are those that kill above a certain dose threshold, for example the threshold necessary to induce immune system death.  
+## Lucite is another name for plexiglas
+## Sarcoma is a tumor of the connective tissues, it shares an etymological origin with sarcasm which means literally to tear away flesh.
+## Adenoma is a benign tumor originating in a gland, if it becomes maligant it is termed an adenocarcinoma
+## Edema refers to swelling due to liquid accumulation.  The origins of the word come from the same as Oedipus, which refers to a swollen foot.
+## Glomerulosclerosis is a disease of in which the glomeruli of the kidneys harden, detectable by increased levels of protein in the blood, it is often fatal.  
+## Intersticial nephritis is the swelling of areas around the tubules in the kidneys, it has many causes, usually diseases or infection. 
+## beam homogeneity is an important concept, apparently a beam of radiation just like a beam of light can vary in intensity and the researchers have to be wary of this.  That can be an important source of study to study variation.
+## TE - tissue equivilant
+## TE gas - a tissue equivilant gas contains the same portions of hydrogen, nitrogen, carbon, and oxygen as living tissues do.  This can be achieved with N2, O2, H2, and some cabon based gas like methane, ethane, or propane. 
+## Telecobalt beam seems to refer to external radiation from a cobalt source (as opposed to internal radiation).  It is generally replaced by accelerated particles in the developed world which achieve a higher beam energy, but is still widely used in developing countries because cobalt beams are cheaper than their alternative.
+## CEA Fontenay-aux roses refers to France's Commission for Atomic Energy (and energy alternatives) which is the equivilant of the Department of Energy in America and funds research into energy production.  Fontenay-aux-roses is a suburb 5km south of Paris, site of a fort pre world war II that was converted into a nuclear energy research center.
+		
+	### Fix problems ###
+	
+	## They say that mice surviving more than 30 days were utalized.  Does this mean the mice that died earlier were simply discareded?  I should check for deaths within 30 days of irradiation.  http://www.jstor.org/stable/pdfplus/3575971.pdf.  RESOLVED I think all mice are in the data I have.  I see mice that die as early as 30 days old in the dataset and do not see significant differences between groups.  
+	quantile(data$lifespan[data$study.id == study], probs=(0:100)/100)
+	ggplot(data[data$study.id == study,],
+		aes(x=group.id, y=lifespan, color=group.id)
+	) + 
+	geom_boxplot()
+	
+
+	## 9-5 are listed as strain C57/BL6Bd in the data and as BALB/c/Cnb in the description. RESOLVED.  Description is correct, data is wrong.  source http://www.jstor.org/stable/pdfplus/3575970.pdf?acceptTC=true
+	data[
+		data$study.id == study,
+		'strain'
+	] <- 'BALB/c/Cnb'
+	table(data[data$study.id == study, c('strain')])
+
+	## 9-5-1 to 13 claim are listed as X-rays in the data and Gamma rays in the study description.  RESOLVED, description is accurate, data is wrong.  See http://www.jstor.org/stable/pdfplus/3575970.pdf?acceptTC=true
+	of_interest <- 'quality'
+	table(data[,of_interest])
+	data[
+		data$study.id == study &
+		data$quality == 'X-rays whole body',
+		of_interest
+	] <- 'gamma-rays Co-60'
+	table(data[data$study.id == study, c(of_interest)])
+
+	## 9-5-14 is missing its group id in the description table (small detail).  RESOLVED, self evident.
+	## 9-5-17 is missing from the description.  RESOLVED, self evident.
+
+
+	### Check mean lifespans ### 
+	
+	subset <- data[data$study.id == study,]
+	result <- ddply(subset, .(group.id), function(df){
+		n <- nrow(df)
+		c(
+			n=n,
+			u=round(mean(df$lifespan)),
+			se=round(sd(df$lifespan)/n^0.5)
+		)
+	})
+	result[order(as.numeric(sub(".*-.*-", "", result$group.id))),]
+
+	## 9-5-2 has a different mean lifespan in my data (738) than in table 1 of Maisin (743).  http://www.jstor.org/stable/pdfplus/3575970.pdf?acceptTC=true
+	## 9-5-10 has a different mean lifespan in my data (739) than in table 1. of Maisin (747).  http://www.jstor.org/stable/pdfplus/3575970.pdf?acceptTC=true
+	## 9-5-19 has a different mean lifespan in my data (598) than in table 1. of Maisin II (605).  http://www.jstor.org/stable/pdfplus/3575971.pdf
+	
+	# I seem small discrepiancies of less than 10 days in 3 of the
+	# 19 groups.  The rest check out completely.  I am inclined to 
+	# let these discrepiances slide.
+	
+	# Notably, I could not reproduce the standard error calculation
+	# again!
+	
+	### Define Treatment Groups ###
+	control  <- paste0(study, '-', 1)
+	gamma_1  <- paste0(study, '-', 2:7)
+	gamma_10 <- paste0(study, '-', 8:13)
+	neutron_1<- paste0(study, '-', 14:19)
+
+	### Resolve NAs ###
+	
+ 	# 9-5-1 is a control, has a dose of NA
+	# I can update for all cases like this
+	data[
+		!is.na(data$quality) &
+		data$quality == 'none (controls)' &
+		is.na(data$dose),
+		'dose'
+	] <- 0
+	
+	# study dose rates were consistent across treatment mode
+	# Maisin et al 1983 lists the dose rates as 4 Gy/min for
+	# gamma radiation.  http://www.jstor.org/stable/pdfplus/3575970.pdf?acceptTC=true
+	# Maisin et al 1983 II lists the dose rates as 3 Gy/min
+	# for neutron irraddiation.  http://www.jstor.org/stable/pdfplus/3575971.pdf
+	
+	data[
+		data$study.id == study & 
+		data$quality == 'gamma-rays Co-60',
+		'dose_rate'
+	] <- 4
+	data[
+		data$study.id == study & 
+		data$quality == 'neutrons>10 MeV',
+		'dose_rate'
+	] <- 3
+	table(data[data$study.id == study, c('quality', 'dose_rate')], useNA='ifany')	
+	
+	# study fractions differ by several study groups
+	# I define them here and use them to fill in fractions
+	# fraction_time, and fraction_interval	
+	temp <- function(data, groups, fractions, fraction_interval){
+		subset <- data$group.id %in% groups
+		data[subset, 'fractions'] <- fractions
+		data[subset, 'fraction_interval'] <- fraction_interval
+		data
+	}
+	data <- temp(data, gamma_1, 1, NA)
+	data <- temp(data, gamma_10, 10, 60*24)
+	data <- temp(data, neutron_1, 1, NA)
+
+	table(data[data$study.id == study, c('fractions', 'group.id')], useNA='ifany')	
+	table(data[data$study.id == study, c('fraction_interval', 'group.id')], useNA='ifany')	
+		
+	
+	### Add more data ###
+	
+	# source 
+	# from http://www.jstor.org/stable/pdfplus/3575970.pdf
+	# and http://www.jstor.org/stable/pdfplus/3575971.pdf
+	data[
+		data$study.id == study &
+		data$quality == 'gamma-rays Co-60',
+		'source'
+	] <- 'Cs137'
+	data[
+		data$study.id == study &
+		data$quality == 'neutrons>10 MeV',
+		'source'
+	] <- 'd(50)+Be'
+	
+	table(data[data$study.id == study, c('group.id', 'source')], useNA='ifany')	
+	
+	# modal energy (MeV)
+	# from http://www.jstor.org/stable/pdfplus/3575971.pdf
+	data[
+		data$study.id == study &
+		data$quality == 'neutrons>10 MeV',
+		'modal_energy'
+	] <- 23
+	table(data[data$study.id == study, c('group.id', 'modal_energy')], useNA='ifany')	
+	
+	# gamma contamination (fraction)
+	# from https://era.bfs.de/studies_description_from_db.php?LabId=9&StudyId=5
+	data[
+		data$study.id == study &
+		data$quality == 'neutrons>10 MeV',
+		'gamma_contamination'
+	] <- 0.05
+	table(data[data$study.id == study, c('group.id', 'gamma_contamination')], useNA='ifany')	
+	# radiation protocol
+	# from https://era.bfs.de/studies_description_from_db.php?LabId=9&StudyId=5
+	data[
+		data$study.id == study &
+		data$quality == 'gamma-rays Co-60',
+		'radiation_protocol'
+	] <- 'EULEP'
+	table(data[data$study.id == study, c('group.id', 'radiation_protocol')], useNA='ifany')
+
+	# radiation assessment
+	# from https://era.bfs.de/studies_description_from_db.php?LabId=9&StudyId=5
+	data[
+		data$study.id == study &
+		data$quality == 'gamma-rays Co-60',
+		'radiation_assessment'
+	] <- 'ionization chamber'
+	table(data[data$study.id == study, c('group.id', 'radiation_assessment')], useNA='ifany')
+	data[
+		data$study.id == study &
+		data$quality == 'neutrons>10 MeV',
+		'radiation_assessment'
+	] <- 'Shonka plastic A150 Te'
+	table(data[data$study.id == study, c('group.id', 'radiation_assessment')], useNA='ifany')
+	
+	# radiation cage 
+	# from http://www.jstor.org/stable/pdfplus/3575971.pdf
+	# and http://www.jstor.org/stable/pdfplus/3575970.pdf
+	data[
+		data$study.id == study &
+		data$quality == 'neutrons>10 MeV',
+		'radiation_cage'
+	] <- 'perspex cage'
+	data[
+		data$study.id == study &
+		data$quality == 'gamma-rays Co-60',
+		'radiation_cage'
+	] <- 'lucite cage'
+	table(data[data$study.id == study, c('group.id', 'radiation_cage')], useNA='ifany')
+
+	# specific pathogen free? 
+	# from http://www.jstor.org/stable/pdfplus/3577205.pdf
+	# in the study cited, which came after this one, they note
+	# the switch to pathogen free mice.  Therefore its safe to
+	# assume they were not using pathogen free mice at this point
+	#
+	# I also find no mention of the term in the other sources.
+	# from http://www.jstor.org/stable/pdfplus/3575971.pdf
+	# and http://www.jstor.org/stable/pdfplus/3575970.pdf
+	data[
+		data$study.id == study,
+		'specific_pathogen_free'
+	] <- FALSE
+	table(data[data$study.id == study, c('group.id', 'specific_pathogen_free')], useNA='ifany')
+	
+	# Mock irraited?
+	# we can assume they weren't, its not mentioned in either
+	# of the sources and the same controls were used for both
+	# neutron irradiated and gamma irradiated mice which were
+	# subject to different radiation protocols.
+	#
+	# from http://www.jstor.org/stable/pdfplus/3575971.pdf
+	# and http://www.jstor.org/stable/pdfplus/3575970.pdf
+	data[
+		data$study.id == study &
+		data$quality == 'none (controls)',
+		'mock_irradiated'
+	] <- FALSE
+	table(data[data$study.id == study, c('group.id', 'mock_irradiated')], useNA='ifany')
+	
+	# Animals per cage
+	# from http://www.jstor.org/stable/pdfplus/3575971.pdf
+	# and http://www.jstor.org/stable/pdfplus/3575970.pdf
+	data[
+		data$study.id == study,
+		'animal_per_cage'
+	] <- 2
+	table(data[data$study.id == study, c('group.id', 'animal_per_cage')], useNA='ifany')
+
+	## Vet it ###
+	data[
+		data$study.id == study,
+		'is_vetted'
+	] <- TRUE
+	table(data[data$study.id == study, c('group.id', 'is_vetted')], useNA='ifany')
+
+
+		
+		
+
+
+	 #### Start with one ####
+	 study = '9-7'
+	show_groups(study)
+	
+	### Develop concordance ###
+## Crookes tube a precursur to the vacuum tube was used in the discovery of cathode rays (streams of electrons) and xrays.  The device consists of glass, nearly evacuated, but with a small amount of air sufficient to contribute an even smaller number of positivively charged ions which always exist in air.  A high voltage differntial is created (somehow) between the two nodes at opposite ends of the glass.  The positive ions go to the negative pole and strike it hard enough to release electrons which fly towards the positive pole creating a visible cathode ray.  This ray is visible because some of the electrons collide violently with the residual air and cause it to florecese.  Other electrons miss all the air entirely, and the positive node and instead strike the back of the glass causing it to florese.  Under the influence of a magnet this beam will be bent which is what led JJ Thompson to the relazation that the cathode ray was composed of small negatively charged elements.  http://en.wikipedia.org/wiki/Crookes_tube
+## Xrays were discovered using the Crooke's tube.  Under high enough voltage, electrons are accelerated to sufficient speeds that they cause the release of xrays when they collide with the back glass, this happens when they raise electrons out of inner shell orbitals (xray florescence) or because they curve so sharply when passing close to an atomic nucleus.  These rays were detected by Roentgen who saw a florscent glow on teh wall behind his crooke tube which was capable of passing through objects like paper.  Investigating these rays he discovered the xray which won him the first ever nobel prize for physics.  http://en.wikipedia.org/wiki/Crookes_tube#The_discovery_of_X-rays
+## Thermoinic emission is the release of electrons from a solid (metal) into air due to high temperatures.  The temperature when very high (1000K) exceeds the binding energy of the metal to the electrons and they 'boil' away.  This was observed when it was noted that a positivley charged metal sphere lost its charge when heated sufficiently. By contrast a negatively charged sphere will retain its charge when heated to the same levels.  This property can be employed in vacuum tubes to provide electrons for a current in place of small quantities of air that were employed in the Crookes tube.
+## Why vacuums?  Vacuum tubes are necessary to generate high energy emmissions because they give electrons a long distance to accelerate un-obstructed.  A tube filled with air would have too many collisions to allow electrons to accelerate to the speeds necessary to cause high energy particles to emerge. 
+## Xray tubes.  Very similar to Crooke's tubes but differ because they have a more complete vacuum and electrons are released by thermoinic emissions (heated metals).  The xrays are produced when the electrons strike the positive node and the quality of the xrays is determined by the distance that they travel and the material that composes the positive anode. http://en.wikipedia.org/wiki/X-ray_tube
+## kPv, or Peak Kilovoltage is the maximum voltage applied across and xray tube.  Along with the length of the tube and the quality of the positive node, it will determine the energy spectrum of the resultant xrays.  http://en.wikipedia.org/wiki/Peak_kilovoltage
+## Kerma, or kinetic energy released in material, is the sum of all of the kinetic energies of charged particles that are released by an uncharged radioactive particle interacting with a substance.  It differe from absorbed dose because it does not account for energy re-emmited from the body that absorbed.  However, somewhat annoyingly, it is measured in grays (J/Kg) just like absorbed dose.  It will be useful to watch out for situations where kerma might be mixed with absorbed dose.  I assume that most of our quality measurements are on absorbed dose, but I don't know for certain.  http://en.wikipedia.org/wiki/Kerma_(physics)
+## Roentgen is an outdated unit that measures radiation using kerma as opposed to absorbed dose.  The trouble with this approach is that absorbed dose may vary substantially even with the same dose in roentgens based on the characteristics of the incident beam.  For example in bone, one roentgen (air keram) of xrays may deposit between 0.01 and 0.04 Gy of absorbed dose.
+## Homegeneity Factor, or HF, refers to how many different wavelenghts are included in a beam.  It is measured by the ratio of the width of the first half value layer divided by the width of the second half value layer.  The first half value layer will intrinsically be smaller than the second one because it is biased in the radiation it stops, essentially stopping the easy to stop radiation.  However, if the source is monochromatic, then there is not difference in how easy each photon is too stop and the size of the second half value layer will be exactly the same as the first.  http://en.wikipedia.org/wiki/Half-value_layer
+## Beam Hardening refers to the fact that the average wavelength of photons in a beam of radiation increases as the beam passes through blocking substances.  The reason for this is that low energy photons are more easily disrupted by the stopping material.
+## Cupping artifacts occur because of beam hardening.  Essentially thick/dense portions of a sample attenuate a beam less than would be expected by the thinner portions because they are hardened.  Basically somethign 2x as thick will not cause a 2x decline in transmission unless the transmission rate is already very high. http://radiopaedia.org/articles/beam-hardening-phenomenon
+## HVL the half value layer needed to attenuate the intesity of radiation (or air kerma rate) by 1/2
+## non-neoplastic refers to diseases which do not involve the growth of new tissues, e.g. not tumors
+## Hepato refers to the liver, its greek origin is hepat or hepar which is related to the word for repairing or mending because the liver is good at regenerating itself
+## Sarcoma, Leukemias, Carcinoma, vs Lymphoma.  These are the basic types of cancer.  Carcinoma is most common and results in spreading tumors nearly anyhwere.  Leukemias are in the blood and do not usually produce solid tuomrs.  Sarcomas are in connective tissues and usually develop as spherical tumors and spread through bones.  Lymphomas infect and spread using the lymph system.  In a sense we can think of these different types of cancer as those that spread through different sets of tissues.  http://www.your-cancer-prevention-guide.com/cancer-classifications.html
+## Actinides are elements in the bottom row of the periodic table from Actenide (89) to lawrencium (103).  They are usually set off below the table for formatting reasons.  Of them only Thorium, Uranium, and Plutonium exist naturally.  These are highly toxic materials.  For example a nickle size portion of plutonium (5000 mg) could kill more than 10 people (22 mg is LD50 for a 70kg person).  http://en.wikipedia.org/wiki/Actinide
+## European Commission is the executive branch of the European Union, unlike the american executive branch it consits of a comittee with one representative of each of the 27 nations that make up the EU.  http://en.wikipedia.org/wiki/European_Commission
+## Directorate General is the name of a body that works for the European Comission on some specific task like aggriculture or buisness.  I belive the equivilant in America are things like the NIH, DOE, etc. http://en.wikipedia.org/wiki/European_Civil_Service#Directorates-General
+## Joint research center is a Directorate General of the European Union involved in various research concerns, most of them related to energy production and safety.  http://en.wikipedia.org/wiki/Joint_Research_Centre
+## The Institute for Reference Materials and Measurements (IRMM) works on reliable measurement tools and techniques as a subdivision of the Joint Research Center.  They seem to be similar to NIST in America.  Before 1993 they were known as the central bureau for nuclear measurements, reflecting a mission more singularly isolated on nuclear energy concerns.  http://en.wikipedia.org/wiki/Institute_for_Reference_Materials_and_Measurements
+## The 'thimble' ionization chamber, seems to be a very small ionization chamber with the trademark name thimble http://bit.ly/Xcr7JX
+## Lymphoblast is an immature lymphoctye (T cells or B cells).  It can be thought of as a t-cell stem cell.  http://en.wikipedia.org/wiki/Lymphoblast
+## Angioma a benign growth of blood cells
+## Parenchyma is the bulk of an organ, its functional parts as opposed to its structural parts.  It comes from the word parenkhein, which means to pour in.  http://en.wikipedia.org/wiki/Parenchyma  
+## Septum is a wall that devides two things.  It shares a false origin with the word septic which might refer to a system running between walls and is a helpful mneumonic.  Aveolar septum (the reason I looked the word up) refer to the spaces between aveoli.  http://en.wikipedia.org/wiki/Septum
+## Mononuclear leukocytes aka agranualocytes are white blood cells characterized by a one lobed nucleus.  They are composed of monocysetes and lymophocytes and comprise about 35% of all white blood cells. http://en.wikipedia.org/wiki/Agranulocyte
+## Monocytes ar composed of macrophages and dendritic cells.  Collectively they consume cells and pathogens and present antigens for identification by other immune cells.  
+## Atelectasis means incomplete extension and refers to the symptom where aveoli are collapsed.  This can be an acute or chronic condition.  http://en.wikipedia.org/wiki/Atelectasis
+## Emphasyma involves the break down of lung tissues so that aveoli essentially merge and lose the elastic property necessary to support exhalation. http://en.wikipedia.org/wiki/Emphysema
+## Inclusion bodies are aggregated protien masses surrounded by a lipid membrane in the cytoplasm of a cell.  They can be induced by the expression of foreign DNA which creates foreign proteins that might aggregate in an inclusion body.  In the paper I am reading they mention inclusion bodies in cancer cells, I don't see any mention of that in wikipedia.  Perhaps this is an indication of viral infection in these cells?  http://en.wikipedia.org/wiki/Inclusion_body
+## Cox-Mantel or the log rank test is a non-parametric test that asks whether two survival curves are different.  In essence it looks at any given time point and compares the % of animals that died in one group (of those that were still alive) vs the % of animals that died both groups.  It estimates the reliability of these values using the binomial distribution.  Then the sum of the discrepiancy between one group and the whole sample is divided by the sum of the variance (summed across time points that is) to produce a Z value that indicates if the group deviates significantly from the whole population. http://en.wikipedia.org/wiki/Logrank_test
+## Breslows method is a test of the likelihood that a coefficient is significant in the proportional hazards model.  http://en.wikipedia.org/wiki/Proportional_hazards_models  
+## Peto test - ???
+## Hormesis of non-neoplastic lung disease?  In 9-7 non-neoplastic lung disease was the primary cause of death, but seemed to be reduced in animals that were exposed to low doses of radiation.  The authors note that cancer incidence still increased, but its interseting that other effects might have diminished.  Quite odd.  http://www.jstor.org/stable/pdfplus/3579307.pdf?acceptTC=true
+		
+	### Fix problems ##
+
+	# No problems found
+
+	### Check mean lifespans ### 
+	
+	subset <- data[data$study.id == study,]
+	result <- ddply(subset, .(group.id), function(df){
+		n <- nrow(df)
+		c(
+			n=n,
+			u=round(mean(df$lifespan)),
+			se=round(sd(df$lifespan)/n^0.5)
+		)
+	})
+	result[order(as.numeric(sub(".*-.*-", "", result$group.id))),]
+
+	# These checked out, I saw a few small discrepiancies, nothing
+	# greater than 5 days.  Notably the standard error actually 
+	# was correct this time.  Also when they reported standard errors
+	# from previous experiments, they listed numbers much lower than
+	# what were seen in the tables of 9-6, 9-5.  I can only assume
+	# they have fixed their damnable ways.
+	
+	
+	### Define Treatment Groups ###
+	control   <- paste0(study, '-', 1)
+	neutron_7 <- paste0(study, '-', 2:5)
+	neutron_21<- paste0(study, '-', 6:9)
+	xray_7    <- paste0(study, '-', 10:12)
+	xray_21   <- paste0(study, '-', 13:15)
+
+
+	### Helper Functions ###
+	tableNA <- function(...) table(..., useNA='ifany')
+	group_table <- function(data, study, outcome){
+		tableNA(data[data$study.id == study, c('group.id', outcome)])
+	}
+
+
+	### Resolve NAs ###
+	
+	# study dose rates were consistent across treatment qulity
+	# 1 Gy/min for xrays and 0.04 Gy/min
+	# http://www.jstor.org/stable/pdfplus/3579307.pdf?acceptTC=true	
+	data[
+		data$study.id == study & 
+		data$quality == 'neutrons 1-10 MeV',
+		'dose_rate'
+	] <- 0.04
+	data[
+		data$study.id == study & 
+		data$quality == 'X-rays whole body',
+		'dose_rate'
+	] <- 1
+	group_table(data, study, c('quality'))
+	
+	# radiation fractions were always acute	
+	data[
+		data$study.id == study &
+		data$group.id != control,
+		'fractions'
+	] <- 1
+	group_table(data, study, c('fractions'))
+			
+	
+	### Add more data ###
+	
+	# source 
+	# from http://www.jstor.org/stable/pdfplus/3579307.pdf?acceptTC=true
+	data[
+		data$study.id == study &
+		data$group.id %in% c(neutron_7, neutron_21),
+		'source'
+	] <- 'd(50)+Be'
+	group_table(data, study, c('source'))
+	
+		
+	# modal energy (MeV)
+	# from http://www.jstor.org/stable/pdfplus/3579307.pdf?acceptTC=true
+	data[
+		data$study.id == study &
+		data$group.id %in% c(neutron_7, neutron_21),
+		'modal_energy'
+	] <- 3.1
+	group_table(data, study, c('modal_energy'))
+	
+	# gamma_contamination (fraction)
+	# unspecified
+	# data[
+		# data$study.id == study &
+		# data$quality == 'neutrons>10 MeV',
+		# 'gamma_contamination'
+	# ] <- 0.05
+	# group_table(data, study, c('gamma_contamination'))
+	
+	# radiation protocol
+	# from http://www.jstor.org/stable/pdfplus/3579307.pdf?acceptTC=true
+	data[
+		data$study.id == study &
+		data$group.id %in% c(xray_7, xray_21),
+		'radiation_protocol'
+	] <- 'EULEP'
+	group_table(data, study, c('radiation_protocol'))
+
+	# radiation assessment
+	# from http://www.jstor.org/stable/pdfplus/3579307.pdf?acceptTC=true
+	data[
+		data$study.id == study &
+		data$group.id %in% c(xray_7, xray_21),
+		'radiation_assessment'
+	] <- 'philips ionization chamber'
+	data[
+		data$study.id == study &
+		data$group.id %in% c(neutron_7, neutron_21),
+		'radiation_assessment'
+	] <- '0.53 cm^3 thimble ionization chamber'
+	group_table(data, study, c('radiation_assessment'))
+	
+	# radiation cage 
+	# from http://www.jstor.org/stable/pdfplus/3575971.pdf
+	# and http://www.jstor.org/stable/pdfplus/3575970.pdf
+	data[
+		data$study.id == study &
+		data$group.id %in% c(xray_7, xray_21, neutron_7, neutron_21),
+		'radiation_cage'
+	] <- 'perspex cage'
+	group_table(data, study, c('radiation_cage'))
+
+	# specific pathogen free? 
+	# http://www.jstor.org/stable/pdfplus/3579307.pdf?acceptTC=true
+	data[
+		data$study.id == study,
+		'specific_pathogen_free'
+	] <- TRUE
+	group_table(data, study, c('specific_pathogen_free'))
+	
+	# Mock irraited?
+	# http://www.jstor.org/stable/pdfplus/3579307.pdf?acceptTC=true
+	# They say that they were indeed.
+	data[
+		data$study.id == study &
+		data$group.id %in% c(control),
+		'mock_irradiated'
+	] <- TRUE
+	group_table(data, study, c('mock_irradiated'))
+	
+	# Animals per cage
+	# http://www.jstor.org/stable/pdfplus/3579307.pdf?acceptTC=true
+	data[
+		data$study.id == study,
+		'animal_per_cage'
+	] <- 5
+	group_table(data, study, c('animal_per_cage'))
+
+	# controls_added_continually
+	data$controls_added_continually[
+		data$study.id == study &
+		data$group.id %in% control
+	] <- TRUE
+	group_table(data, study, c('controls_added_continually'))
+
+	# decomposed or cannibalized
+	# they say less than 1% 
+	# I am being conservative and setting the value to 1
+	# http://www.jstor.org/stable/pdfplus/3579307.pdf?acceptTC=true
+	data$decomposed_or_cannibalized[
+		data$study.id == study
+	] <- 0.01
+	group_table(data, study, 'decomposed_or_cannibalized')
+
+	# dose undertainty (fraction)
+	data$dose_uncertainty[
+		data$study.id == study &
+		data$group.id %in% c(neutron_7, neutron_21)
+	] <- 0.07
+	group_table(data, study, 'dose_uncertainty')
+
+	# kPv (peak kilovoltage)
+	# this is valid for xray exposures
+	# http://www.jstor.org/stable/pdfplus/3579307.pdf?acceptTC=true
+	data$kpv[
+		data$study.id == study &
+		data$group.id %in% c(xray_7, xray_21)
+	] <- 250
+	group_table(data, study, 'kpv')
+
+
+	# HVL (half voltage layer)
+	# this is valid for xray exposures
+	# http://www.jstor.org/stable/pdfplus/3579307.pdf?acceptTC=true
+	data$hvl[
+		data$study.id == study &
+		data$group.id %in% c(xray_7, xray_21)
+	] <- '2mm Cu'
+	group_table(data, study, 'hvl')
+	
+	
+	## Vet it ###
+	data[
+		data$study.id == study,
+		'is_vetted'
+	] <- TRUE
+	group_table(data, study, 'is_vetted')
+
+
+
+
+	 #### Start with one ####
+	 study = '9-4'
+	
+	### Develop concordance ###
+## Radioprotection works by reducing oxygen levels in cells through some mechanism which then induces the well known hypoxic resistance response.  In practice, such pretreatments can increase LD50 by a little less than 2 fold.  This is a theoretically interesting result, but not large enough to be all that useful in, for instance, a combat zone.  Also the compounds employed have bad side effects, which would be expected when creating a hypoxic shock.  A better solution in most cases would be to increase sheilding.  As we know, a couple mm of copper can provide 50% sheilding and thus have the same effect as these radioprotective agents.  http://www.informatics.jax.org/greenbook/chapters/chapter22.shtml (see pretreatment with chemical agents).
+## Peritoneum refers to the body cavity, the word itself is derived from the greek word for the abdominal membrane which can be decomposed into around (peri) stretched (teinein).  You might say the part inside the strechedaround membrane (or some nonsense).  A pertoneum injection refers to an injection direcly into the abdomen.  Its nice and easy and can be considered in contrast to an intravaenous injection. http://www.etymonline.com/index.php?search=peritonaeum
+## Isologous - having the same genotype.  http://medical-dictionary.thefreedictionary.com/isologous
+## They note in this paper that an injection of isologous bone marrow post irradiation is almost as good as administering a radioprotector up to 500R, amazing!  Turns out that this is the basic principal justifying the need for bone marrow transplanets, i.e. they allow for more aggressive radiotherapy. http://www.jstor.org/stable/pdfplus/3574717.pdf?acceptTC=true
+## Reticular fibers are collagen fibers that serve as connective tissues within organs, between cells.  http://en.wikipedia.org/wiki/Reticular_fiber
+## Myeloid cell has several meetings, but amount them it is any blood cell that is not a lymphocyte (precursurs to b cells, t cells, and natural killer cells.)
+## Why do kidneys respond to radiation?  I can't find a clear explanation, but it appears that they do respond by hardening, fractionating the dose does not seem to help.  I wonder why?  http://books.google.com/books?id=6HhjwRyqBzgC&q=nephrosclerosis#v=onepage&q=kidney&f=false
+## Papilloma is a small (i.e. human papilloma virus).  It derives from the word papilla which means nipple and is related to the word for swelling. http://www.etymonline.com/index.php?term=papilla&allowed_in_frame=0
+## Why do BALB/c mice have a higher incidence of tumors than c57bl mice?  Its not clear to me why.  But they seem to be substantially different, ~18% leukemia and 35% carcinoma in BALB/c and only 12% leukemia and 1.5% carcinoma in c57bl mice.  http://www.jstor.org/stable/pdfplus/3574859.pdf?acceptTC=true
+## Full width at half maximum - the width of a function between the two points on either side of the function maxiumum that have examactly 1/2 the value of the function maximum. http://en.wikipedia.org/wiki/Full_width_at_half_maximum
+## A tungsten target is commonly used in xray tubes because it produces a nice quality xray for reasons I don't understand.  The tungsten also has a tendency to melt and must be rotated to remain fresh.  http://uk.answers.yahoo.com/question/index?qid=20100111070206AAqb4T7
+## Inherent filtration is that part of radiation beam filtration which in inevetiable as the beam must escape from the xray tube and pass through some medium which will filter it.  http://www.ndt-ed.org/EducationResources/CommunityCollege/Radiography/Physics/filters.htm
+## Ripple (electricity) refers to the fact that AC to DC conversion ineviatibly leaves behind a variability in voltage which moves pendulously around the mean voltage.  
+
+	### Check mean lifespans ### 
+	
+	subset <- data[data$study.id == study,]
+	result <- ddply(subset, .(group.id), function(df){
+		n <- nrow(df)
+		c(
+			n=n,
+			u=round(mean(df$lifespan)),
+			se=round(sd(df$lifespan)/n^0.5),
+			dose=df$dose[1],
+			strain=df$strain[1]
+		)
+	})
+	result[order(as.numeric(sub(".*-.*-", "", result$group.id))),]	
+	
+	### Define Treatment Groups ###
+	# first batch defined from
+	# http://www.jstor.org/stable/pdfplus/3574859.pdf?acceptTC=true
+	balb_control	<- paste0(study, '-', 1)
+	balb_xray 	<- paste0(study, '-', 2:8)
+	balb_x_aet 	<- paste0(study, '-', 10:13)
+	balb_x_mix 	<- paste0(study, '-', c(14:16, 18:21))
+	#
+	# second batch defined from
+	# http://www.jstor.org/stable/pdfplus/3575315.pdf?acceptTC=true
+	c57_control	<- paste0(study, '-', 24)
+	c57_xray	<- paste0(study, '-', 25:26)
+	c57_x_mix	<- paste0(study, '-', 27:28)
+	c57_xray_4<- paste0(study, '-', c(29:31, 33:35))
+	c57_x4_mix<- paste0(study, '-', c(36:39, 41:42))
+
+	# Be sure there are just the right amount
+	all <- c(
+		balb_control, balb_xray, balb_x_aet, balb_x_mix, 
+		c57_control, c57_xray, c57_x_mix, c57_xray_4, c57_x4_mix
+	)
+	groups <- unique(data$group.id[data$study.id == study])
+	groups[!groups %in% all]
+	all[!all %in% groups]
+
+	### Helper Functions ###
+	tableNA <- function(...) table(..., useNA='ifany')
+	group_table <- function(data, study, outcome){
+		tableNA(data[data$study.id == study, c('group.id', outcome)])
+	}	
+	
+	### Fix problems ##
+	
+	## 9-4-1 to 23 are listed as C57BL/Cnb in the data and BALB/c/Cnb in the description.  Notably these have different LD50/30s (whatever that means).  RESOLVED description is accurate and data is wrong.  These mice should be listed as BALB/c/Cnb.  Source http://www.jstor.org/stable/pdfplus/3574859.pdf?acceptTC=true
+	balbs <- c(balb_control, balb_xray, balb_x_aet, balb_x_mix)
+	data[
+		data$study.id == study &
+		data$group.id %in% 	balbs,
+		'strain'
+	] <- 'BALB/c/Cnb'
+	group_table(data, study, 'strain')
+	 
+	## 9-4-22 does not appear in the two treatment data, though the description claims it should have recieved xrays and 5ht.  RESOLVED 9-4-22 is not the in the data.  Take no action.
+
+	## 9-4-9 should be listed as reciving both xrays and AET according to the description, but doesn't appear in the two treatment data.  RESOLVED 9-4-9 does not expist in the data.
+	
+	## 9-4-9, 17, 22, 23, and 32 are missing from study 9-4.  In the description this is only labeled for 23 and 32.  RESOLVED the table needs correcting.
+	
+	
+	## 9-4 radiation is expressed in Roengens.  RESOLVED I am converting expression to Gy using an F factor of 0.0094.  Values close to this are widely cited on the internet.  I found a study that measured f-factors for various tissues.  Referencing figure 3 we can see that 0.0094 is a good estimate for muscle deposites when the HVL is 0.7mm Cu (as in this study).  The error in this measure is likely to be smaller than the uncertainty in the beam quality listed.  However, it is probably worth mentioning this change explicitly in the methods.  http://iopscience.iop.org.turing.library.northwestern.edu/0031-9155/32/5/005/pdf/0031-9155_32_5_005.pdf
+	f_factor <- 0.0094
+	data$dose <- as.numeric(data$dose)
+	data$dose[data$study.id == study] <- f_factor * data$dose[data$study.id == study]
+	group_table(data, study, 'dose')
+	
+	# Note the conversion
+	data[
+		data$study.id == study & 
+		data$quality != 'none (controls)',
+		'converted_to_grays'
+	] <- TRUE
+	group_table(data, study, 'converted_to_grays')
+
+	
+	### Check Cluster Assignments ##
+	data$cluster[
+		data$group.id %in% c(balb_control, balb_xray)
+	] <- '9-4-1'
+	data$cluster[
+		data$group.id %in% c(balb_x_aet)
+	] <- '9-4-2'
+	data$cluster[
+		data$group.id %in% c(balb_x_mix)
+	] <- '9-4-3'
+	
+	data$cluster[
+		data$group.id %in% c(c57_control, c57_xray, c57_xray_4)
+	] <- '9-4-4'
+	data$cluster[
+		data$group.id %in% c(c57_x_mix, c57_x4_mix)
+	] <- '9-4-5'
+	group_table(data, study, 'cluster')
+
+
+	### Resolve NAs ###
+	
+	show_groups(study)
+	
+	# study dose rates were consistent across treatment qulity
+	# 100 R/min
+	# http://www.jstor.org/stable/pdfplus/3574717.pdf?acceptTC=true
+	data[
+		data$study.id == study & 
+		data$quality != 'none (controls)',
+		'dose_rate'
+	] <- 100 * f_factor
+	group_table(data, study, c('dose_rate'))
+	
+	# radiation fractions were either acute or 4
+	# http://www.jstor.org/stable/pdfplus/3575315.pdf?acceptTC=true
+	data[
+		data$study.id == study &
+		data$group.id %in% c(
+			balb_xray, balb_x_aet, balb_x_mix, 
+			c57_xray, c57_x_mix
+		),
+		'fractions'
+	] <- 1
+	data[
+		data$study.id == study &
+		data$group.id %in% c(c57_xray_4, c57_x4_mix),
+		'fractions'
+	] <- 4
+	group_table(data, study, c('fractions'))
+			
+			
+	# fraction_interval
+	# (weekly)
+	# http://www.jstor.org/stable/pdfplus/3575315.pdf?acceptTC=true
+	data[
+		data$study.id == study &
+		data$group.id %in% c(c57_xray_4, c57_x4_mix),
+		'fraction_interval'
+	] <- 1*7*24*60 # weeks * days/week * hours/day * minues/hours	
+	group_table(data, study, c('fraction_interval'))
+
+
+	### Add more data ###
+
+
+	## Add age at assignment should be, 30 days post irradiation.  Because they removed mice that died of acute effects.  Source http://www.jstor.org/stable/pdfplus/3574717.pdf?acceptTC=true
+	# good general default
+	data$assignment_age <- data$age.at.treatment
+	################ NOOOTE ######################
+	# remove above on copy #
+	s <- data$study.id == study
+	data$assignment_age[s] <- 30 + data$assignment_age[s]
+	group_table(data, study, c('assignment_age'))
+		
+	# source 
+	# from http://www.jstor.org/stable/pdfplus/3574717.pdf?acceptTC=true
+	data[
+		data$study.id == study &
+		! data$group.id %in% c(c57_control, balb_control),
+		'source'
+	] <- 'xray'
+	group_table(data, study, c('source'))
+
+		
+	# modal energy (MeV)
+	# http://www.jstor.org/stable/pdfplus/3574717.pdf?acceptTC=true
+	# data[
+		# data$study.id == study &
+		# data$group.id %in% c(neutron_7, neutron_21),
+		# 'modal_energy'
+	# ] <- 3.1
+	# group_table(data, study, c('modal_energy')) 
+
+
+	# gamma_contamination (fraction)
+	# unspecified
+	# data[
+		# data$study.id == study &
+		# data$quality == 'neutrons>10 MeV',
+		# 'gamma_contamination'
+	# ] <- 0.05
+	# group_table(data, study, c('gamma_contamination'))
+	
+	# radiation protocol
+	# https://era.bfs.de/studies_description_from_db.php?LabId=9&StudyId=4
+	data[
+		data$study.id == study &
+		! data$group.id %in% c(c57_control, balb_control),
+		'radiation_protocol'
+	] <- 'EULEP'
+	group_table(data, study, c('radiation_protocol'))
+
+
+	# radiation assessment
+	# https://era.bfs.de/studies_description_from_db.php?LabId=9&StudyId=4
+	data[
+		data$study.id == study &
+		! data$group.id %in% c(c57_control, balb_control),
+		'radiation_assessment'
+	] <- 'philips ionization chamber'
+	group_table(data, study, c('radiation_assessment'))
+
+	
+	# radiation cage 
+	# from http://www.jstor.org/stable/pdfplus/3575971.pdf
+	# and http://www.jstor.org/stable/pdfplus/3575970.pdf
+	data[
+		data$study.id == study &
+		! data$group.id %in% c(c57_control, balb_control),
+		'radiation_cage'
+	] <- 'lucite cage'
+	group_table(data, study, c('radiation_cage'))
+
+	# specific pathogen free? 
+	# http://www.jstor.org/stable/pdfplus/3574717.pdf?acceptTC=true
+	# deduced by omission (and later reference to switching)
+	data[
+		data$study.id == study,
+		'specific_pathogen_free'
+	] <- FALSE
+	group_table(data, study, c('specific_pathogen_free'))
+
+	# Mock irraited?
+	# http://www.jstor.org/stable/pdfplus/3574717.pdf?acceptTC=true
+	# Deduced by omission and reference in a later paper
+	data[
+		data$study.id == study &
+		data$group.id %in% c(c57_control, balb_control),
+		'mock_irradiated'
+	] <- FALSE
+	group_table(data, study, c('mock_irradiated'))
+	
+	# Animals per cage
+	# http://www.jstor.org/stable/pdfplus/3574717.pdf?acceptTC=true
+	data[
+		data$study.id == study,
+		'animal_per_cage'
+	] <- 2
+	group_table(data, study, c('animal_per_cage'))
+
+	# controls_added_continually
+	# http://www.jstor.org/stable/pdfplus/3574717.pdf?acceptTC=true
+	# deduced through omission (and an explicit reference in a later
+	# paper)
+	data[
+		data$study.id == study &
+		data$group.id %in% c(c57_control, balb_control),
+		'controls_added_continually'
+	] <- FALSE
+	group_table(data, study, c('controls_added_continually'))
+
+	# decomposed or cannibalized
+	# they say less than 1% 
+	# I am being conservative and setting the value to 1
+	# http://www.jstor.org/stable/pdfplus/3574717.pdf?acceptTC=true
+	data[
+		data$study.id == study,
+		'decomposed_or_cannibalized'
+	] <- 0.01
+	group_table(data, study, 'decomposed_or_cannibalized')
+
+	# dose undertainty (fraction)
+	# data$dose_uncertainty[
+		# data$study.id == study &
+		# data$group.id %in% c(neutron_7, neutron_21)
+	# ] <- 0.07
+	# group_table(data, study, 'dose_uncertainty')
+
+	# kPv (peak kilovoltage)
+	# this is valid for xray exposures
+	# http://www.jstor.org/stable/pdfplus/3574717.pdf?acceptTC=true
+	data[
+		data$study.id == study &
+		!data$group.id %in% c(c57_control, balb_control),
+		'kpv'
+	] <- 250
+	group_table(data, study, 'kpv')
+
+	# HVL (half voltage layer)
+	# this is valid for xray exposures
+	# http://www.jstor.org/stable/pdfplus/3574717.pdf?acceptTC=true
+	data[
+		data$study.id == study &
+		!data$group.id %in% c(c57_control, balb_control),
+		'hvl'
+	] <- '0.7mm Cu'
+	group_table(data, study, 'hvl')
+	
+		balb_control, balb_xray, balb_x_aet, balb_x_mix, 
+		c57_control, c57_xray, c57_x_mix, c57_xray_4, c57_x4_mix
+
+	## Double check that other treatments within clusters are identical
+	table(data[
+		data$study.id == study,
+		c('cluster', 'other_treatments') 
+	])
+	group_table(data, study, c('cluster', 'other_treatments'))
+	
+	## All, add method of conversion from Roentgens to Gray to my general methods.  Read the following comments in 9-4 for details
+
+
+
+	
+	## Vet it ###
+	data[
+		data$study.id == study,
+		'is_vetted'
+	] <- TRUE
+	group_table(data, study, 'is_vetted')
+
+
+> unique(data$study.id)
+ [1] "1002-1"  "1003-20" "1003-21" "1003-22" "1003-24"
+ [6] "1003-25" "1003-26" "1003-27" "1003-28" "1003-29"
+[11] "1003-30" "1003-5"  "1003-51" "1003-52" "1003-54"
+[16] "1003-55" "1003-6"  "1003-7"  "1003-xx" "1005-47"
+[21] "1007-1"  "1007-2"  "1007-3"  "1008-3"  "11-1"   
+[26] "11-2"    "2-1"     "2-10"    "2-11"    "2-12"   
+[31] "2-13"    "2-14"    "3-1"     "3-2"     "3-3"    
+[36] "3-4"     "3-5"     "3-6"
+
+		
+	# Save
+	setwd('~/janus/scripts')
+	saveRDS(data, '../data/external5.rds')
 
 
 
@@ -1275,144 +2927,165 @@ c(
 # A list of problems with individual groups or studies that
 # ought to be addressed.
 
-## 11-1-143 is missing its neutron treatment age of exposure.  Only ovarectomy is listed.
+
 ## 1002-1 Age of exposure in study 1002-1 is consistently labled as 400 days yet the study protocol says that exposure was given between 8 and 15 months of age.  I should resolve this
-## 1002-1 There is no dose rate in study 1002-1.
-## 1002-1 notes that some dogs were bred after exposure.  It would be useful to know which ones were.
 ## 1002-1 has something called fractionation interval which is a bit mysterious to me.  But I think it needs to be encoded
+## 1002-1 notes that some dogs were bred after exposure.  It would be useful to know which ones were.
+## 1002-1 There is no dose rate in study 1002-1.
+## 1002-1 What is the total dose rate?
+## 1002-1-99 has 6 animals with an 'other' gender.  What are these?
 ## 1002-1-99 I should remove this group 1002-1-99 which were 'not assigned'
 ## 1003-20 I'm not sure the age at exposure is actually always 100.  I imagine that our data has more/better detail on the actual age of exposure
 ## 1003-20-20 has only 5 animals, it should have 200
 ## 1003-20-20-41 are missing or almost missing from the era.  Perhaps they are in janus?
 ## 1003-20-42 has only 187 animals, it should have 200
 ## 1003-20-47 to 48 claim they are 0.8 neutrons here, but they are listed as 0.2 neutrons in the era description.  Double check these.
-## double check age at first irradiation on janus 1003-21 (and all of janus, 1003)
 ## 1003-22-1 to 14 have doses that are 10x lower in the description than in the data I have
 ## 1003-22-22 has a dose of 12 in the table, but only 1.2 in the database.  Which is right?
 ## 1003-23-7 to 8 are listed as gamma in the data but neutron in the descriptions
 ## 1003-24-4 is listed as 4.17 in the data and 417 in the era description.  I am inclined to trust the data because it is consistent with treatment 1003.24.3
-## 1003-27-3 has 200 mice in the data but claims it should have 455 in the description
+## 1003-27 is listed as species mouse, but this is inacurate these are peromyscus, strain leucopus.  They are more distant from mice than rats are.
 ## 1003-27-1 says its type sham exposure in the data but is listed as none in the description.  This is as opposed to 1003.27.2 which is listed as a sham exposure in both sources.
+## 1003-27-3 has 200 mice in the data but claims it should have 455 in the description
 ## 1003-29-23 is listed as 4 Gy in the description, but as 0.4 Gy in the raw data.  I am inclined to believe the data because it is consistent with 1003.29.24, but I need to be sure.
 ## 1003-30-1 to 4 dose is listed as <NA> but it should be zero as it is in other control cases.
 ## 1003-30-3 to 4 and 7 to 10 and 13 to 20 are all injected with radioprotectors and should be removed from this analysis.  Also, the fact that these are listed as neutron and gamma exposures while the controls are listed as saline control and WR-2721 is decieving, this should be made consistent in the database.  The same problem occurs with the units which are sometimes grays and sometimes units of solution.  And the Application which is 'not applied' rather than 'external' 
+## 1003-5 doses in the data are in rads while the database is in mGy.  I should simply convert everything in rads over to mGy.
 ## 1003-5-1, 7, and 8 are missing.  One is especially important because it is a control condition.
 ## 1003-5-2 notes that '18 are terminated' this is rather important as these 18 will surely affect survival estiamtes.
-## 1003-5 doses in the data are in rads while the database is in mGy.  I should simply convert everything in rads over to mGy.
+## 1003-51 to 55, 5, 6, 7, and 47  details missing from the dog studies as we already knew
 ## 1003-51-5 has no description.  I will need to cross check it using an alternate source.  Also doses, units, and application are clearly wrong, so I imagine I will have to import this data from the beagle dog archive.  However it might be worth removing this data.
+## 1003-54-12 supposedly all have a lifespan of 162 days, rather implausiable
+## 1003-54-6 supposedly both have a lifespan of 767 days, rather implausiable
+## 1003-6 age at exposure is given by the mean age of exposure, but we could get the actual true first age of exposure from the database.
+## 1003-6 the dose is given in rads per day.  Obviously days of treatment will need to be added.
 ## 1003-6-1 and 15 appear to be missing.  But likely they have been combined into 1003.6.99.  They need to be seperated because 9 were terminated and the others were controls.  They also need to be given proper values for age, type, and so on.
 ## 1003-6-9 claims to have 21 animal but on the website it is listed as having only 20.  I will need to check which is right.
-## 1003-6 the dose is given in rads per day.  Obviously days of treatment will need to be added.
-## 1003-6 age at exposure is given by the mean age of exposure, but we could get the actual true first age of exposure from the database.
-##  1003-7 The number of dogs in each group does not match whats stated in the description.
+## 1003-7 The number of dogs in each group does not match whats stated in the description.
 ## 1003-7 Units of Roentigen per day must be changed to gray if they can be
 ## 1005-47 This data from ITRI has no description.  Also dose and age information are missing, so we probably need to fill in all of this guy if we are going to use it.
+## 1007-1-4 to 6, strain is listed as BFM, the appears as RFM/Bd in the description
 ## 1007-2-1 has one more mouse in the data than in the description
-## 1007-2-7 has two less mice in the data than in the description 
 ## 1007-2-11 has two more mice in the data than in the description
 ## 1007-2-16 has two less mice in the data than in the description
-## 1007-3-17, 18 and 19 missing, 18 and 19 are serial sacrifices, so its probalby fine.  17 is the highest dose group so it would be nice to find what happend to them.
-## 1007-3-16 the data has 2165 mice while the description reports that there are 3707
-## 1007-3-7 is reported to have 0.3 Gray doses in the data and 3 gray does in the description.  I think the description is more sensible here because it fits the progression.
+## 1007-2-7 has two less mice in the data than in the description 
+## 1007-3 lists ages as 7 weeks +/- 0.5 weeks.  This seems like a reasonable standard error to assume
+## 1007-3 remove serial sacrifices from 1007.3
+## 1007-3 these are listed as BFM mice here and RFM mice in the database (like another before)
 ## 1007-3-1 and 8 have units in rads even though they are control animals with a dose of zero and the rest have units in grays
+## 1007-3-16 the data has 2165 mice while the description reports that there are 3707
+## 1007-3-17, 18 and 19 missing, 18 and 19 are serial sacrifices, so its probalby fine.  17 is the highest dose group so it would be nice to find what happend to them.
+## 1007-3-7 is reported to have 0.3 Gray doses in the data and 3 gray does in the description.  I think the description is more sensible here because it fits the progression.
 ## 1008-3 is insufficiently described in era to validate.  It must be checked against a third party if it is to be used at all.
+## 1008-3 is missing all data on gender as noted before
+## 1008-3 treatment ages imply that gestation is 60 days long, for example '8 d post coitus' in the description corresponds to -52 days in the data.  I should double check this gestation time for beagles.
+## 11-1-143 is missing its neutron treatment age of exposure.  Only ovarectomy is listed.
 ## 11-1 has lots of estrogen and overectomy treatments that probably ought to be removed.
 ## 11-1 I was not able to check the age at first exposure I will need an external source for this 
-## 11-2-12 is listed as having 58 rats in the description, but the data has 120 examples
-## 11-2-13 is listed as having 60 rats in the description, but the data has 58 examples.  Notably this is the (incorrect) number listed in the description for 11-2-12.  So maybe someone skipped 120 on data entry?
-## 11-2-15 is listed as including 20 rats in the description.  In the data there are 40.
-## 11-2-20 does not appear in the description.  Instead 21 appears twice.  I suggest that the first of these apperances at a dose of 0.1 Gy should actually be labeled 20
-## 11-2-33 is listed has including 30 rats in the description, but includes 60 rats in the data
-## 11-2-34 to 48 there are many mistakes in the number of rats listed from 11-2-34 to 48
-## 11-2-56 is listed as including 40 rats in the description, but has 80 rats in the database.
-## 11-2-60 is listed as including 20 rats in the description, but has 40 rats in the database.
-## 11-2-61 - 70 have twice as many rats in the database as are listed in the description.
-## 11-2-129 is listed as having 19 mice in the description and only has 9 in the database.
-## 11-2 I will need to find an outside source to check age at first irradiation against.
-## 2-1 are controls for all the other 2-?? rats.  There is a strange break in 1982 where they made a new male control group for reasons that might be checked.
-## 2-10 notably includes some groups that recieved two doses, both of xrays but seperated in time.
-## 2-13 should be removed because chemical treatments were used with every radiation treatment.
-## 2-14-39 through 58 missing all animals
-## 3-2-10 seems to be missing in the description and each group below that has their group number shifted up by 1
-## 3-5-41 to 50 are in the database but not in the description
-## 3-6-20 to 24 are in the database but not in the description table.
-## 9-4-9, 17, 22, 23, and 32 are missing from study 9-4.  In the description this is only labeled for 23 and 32.
-## 9-5-17 is missing from the description
-## 1007-3 remove serial sacrifices from 1007.3
-## 1002-1 What is the total dose rate?
-## 11-2-12 and 13 seem to have their n's switched in the description.
-## 11-2-12 claims to have estrogen treatment but its not even close to the groups that were to recieve estrogen treatment which start at groups 32 and higher.  Given that this is wrong and its n value is wrong it seems quite suspicious like its from far later and suddenly inserted here.  However it is also possible that it's actually group 14 and the oestrad. treatment this group recieved is being labled as estrogen.  This is made more possible by the fact that 11-2-15 is wrongly labeled as an estrogen recieving animal, though it is in the same category that recieved oestrad in this treatment.
-## 11-2-15 is labeled as recieving estrogen treatment, but actually it got oestrad. treatment.  Possible error.
-## 11-2-21 appears twice in the descriptions.  I assume the first appearance is actually 20.  
-## 11-2-39 has 48 mice in our dataset and only 40 in the description.  The description seems more sane...    
+## 11-1 says that ages were usually 8 weeks with 'some older groups as indicated' but only ages of 56 (8 weeks), 40 (~5.5 weeks) and 49 (7 weeks) are in the data.  The older mice referred to in the description do not appear.
+## 11-1-143 is either missing from the data or missing its second treatment condition.  It should be neutron and overectomy
 ## 11-1-43 has 41 mice in our dataset and only 40 listed in the description
 ## 11-1-45 has 46 mice in our dataset and only 40 listed in the description
 ## 11-1-45 has 61 mice in our dataset and only 60 listed in the description
-## 11-2-31 - 48 are listed as included the proper radiation treatment, but many also recieved estrogren and oestrogen treatments.  I need to check if the other columns confirm these treatments.
-## 11-2-78 is listed as recieving gamma ray exposure in our data, but it recieved X-ray exposure in the data.
-## 11-2-110 to 115 are listed as 0.04 Gy in the data and 0.4 gray in the description.  The description strikes me as more accurate since it fits the progression.   
-## 11-2-129 has 9 in our data and 19 in the description
+## 11-2 I will need to find an outside source to check age at first irradiation against.
 ## 11-2 some of these doses are in milligrams even though it appears at first glance that they would be rightly interpreted as a dose in gray instead.
+## 11-2 the description does not indicate which groups are which age, it also indicates that some groups are 17 week and 4 weeks old.  The 17 week old animals appear in the data, but not the 4 week olds.
+## 11-2-110 to 115 are listed as 0.04 Gy in the data and 0.4 gray in the description.  The description strikes me as more accurate since it fits the progression.   
+## 11-2-12 and 13 seem to have their n's switched in the description.
+## 11-2-12 claims to have estrogen treatment but its not even close to the groups that were to recieve estrogen treatment which start at groups 32 and higher.  Given that this is wrong and its n value is wrong it seems quite suspicious like its from far later and suddenly inserted here.  However it is also possible that it's actually group 14 and the oestrad. treatment this group recieved is being labled as estrogen.  This is made more possible by the fact that 11-2-15 is wrongly labeled as an estrogen recieving animal, though it is in the same category that recieved oestrad in this treatment.
+## 11-2-12 is listed as having 58 rats in the description, but the data has 120 examples
+## 11-2-12 is listed as recieving estrogen and xrays in the data but not in the description
+## 11-2-129 has 9 in our data and 19 in the description
+## 11-2-129 is listed as having 19 mice in the description and only has 9 in the database.
+## 11-2-13 is listed as having 60 rats in the description, but the data has 58 examples.  Notably this is the (incorrect) number listed in the description for 11-2-12.  So maybe someone skipped 120 on data entry?
+## 11-2-14 does not appear in the multiple treatments and should according to the description.  Perhaps it has been flipped with 11-2-12?
+## 11-2-15 is labeled as recieving estrogen treatment, but actually it got oestrad. treatment.  Possible error.
+## 11-2-15 is listed as including 20 rats in the description.  In the data there are 40.
+## 11-2-20 does not appear in the description.  Instead 21 appears twice.  I suggest that the first of these apperances at a dose of 0.1 Gy should actually be labeled 20
+## 11-2-21 appears twice in the descriptions.  I assume the first appearance is actually 20.  
+## 11-2-31 - 48 are listed as included the proper radiation treatment, but many also recieved estrogren and oestrogen treatments.  I need to check if the other columns confirm these treatments.
+## 11-2-33 is listed has including 30 rats in the description, but includes 60 rats in the data
+## 11-2-34 to 48 there are many mistakes in the number of rats listed from 11-2-34 to 48
+## 11-2-39 has 48 mice in our dataset and only 40 in the description.  The description seems more sane...    
+## 11-2-56 is listed as including 40 rats in the description, but has 80 rats in the database.
+## 11-2-60 is listed as including 20 rats in the description, but has 40 rats in the database.
+## 11-2-61 - 70 have twice as many rats in the database as are listed in the description.
+## 11-2-67 is labeled as a Sprague Dawl strain in the data but is a WAG/RIJ according to the description which fits the general pattern.
+## 11-2-78 is listed as recieving gamma ray exposure in our data, but it recieved X-ray exposure in the data.
+## 11-2-79 to 81 all have the same lifespan, 6993, rather implausiable
+## 2-1 are controls for all the other 2-?? rats.  There is a strange break in 1982 where they made a new male control group for reasons that might be checked.
+## 2-1 have no treatment ages because they are control animals, but I wonderf when they were assigned to the control condition?  Did any of them die very young?  I should be able to check.  For example the next study 2-10 used mice at age 3 months.  I should suspect that none of its controls would have died at less than 3 months.  Right?
+## 2-10 notably includes some groups that recieved two doses, both of xrays but seperated in time.
 ## 2-10-19 to 21 should have a split dose.  Each should have a second treatment of 6 and 21 should have a third treatment of 6 as well.  If this is true then the first treatments are correct.
+## 2-11 the ages seem all wrong.  I will need to correct them from the original literature.
+## 2-11-1 and 2 says indicated that the treatment age was 'mothers 3 months'.  It is not clear if this means that the mothers were tracked or their offspring.  If its the offspring then the age indicator does not make much sense.  It might be designated as -??? to indicate a preconception event.
+## 2-11-1, 2, 11, 12, and 13 have ambiguous gender assignments in the description.  They should be proofed against orignal sources.
 ## 2-11-15 has a dose of 33 Gy in the data, but only 3 in the description, the description seems likely to be more accurate because it fits with the other treatments
 ## 2-12-30 recieved doses localized to the abdomen.  They should be removed
-## 2-12-43 and 44 only recieved localized radiation they ought to be removed
+## 2-12-32 has a gender of other, it should be male if its like the rest
 ## 2-12-41 and 42 are listed as recieving 1.5-3.5 Gy in the description, but only 2.5 Gy in table.  What to do?
-## 2-12-51 is labled as recieving 25 Gy in the data and 53 mGy in the description
+## 2-12-43 and 44 only recieved localized radiation they ought to be removed
 ## 2-12-47 to 51 have units in Grays in the data but have units in mGy in the description.  I think the description is probably correct.
-## 3-1-3 to 6 have doses in the data that are 10 times higher than those listed in the descriptions.  I am inclined to believe the data from the descriptions.     
-# 3-1-10 has a dose 10 times higher in the data than in the description.  I am inclined to believe the description.
-## 3-2-10 appears in the data appears to be missing from the table.  Everything below it appears to be shifted up one.
-## 3-2-22 and 23 have a 10x lower dose in the data than in the description.  The description seems more accurate as it fits the pattern.
-## 3-5-1 to 19 are nigh impossible to align to the descriptions.  It appears that there are at 2 groups in the data per one in the description with group 19 as a missing control from the 3 month cohort that appears pretty normal below.  The n values do not correspond to what would be expected even if these groups are somehow split.  I think I will need to go to an original source to get a better sense of what is happening to this data.      
-## 3-5-20 to 50 seem to correspond to groups 3-5-10 through 3-5-40 in the description.  They have all been shifted, however.
-## 3-6 the n's are almost all shit.  Never line up exactly.  The number of groups are different as well.  There are some similarties, but they are quite poor.  I need a second source.
-## 3-6-6 and 7 claims to be acute neutron exposure in the description but is listed as xrays in the data
-## 9-4-9 is missing from the data, though that is not noted in the description
-## 9-4-17 is missing from the data, though that is not noted in the description
-## 9-4-22 is missing from the data, though that is not noted in the description
-## 9-4-40 is missing from the data, though that is not noted in the description
-## 9-5-1 to 13 claim are listed as X-rays in the data and Gamma rays in the study description
-## 9-5-14 is missing its group id in the description table (small detail)
-## 9-6-2 to 16 are listed as X-ray exposures in the data but as Gamma ray exposures in the descriptions.
-## 9-6-19 is listed as 0.18 Gy in the data and 0.54 Gy in the table. I'd be inclined to trust the table.
-## 9-6-22 is listed as having 96 mice in the description, but has 196 mice in the data
-## 9-6-25 to 27 seem to be exposures just to the thorax, these should probably be removed.
-
-## 1003-54-12 supposedly all have a lifespan of 162 days, rather implausiable
-## 1003-54-6 supposedly both have a lifespan of 767 days, rather implausiable
-## look for rows that are too similar, like those with group.id 1003-54-6
-## 11-2-79 to 81 all have the same lifespan, 6993, rather implausiable
+## 2-12-51 is labled as recieving 25 Gy in the data and 53 mGy in the description
+## 2-13 should be removed because chemical treatments were used with every radiation treatment.
 ## 2-14-10 all have the same lifespan, 541 days, rather implausiable
 ## 2-14-22 all have the same lifespan, 317 days, rather implausiable
 ## 2-14-23 all have the same lifespan, 423 days, rather implausiable
-
-
-## 1002-1-99 has 6 animals with an 'other' gender.  What are these?
-## 1003-27 is listed as species mouse, but this is inacurate these are peromyscus, strain leucopus.  They are more distant from mice than rats are.
-## 1003-51 to 55, 5, 6, 7, and 47  details missing from the dog studies as we already knew
-## 1007-1-4 to 6, strain is listed as BFM, the appears as RFM/Bd in the description
-## All once these studies have been checked and cleaned I should give them an indicator in the data frame noting this, that way it will be easy to return to cleaning and to select those studies which have been cleared.
-## 1007-3 these are listed as BFM mice here and RFM mice in the database (like another before)
-## 1008-3 is missing all data on gender as noted before
-## 11-2-67 is labeled as a Sprague Dawl strain in the data but is a WAG/RIJ according to the description which fits the general pattern.
-## 2-11-1, 2, 11, 12, and 13 have ambiguous gender assignments in the description.  They should be proofed against orignal sources.
-## 2-12-32 has a gender of other, it should be male if its like the rest
-## 3-5 there is not mention of females in the description, yet several groups in the data include females
+## 2-14-39 through 58 missing all animals
 ## 3-1 to 2 and 4 to 5 the strain is listed as BC3F1 C57BlC in the data, but as (C57Bl/Cne x C3H/Cne)F1 (BC3F1) in the description.  
+## 3-1-10 has a dose 10 times higher in the data than in the description.  I am inclined to believe the description.
+## 3-1-3 to 6 have doses in the data that are 10 times higher than those listed in the descriptions.  I am inclined to believe the data from the descriptions.     
+## 3-2-10 appears in the data appears to be missing from the table.  Everything below it appears to be shifted up one.
+## 3-2-10 seems to be missing in the description and each group below that has their group number shifted up by 1
+## 3-2-22 and 23 have a 10x lower dose in the data than in the description.  The description seems more accurate as it fits the pattern.
+## 3-5 the description indicates that groups 10-... were irradiated at 3 months while the data indicates that they were irradiated at -4 days.  Also the table indicates that the gestation period for these mice is 21.5 days, for example the treatment age in the data is -4 for group 1 which is treated at 17.5 post conception according to the description.
+## 3-5 there is not mention of females in the description, yet several groups in the data include females
+## 3-5-1 to 19 are nigh impossible to align to the descriptions.  It appears that there are at 2 groups in the data per one in the description with group 19 as a missing control from the 3 month cohort that appears pretty normal below.  The n values do not correspond to what would be expected even if these groups are somehow split.  I think I will need to go to an original source to get a better sense of what is happening to this data.      
+## 3-5-20 to 50 seem to correspond to groups 3-5-10 through 3-5-40 in the description.  They have all been shifted, however.
+## 3-5-41 to 50 are in the database but not in the description
 ## 3-6 does not have sufficient data in the description to determine if the genders listed in the data are correct
 ## 3-6 mice are listed as CBAH/Cne in the data and CBA/Cne in the description
-## 9-4-1 to 23 are listed as C57BL/Cnb in the data and BALB/c/Cnb in the description.  Notably these have different LD50/30s (whatever that means)?
-## 9-5 are listed as strain C57/BL6Bd in the data and as BALB/c/Cnb in the description
-
-## 1007-3 lists ages as 7 weeks +/- 0.5 weeks.  This seems like a reasonable standard error to assume
-## 1008-3 treatment ages imply that gestation is 60 days long, for example '8 d post coitus' in the description corresponds to -52 days in the data.  I should double check this gestation time for beagles.
-
-## 11-1 says that ages were usually 8 weeks with 'some older groups as indicated' but only ages of 56 (8 weeks), 40 (~5.5 weeks) and 49 (7 weeks) are in the data.  The older mice referred to in the description do not appear.
-## 11-2 the description does not indicate which groups are which age, it also indicates that some groups are 17 week and 4 weeks old.  The 17 week old animals appear in the data, but not the 4 week olds.
-## 2-1 have no treatment ages because they are control animals, but I wonderf when they were assigned to the control condition?  Did any of them die very young?  I should be able to check.  For example the next study 2-10 used mice at age 3 months.  I should suspect that none of its controls would have died at less than 3 months.  Right?
-## 2-11-1 and 2 says indicated that the treatment age was 'mothers 3 months'.  It is not clear if this means that the mothers were tracked or their offspring.  If its the offspring then the age indicator does not make much sense.  It might be designated as -??? to indicate a preconception event.
-## 2-11 the ages seem all wrong.  I will need to correct them from the original literature.
-## All I need a column for final treatment age (also something to denote if they were allowed to die in this time period)
-## 3-5 the description indicates that groups 10-... were irradiated at 3 months while the data indicates that they were irradiated at -4 days.  Also the table indicates that the gestation period for these mice is 21.5 days, for example the treatment age in the data is -4 for group 1 which is treated at 17.5 post conception according to the description.
+## 3-6 the n's are almost all shit.  Never line up exactly.  The number of groups are different as well.  There are some similarties, but they are quite poor.  I need a second source.
+## 3-6-20 to 24 are in the database but not in the description table.
 ## 3-6-24 has no age of exposure in the data and does not exist in the data
+## 3-6-6 and 7 claims to be acute neutron exposure in the description but is listed as xrays in the data
+
+
+
+
+###########################################################
+# 
+# Universal problems
+#
+# Problems with the data that affect a good portion of the
+# data in this dataset.
+
+## ALL be sure to remove applications that are not external exposures.
+## All, check that controls are labeled controls
+## ALL make control dose_rate = 0, fractions=0, fraction_time=0, fraction_intraval=0	
+
+
+## Add details to dog studies 1003.51, 1003.52, 1003.54, 1003.55, 1003.6, 1003.7, 1005.47 these might need to be removed completely
+
+## Final pass
+	## All need to be checked to ensure that the age for controls matches the age for the animals they were used as control for.  The point here is that control animals were not likely to have been picked from birth.  Rather they probably entered the study at the same age as the other animals.
+	## Fill in NA columns
+## After vetting some, build a predictive model that predicts which have already been vetted
+
+## A really natural question to ask, perhaps to Gayle or Dave Grdina is how accurate they think these dose assessments are likely to be, especially in light of the reproted variation in group 2-12-41 where they say doses are between 1.5 and 3.5 Gy.  What a huge range.  Could they really be this unsure of the total dose?
+## Why are some groups missing from the ERA?  Is there any systematic bias in the groups that are missing.  Maybe ask the ERA this.
+## Tell era that they need to remove newlines
+## All - I've been looking for something that will clearly define what 'mean after survival' means.  The best I have found is an old Grahn paper that says 'The mean after-survival from the start of daily exposure is the endpoint statistic'.  I take that to mean that they are measuring days lived after the initiation of treatment. - (Grahn 1962 - http://www.osti.gov/energycitations/product.biblio.jsp?osti_id=4635223)
+## Tell era that 18.1, 19.2, 19.4-19.7, and 9.9 are missing the tag "No individual level data" in their csvs.
+## look for rows that are too similar, like those with group.id 1003-54-6
+## Run a pass for application
+## All read up on the latest attempt to model DDREF, who did it, what data did they use?
+## All application.1 needs to be made into application
+## All determine fraction time as total dose divided by (dose rate * number of fractions).  But only if this value is NA.  Also detrmine the other values from time where possible when these values are NA. (assuming that some studies list exposure time and not dose, ect.)
+## What is modal energy?  I am assuming this means the most common energy, but its not clear.  It could also mean the average or something else.  But I can't find a clear definition of it.
+	## All, remove mice that are known to have died from decomposition, cannibalism, or some other unnatural death.
+	## all, collect reasons for study to study variation.  For example beams might not be homoegenous, pathogen free strains act differently, the irriation proceedures might involve varying amounts of stress and exposure to pathogens, different beam characterstics, things that were not anticipated by the authors, etc.
+	## all keep note of the general reasons why some data was not collected.  It may be that papers did not specify or that the papers cited could not be found online.
+	## All check on ddref estimates from fruit flies
+	## do we have any inforation on protons?
+
