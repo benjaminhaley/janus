@@ -1,3 +1,4 @@
+###################################################################
 # ML on A-bomb data
 # benjamin.haley@gmail.com 
 # April 2013 - 
@@ -24,7 +25,8 @@
 # 5-2 Hijiyama Park
 # Minami-ku Hiroshima, 732-0815 JAPAN
 
-
+###################################################################
+#
 # Distributions
 #
 # Abstract:
@@ -73,7 +75,8 @@
 # Two way distributions
 # http://dl.dropbox.com/u/1131693/bloodrop/Screen%20Shot%202013-04-22%20at%203.57.08%20PM.png
  
-
+###################################################################
+#
 # Model Comparison
 # 
 # Abstract:
@@ -207,13 +210,15 @@
 		geom_density2d() +
 		scale_x_log10() +
 		scale_y_log10()
+		
+	# http://dl.dropbox.com/u/1131693/bloodrop/Screen%20Shot%202013-04-24%20at%204.58.59%20PM.png
 	
 	# Sanity Check III
 	#
 	# Make sure the predictions of the two models are reasonable
 	ids <- c('dose', 'age', 'city', 'agex', 'pyr', 'dosecat', 'sex')
 	m <- melt(
-		data[,c('p1', 'p2', 'p3', 'p4', 'solid', ids)],
+		data[,c('p1', 'p2', 'solid', ids)],
 		id.vars=ids
 	)
 	ggplot(m, aes(age, value/pyr, color=dosecat, group=factor(dosecat))) + 
@@ -222,6 +227,7 @@
 		facet_grid(sex~variable) +
 		ylim(0,0.1)
 		
+	# http://dl.dropbox.com/u/1131693/bloodrop/Screen%20Shot%202013-04-24%20at%205.01.03%20PM.png
 	
 	# Measure Likelihood
 	log_likelihood <- function(y, u){
@@ -244,8 +250,8 @@
 # incidence.  I found that the mean prediction of both models was
 # more accurate than either model on their own.
 #
-# The attempt to replicate Osaza was reasonable, though the
-# confidence interval was wider in Osaza's estimate.  At 1Gy Err was 
+# The attempt to replicate Osaza model was reasonable, though the
+# confidence interval was narrower in my estimate.  At 1Gy Err was 
 # estimated at 0.42 (0.32-0.53) in Osaza's paper and 0.43 (0.36-0.50)
 # in my reconstruction.  
 #
@@ -256,9 +262,9 @@
 # models and traditional models.
 #
 # Notably the estimates of likelihood by cross validation were very
-# similar to the estimates of likelihood by aic, with a difference of
-# less than one.  However, aic can only be estimated for the poisson
-# model while the gbm model requires cross validation.
+# similar to the estimates of likelihood by aic (AIC/2), with a 
+# difference of less than one.  However, aic can only be estimated 
+# for the poisson model while the gbm model requires cross validation.
 #
 # 
 # Future Directions:
@@ -286,3 +292,84 @@
 # model fitting.  This seems wrong to me.  Shouldn't we care more
 # about accuracy where the number of person years at risk is high
 # and therefore risk estimate benefits from a large samples size?
+
+
+###################################################################
+# Person Year Weighting
+# April 2013
+#
+# Here I will compare traditional models (Osaza style) with weighting
+# by person year vs those without.
+
+	# Load data
+	setwd('~/janus/')
+	data <- read.csv('data/lss14/lss14.csv')
+	
+	# Libraries
+	library(ggplot2)
+	library(plyr)
+	library(reshape2)
+			
+	# Define dose
+	data$dose <- data$colon10 / 1000
+	
+	# Helper functions
+	report_err <- function(coef, se) {
+		c(
+			min=exp(coef - 1.96*se) - 1,
+			u=exp(coef) - 1,
+			max=exp(coef + 1.96*se) - 1
+		)
+	}
+	
+	# Define Standard model
+	#
+	# A poisson regression
+	# using city, sex, birth year*, attained age, and dose
+	# *I used age at exposure as a stand in for birth year	
+	# based on Ozasa 2012
+	# http://www.rrjournal.org/doi/pdf/10.1667/RR2629.1
+	#
+	standard_model <- function(data, ...) {
+		glm(
+			solid ~ 
+				city + 
+				sex*I(log(age)) + 
+				sex*agex + 
+				dose + 
+				offset(log(pyr)),
+			family='poisson',
+			data = data,
+			...
+		)
+	}
+	
+	# Standard model
+	#
+	m1 <- standard_model(data)
+	s1 <- summary(m1)
+	report_err(
+		coef=s1$coefficients['dose', 'Estimate'], 
+		se=s1$coefficients['dose', 'Std. Error']
+	)
+	# 0.41 (0.34 - 0.49)
+
+
+	# Weighted model
+	#
+	m2 <- standard_model(data, weights=data$pyr)	
+	s2 <- summary(m2)
+	report_err(
+		coef=s2$coefficients['dose', 'Estimate'], 
+		se=s2$coefficients['dose', 'Std. Error']
+	)
+	# 0.41 (0.40 - 0.431)
+		
+	
+# Results:
+#
+# While the mean estimate of exceess relative risk is very similar
+# between the standard model and weighted model (both ~ 0.41 at 1Gy),
+# the standard errors contracts when weights are applied.  
+# The range is 0.34 - 0.49 in the unweighted model and only 0.40 to 
+# 0.431 in the weighted model.
