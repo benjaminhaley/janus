@@ -1,6 +1,7 @@
 #Anything in the data folder
 data/*
 scripts/data/*
+scripts/results/*
 
 # Cached data
 cache/*
@@ -13,6 +14,8 @@ scripts/keys/*
 
 # Ignore R history
 .Rapp.history
+.RData
+.Rhistory
 
 # Ignore Autosaved files
 *(Autosaved)*
