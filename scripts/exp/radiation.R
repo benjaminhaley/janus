@@ -2903,17 +2903,1030 @@ c(
 	group_table(data, study, 'is_vetted')
 
 
-> unique(data$study.id)
- [1] "1002-1"  "1003-20" "1003-21" "1003-22" "1003-24"
- [6] "1003-25" "1003-26" "1003-27" "1003-28" "1003-29"
-[11] "1003-30" "1003-5"  "1003-51" "1003-52" "1003-54"
-[16] "1003-55" "1003-6"  "1003-7"  "1003-xx" "1005-47"
-[21] "1007-1"  "1007-2"  "1007-3"  "1008-3"  "11-1"   
-[26] "11-2"    "2-1"     "2-10"    "2-11"    "2-12"   
-[31] "2-13"    "2-14"    "3-1"     "3-2"     "3-3"    
-[36] "3-4"     "3-5"     "3-6"
+	# Save
+	setwd('~/janus/scripts')
+	saveRDS(data, '../data/external4.5.rds')
+
+
+# Results
+#
+# I went through several studies using the above technique, but 
+# found it too slow and cumbersome.  I will move forward in a more
+# targeted way, focused on cleanup relevant to DDREF estimates,
+# that is, with a focus on low-LET radiation and lifespan outcomes.
+
+
+#############################################################
+#
+# Simpler Cleanup
+#
+# The above cleanup technique was too slow, now I will hone
+# it specifically for the problem of estimating ddref which
+# requires a focus on low-LET studies and lifespan outcomes
+# I will ignore other factors for the time being.
+
+	# Libraries
+	library(plyr)
+
+	# Data
+	setwd('~/janus/scripts')
+	data <- readRDS('../data/external4.5.rds')
+	
+	# Extend Data
+	data$exclude <- FALSE
+	data$reason <- ""
+	data$warning <- FALSE
+	data$warning_reason <- ""
+		
+	# Configuration
+	relevant_columns <- c(
+		"id",
+		"group.id",
+		"study.id",
+		"cluster",
+		"species",
+		"strain",
+		"sex",
+		"lifespan",
+		"quality",
+		"unit",
+		"dose",
+		"dose_rate",
+		"fractions",
+		"fraction_time",
+		"age.at.treatment",
+		"assignment_age",
+		"remarks",
+		"is_vetted",
+		"group.name",
+		"n",
+		"in_era",
+		"endpoints",
+		"lifestage.at.treatment",
+		"fraction_interval",
+		"other_treatments",
+		"cause_of_death",
+		"source",
+		"exclude",
+		"reason",
+		"warning",
+		"warning_reason"
+	)
+	other_treatment_columns <- c(
+		"age.at.treatment.1",
+		"treatment.1",
+		"dose.1",
+		"unit.1",
+		"application.1",
+		"remarks.1",
+		"age.at.treatment.2",
+		"treatment.2",
+		"dose.2",
+		"unit.2",
+		"application.2",
+		"remarks.2",
+		"age.at.treatment.3",
+		"treatment.3",
+		"dose.3",
+		"unit.3",
+		"application.3",
+		"remarks.3"
+	)
+	numeric_columns <- c(
+		"lifespan",
+		"dose",
+		"dose_rate",
+		"age.at.treatment",
+		"assignment_age",
+		"MAS"
+	)
+	## 9-4 radiation is expressed in Roengens.  Convert expression to Gy using an F factor of 0.0094.  Values close to this are widely cited on the internet.  Also figure 3 of http://bit.ly/11vzNe8 shows that the F factor does not deviate substantially from  0.0094.  
+	f_factor <- 0.0094
+	
+	# Helpers
+	trim <- function (x) gsub("^\\s+|\\s+$", "", x)
+	find_in_file <- function(pattern, file='exp/radiation.R'){
+		lines <- trim(readLines(file))
+		cat(paste0(lines[grepl(pattern, lines)], collapse='\n'))
+	}
+	get_study_data <- function(study_id){
+		d <- data[data$study.id == study,relevant_columns]
+		d$MAS <- d$lifespan - d$age.at.treatment
+		d
+	}
+	get_study_treatments <- function(study_id){
+		data[data$study == study,other_treatment_columns]
+	}	
+	paste_unique <- function(x) paste(unique(x), collapse=' ')
+	summarize_numeric <- function(x){
+		n <- length(x)
+		na_message <- ''
+		if(any(is.na(x))){
+			na_message <- paste0(' missing ', sum(is.na(x)))
+		}
+		paste0(
+			round(mean(x, na.rm=T), 1),
+			' +/- ',
+			round(sd(x, na.rm=T)/n^0.5, 1),
+			na_message
+		)
+	}
+	id_order <- function(id) order(as.numeric(gsub('^.*-', '', id)))
+	summarize_study_data <- function(study_data){
+		summary <- ddply(study_data, .(group.id), function(df){
+			numeric <- names(df) %in% numeric_columns
+			data.frame(
+				n=nrow(df),
+				llply(df[,!numeric], paste_unique),
+				llply(df[,numeric], summarize_numeric)
+			)
+		})	
+		summary <- summary[id_order(summary$group.id),]	
+		rownames(summary) <- summary$group.id
+		summary
+	}
+	get_numeric_factor <- function(...){
+		as.numeric(as.factor(paste(...)))
+	}
+	print_for_copy <- function(x) cat(paste0(x, collapse='",\n"'))
+	add_exclusions <- function(exclusions, data){
+		for(ex in exclusions){
+			who_new <- ex$who & !data$exclude
+			data$exclude[ex$who] <- TRUE
+			data$reason[who_new] <- ex$why
+		}
+		data
+	}
+	add_warnings <- function(warnings, data){
+		for(w in warnings){
+			who_new <- w$who & !data$warning
+			data$warning[w$who] <- TRUE
+			data$warning_reason[who_new] <- w$why
+		}
+		data
+	}
+	table0 <- function(...) table(..., useNA='ifany')
+	collapse_paste <- function(...) paste(..., collapse=' ')
+	paste_columns <- function(df) unlist(alply(df, 1, collapse_paste))
+
+	###
+	# Pick a study
+	study <- '1003-21'
+	
+	# Get Data
+	study_data <- get_study_data(study)
+	study_treatments <- get_study_treatments(study)
+	
+	# Filter
+	filter <- with(study_data,		
+		(quality == 'gamma-rays whole body' | is.na(quality)) &
+		dose < 180
+	)
+	study_data <- study_data[filter,]
+	study_treatments <- study_treatments[filter,]
+	
+	# Check for existing problems
+	find_in_file(study)
+	
+	# Fix problems
+	groups <- with(study_data, paste(quality, dose, sex))
+	print_for_copy(sort(unique(groups)))
+	ordered_groups <- c(
+		"NA 0 Male",
+		"NA 0 Female",
+		"gamma-rays whole body 86.31 Male",
+		"gamma-rays whole body 86.31 Female",
+		"gamma-rays whole body 137.14 Male",
+		"gamma-rays whole body 137.14 Female"
+	)
+	ids <- match(groups, ordered_groups)
+	study_data$group.id <- paste0(study_data$study.id, '-', ids)
+	
+	# cGy to Gy
+	study_data$dose <- study_data$dose / 100
+	study_data$dose_rate <- study_data$dose_rate / 100
+	
+	# Control quality
+	study_data$quality[study_data$dose == 0] <- 'none (controls)'
+	
+	# Exclude
+	exclusions <- list(
+		list(
+			who=study_data$group.id %in% c(
+				'1003-21-6'
+			),
+			why="see exclusion-1 in radiation.R"
+		),
+		list(
+			who=study_data$cause_of_death %in% c(
+				"Removal to another experiment", 
+				"Discard"
+			),
+			why="see exclusion-2 in radiation.R"
+		)
+	)
+			
+	study_data <- add_exclusions(exclusions, study_data)
+	
+	# Vet
+	study_data$is_vetted <- TRUE
+	
+	# Merge
+	rows <- match(study_data$id, data$id)
+	cols <- relevant_columns
+	data[rows,cols] <- study_data[,cols]
+
+	# Save checkpoint
+	setwd('~/janus/scripts')
+	saveRDS(data, '../data/external4.6.rds')
+
+	
+	###
+	# Pick a study
+	study <- '1003-27'
+
+	# Restore from checkpoint
+	setwd('~/janus/scripts')
+	data <- readRDS('../data/external4.6.rds')
+
+	# Read title/basic description
+	
+	# Get Data
+	
+	study_data <- get_study_data(study)
+	study_treatments <- get_study_treatments(study)
+
+	# Check for existing problems
+	find_in_file(study)
+	
+	# Filter
+	# so we only have the groups needed to estimate ddref
+	filter <- with(study_data,		
+		(is.na(quality) | quality == 'gamma-rays whole body') &
+		dose < 150
+	)
+	study_data <- study_data[filter,]
+	study_treatments <- study_treatments[filter,]
+		
+	# Fix problems
+	# but only the ones that might affect ddref estimates
+	# 
+	# regroup
+	groups <- with(study_data, paste(quality, dose, fractions))
+	print_for_copy(sort(unique(groups)))
+	ordered_groups <- c(
+		"NA 0 24",
+		"NA 0 1",
+		"gamma-rays whole body 86.31 1",
+		"gamma-rays whole body 137.14 1"
+	)
+	ids <- match(groups, ordered_groups)
+	study_data$group.id <- paste0(study_data$study.id, '-', ids)
+	# cGy -> Gy
+	study_data$dose <- study_data$dose / 100
+	study_data$dose_rate <- study_data$dose_rate / 100
+	# control quality
+	study_data$quality[study_data$dose == 0] <- 'none (controls)'
+	
+	# Check data
+	s <- summarize_study_data(study_data[
+		study_data$cause_of_death %in% c('Died', 'Sacrifice, moribund')
+	,])
+	# MAS/lifespan
+	s[,c('n', 'group.id', 'sex', 'MAS')]	
+	# dose
+	s[,c('n', 'group.id', 'sex', 'dose')]
+	# fractions
+	s[,c('n', 'group.id', 'sex', 'fractions')]
+	# dose_rate
+	s[,c('n', 'group.id', 'sex', 'dose_rate')]	
+	# other treatments
+	unique(study_treatments)
+	# quality
+	s[,c('n', 'group.id', 'sex', 'quality')]	
+	# fraction_interval
+	s[,c('n', 'group.id', 'sex', 'fraction_interval')]	
+	# fraction_time
+	s[,c('n', 'group.id', 'sex', 'fraction_time')]	
+	# cluster
+	s[,c('n', 'group.id', 'sex', 'cluster')]	
+
+	# Add exclusions
+	exclusions <- list(
+		list(
+			who=!study_data$cause_of_death %in% c(
+				'Died', 
+				'Sacrifice, moribund'
+			),
+			why="see exclusion-3 in radiation.R"
+		)
+	)
+	study_data <- add_exclusions(exclusions, study_data)
+	
+	# Vet
+	study_data$is_vetted <- TRUE
+	
+	# Merge
+	rows <- match(study_data$id, data$id)
+	cols <- relevant_columns
+	data[rows,cols] <- study_data[,cols]
+	
+	# Save checkpoint
+	setwd('~/janus/scripts')
+	saveRDS(data, '../data/external4.7.rds')
+	
+	# Followup
+	# full clean/save (below)
+	# remove references in ddref.R
+	# update focal study in ddref.R
+	# rerun funnel in ddref.R
+	# rerun 'more beir' in ddref.R
+	# check the lifespan graph in ddref.R
+
+
+	###
+	# Pick a study
+	study <- '1007-2'
+
+	# Restore from checkpoint
+	setwd('~/janus/scripts')
+	data <- readRDS('../data/external4.7.rds')
+
+	# Read title/basic description
+	
+	# Get Data
+	study_data <- get_study_data(study)
+	study_treatments <- get_study_treatments(study)
+
+	# Check for existing problems
+	find_in_file(study)
+	
+	# Filter
+	# so we only have the groups needed to estimate ddref
+	filter <- with(study_data,		
+		TRUE
+	)
+	study_data <- study_data[filter,]
+	study_treatments <- study_treatments[filter,]
+		
+	# Fix problems
+	# but only the ones that might affect ddref estimates
+	# 
+	# missing dose rate
+	study_data$dose_rate <- 0.4
+	# missing fractions
+	study_data$fractions <- 1
+	# missing fraction_time
+	study_data$fraction_time <- study_data$dose / study_data$dose_rate
+	# flawed clusters
+	study_data$cluster[study_data$strain == 'Mouse, C3Hf/Bd'] <- '1007-2-2'
+	
+	# Check data
+	s <- summarize_study_data(study_data[
+	,])
+	# MAS/lifespan
+	s[,c('n', 'strain', 'sex', 'lifespan')]	
+	# dose
+	s[,c('n', 'strain', 'sex', 'dose')]
+	# fractions
+	s[,c('n', 'strain', 'sex', 'fractions')]
+	# dose_rate
+	s[,c('n', 'strain', 'sex', 'dose_rate')]	
+	# other treatments
+	unique(study_treatments)
+	# quality
+	s[,c('n', 'strain', 'sex', 'quality')]	
+	# fraction_interval
+	s[,c('n', 'strain', 'sex', 'fraction_interval')]	
+	# fraction_time
+	s[,c('n', 'strain', 'sex', 'fraction_time')]	
+	# cluster
+	s[,c('n', 'strain', 'sex', 'cluster')]	
+	# treatment age
+	s[,c('n', 'strain', 'sex', 'age.at.treatment')]	
+
+	# Add exclusions
+	exclusions <- list(
+	)
+	study_data <- add_exclusions(exclusions, study_data)
+	
+	# Vet
+	study_data$is_vetted <- TRUE
+	
+	# Merge
+	rows <- match(study_data$id, data$id)
+	cols <- relevant_columns
+	data[rows,cols] <- study_data[,cols]
+	
+	# Save checkpoint
+	setwd('~/janus/scripts')
+	saveRDS(data, '../data/external4.8.rds')
+	
+	# Followup
+	# update template (below)
+	# full clean/save (below)
+	# follow ddref.R instructions (on paper)
+
+
+	###
+	# Pick a study
+	study <- '1007-3'
+
+	# Restore from checkpoint
+	setwd('~/janus/scripts')
+	data <- readRDS('../data/external4.8.rds')
+
+	# Read title/basic description
+	
+	# Get Data
+	study_data <- get_study_data(study)
+	study_treatments <- get_study_treatments(study)
+
+	# Check for existing problems
+	find_in_file(study)
+	
+	# Filter
+	# so we only have the groups needed to estimate ddref
+	filter <- with(study_data,		
+		TRUE
+	)
+	study_data <- study_data[filter,]
+	study_treatments <- study_treatments[filter,]
+		
+	# Fix problems
+	# but only the ones that might affect ddref estimates
+	# source: Ullrich 1979 jstor.org/stable/pdfplus/3575012.pdf
+	study_data$strain <- 'Mouse, RFM/Un'
+	study_data$unit <- 'grays'
+	study_data$dose[study_data$group.id == '1007-3-7'] <- 3
+	study_data$fractions <- 1  
+	study_data$dose_rate <- 0.45
+	study_data$fraction_time <- with(study_data, dose / dose_rate) 
+	  
+	
+	# Check data
+	s <- summarize_study_data(study_data[
+	,])
+	# MAS/lifespan
+	s[,c('n', 'sex', 'dose', 'lifespan')]		
+	# dose
+	s[,c('n', 'sex', 'dose')]
+	# fractions
+	s[,c('n', 'group.id', 'sex', 'fractions')]
+	# dose_rate
+	s[,c('n', 'group.id', 'sex', 'dose_rate')]	
+	# other treatments
+	unique(study_treatments)
+	# quality
+	s[,c('n', 'group.id', 'sex', 'quality')]	
+	# fraction_interval
+	s[,c('n', 'group.id', 'sex', 'fraction_interval')]	
+	# fraction_time
+	s[,c('n', 'group.id', 'sex', 'fraction_time')]	
+	# cluster
+	s[,c('n', 'group.id', 'sex', 'cluster')]	
+	# treatment age
+	s[,c('n', 'strain', 'sex', 'age.at.treatment')]	
+
+	# Add exclusions
+	exclusions <- list(
+		list(
+			who=study_data$group_id %in% c('1007-3-8', '1007-3-16'),
+			why="see exclusion-4 in radiation.R"
+		)
+	)
+	study_data <- add_exclusions(exclusions, study_data)
+	
+	# Add warnings
+	warnings <- list(
+		list(
+			who=study_data$id == study_data$id,
+			why="see warning-1 in radiation.R"
+		)
+	)
+	study_data <- add_warnings(warnings, study_data)
+	
+	# Vet
+	study_data$is_vetted <- TRUE
+	
+	# Merge
+	rows <- match(study_data$id, data$id)
+	cols <- relevant_columns
+	data[rows,cols] <- study_data[,cols]
+	
+	# Save checkpoint
+	setwd('~/janus/scripts')
+	saveRDS(data, '../data/external4.9.rds')
+	
+	# Followup
+	# update template (below)
+	# full clean/save (below)
+	# follow ddref.R instructions (on paper)
+	
+
+	###
+	# Pick a study
+	study <- '11-1'
+
+	# Restore from checkpoint
+	setwd('~/janus/scripts')
+	data <- readRDS('../data/external4.9.rds')
+
+	# Read title/basic description
+	
+	# Get Data
+	study_data <- get_study_data(study)
+	study_treatments <- get_study_treatments(study)
+
+	# Check for existing problems
+	find_in_file(study)
+	
+	# Filter
+	# so we only have the groups needed to estimate ddref
+	filter <- with(study_data,		
+		!study_data$quality %in% c(
+			'accel. neutrons 0.1-10 MeV',
+			'neutrons>10 MeV',
+			'neutrons 1-10 MeV'
+		) &
+		!study_data$group.id == '11-1-143'
+	)
+	study_data <- study_data[filter,]
+	study_treatments <- study_treatments[filter,]
+		
+	# Fix problems
+	# but only the ones that might affect ddref estimates
+	# source: era
+	study_data$quality[is.na(study_data$quality)] <- 'none (controls)'
+	study_data$dose[is.na(study_data$dose)] <- 0
+	study_data$fractions <- 1
+	study_data$dose_rate <- 0.06
+	study_data$fraction_time <- study_data$dose / study_data$dose_rate
+	t <- study_data$other_treatments
+	study_data$other_treatments[grepl('ovarectomy',t)] <- 'ovarectomy'
+	study_data$other_treatments[grepl('estrogen',t)] <- 'estrogen'
+	study_data$other_treatments[
+		grepl('estrogen',t) &
+		grepl('ovarectomy',t)
+	] <- 'ovarectomy & estrogen'
+	distinctions <- paste_columns(study_data[,c(
+		'strain', 'other_treatments'
+	)])
+	print_for_copy(unique(distinctions))
+	cluster_order <- c(
+		"Rat, WAG/RIJ none",
+		"Rat, WAG/RIJ estrogen",
+		"Rat, WAG/RIJ ovarectomy",
+		"Rat, WAG/RIJ ovarectomy & estrogen",
+		"Rat, Sprague Dawley (SD/RIJ) none",
+		"Rat, Sprague Dawley (SD/RIJ) estrogen",
+		"Rat, Sprague Dawley (SD/RIJ) ovarectomy",
+		"Rat, Sprague Dawley (SD/RIJ) ovarectomy & estrogen",
+		"Rat Brown Norway (BN/BRIJ) none",
+		"Rat Brown Norway (BN/BRIJ) estrogen",
+		"Rat Brown Norway (BN/BRIJ) ovarectomy",
+		"Rat Brown Norway (BN/BRIJ) ovarectomy & estrogen"
+	)
+	study_data$cluster <- paste0(study, '-', 
+		match(distinctions, cluster_order)
+	)
+	
+	# Check data
+	s <- summarize_study_data(study_data)
+	# MAS/lifespan
+	s[,c('n', 'strain', 'lifespan')]		# fail
+	# dose
+	s[,c('n', 'strain', 'dose')]
+	# fractions
+	s[,c('n', 'strain', 'fractions')]
+	# dose_rate
+	s[,c('n', 'strain', 'dose_rate')]	
+	# other treatments
+	s[,c('n', 'strain', 'other_treatments')]	
+	# quality
+	s[,c('n', 'strain', 'quality')]	
+	# fraction_interval
+	s[,c('n', 'strain', 'fraction_interval')]	
+	# fraction_time
+	s[,c('n', 'strain', 'fraction_time')]	
+	# cluster
+	s[,c('n', 'strain', 'cluster')]	
+	# treatment age
+	s[,c('n', 'strain', 'strain', 'age.at.treatment')]	
+
+	# Add exclusions
+	exclusions <- list(
+	)
+	study_data <- add_exclusions(exclusions, study_data)
+	
+	# Add warnings
+	warnings <- list(
+		list(
+			who=study_data$id == study_data$id,
+			why="see warning-2 in radiation.R"
+		)
+	)
+	study_data <- add_warnings(warnings, study_data)
+		
+	# Vet
+	study_data$is_vetted <- TRUE
+	
+	# Merge
+	rows <- match(study_data$id, data$id)
+	cols <- relevant_columns
+	data[rows,cols] <- study_data[,cols]
+	
+	# Save checkpoint
+	setwd('~/janus/scripts')
+	saveRDS(data, '../data/external4.10.rds')
+	
+	# Followup
+	# update template (below)
+	# full clean/save (below)
+	# follow ddref.R instructions (on paper)
+	
+	###
+	# Pick a study
+	study <- '11-2'
+
+	# Restore from checkpoint
+	setwd('~/janus/scripts')
+	data <- readRDS('../data/external4.10.rds')
+
+	# Read title/basic description
+	
+	# Get Data
+	study_data <- get_study_data(study)
+	study_treatments <- get_study_treatments(study)
+
+	# Check for existing problems
+	find_in_file(study)
+	
+	# Filter
+	# so we only have the groups needed to estimate ddref
+	filter <- with(study_data,		
+		!study_data$quality %in% c(
+			"accel. neutrons 0.1-10 MeV",
+			"neutrons 1-10 MeV",
+			"neutrons>10 MeV",
+			"X-rays local"
+		)
+	)
+	study_data <- study_data[filter,]
+	study_treatments <- study_treatments[filter,]
+		
+	# Fix problems
+	# but only the ones that might affect ddref estimates
+	study_data$fractions <- 1
+	corrections <- list(
+		list(
+			fractions=5, fraction_interval=4*7/5,
+			groups=c(3)
+		),list(
+			fractions=10, fraction_interval=1*30.5,
+			groups=c(8,9,11,12,17)
+		),list(
+			fractions=20, fraction_interval=7/2,
+			groups=c(13,18)
+		),list(
+			fractions=10, fraction_interval=7/5,
+			groups=c(14,19,29,30)
+		),list(
+			fractions=120, fraction_interval=12/120,
+			groups=c(38,39,44,45)
+		),list(
+			fractions=5, fraction_interval=7,
+			groups=c(58)
+		),list(
+			fractions=10, fraction_interval=7,
+			groups=c(71:74,77,78)
+		),list(
+			fractions=5*4, fraction_interval=7/5,
+			groups=c(110,114,118,121)
+		),list(
+			dose=2.0,
+			groups=c(47)
+		),list(
+			strain='Rat, WAG/RIJ', 
+			groups=c(67)
+		),list(
+			quality='X-rays whole body', 
+			groups=c(78)
+		),list(
+			dose=0.2, 
+			groups=c(100)
+		),list(
+			dose=0.4, 
+			groups=c(110, 112, 114)
+		),list(
+			dose=0.4, 
+			groups=c(124,125)
+		),list(
+			dose=0.6, 
+			groups=c(126)
+		),list(
+			dose=1.6, 
+			groups=c(127,128,129)
+		),list(
+			quality='gamma-rays local', 
+			other_treatments='none',
+			groups=c(124:127,129)
+		)	
+	)
+	for(c in corrections){
+		feilds <- names(c)[!names(c) %in% 'groups']
+		
+		for(f in feilds){
+			s <- study_data$group.id %in% paste0(study, '-', c$groups)
+			study_data[s, f] <- c[[f]]
+		}
+	}
+	study_data$dose[is.na(study_data$dose)] <- 0
+	study_data$quality[is.na(study_data$quality)] <- 'none (controls)'
+	study_data$dose_rate[is.na(study_data$dose_rate)] <- 0
+	study_data$unit <- 'grays'
+	study_data$dose_rate[
+		study_data$quality == 'gamma-rays whole body' &
+		study_data$fractions == 1
+	] <- 0.9
+	study_data$dose_rate[
+		study_data$quality == 'gamma-rays whole body' &
+		study_data$fractions > 1
+	] <- 0.001
+	study_data$dose_rate[
+		study_data$quality == 'X-rays whole body'
+	] <- 0.06
+	study_data$fraction_time = with(study_data, 
+		dose / (dose_rate*fractions)
+	)
+	study_data$other_treatments[
+		grepl('estrogen', study_data$other_treatments)
+	] <- 'estrogen'
+	study_data$cluster <- ""
+	clusters <- list(
+		c(1:3),
+		c(7:13,15),
+		c(7, 16:19),
+		c(23,29),
+		c(24,30),
+		c(31,34,36,38,40,42,44),
+		c(32,35,37,39,41,43,45),
+		c(31,46:47),
+		c(49,61,71,77),
+		c(49,79,81),
+		c(50,62,72,78),
+		c(51,53:55,57:59,75),
+		c(52,56,60,76),
+		c(98,102,108,110,116,118),
+		c(99,100,104,112,114,119,121)
+	)
+	for(i in 1:length(clusters)){
+		groups <- paste0(study, '-', clusters[[i]])
+		s <- study_data$group.id %in% groups
+		study_data[s,'cluster'] <- paste0(
+			study_data[s,'cluster'], " ",
+			study, '-', i
+		)
+	}
+
+	# Refilter
+	filter <- with(study_data,		
+		!study_data$quality %in% c(
+			"gamma-rays local"
+		)
+	)
+	study_data <- study_data[filter,]
+	study_treatments <- study_treatments[filter,]
 
 		
+	# Check data
+	s <- summarize_study_data(study_data[
+		!study_data$exclude
+	,])
+	# MAS/lifespan
+	s[,c('n', 'strain', 'lifespan')]	# fail	
+	# dose
+	s[,c('n', 'strain', 'dose')]
+	# unit
+	s[,c('n', 'strain', 'unit')]
+	# fractions
+	s[,c('n', 'strain', 'fractions')]
+	# fraction_interval
+	s[,c('n', 'strain', 'fraction_interval')]	
+	# quality
+	s[,c('n', 'strain', 'quality')]	
+	# dose_rate
+	s[,c('n', 'quality', 'dose_rate')]	
+	# fraction_time
+	s[,c('n', 'strain', 'fraction_time')]	
+	# other treatments
+	s[,c('n', 'other_treatments')]	
+	# cluster
+	s[,c('n', 'strain', 'cluster')]	
+	# treatment age
+	s[,c('n', 'strain', 'sex', 'age.at.treatment')]	
+
+	# Add exclusions
+	exclusions <- list(
+		list(
+			who=study_data$group.id %in% paste0(study,'-',c(
+				12, 15, 33, 48, 65:70, 73:74, 80
+			)),
+			why="see exclusion-5 in radiation.R"
+		),
+		list(
+			who=study_data$group.id %in% paste0(study,'-',c(
+				79:81
+			)) | study_data$id %in% c(
+				'11-2-98-100',
+				'11-2-99-83'
+			),
+			why="see exclusion-6 in radiation.R"
+		),
+		list(
+			who=study_data$group.id %in% paste0(study,'-',c(
+				39,45,46
+			)) &
+				study_data$lifespan == 0,
+			why="see exclusion-7 in radiation.R"
+		)
+	)
+	study_data <- add_exclusions(exclusions, study_data)
+	
+	# Add warnings
+	warnings <- list(
+		list(
+			who=study_data$id == study_data$id,
+			why="see warning-3 in radiation.R"
+		)
+	)
+	study_data <- add_warnings(warnings, study_data)
+		
+	# Vet
+	study_data$is_vetted <- TRUE
+	
+	# Merge
+	rows <- match(study_data$id, data$id)
+	cols <- relevant_columns
+	data[rows,cols] <- study_data[,cols]
+	
+	# Save checkpoint
+	setwd('~/janus/scripts')
+	saveRDS(data, '../data/external4.???.rds')
+	
+	# Followup
+	# update template (below)
+	# full clean/save (below)
+	# follow ddref.R instructions (on paper)
+	
+
+	@here
+
+
+# Exclusions
+# The reasons for some exclusions are too cumbersome to fill in
+# a dataframe, so I will list them in detail here.
+#
+# exclusion-1: These groups (6/S5 and 8/S6) appear to have been abandoned.  They have lifespans hundreds of days shorter than equivilant male groups, unlike other gender matched treatments which have much smaller differences. There MAS is not listed in the era summary tables.  see:https://era.bfs.de/studies_details.php?LabId=1003&StudyId=21.  Finally the cause of death is almost always listed as 'discard' or 'remove to another experiment'.
+# exclusion-2: The cause of death for these animals is listed as 'discard' or 'removal to another experiment' meaning they were not lifespan studies.  Removal of these animals from groups 2 and 3 causes their MAS values to match what is seen in the era descriptions.  https://era.bfs.de/studies_details.php?LabId=1003&StudyId=21
+# exclusion-3: Some animals were discarded (24), missing (25), moved to other experiments (6), or suffered accidental deaths (14).  These are not included in published summary tables e.g. http://janus.northwestern.edu/janus2/reports/complete.pdf table 14 and should not be included in my analysis because they did not live complete lifespans.
+# exclusion-4: These groups have mean lifespans that differ substantially (more than one standard deviation) from those reported in the literature (table 1 of Ullrich 1979 - jstor.org/stable/pdfplus/3575012.pdf).  This seems to be because of a number of exclusions due to lost or sacrificed animals which can no longer be detected in this version of the dataset.
+# exclusion-5: These groups recieved some form of estrogen exposure, but given this exposure, they do not have a sufficient number of different treatments to be included (need 3 or more).  We could simply put them in different clusters and they would be eliminated during the funnel, but easier to eliminate them here.
+# exclusion-6: These groups all include animals with an age of death of 6993 days, clearly impossible.
+# exclusion-7: These animals have impossible lifespans, 0.  11-2-39 has exactly 8 animals with a lifespan of 0 and there are 8 more in the data than in the description.  The remaining animals from groups 11-2-45 and 46 have simply been excluded.
+
+# Warnings
+# Some data might be excluded from analysis or might be kept in, this 
+# contains descriptions of why.
+#
+# warning-1: Mean lifespan in the groups in this study varied from those reported in the formal literature (table 1 of Ullrich 1979 - jstor.org/stable/pdfplus/3575012.pdf).  Two groups varied substantially as noted in exclusion-4.  The others varied by 0-8 days, always less than one standard deviation.
+# warning-2: I could not find an external source to verify lifespan or even the animals per treatment group for this study.  The only source that had a table (Solleveld, Leukemia Research Vol 10 No 7 pp 755-759) had animal number and lifespand different than what is reported here.
+# warning-3: As with 11-1, I could not find an external source to verify lifespan or even the animals per treatment group for this study.  See validation_of_11-1_and_11-2.txt for my work on finding sources.
+
+## 1007-3 groups 8 and 16 include animals which were excluded from formal reports because they were sacrificed or were lost to followup in some other way.  The mean average lifespan that can be calculcated from ERA data is substantially different than that seen in the published literature.  Concretely, 1007-3-8 is off by 21 days (614 vs 635).  1007-3-16 is off by 122 days (294 vs 417) when compared to table 1 of Ullrich 1979 - jstor.org/stable/pdfplus/3575012.pdf.  Other groups in this study are affected as well, but by less than one standard deviation.  
+
+3-2			found, variable xray doses
+3-4			found, variable xray doses
+3-5			found, variable xray
+9-5			found, varaible gamma
+9-6			found, variable gamma
+9-7			found, varaible xray
+
+1002-1		missing, fractionated xrays
+1008-3		missing, variable gamma
+3-1			missing, variable xray doses
+9-8			missing, variable xray
+
+1007-1		ineligable, not enough doses below 1.5
+
+
+	###
+	# Pick a study
+	study <- '???'
+
+	# Restore from checkpoint
+	setwd('~/janus/scripts')
+	data <- readRDS('../data/external4.???.rds')
+
+	# Read title/basic description
+	
+	# Get Data
+	study_data <- get_study_data(study)
+	study_treatments <- get_study_treatments(study)
+
+	# Check for existing problems
+	find_in_file(study)
+	
+	# Filter
+	# so we only have the groups needed to estimate ddref
+	filter <- with(study_data,		
+		???
+	)
+	study_data <- study_data[filter,]
+	study_treatments <- study_treatments[filter,]
+		
+	# Fix problems
+	# but only the ones that might affect ddref estimates
+	
+	# Check data
+	s <- summarize_study_data(study_data[
+	,])
+	# MAS/lifespan
+	s[,c('n', 'strain', 'sex', 'MAS')]	
+	# dose
+	s[,c('n', 'strain', 'sex', 'dose')]
+	# fractions
+	s[,c('n', 'strain', 'sex', 'fractions')]
+	# dose_rate
+	s[,c('n', 'strain', 'sex', 'dose_rate')]	
+	# other treatments
+	unique(study_treatments)
+	# quality
+	s[,c('n', 'strain', 'sex', 'quality')]	
+	# fraction_interval
+	s[,c('n', 'strain', 'sex', 'fraction_interval')]	
+	# fraction_time
+	s[,c('n', 'strain', 'sex', 'fraction_time')]	
+	# cluster
+	s[,c('n', 'strain', 'sex', 'cluster')]	
+	# treatment age
+	s[,c('n', 'strain', 'sex', 'age.at.treatment')]	
+
+	# Add exclusions
+	exclusions <- list(
+		list(
+			who=???,
+			why="see exclusion-??? in radiation.R"
+		)
+	)
+	study_data <- add_exclusions(exclusions, study_data)
+	
+	# Add warnings
+	warnings <- list(
+		list(
+			who=???,
+			why="see warning-??? in radiation.R"
+		)
+	)
+	study_data <- add_warnings(warnings, study_data)
+		
+	# Vet
+	study_data$is_vetted <- TRUE
+	
+	# Merge
+	rows <- match(study_data$id, data$id)
+	cols <- relevant_columns
+	data[rows,cols] <- study_data[,cols]
+	
+	# Save checkpoint
+	setwd('~/janus/scripts')
+	saveRDS(data, '../data/external4.???.rds')
+	
+	# Followup
+	# update template (below)
+	# full clean/save (below)
+	# follow ddref.R instructions (on paper)
+	
+
+
+	
+
+
+
+	
+	# Clean
+	
+	# Adopt new naming style
+	data$group_id <- data$group.id
+	data$study_id <- data$study.id
+	data$group_name <- data$group.name
+	data$lifestage_at_treatment <- data$lifestage.at.treatment
+	data$age_at_treatment <- data$age.at.treatment
+	data$pathology_description <- data$pathology.description
+	
+	# Dump old names
+	data <- data[,!grepl('\\.', names(data))]
+	
 	# Save
 	setwd('~/janus/scripts')
 	saveRDS(data, '../data/external5.rds')
@@ -2940,13 +3953,13 @@ c(
 ## 1003-20-20-41 are missing or almost missing from the era.  Perhaps they are in janus?
 ## 1003-20-42 has only 187 animals, it should have 200
 ## 1003-20-47 to 48 claim they are 0.8 neutrons here, but they are listed as 0.2 neutrons in the era description.  Double check these.
-## 1003-22-1 to 14 have doses that are 10x lower in the description than in the data I have
-## 1003-22-22 has a dose of 12 in the table, but only 1.2 in the database.  Which is right?
+## 1003-22-1 to 14 have doses that are 10x lower in the description than in the data I have RESOLVED: the database is correct and the description is wrong as can be seen when comparing to the Janus documentation table 9, http://janus.northwestern.edu/janus2/reports/complete.pdf
+## 1003-22-22 has a dose of 12 in the table, but only 1.2 in the database.  Which is right? 
 ## 1003-23-7 to 8 are listed as gamma in the data but neutron in the descriptions
-## 1003-24-4 is listed as 4.17 in the data and 417 in the era description.  I am inclined to trust the data because it is consistent with treatment 1003.24.3
-## 1003-27 is listed as species mouse, but this is inacurate these are peromyscus, strain leucopus.  They are more distant from mice than rats are.
+## 1003-27 is listed as species mouse, but this is inacurate these are peromyscus, strain leucopus.  They are more distant from mice than rats are.  RESOLVED I used janus data
 ## 1003-27-1 says its type sham exposure in the data but is listed as none in the description.  This is as opposed to 1003.27.2 which is listed as a sham exposure in both sources.
-## 1003-27-3 has 200 mice in the data but claims it should have 455 in the description
+## 1003-27-3 has 200 mice in the data but claims it should have 455 in the description RESOLVED the era table is wrong.  http://janus.northwestern.edu/janus2/reports/complete.pdf Table 14 shows that only 200 mice are expected.
+## 1003-24-4 is listed as 4.17 in the data and 417 in the era description.  I am inclined to trust the data because it is consistent with treatment 1003.24.3
 ## 1003-29-23 is listed as 4 Gy in the description, but as 0.4 Gy in the raw data.  I am inclined to believe the data because it is consistent with 1003.29.24, but I need to be sure.
 ## 1003-30-1 to 4 dose is listed as <NA> but it should be zero as it is in other control cases.
 ## 1003-30-3 to 4 and 7 to 10 and 13 to 20 are all injected with radioprotectors and should be removed from this analysis.  Also, the fact that these are listed as neutron and gamma exposures while the controls are listed as saline control and WR-2721 is decieving, this should be made consistent in the database.  The same problem occurs with the units which are sometimes grays and sometimes units of solution.  And the Application which is 'not applied' rather than 'external' 
@@ -2967,15 +3980,14 @@ c(
 ## 1007-1-4 to 6, strain is listed as BFM, the appears as RFM/Bd in the description
 ## 1007-2-1 has one more mouse in the data than in the description
 ## 1007-2-11 has two more mice in the data than in the description
+## 1007-2 dose rate is listed as 4 Gy/min in the era description and should be 0.4Gy/min by http://www.jstor.org/stable/pdfplus/3577229.pdf?acceptTC=true
 ## 1007-2-16 has two less mice in the data than in the description
 ## 1007-2-7 has two less mice in the data than in the description 
-## 1007-3 lists ages as 7 weeks +/- 0.5 weeks.  This seems like a reasonable standard error to assume
-## 1007-3 remove serial sacrifices from 1007.3
-## 1007-3 these are listed as BFM mice here and RFM mice in the database (like another before)
-## 1007-3-1 and 8 have units in rads even though they are control animals with a dose of zero and the rest have units in grays
+## 1007-3 these are listed as RFM/Un mice here and BFM mice in the database (like another before).  RESOLVED: the description is correct according to http://www.jstor.org/stable/pdfplus/3575059.pdf
+## 1007-3-1 and 8 have units in rads even though they are control animals with a dose of zero and the rest have units in grays.  RESOLVED: updated the database to call these gray too
 ## 1007-3-16 the data has 2165 mice while the description reports that there are 3707
 ## 1007-3-17, 18 and 19 missing, 18 and 19 are serial sacrifices, so its probalby fine.  17 is the highest dose group so it would be nice to find what happend to them.
-## 1007-3-7 is reported to have 0.3 Gray doses in the data and 3 gray does in the description.  I think the description is more sensible here because it fits the progression.
+## 1007-3-7 is reported to have 0.3 Gray doses in the data and 3 gray does in the description.  I think the description is more sensible here because it fits the progression. RESOLVED: the description is correct the data is wrong and has been updated.  See http://www.jstor.org/stable/pdfplus/3575059.pdf Table I
 ## 1008-3 is insufficiently described in era to validate.  It must be checked against a third party if it is to be used at all.
 ## 1008-3 is missing all data on gender as noted before
 ## 1008-3 treatment ages imply that gestation is 60 days long, for example '8 d post coitus' in the description corresponds to -52 days in the data.  I should double check this gestation time for beagles.
@@ -2988,30 +4000,30 @@ c(
 ## 11-1-45 has 46 mice in our dataset and only 40 listed in the description
 ## 11-1-45 has 61 mice in our dataset and only 60 listed in the description
 ## 11-2 I will need to find an outside source to check age at first irradiation against.
-## 11-2 some of these doses are in milligrams even though it appears at first glance that they would be rightly interpreted as a dose in gray instead.
+## 11-2 some of these doses are in milligrams even though it appears at first glance that they would be rightly interpreted as a dose in gray instead.  RESOLVED No longer a problem
 ## 11-2 the description does not indicate which groups are which age, it also indicates that some groups are 17 week and 4 weeks old.  The 17 week old animals appear in the data, but not the 4 week olds.
-## 11-2-110 to 115 are listed as 0.04 Gy in the data and 0.4 gray in the description.  The description strikes me as more accurate since it fits the progression.   
-## 11-2-12 and 13 seem to have their n's switched in the description.
-## 11-2-12 claims to have estrogen treatment but its not even close to the groups that were to recieve estrogen treatment which start at groups 32 and higher.  Given that this is wrong and its n value is wrong it seems quite suspicious like its from far later and suddenly inserted here.  However it is also possible that it's actually group 14 and the oestrad. treatment this group recieved is being labled as estrogen.  This is made more possible by the fact that 11-2-15 is wrongly labeled as an estrogen recieving animal, though it is in the same category that recieved oestrad in this treatment.
-## 11-2-12 is listed as having 58 rats in the description, but the data has 120 examples
-## 11-2-12 is listed as recieving estrogen and xrays in the data but not in the description
+## 11-2-110 to 115 are listed as 0.04 Gy in the data and 0.4 gray in the description.  The description strikes me as more accurate since it fits the progression.
+## 11-2-12 and 11-2-13 seem like they might be reversed... RESOLVED (see above)
+## 11-2-12 claims to have estrogen treatment but its not even close to the groups that were to recieve estrogen treatment which start at groups 32 and higher.  Given that this is wrong and its n value is wrong it seems quite suspicious like its from far later and suddenly inserted here.  However it is also possible that it's actually group 14 and the oestrad. treatment this group recieved is being labled as estrogen.  This is made more possible by the fact that 11-2-15 is wrongly labeled as an estrogen recieving animal, though it is in the same category that recieved oestrad in this treatment.  RESOLVED it is clear from the pattern in the data that what is listed as 14 in the description ought to be 12.  This also means that 12 should be 13 and 13 should be 14.
+## 11-2-12 is listed as having 58 rats in the description, but the data has 120 examples.  RESOLVED (see above)
+## 11-2-12 is listed as recieving estrogen and xrays in the data but not in the description.  RESOLVED (see above)
 ## 11-2-129 has 9 in our data and 19 in the description
 ## 11-2-129 is listed as having 19 mice in the description and only has 9 in the database.
-## 11-2-13 is listed as having 60 rats in the description, but the data has 58 examples.  Notably this is the (incorrect) number listed in the description for 11-2-12.  So maybe someone skipped 120 on data entry?
-## 11-2-14 does not appear in the multiple treatments and should according to the description.  Perhaps it has been flipped with 11-2-12?
+## 11-2-13 is listed as having 60 rats in the description, but the data has 58 examples.  Notably this is the (incorrect) number listed in the description for 11-2-12.  So maybe someone skipped 120 on data entry?    RESOLVED (see above)
+## 11-2-14 does not appear in the multiple treatments and should according to the description.  Perhaps it has been flipped with 11-2-12?  RESOLVED (see above)
 ## 11-2-15 is labeled as recieving estrogen treatment, but actually it got oestrad. treatment.  Possible error.
-## 11-2-15 is listed as including 20 rats in the description.  In the data there are 40.
+## 11-2-15 is listed as including 20 rats in the description.  In the data there are 40.  RESOLVED No longer a problem
 ## 11-2-20 does not appear in the description.  Instead 21 appears twice.  I suggest that the first of these apperances at a dose of 0.1 Gy should actually be labeled 20
 ## 11-2-21 appears twice in the descriptions.  I assume the first appearance is actually 20.  
 ## 11-2-31 - 48 are listed as included the proper radiation treatment, but many also recieved estrogren and oestrogen treatments.  I need to check if the other columns confirm these treatments.
 ## 11-2-33 is listed has including 30 rats in the description, but includes 60 rats in the data
-## 11-2-34 to 48 there are many mistakes in the number of rats listed from 11-2-34 to 48
-## 11-2-39 has 48 mice in our dataset and only 40 in the description.  The description seems more sane...    
-## 11-2-56 is listed as including 40 rats in the description, but has 80 rats in the database.
-## 11-2-60 is listed as including 20 rats in the description, but has 40 rats in the database.
-## 11-2-61 - 70 have twice as many rats in the database as are listed in the description.
-## 11-2-67 is labeled as a Sprague Dawl strain in the data but is a WAG/RIJ according to the description which fits the general pattern.
-## 11-2-78 is listed as recieving gamma ray exposure in our data, but it recieved X-ray exposure in the data.
+## 11-2-34 to 48 there are many mistakes in the number of rats listed from 11-2-34 to 48  RESOLVED No longer a problem
+## 11-2-39 has 48 mice in our dataset and only 40 in the description.  The description seems more sane.  RESOLVED there are 8 animals in this groups with an impossible lifespan of zero.  These seem to be erroneous.
+## 11-2-56 is listed as including 40 rats in the description, but has 80 rats in the database.  RESOLVED No longer a problem
+## 11-2-60 is listed as including 20 rats in the description, but has 40 rats in the database.  RESOLVED No longer a problem
+## 11-2-61 - 70 have twice as many rats in the database as are listed in the description.  RESOLVED No longer a problem
+## 11-2-67 is labeled as a Sprague Dawl strain in the data but is a WAG/RIJ according to the description which fits the general pattern.   RESOLVED changed association
+## 11-2-78 is listed as recieving gamma ray exposure in our data, but it recieved X-ray exposure in the data.  RESOLVED changed to gamma ray
 ## 11-2-79 to 81 all have the same lifespan, 6993, rather implausiable
 ## 2-1 are controls for all the other 2-?? rats.  There is a strange break in 1982 where they made a new male control group for reasons that might be checked.
 ## 2-1 have no treatment ages because they are control animals, but I wonderf when they were assigned to the control condition?  Did any of them die very young?  I should be able to check.  For example the next study 2-10 used mice at age 3 months.  I should suspect that none of its controls would have died at less than 3 months.  Right?

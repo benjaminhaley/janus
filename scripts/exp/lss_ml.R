@@ -241,7 +241,6 @@
 	# *note: this is the same as AIC/2 (see next line)
 	abs(s$aic + 2*log_likelihood(data$solid, data$p1)) < 1
 	
-
 # Results:
 #
 # I compared a model closely based on the recent lls work
@@ -255,7 +254,7 @@
 # estimated at 0.42 (0.32-0.53) in Osaza's paper and 0.43 (0.36-0.50)
 # in my reconstruction.  
 #
-# The machine learning technique and poisson technique have similar 
+# The machine learning technique and Poisson technique have similar 
 # performances (log(L) ~ -16770).  But the mean of their predictions 
 # has the best performance (log(L) ~ -16725).  This suggests that the
 # best model of radiation risk will be a mix of machine learning 
@@ -264,26 +263,26 @@
 # Notably the estimates of likelihood by cross validation were very
 # similar to the estimates of likelihood by aic (AIC/2), with a 
 # difference of less than one.  However, aic can only be estimated 
-# for the poisson model while the gbm model requires cross validation.
+# for the Poisson model while the gbm model requires cross validation.
 #
 # 
 # Future Directions:
 #
-# This analalysis is very preliminary.  There are several points that
+# This analysis is very preliminary.  There are several points that
 # might be worth exploring.
 #
 #	1. Other tumor end points
 #	2. Uncertainty in risk estimates
-#	3. Characterizing differences between the poisson and gbm 
+#	3. Characterizing differences between the Poisson and gbm 
 #      predictions
 #	4. More accurate estimates of the likelihood of each model
 #      by repeated cross validation.
-#	5. Improvement in the reproduction of osaza's results.
+#	5. Improvement in the reproduction of Osaza's results.
 #
 #
 # Unsettling questions:
 #
-# In the begining I thought that I would have to weight my poisson
+# In the beginning I thought that I would have to weight my Poisson
 # regression by the number of person years at risk.  But I found that
 # this resulted in estimates of ERR with a 95% confidence interval
 # much narrower than that found by Osaza.  I don't understand why
