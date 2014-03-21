@@ -19,3 +19,6 @@ scripts/keys/*
 
 # Ignore Autosaved files
 *(Autosaved)*
+
+# Images
+*.png
