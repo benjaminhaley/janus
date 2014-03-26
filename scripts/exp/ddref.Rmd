@@ -14,7 +14,6 @@ Measure ddref, for my thesis.  ([public link][1])
   - [Metaregression](#metaregression) - Show the principals of metaregression.
 - Data
   - [Data Funnel](#data_funnel) - Which data will we analyze?
-  - [Data Cleaning](#data_cleaning) - Damn, data, you look good!
   - [Concordance](#concordance) - Show what the data looks like.
 - Analysis
   - [Reproduce BEIR 10B3](#10B3) - Show that we can fit the same model of
@@ -231,8 +230,6 @@ Create a data set that might be used for DDREF analysis and
 make a description of this data.
 
 ```{r}
-focus_study = '3-6'
-
 # LIBRARIES
 library(plyr)
 library(dplyr)
@@ -249,69 +246,86 @@ table0 <- function(...) table(..., useNA='ifany')
 
 # Report for funnel graph
 count <- function(data){
-    count_unique <- function(x) length(unique(x))
-    with(data, c(
-        studies=    count_unique(file),
-        treatments= count_unique(group_id),
-        animals=count_unique(id),
-        one_study=count_unique(id[study_id == focus_study]),
-        exclude=count_unique(id[exclude])
-    ))
+  count_unique <- function(x) length(unique(x))
+  with(data, c(
+    clusters=count_unique(cluster),
+    studies=count_unique(file),
+    treatments=count_unique(group_id),
+    animals=count_unique(id),
+    exclude=count_unique(id[exclude])
+  ))
 }
 
-# TODO(ben5) remove
-duplicate_multiclusters <- function(data){
-    # Duplicate groups that belong to multiple clusters
-    # multiclusters are space seperated and should be copied
-    # so that they belong to each cluster in the list.
-    multi <- function(df){
-        clusters <- as.character(df$cluster[1])
-        clusters <- strsplit(clusters, ' ')[[1]]
-        if(length(clusters) < 2) {
-            return(df)
-        } else {
-            result <- data.frame()
-            for(c in clusters){
-                d <- df
-                d$cluster <- c
-                result <- rbind(result, d)
-            }
-            return(result)              
-        }
-    }
-    ddply(data, .(cluster), multi)  
-}
 filter_by_n_groups <- function(data, threshold=3){
-    ddply(data, .(cluster, sex), function(df){
-        n_groups = length(unique(df$group_id))
-        if(n_groups >= threshold){
-            return(df)
-        } else {
-            return(NULL)
-        }
-    })
+  ddply(data, .(cluster, sex), function(df){
+    n_groups = length(unique(df$group_id))
+    if(n_groups >= threshold){
+      return(df)
+    } else {
+      return(NULL)
+    }
+  })
 }
-        
+
 # Define            
 bad_qualities <- c(
-    'accel. alpha local',
-    'accel. alpha whole body',
-    'accel. neutrons 0.1-10 MeV',
-    'neutrons 1-10 MeV',
-    'neutrons C-252',
-    'neutrons fission',
-    'neutrons>10 MeV',
-    'X-rays local', 
-    'gamma-rays local'
+  'accel. alpha local',
+  'accel. alpha whole body',
+  'accel. neutrons 0.1-10 MeV',
+  'neutrons 1-10 MeV',
+  'neutrons C-252',
+  'neutrons fission',
+  'neutrons>10 MeV',
+  'X-rays local', 
+  'gamma-rays local',
+  'Bremsstrahlung > 3MeV.'
 )
-        
+
+# Aliases
+# Allow a more concise representation of a name.
+# For instace ♂ is preferable to Male
+aliases <- list(
+  'quality'= c(
+    'gamma-rays Co-60'='γ-ray',
+    'gamma-rays Co-60, gamma-rays Co-60'='γ-ray',
+    'gamma-rays Co-60, gamma-rays Co-60, gamma-rays Co-60'='γ-ray',
+    'gamma-rays Cs-137'='γ-ray',
+    'gamma-rays whole body'='γ-ray',
+    'gamma-rays'='γ-ray',
+    'X-rays whole body'='X-ray'
+  ),
+  'sex'= c(
+    Both='♂/♀',
+    Female='♀',
+    Male='♂'
+  ),
+  'lab'= c(
+    '2'='CEN-FAR',
+    '3'='ENEA',
+    '9'='SCK/CEN'
+    '11'='TNO',
+    '1002'='DAVIS',
+    '1003'='ANL',
+    '1005'='ITRI',
+    '1007'='ORNL',
+    '1008'='CSU'
+  ),
+  'strain'=c(
+    'beagle'='Beagle'
+  )
+)
+
+
 threshold_dose <- 1.5
 
 # Fix
 
 # NA doses
-# d$dose[is.na(d$dose)] <- 0
-        
+d$dose[is.na(d$dose)] <- 0
+
+# NA quality
+d$quality[is.na(d$quality)] <- 'none (controls)'
+
 # Add missing fractions
 d$fractions[is.na(d$fractions)] <- 1
 d$fractions[d$fractions == 0] <- 1
@@ -321,74 +335,146 @@ d$day_fractions <- d$fractions
 s <- d$fraction_interval < 1 & !is.na(d$fraction_interval)
 d$day_fractions[s] <- d$fractions[s] * d$fraction_interval[s]
 
-# Duplicate those in multiple clusters
-d <- duplicate_multiclusters(d) 
-
-d$rand = 1:nrow(d)
+# Add lab
+d$lab <- sub('(^[0-9]*).*$', '\\1', d$study_id)
 
 # Correct Assignment age
 d <- d %.%
   group_by(cluster) %.%
   mutate(assignment_age=min(assignment_age, 
                             lifespan, 
-                            na.rm=T)) %.%
-  ungroup()
+                            na.rm=T))
 
 
 # Age at last treatment
 d$age_at_last_treatment <- d$age_at_treatment
 s <- !is.na(d$fraction_interval)
 d$age_at_last_treatment[s] <- with(d[s,], 
-    age_at_treatment + 
-    fraction_interval * (fractions - 1),
+                                   age_at_treatment + 
+                                   fraction_interval * (fractions - 1),
 )
+
+# Assign aliases
+# Replace all values in a given column with their aliases
+# e.g. replace gamma-rays with γ
+for(column in names(aliases)) {
+  for(name in names(aliases[[column]])) {
+    alias = aliases[[column]][name]
+    d[d[column] == name & !is.na(d[column]),column] <- alias
+  }
+}
+
+```
+
+#### Define Clusters
+In general we want to cluster on:
+
+  `lab, species, strain, and sex`
+```{r}
+d$cluster = with(d, paste(species, strain, sex, lab))
+```
+But also
+
+    `age_at_treatment and quality`
+
+Which require special consideration.
+ 
+##### Age at Treatment
+Was usually recorded 'as intended'.  So that all mice are declared as 56 days old at the age of treatment.  Such precision is dubious-impossible and most likely represents a reconstruction based on the methods described about the experiment.
+
+By contrast, argonne data recorded true age at treatment so that animals vary by up to 50 days within a single cluster.  These animals should not be divided into seperate clusters, because they are all adults.  By contrast animals irradiated at -4 days and 7 days old should be put into seperate age clusters because they represent very different stages of development.
+
+The most complete way to handle this situation is do define a lifestage by age for each species and use this for clustering.  But this approach is arbitrary, contrived, and needlessly complex.
+
+Instead we will define a new feild, intended_age_at_treatment.  For most groups this will be the reported age_at_treatment.  For agronne groups we will define it by the median.
+```{r}
+d$intended_age_of_treatment <- d$age_at_treatment
+labs_that_recorded_true_age_at_treatment <- c(
+  'ANL'
+)
+clusters_that_recorded_true_age_at_treatment = unique(
+  d$cluster[
+    d$lab %in% labs_that_recorded_true_age_at_treatment
+])
+for(c in clusters_that_recorded_true_age_at_treatment) {
+  d$intended_age_of_treatment[d$cluster == c] <- 
+    median(d$intended_age_of_treatment[d$cluster == c], na.rm=TRUE)
+}
+d$cluster <- paste(d$cluster, d$intended_age_of_treatment)
+```
+
+##### Radiation Quality
+We also want to cluster on quality, but its a little tricky
+because controls have a different quality, 'none (controls)' from
+irradiated animals even though they are in the same cluster.  So
+actually we want to be sure that:
+
+1. Each cluster has only 1 non-control quality
+2. Control groups are duplicated into each cluster they belong in
+```{r}
+d <- ddply(d, .(cluster), function(df) {
+  control   <- df[df$quality == 'none (controls)',]
+  treatment <- df[df$quality != 'none (controls)',]
+  
+  # Create a cluster for each non control quality
+  ddply(treatment, .(quality), function(treatment_group){
     
-            
+    # Add control to each treatment group
+    df2 <- rbind(treatment_group, control)
+    
+    # Define quality by the treatment group
+    # i.e. 
+    #    none, dose = 0  ->  gamma, dose = 0
+    df2$quality <- treatment_group$quality[1]
+    
+    # Add quality to the cluster name
+    df2$cluster <- with(df2, paste(cluster, quality))
+    
+    df2
+  })
+})
+
+
 # FILTER
 
 # Initial counts
 count(d)        
-# 34 studies, 909 treatments, 128K animals
-
-# Dose not NA
-d <- d[!is.na(d$dose),]
-count(d)
-# 29 studies, 810 treatments, 125K animals
+# 31 studies, 855 treatments, 123K animals
 
 # Only low-LET, whole body
 d <- d[!d$quality %in% bad_qualities,]     
 count(d)        
-# 28 studies, 445 treatments, 81K animals   
-    
-# Dose too high (matching BEIR specs)
+# 31 studies, 487 treatments, 79K animals   
+
+# Dose below threshold (as in BEIR VII)
 d <- d[!(d$dose > threshold_dose),] 
 count(d)        
-# 23 studies, 215 treatments, 45K animals
+# 29 studies, 259 treatments, 42K animals
 
 # Lifespan not NA
 d <- d[!is.na(d$lifespan),]
 count(d)
-# 23 studies, 215 treatments, 45K animals
+# 29 studies, 259 treatments, 42K animals
 
 # No other treatments
 d <- d[d$other_treatments == 'none',]
 count(d)
-# 23 studies, 172 treatments, 44K animals
+# 23 studies, 144 treatments, 39K animals
 
 # Remove those that should be excluded
 exclusions <- sort(unique(d$reason))
 exclusions <- exclusions[exclusions != ""]
 for(ex in exclusions){
-    d <- d[!d$reason == ex,]
-    print(ex)
-    print(count(d))
+  d <- d[!d$reason == ex,]
+  print(ex)
+  print(count(d))
 }
-# 22 studies, 166 treatments, 39K animals
-        
+# 22 studies, 138 treatments, 35K animals
+
 # Remove cases with few treatment groups    
 d <- filter_by_n_groups(d)
 count(d)        
-# 11 studies, 108 treatments, 22K animals
+# 19 studies, 126 treatments, 31K animals
 
 # Warnings
 # show, but do not remove
@@ -396,15 +482,16 @@ warnings <- sort(unique(d$warning_reason))
 warnings <- warnings[warnings != ""]
 d_wo_warnings <- d
 for(w in warnings){
-    d_wo_warnings <- d_wo_warnings[
-        !d_wo_warnings$warning_reason == w,
+  d_wo_warnings <- d_wo_warnings[
+    !d_wo_warnings$warning_reason == w,
     ]
-    print(w)
-    print(count(d_wo_warnings))
+  print(w)
+  print(count(d_wo_warnings))
 }
 d_wo_warnings <- filter_by_n_groups(d_wo_warnings)
 count(d_wo_warnings)
-# 5 studies, 43 treatments, 8.5K animals
+# 14 studies, 71 treatments, 14K animals
+
 
 # Save
 setwd('~/janus/scripts')
@@ -412,133 +499,6 @@ saveRDS(d, '../data/funneled.rds')
 ```
 
 
-<a name="cleaning"></a>
-
-Clean and Summarize
-========================================================
-DDREF data has been filtered.  Now its time to prettify it.
-
-```{r}
-    # Libraries
-    library(plyr)
-    library(ggplot2)
-    library(survival)
-    
-    # Data
-    setwd('~/janus/scripts')
-    d <- readRDS('../data/funneled.rds')
-
-    # Helpers
-    # Print treatment data
-    get_treatment <- function(data){
-        with(data, paste(
-            round(dose, 3), 'Gy',
-            'at', round(dose_rate, 3),'Gy/min', 
-            'in', fractions, 'fractions'
-        ))
-    }
-
-    # Print group summaries
-    summarize_numeric <- function(x){
-        n <- length(x)
-        na_message <- ''
-        if(any(is.na(x))){
-            na_message <- paste0(' missing ', sum(is.na(x)))
-        }
-        paste0(
-            round(mean(x, na.rm=T), 1),
-            ' +/- ',
-            round(sd(x, na.rm=T)/n^0.5, 1),
-            na_message
-        )
-    }
-    group_summary <- function(data){
-        .all <- function(x, c=' ') paste(unique(x), collapse=c)
-        treatments <- get_treatment(data)
-        with(data, c(
-            strain          = .all(strain),
-            males           = sum(sex == 'Male'),
-            females         = sum(sex == 'Female'),
-            mean_lifespan   = summarize_numeric(lifespan),
-            age_at_treatment= summarize_numeric(age_at_treatment),
-            treatments      = .all(treatments, '\n'),
-            other_treatments= .all(other_treatments),
-            warnings        = .all(warning_reason)
-        ))
-    }
-
-    # Clean
-
-    # Simplify qualities
-    # qualities need nice easy names
-    d$quality[grepl('gamma', d$quality)] <- 'gamma'
-    d$quality[grepl('controls', d$quality)] <- 'control'
-    d$quality[grepl('X-rays', d$quality)] <- 'x-ray'
-    d$source[is.na(d$source)] <- 'control'
-
-    # Symbols for genders
-    d$sex_symbol <- '♂'
-    d$sex_symbol[d$sex == 'Female'] <- '♀'
-
-    # Is acute?
-    d$acute <- d$fractions == 1 | d$dose == 0
-    d$protracted <- d$fractions > 1 & d$dose > 0
-    
-    # Other Treatments
-    d$other_treatments[d$other_treatments == 'none'] <- ''
-    
-    # Institution
-    names <- data.frame(
-        id=c("3", "9", "11", "1003", "1007"),
-        name=c("ENEA", "SCK/CEN", "RBI-TNO", "ANL", "ORNL")
-    )
-    d$institution <- gsub('-[0-9]*$', '', d$study)
-    d$institution_name <- names$name[match(d$institution, names$id)]
-
-    # Cluster names
-    ignore <- c('control', 0)
-    d$rounded_age_at_t <- d$age_at_treatment
-    d$rounded_age_at_t[d$study == '1003-21'] <- 110
-    d$rounded_age_at_t[d$study == '1003-27'] <- 135
-    u <- function(x) paste(sort(unique(x[
-        !x %in% ignore &
-        !is.na(x)
-    ])), collapse=' or ')
-    d <- ddply(d, .(cluster, sex), function(df){
-        df$cluster_name <- with(df, paste(
-            u(institution_name), u(cluster), '\n',
-            nrow(df), u(sex_symbol), u(strain), u(species), '\n',
-            u(source), u(dose_rate), 'Gy/min', '\n',
-            u(fractions), 'fraction', '\n', 
-            'starting at', u(rounded_age_at_t), 'days old'
-        ))  
-        
-        df  
-    })
-    
-    # Summaries
-    group_summaries <- ddply(d, .(group_id), function(df){
-        group_summary(df)
-    })
-    cluster_summaries <- ddply(d, .(cluster), function(df){
-        group_summary(df)
-    })  
-    write.csv(
-        group_summaries, 
-        file='results/ddref_group_summaries.csv'
-    )
-    write.csv(
-        cluster_summaries, 
-        file='results/ddref_cluster_summaries.csv'
-    )
-
-    # Save Data for later use
-    write.csv(
-        d,
-        file='data/ddref.csv'
-    )
-  
-```
         
 ### Results
 Data is filtered and saved as ddref.csv for later use.  
@@ -591,6 +551,10 @@ like.
             facet_wrap(~ cluster_name) + 
             expand_limits(y=0)
     ))}
+
+d <- d %.%
+  group_by(cluster) %.%
+  mutate(n_observations = length(cluster))
 
     # lifespan
     g <- d[d$species == 'Mouse' & d$sex == 'Male',]
