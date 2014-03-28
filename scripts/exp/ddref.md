@@ -1,11 +1,17 @@
 DDREF
 ========================================================
-Measure ddref, for my thesis.  ([public link][1])
+Measure ddref, for my thesis. ([public link][1])  
 *last update: April 2014*
 
 [1]: http://rpubs.com/benjaminhaley/ddref
 
-## Table of contents
+
+# Abstract
+TODO(ben)
+
+<a name="contents"></a>
+
+# Table of contents
 
 - Background 
   - [Defining DDREF](#defining_ddref) - What is the equation?
@@ -35,6 +41,8 @@ Measure ddref, for my thesis.  ([public link][1])
     all of the datasets.
   - [10B4 metareression on all data](#10B4-meta-all) Apply meta regression to
     all of the datasets to generate profiles.
+_____________________________________________________________________________  
+^ back to [table of contents](#contents)
 
 
 
@@ -42,10 +50,11 @@ Measure ddref, for my thesis.  ([public link][1])
 
 <a name="defining_ddref"></a>
 
-BACKGROUND: Defining DDREF
+Defining DDREF
 ========================================================
 *April 2013*
 
+##### What is DDREF?
 DDREF is defined ambiguosly.  It can be derived from acute
 exposures as 1 + Dβ/α  where response ~  D*α + D*β^2.  But for 
 the purposes of radiation protection, we need a functional 
@@ -53,6 +62,7 @@ definition, that distinguishes a cutoff of dose and doserate
 beyond which the DDREF correction ought to be used.  What are 
 these cutoffs?  I will do a literature search to find out.
 
+#### Notes
 *ICRP 2007 3.2.1 (70-73)*  
 DDREF is 2 based on LLS dose response curves, 'experimental
 data', and 'probabilistic uncerainty analysis' conducted by others
@@ -65,7 +75,6 @@ the b component to decrease and to reach zero at very low dose
 rates. The a component is not modiﬁable by changing dose rate. 
 
 *BEIR VII Chapter 2*
-
 - How B decreases with dose rate (Edwards and others 1989)
 - Estimate DDREF from animal data (Tucker and others 1998)
 - More DDREF from animals data (Lorenz and others 1994)
@@ -93,7 +102,7 @@ dose and dose rate reduction
 - pg 255 They only used the accute exposures from Edwards (1992)
        excluding tables 1 and 2
 
-*References*
+#### References
 
 - Edwards 1989, Chromosome aberrations in human lymphocytes
 - Edwards 1992, Low Dose and Low Dose Rate Effects in Laboratory Animals
@@ -106,18 +115,22 @@ dose and dose rate reduction
 - Ullrich 1987, Myeloid leukemia in male RFM mice following irradiation with 
   fission spectrum neutrons or gamma rays.
 
-*Results*
+#### Conclusions
 
-1. Survival hazard was not used in BEIR VII, only mean lifespan
-   this means I am doing something unique.
+1. Survival hazard was not used in BEIR VII, only mean lifespan.
 2. BEIR VII used 1.5 Sv as an upper threshold, because response
    falls off above this level, I should too.
 3. When doses are fractionated apply the equation:
-   a*D + B*(D^2/K), where K is the number of fractions
+   `a*D + B*(D^2/K)`, where K is the number of fractions
 4. Dealing with doserate changes is hard, pg 246 suggests that
    repair processes take up to 24 hours, so this might be a
    natural break point.
 5. Estimate DDREF at 1 Sv to make it compatible with lss estimates
+_____________________________________________________________________________  
+^ back to [table of contents](#contents)
+
+
+
 
 
 <a name="cumulative_err"></a>
@@ -223,6 +236,10 @@ thereby bias the result.
 
 I recommend including generating the cumulative excess relative
 risk graphs in my report.
+_____________________________________________________________________________  
+^ back to [table of contents](#contents)
+
+
 
 
 <a name="data_funnel"></a>
@@ -568,6 +585,11 @@ setwd("~/janus/scripts")
 saveRDS(d, "../data/funneled.rds")
 ```
 
+_____________________________________________________________________________  
+^ back to [table of contents](#contents)
+
+
+
 
 
 <a name="cleaning"></a>
@@ -654,11 +676,19 @@ saveRDS(d, "data/ddref.rds")
 write.csv(d, file = "data/ddref.csv")
 ```
 
-        
+
 ### Results
 Data is filtered and saved as ddref.csv for later use.  
 See ddref_group_summaries.csv and ddref_cluster_summaries.csv
 for some pretty results.  See also the funnel graph.
+_____________________________________________________________________________  
+^ back to [table of contents](#contents)
+
+
+
+
+
+
 
 
 <a name="concordance"></a>
@@ -708,6 +738,13 @@ ggplot(d, aes(lifespan, color = dose, group = factor(paste(dose, protracted)),
 # TODO(ben) consider a graph with a more liberal interpretation of
 # chronic, like over one minute vs under one minute.
 ```
+
+_____________________________________________________________________________  
+^ back to [table of contents](#contents)
+
+
+
+
 
 
 
@@ -848,6 +885,14 @@ I am capable of reproducing their results.  There are two tricks
   2. They weighted by n
 
 Suspiciously they do not include data from table 2, but when I add this in, it does not make a huge difference, so I assume they are just not being careful.
+_____________________________________________________________________________  
+^ back to [table of contents](#contents)
+
+
+
+
+
+
 
 
 <a name="loglike"></a>
@@ -880,7 +925,7 @@ o2
 ```
 
 ```
-## [1] 0.8918
+## [1] 1.083
 ```
 
 ```r
@@ -889,8 +934,12 @@ l - as.numeric(logLik(m))
 ```
 
 ```
-## [1] -2.842e-14
+## [1] 2.842e-14
 ```
+
+_____________________________________________________________________________  
+^ back to [table of contents](#contents)
+
 
 
 
@@ -1012,6 +1061,10 @@ It could be that the shoulder is very narrow, though this would be surprising gi
 It could also be that there is some systematic bias between chronic and high dose experiments.  For instance the high dose rate was even higher than the experimenters thought that it was.
 
 More reason for meta-analysis.
+_____________________________________________________________________________  
+^ back to [table of contents](#contents)
+
+
 
 
 
@@ -1124,6 +1177,10 @@ Chronic effects may appear better or worse than projected acute effects.  Someti
 It is no wonder that radiobiology is full of debate!  
 
 At this point we should be a bit skeptical of organizing the data in this, the BEIR VII manner.  While that approach seemed reasonable given the ORNL data that they worked with, it clearly does not generalize well.  This may be because the underlying statitical approach is flawed, or simply that these graphs a very robust way of displaying the effect.  In any case we question the 'intuitive appeal' of graph 10B3.  While it seemed quite difinitive in isolation, the effect is lost when we try to repeat it on new datasets.
+_____________________________________________________________________________  
+^ back to [table of contents](#contents)
+
+
 
 
 
@@ -1233,6 +1290,11 @@ ggsave_for_ppt("inverse_lifespan_profile.png")
     
 #### Results
 Looks bad, we are way too confident!
+_____________________________________________________________________________  
+^ back to [table of contents](#contents)
+
+
+
 
 
 
@@ -1322,6 +1384,12 @@ ggplot(data, aes(x, yi)) + geom_point() + geom_errorbar(aes(ymin = yi - vi^0.5,
 ```r
 ggsave_for_ppt("meta_regression_example.png")
 ```
+
+_____________________________________________________________________________  
+^ back to [table of contents](#contents)
+
+
+
 
 
 
@@ -1456,6 +1524,14 @@ REML
 Viechtbauer W (2005). Bias and Eciency of Meta-Analytic Variance 
 
 Estimators in the Random-Eects Model." Journal of Educational  and Behavioral Statistics, 30(3), 261-293.
+_____________________________________________________________________________  
+^ back to [table of contents](#contents)
+
+
+
+
+
+
 
 
 <a name="10B4-meta"></a>
@@ -1551,7 +1627,7 @@ data$in_my_analysis <- data$type == 'A'
 # Model
 low = -2
 high = 6
-delta = .1
+delta = .01   # Reduce to increase resolution
 o_range = (low/delta):(high/delta) * delta
 
 get_likelihoods <- function(
@@ -1607,6 +1683,12 @@ dose rate was even higher than the experimenters thought that
 it was.
 
 More reason for meta-analysis.
+_____________________________________________________________________________  
+^ back to [table of contents](#contents)
+
+
+
+
 
 
 
@@ -1819,6 +1901,13 @@ ggsave_for_ppt('meta_regression.png')
 #### Results
 
 Curves don't change that radically, though standard errors often change rather dramatically!
+_____________________________________________________________________________  
+^ back to [table of contents](#contents)
+
+
+
+
+
 
 
 
@@ -1892,7 +1981,7 @@ for (n in numerics) {
 # Model
 low = -2
 high = 6
-delta = 0.5  # Reduce to increase resolution
+delta = 0.01  # Reduce to increase resolution
 o_range = (low/delta):(high/delta) * delta
 
 # Model
@@ -2027,6 +2116,8 @@ ggsave_for_ppt("meta_regression_summary_effect.png")
 #### Results
 
 We still seem to have biased likelihood estimates, but things are improving a bit...
+_____________________________________________________________________________  
+^ back to [table of contents](#contents)
 
 
 

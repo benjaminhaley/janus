@@ -1,6 +1,7 @@
 DDREF
 ========================================================
 Measure ddref, for my thesis. ([public link][1])  
+benjamin.haley@gmail.com  
 *last update: April 2014*
 
 [1]: http://rpubs.com/benjaminhaley/ddref
@@ -15,7 +16,6 @@ TODO(ben)
 
 - Background 
   - [Defining DDREF](#defining_ddref) - What is the equation?
-  - [Cumulative ERR](#cumulative_err) - A new way of graphing risk.
   - [Log Likelihood](#loglike) - How is log likelihood calculated?
   - [Metaregression](#metaregression) - Show the principals of metaregression.
 - Data
@@ -25,8 +25,6 @@ TODO(ben)
 - Analysis
   - [Reproduce BEIR 10B3](#10B3) - Show that we can fit the same model of
     lifespan vs. dose as oak ridge.
-  - [Cherry Picking](#cherry) - I thought Oak Ridge was cheating, I was wrong.
-    Sorry!
   - [Reproduce BEIR 10B4](#10B4) - Show that we can reproduce the
     likelihood profiles from BEIR VII.
   - [10B3 on all data](#10B3-all-data) - Fit 1/lifespan models on all of the
@@ -41,6 +39,7 @@ TODO(ben)
     all of the datasets.
   - [10B4 metareression on all data](#10B4-meta-all) Apply meta regression to
     all of the datasets to generate profiles.
+
 _____________________________________________________________________________  
 ^ back to [table of contents](#contents)
 
@@ -135,116 +134,11 @@ dose and dose rate reduction
    repair processes take up to 24 hours, so this might be a
    natural break point.
 5. Estimate DDREF at 1 Sv to make it compatible with lss estimates
+
 _____________________________________________________________________________  
 ^ back to [table of contents](#contents)
 
 
-
-
-
-<a name="cumulative_err"></a>
-
-BACKGROUND: Cumulative ERR
-========================================================
-*May 2013*
-
-Survival curves are a great way to look at time course data
-but it is difficult to see the nature of the relationship between
-a variable and multiple survival curves.
-
-For example if mortality is increasing as the square of dose, this
-is not visually obvious from a survival curve.
-
-We could show relative mortality vs dose, but mortality estimates 
-are quite variable for any given time point, and this variation 
-might obscure the relationship.  Instead we might display
-cumulative relative mortality vs dose.  Cumulative mortality
-is better behaved than point estimates of mortality and so the
-relative cumulative mortality should also be better behaved.  Excess
-relative risk should also be similar for cumulative estimates vs
-point estimates.
-
-Here I want to try and draw these graphs I propose.
-
-```{r}
-
-    # Libraries
-    library(plyr)
-    library(ggplot2)
-    library(reshape2)
-
-    # Constants
-    baseline_mortality <- function(time) 0.000001*time^2
-    times <- 1:300
-    observations_per_group = 100
-    err <- function(dose) 1 + dose + dose^2
-    doses <- 0:10
-    
-    # Data
-    groups <- rep(observations_per_group, length(doses))
-    names(groups) <- doses
-    survival <- data.frame(llply(groups))
-    names(survival) <- names(groups)
-    for(time in times){
-        for(d in (1:length(doses))){
-            dose <- doses[d]
-            mortality <- baseline_mortality(time) * err(dose)
-            groups[d] <- sum(runif(groups[d]) > mortality)
-        }
-        survival <- rbind(survival, groups)
-    }
-    survival$time <- c(0, times)
-
-    # Survival
-    survival <- melt(survival, id.vars='time')
-    names(survival) <- c('time', 'dose', 'n')
-    survival$dose <- as.numeric(as.character(survival$dose))
-    survival$survival <- survival$n / observations_per_group
-    survival$cumulative_mortality <- -log(survival$survival)
-    survival$cumulative_err <- 
-        survival$cumulative_mortality / 
-        survival$cumulative_mortality[survival$dose == 0]
-```
-
-### Cumulative mortality
-
-```{r}
-    # Graph
-    ggplot(survival, 
-        aes(time, survival, color=as.factor(dose))
-    ) + geom_path()
-
-```
-
-### Cumulative Relative mortality vs dose
-
-```{r}
-    g <- survival[
-        abs(survival$cumulative_err) < Inf &
-        !is.na(survival$cumulative_err)
-    ,]
-    ggplot(g, 
-        aes(dose, cumulative_err, color=time)
-    ) + geom_point()     +
-        geom_smooth(method='lm', formula=y~poly(x, 2))
-```
-
-
-### Results
-
-Surival curves actually mask a quadratic relation.  Cumulative
-excess relative risk makes it much more obvious (see graphs).
-Notably, the actual curve in the excess relative risk model is
-not a good approximation of the dose response curve, probably
-because points with high error bars are weighted equally and
-thereby bias the result.
-
-### Conclusions
-
-I recommend including generating the cumulative excess relative
-risk graphs in my report.
-_____________________________________________________________________________  
-^ back to [table of contents](#contents)
 
 
 
@@ -715,6 +609,7 @@ ggplot(d,
 #          chronic, like over one minute vs under one minute.
 
 ```
+
 _____________________________________________________________________________  
 ^ back to [table of contents](#contents)
 
@@ -857,6 +752,7 @@ I am capable of reproducing their results.  There are two tricks
   2. They weighted by n
 
 Suspiciously they do not include data from table 2, but when I add this in, it does not make a huge difference, so I assume they are just not being careful.
+
 _____________________________________________________________________________  
 ^ back to [table of contents](#contents)
 
@@ -905,6 +801,7 @@ l <- with(data,
 )
 l - as.numeric(logLik(m))
 ```
+
 _____________________________________________________________________________  
 ^ back to [table of contents](#contents)
 
@@ -1022,6 +919,7 @@ It could be that the shoulder is very narrow, though this would be surprising gi
 It could also be that there is some systematic bias between chronic and high dose experiments.  For instance the high dose rate was even higher than the experimenters thought that it was.
 
 More reason for meta-analysis.
+
 _____________________________________________________________________________  
 ^ back to [table of contents](#contents)
 
@@ -1164,6 +1062,7 @@ Chronic effects may appear better or worse than projected acute effects.  Someti
 It is no wonder that radiobiology is full of debate!  
 
 At this point we should be a bit skeptical of organizing the data in this, the BEIR VII manner.  While that approach seemed reasonable given the ORNL data that they worked with, it clearly does not generalize well.  This may be because the underlying statitical approach is flawed, or simply that these graphs a very robust way of displaying the effect.  In any case we question the 'intuitive appeal' of graph 10B3.  While it seemed quite difinitive in isolation, the effect is lost when we try to repeat it on new datasets.
+
 _____________________________________________________________________________  
 ^ back to [table of contents](#contents)
 
@@ -1285,6 +1184,7 @@ ggsave_for_ppt('inverse_lifespan_profile.png')
     
 #### Results
 Looks bad, we are way too confident!
+
 _____________________________________________________________________________  
 ^ back to [table of contents](#contents)
 
@@ -1377,6 +1277,7 @@ A figure that shows off the principal of meta-regression.
         geom_path(aes(x, p), color='black')
     ggsave_for_ppt('meta_regression_example.png')
 ```
+
 _____________________________________________________________________________  
 ^ back to [table of contents](#contents)
 
@@ -1562,6 +1463,7 @@ REML
 Viechtbauer W (2005). Bias and Eciency of Meta-Analytic Variance 
 
 Estimators in the Random-Eects Model." Journal of Educational  and Behavioral Statistics, 30(3), 261-293.
+
 _____________________________________________________________________________  
 ^ back to [table of contents](#contents)
 
@@ -1715,6 +1617,7 @@ dose rate was even higher than the experimenters thought that
 it was.
 
 More reason for meta-analysis.
+
 _____________________________________________________________________________  
 ^ back to [table of contents](#contents)
 
@@ -1916,6 +1819,7 @@ ggsave_for_ppt('meta_regression.png')
 #### Results
 
 Curves don't change that radically, though standard errors often change rather dramatically!
+
 _____________________________________________________________________________  
 ^ back to [table of contents](#contents)
 
@@ -2106,6 +2010,7 @@ Show graphs like Storer 1979 10B4 but for all data using the random effects meta
 #### Results
 
 We still seem to have biased likelihood estimates, but things are improving a bit...
+
 _____________________________________________________________________________  
 ^ back to [table of contents](#contents)
 
