@@ -1,7 +1,9 @@
 DDREF
 ========================================================
-Measure ddref, for my thesis.  
+Measure ddref, for my thesis.  ([public link][1])
 *last update: April 2014*
+
+[1]: http://rpubs.com/benjaminhaley/ddref
 
 ## Table of contents
 
@@ -33,6 +35,9 @@ Measure ddref, for my thesis.
     all of the datasets.
   - [10B4 metareression on all data](#10B4-meta-all) Apply meta regression to
     all of the datasets to generate profiles.
+
+
+
 
 
 <a name="defining_ddref"></a>
@@ -188,7 +193,7 @@ survival$cumulative_err <- survival$cumulative_mortality/survival$cumulative_mor
 ggplot(survival, aes(time, survival, color = as.factor(dose))) + geom_path()
 ```
 
-![plot of chunk unnamed-chunk-2](figure/unnamed-chunk-2.png) 
+![plot of chunk unnamed-chunk-2](Figs/unnamed-chunk-2.png) 
 
 
 ### Cumulative Relative mortality vs dose
@@ -201,7 +206,7 @@ ggplot(g, aes(dose, cumulative_err, color = time)) + geom_point() + geom_smooth(
     formula = y ~ poly(x, 2))
 ```
 
-![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3.png) 
+![plot of chunk unnamed-chunk-3](Figs/unnamed-chunk-3.png) 
 
 
 
@@ -232,39 +237,11 @@ make a description of this data.
 
 
 ```r
-focus_study = "3-6"
-
 # LIBRARIES
 library(plyr)
 library(dplyr)
-```
-
-```
-## Attaching package: 'dplyr'
-## 
-## The following objects are masked from 'package:plyr':
-## 
-## arrange, desc, failwith, id, mutate, summarise, summarize
-## 
-## The following objects are masked from 'package:stats':
-## 
-## filter, lag
-## 
-## The following objects are masked from 'package:base':
-## 
-## intersect, setdiff, setequal, union
-```
-
-```r
 library(ggplot2)
 library(survival)
-```
-
-```
-## Loading required package: splines
-```
-
-```r
 
 # DATA
 setwd("~/janus/scripts")
@@ -276,36 +253,13 @@ table0 <- function(...) table(..., useNA = "ifany")
 # Report for funnel graph
 count <- function(data) {
     count_unique <- function(x) length(unique(x))
-    with(data, c(studies = count_unique(file), treatments = count_unique(group_id), 
-        animals = count_unique(id), one_study = count_unique(id[study_id == 
-            focus_study]), exclude = count_unique(id[exclude])))
+    with(data, c(clusters = count_unique(cluster), studies = count_unique(file), 
+        treatments = count_unique(group_id), animals = count_unique(id), exclude = count_unique(id[exclude])))
 }
 
-# TODO(ben5) remove
-duplicate_multiclusters <- function(data) {
-    # Duplicate groups that belong to multiple clusters multiclusters are
-    # space seperated and should be copied so that they belong to each cluster
-    # in the list.
-    multi <- function(df) {
-        clusters <- as.character(df$cluster[1])
-        clusters <- strsplit(clusters, " ")[[1]]
-        if (length(clusters) < 2) {
-            return(df)
-        } else {
-            result <- data.frame()
-            for (c in clusters) {
-                d <- df
-                d$cluster <- c
-                result <- rbind(result, d)
-            }
-            return(result)
-        }
-    }
-    ddply(data, .(cluster), multi)
-}
 filter_by_n_groups <- function(data, threshold = 3) {
-    ddply(data, .(cluster, sex), function(df) {
-        n_groups = length(unique(df$group_id))
+    ddply(data, .(cluster), function(df) {
+        n_groups = length(unique(paste(df$dose, df$dose_rate, df$fractions)))
         if (n_groups >= threshold) {
             return(df)
         } else {
@@ -317,13 +271,30 @@ filter_by_n_groups <- function(data, threshold = 3) {
 # Define
 bad_qualities <- c("accel. alpha local", "accel. alpha whole body", "accel. neutrons 0.1-10 MeV", 
     "neutrons 1-10 MeV", "neutrons C-252", "neutrons fission", "neutrons>10 MeV", 
-    "X-rays local", "gamma-rays local")
+    "X-rays local", "gamma-rays local", "Bremsstrahlung > 3MeV.")
+
+# Aliases Allow a more concise representation of a name.  For instace ♂ is
+# preferable to Male
+aliases <- list(quality = c(`gamma-rays Co-60` = "γ-ray", `gamma-rays Co-60, gamma-rays Co-60` = "γ-ray", 
+    `gamma-rays Co-60, gamma-rays Co-60, gamma-rays Co-60` = "γ-ray", `gamma-rays Cs-137` = "γ-ray", 
+    `gamma-rays whole body` = "γ-ray", `gamma-rays` = "γ-ray", `X-rays whole body` = "X-ray"), 
+    sex = c(Both = "♂/♀", Female = "♀", Male = "♂"), lab = c(`2` = "CEN-FAR", 
+        `3` = "ENEA", `9` = "SCK/CEN", `11` = "TNO", `1002` = "DAVIS", `1003` = "ANL", 
+        `1005` = "ITRI", `1007` = "ORNL", `1008` = "CSU"), strain = c(beagle = "Beagle"))
+
 
 threshold_dose <- 1.5
 
 # Fix
 
-# NA doses d$dose[is.na(d$dose)] <- 0
+# NA doses
+d$dose[is.na(d$dose)] <- 0
+d$dose_rate[is.na(d$dose_rate)] <- 0
+d$fractions[d$dose == 0] <- 0
+d$dose_rate[d$dose == 0] <- 0
+
+# NA quality
+d$quality[is.na(d$quality)] <- "none (controls)"
 
 # Add missing fractions
 d$fractions[is.na(d$fractions)] <- 1
@@ -334,14 +305,12 @@ d$day_fractions <- d$fractions
 s <- d$fraction_interval < 1 & !is.na(d$fraction_interval)
 d$day_fractions[s] <- d$fractions[s] * d$fraction_interval[s]
 
-# Duplicate those in multiple clusters
-d <- duplicate_multiclusters(d)
-
-d$rand = 1:nrow(d)
+# Add lab
+d$lab <- sub("(^[0-9]*).*$", "\\1", d$study_id)
 
 # Correct Assignment age
 d <- d %.% group_by(cluster) %.% mutate(assignment_age = min(assignment_age, 
-    lifespan, na.rm = T)) %.% ungroup()
+    lifespan, na.rm = T))
 
 
 # Age at last treatment
@@ -349,6 +318,84 @@ d$age_at_last_treatment <- d$age_at_treatment
 s <- !is.na(d$fraction_interval)
 d$age_at_last_treatment[s] <- with(d[s, ], age_at_treatment + fraction_interval * 
     (fractions - 1), )
+
+# Assign aliases Replace all values in a given column with their aliases
+# e.g. replace gamma-rays with γ
+for (column in names(aliases)) {
+    for (name in names(aliases[[column]])) {
+        alias = aliases[[column]][name]
+        d[d[column] == name & !is.na(d[column]), column] <- alias
+    }
+}
+```
+
+
+#### Define Clusters
+In general we want to cluster on:
+
+  `lab, species, strain, and sex`
+
+```r
+d$cluster = with(d, paste(species, strain, sex, lab))
+```
+
+But also
+
+    `age_at_treatment and quality`
+
+Which require special consideration.
+ 
+##### Age at Treatment
+Was usually recorded 'as intended'.  So that all mice are declared as 56 days old at the age of treatment.  Such precision is dubious-impossible and most likely represents a reconstruction based on the methods described about the experiment.
+
+By contrast, argonne data recorded true age at treatment so that animals vary by up to 50 days within a single cluster.  These animals should not be divided into seperate clusters, because they are all adults.  By contrast animals irradiated at -4 days and 7 days old should be put into seperate age clusters because they represent very different stages of development.
+
+The most complete way to handle this situation is do define a lifestage by age for each species and use this for clustering.  But this approach is arbitrary, contrived, and needlessly complex.
+
+Instead we will define a new feild, intended_age_at_treatment.  For most groups this will be the reported age_at_treatment.  For agronne groups we will define it by the median.
+
+```r
+d$intended_age_of_treatment <- d$age_at_treatment
+labs_that_recorded_true_age_at_treatment <- c("ANL")
+clusters_that_recorded_true_age_at_treatment = unique(d$cluster[d$lab %in% labs_that_recorded_true_age_at_treatment])
+for (c in clusters_that_recorded_true_age_at_treatment) {
+    d$intended_age_of_treatment[d$cluster == c] <- median(d$intended_age_of_treatment[d$cluster == 
+        c], na.rm = TRUE)
+}
+d$cluster <- paste(d$cluster, d$intended_age_of_treatment)
+```
+
+
+##### Radiation Quality
+We also want to cluster on quality, but its a little tricky
+because controls have a different quality, 'none (controls)' from
+irradiated animals even though they are in the same cluster.  So
+actually we want to be sure that:
+
+1. Each cluster has only 1 non-control quality
+2. Control groups are duplicated into each cluster they belong in
+
+```r
+d <- ddply(d, .(cluster), function(df) {
+    control <- df[df$quality == "none (controls)", ]
+    treatment <- df[df$quality != "none (controls)", ]
+    
+    # Create a cluster for each non control quality
+    ddply(treatment, .(quality), function(treatment_group) {
+        
+        # Add control to each treatment group
+        df2 <- rbind(treatment_group, control)
+        
+        # Define quality by the treatment group i.e.  none, dose = 0 -> gamma,
+        # dose = 0
+        df2$quality <- treatment_group$quality[1]
+        
+        # Add quality to the cluster name
+        df2$cluster <- with(df2, paste(cluster, quality))
+        
+        df2
+    })
+})
 
 
 # FILTER
@@ -358,25 +405,12 @@ count(d)
 ```
 
 ```
-##    studies treatments    animals  one_study    exclude 
-##         34        909     127919       1562       8266
+##   clusters    studies treatments    animals    exclude 
+##         83         31        855     123013       8234
 ```
 
 ```r
-# 34 studies, 909 treatments, 128K animals
-
-# Dose not NA
-d <- d[!is.na(d$dose), ]
-count(d)
-```
-
-```
-##    studies treatments    animals  one_study    exclude 
-##         29        810     125304       1488       8266
-```
-
-```r
-# 29 studies, 810 treatments, 125K animals
+# 855 treatments
 
 # Only low-LET, whole body
 d <- d[!d$quality %in% bad_qualities, ]
@@ -384,25 +418,25 @@ count(d)
 ```
 
 ```
-##    studies treatments    animals  one_study    exclude 
-##         28        445      81883        699       8266
+##   clusters    studies treatments    animals    exclude 
+##         43         31        487      79240       8234
 ```
 
 ```r
-# 28 studies, 445 treatments, 81K animals
+# 487 treatments
 
-# Dose too high (matching BEIR specs)
+# Dose below threshold (as in BEIR VII)
 d <- d[!(d$dose > threshold_dose), ]
 count(d)
 ```
 
 ```
-##    studies treatments    animals  one_study    exclude 
-##         23        215      45564        357       4659
+##   clusters    studies treatments    animals    exclude 
+##         35         29        259      42994       4627
 ```
 
 ```r
-# 23 studies, 215 treatments, 45K animals
+# 259 treatments
 
 # Lifespan not NA
 d <- d[!is.na(d$lifespan), ]
@@ -410,12 +444,12 @@ count(d)
 ```
 
 ```
-##    studies treatments    animals  one_study    exclude 
-##         23        215      45556        357       4659
+##   clusters    studies treatments    animals    exclude 
+##         35         29        259      42986       4627
 ```
 
 ```r
-# 23 studies, 215 treatments, 45K animals
+# 259 treatments
 
 # No other treatments
 d <- d[d$other_treatments == "none", ]
@@ -423,12 +457,12 @@ count(d)
 ```
 
 ```
-##    studies treatments    animals  one_study    exclude 
-##         23        172      43930        357       4609
+##   clusters    studies treatments    animals    exclude 
+##         34         23        144      39774       4607
 ```
 
 ```r
-# 23 studies, 172 treatments, 44K animals
+# 144 treatments
 
 # Remove those that should be excluded
 exclusions <- sort(unique(d$reason))
@@ -442,30 +476,30 @@ for (ex in exclusions) {
 
 ```
 ## [1] "see exclusion-1 in radiation.R"
-##    studies treatments    animals  one_study    exclude 
-##         23        171      43850        357       4529 
+##   clusters    studies treatments    animals    exclude 
+##         34         23        143      39694       4527 
 ## [1] "see exclusion-2 in radiation.R"
-##    studies treatments    animals  one_study    exclude 
-##         23        171      43839        357       4518 
+##   clusters    studies treatments    animals    exclude 
+##         34         23        143      39683       4516 
 ## [1] "see exclusion-3 in radiation.R"
-##    studies treatments    animals  one_study    exclude 
-##         23        171      43769        357       4448 
+##   clusters    studies treatments    animals    exclude 
+##         34         23        143      39613       4446 
 ## [1] "see exclusion-5 in radiation.R"
-##    studies treatments    animals  one_study    exclude 
-##         23        170      43748        357       4427 
+##   clusters    studies treatments    animals    exclude 
+##         34         23        142      39594       4427 
 ## [1] "see exclusion-6 in radiation.R"
-##    studies treatments    animals  one_study    exclude 
-##         23        170      43747        357       4426 
+##   clusters    studies treatments    animals    exclude 
+##         34         23        142      39593       4426 
 ## [1] "see exclusion-7 in radiation.R"
-##    studies treatments    animals  one_study    exclude 
-##         23        169      40034        357        713 
+##   clusters    studies treatments    animals    exclude 
+##         34         23        141      35880        713 
 ## [1] "see exclusion-8 in radiation.R"
-##    studies treatments    animals  one_study    exclude 
-##         22        166      39321        357          0
+##   clusters    studies treatments    animals    exclude 
+##         34         22        138      35167          0
 ```
 
 ```r
-# 22 studies, 166 treatments, 39K animals
+# 138 treatments
 
 # Remove cases with few treatment groups
 d <- filter_by_n_groups(d)
@@ -473,12 +507,12 @@ count(d)
 ```
 
 ```
-##    studies treatments    animals  one_study    exclude 
-##         11        108      21902          0          0
+##   clusters    studies treatments    animals    exclude 
+##         22         14        111      25102          0
 ```
 
 ```r
-# 11 studies, 108 treatments, 22K animals
+# 111 treatments
 
 # Warnings show, but do not remove
 warnings <- sort(unique(d$warning_reason))
@@ -493,29 +527,26 @@ for (w in warnings) {
 
 ```
 ## [1] "see warning-2 in radiation.R"
-##    studies treatments    animals  one_study    exclude 
-##         10         96      13469          0          0 
+##   clusters    studies treatments    animals    exclude 
+##         20         13         99      16669          0 
 ## [1] "see warning-3 in radiation.R"
-##    studies treatments    animals  one_study    exclude 
-##          9         86      12911          0          0 
+##   clusters    studies treatments    animals    exclude 
+##         19         12         92      16384          0 
 ## [1] "see warning-4 in radiation.R"
-##    studies treatments    animals  one_study    exclude 
-##          8         60      11289          0          0 
+##   clusters    studies treatments    animals    exclude 
+##         15         11         68      15045          0 
 ## [1] "see warning-5 in radiation.R"
-##    studies treatments    animals  one_study    exclude 
-##          8         59      10859          0          0 
+##   clusters    studies treatments    animals    exclude 
+##         15         11         67      14615          0 
 ## [1] "see warning-6 in radiation.R"
-##    studies treatments    animals  one_study    exclude 
-##          8         57      10551          0          0 
-## [1] "see warning-7 in radiation.R"
-##    studies treatments    animals  one_study    exclude 
-##          7         52      10162          0          0 
+##   clusters    studies treatments    animals    exclude 
+##         15         11         65      14307          0 
 ## [1] "see warning-8 in radiation.R"
-##    studies treatments    animals  one_study    exclude 
-##          7         51       9809          0          0 
+##   clusters    studies treatments    animals    exclude 
+##         15         11         64      13954          0 
 ## [1] "see warning-9 in radiation.R"
-##    studies treatments    animals  one_study    exclude 
-##          6         47       8706          0          0
+##   clusters    studies treatments    animals    exclude 
+##         14         10         60      12851          0
 ```
 
 ```r
@@ -524,12 +555,13 @@ count(d_wo_warnings)
 ```
 
 ```
-##    studies treatments    animals  one_study    exclude 
-##          5         43       8430          0          0
+##   clusters    studies treatments    animals    exclude 
+##         12          9         56      12575          0
 ```
 
 ```r
-# 5 studies, 43 treatments, 8.5K animals
+# 56 treatments
+
 
 # Save
 setwd("~/janus/scripts")
@@ -582,16 +614,6 @@ group_summary <- function(data) {
 
 # Clean
 
-# Simplify qualities qualities need nice easy names
-d$quality[grepl("gamma", d$quality)] <- "gamma"
-d$quality[grepl("controls", d$quality)] <- "control"
-d$quality[grepl("X-rays", d$quality)] <- "x-ray"
-d$source[is.na(d$source)] <- "control"
-
-# Symbols for genders
-d$sex_symbol <- "♂"
-d$sex_symbol[d$sex == "Female"] <- "♀"
-
 # Is acute?
 d$acute <- d$fractions == 1 | d$dose == 0
 d$protracted <- d$fractions > 1 & d$dose > 0
@@ -599,26 +621,23 @@ d$protracted <- d$fractions > 1 & d$dose > 0
 # Other Treatments
 d$other_treatments[d$other_treatments == "none"] <- ""
 
-# Institution
-names <- data.frame(id = c("3", "9", "11", "1003", "1007"), name = c("ENEA", 
-    "SCK/CEN", "RBI-TNO", "ANL", "ORNL"))
-d$institution <- gsub("-[0-9]*$", "", d$study)
-d$institution_name <- names$name[match(d$institution, names$id)]
+# Observations per cluster
+d = d %.% group_by(cluster) %.% mutate(n_in_cluster = length(cluster))
 
-# Cluster names
-ignore <- c("control", 0)
-d$rounded_age_at_t <- d$age_at_treatment
-d$rounded_age_at_t[d$study == "1003-21"] <- 110
-d$rounded_age_at_t[d$study == "1003-27"] <- 135
-u <- function(x) paste(sort(unique(x[!x %in% ignore & !is.na(x)])), collapse = " or ")
-d <- ddply(d, .(cluster, sex), function(df) {
-    df$cluster_name <- with(df, paste(u(institution_name), u(cluster), "\n", 
-        nrow(df), u(sex_symbol), u(strain), u(species), "\n", u(source), u(dose_rate), 
-        "Gy/min", "\n", u(fractions), "fraction", "\n", "starting at", u(rounded_age_at_t), 
-        "days old"))
-    
-    df
-})
+# Give the clusters pretty names
+d$cluster_name <- d$cluster
+
+# Define Acute
+chronic <- d$fractions > 1
+d$type <- "A"
+d$type[chronic] <- "C"
+
+# Order clusters By number of observations.  This will put the cluster
+# with the most observations first in ggplots
+sorted_clusters = names(sort(table(d$cluster), decreasing = TRUE))
+d$cluster <- factor(d$cluster, levels = sorted_clusters)
+d$cluster_name <- factor(d$cluster_name, levels = sorted_clusters)
+
 
 # Summaries
 group_summaries <- ddply(d, .(group_id), function(df) {
@@ -631,6 +650,7 @@ write.csv(group_summaries, file = "results/ddref_group_summaries.csv")
 write.csv(cluster_summaries, file = "results/ddref_cluster_summaries.csv")
 
 # Save Data for later use
+saveRDS(d, "data/ddref.rds")
 write.csv(d, file = "data/ddref.csv")
 ```
 
@@ -643,8 +663,8 @@ for some pretty results.  See also the funnel graph.
 
 <a name="concordance"></a>
 
-========================================================
 Show Data
+========================================================
 *June 2013*
 
 Now that the data is reasonably clean, show what it looks
@@ -659,57 +679,34 @@ library(survival)
 
 # Data
 setwd("~/janus/scripts")
-d <- read.csv("data/ddref.csv")
-
-# Helpers
-collapse_paste <- function(...) paste(..., collapse = " ")
-paste_columns <- function(df) unlist(alply(df, 1, collapse_paste))
-ggsave0 <- function(...) suppressWarnings(ggsave(..., dpi = 100, width = 10.24, 
-    height = 7.68, units = "in"))
-show <- function(g) {
-    suppressWarnings(print(ggplot(g) + geom_hline(aes(yintercept = age_at_treatment)) + 
-        geom_segment(aes(x = dose, xend = dose, y = age_at_treatment, yend = age_at_last_treatment)) + 
-        geom_violin(scale = "count", aes(dose, lifespan, color = protracted, 
-            group = factor(paste(dose, acute)))) + facet_wrap(~cluster_name) + 
-        expand_limits(y = 0)))
-}
-
-# lifespan
-g <- d[d$species == "Mouse" & d$sex == "Male", ]
-show(g)
+d <- readRDS("data/ddref.rds")
 ```
 
-![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-61.png) 
+
+#### Lifespan by dose and protraction
+Show the distributions of lifespan.  Notice how radiation tends to shift the curve lower, but how some doses, especially some high doses lead to a double humped curve indicating that there are at least two mechanisms reducing lifespan, one that shifts the first hump left and another responsible for the development of a second hump.
+
+
+
 
 ```r
-ggsave0("results/lifespan_by_cluster_male_mice.png")
 
-g <- d[d$species == "Mouse" & d$sex == "Female", ]
-show(g)
+ggplot(d, aes(lifespan, color = dose, group = factor(paste(dose, protracted)), 
+    linetype = protracted)) + geom_density(adjust = 2) + facet_wrap(~cluster, 
+    scales = "free") + scale_color_continuous(guide = guide_legend(title = "Dose (gy)")) + 
+    geom_vline(aes(xintercept = intended_age_of_treatment), alpha = 0.5) + expand_limits(x = -4)
 ```
 
-![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-62.png) 
+![plot of chunk unnamed-chunk-10](Figs/unnamed-chunk-10.png) 
 
 ```r
-ggsave0("results/lifespan_by_cluster_female_mice.png")
 
-g <- d[d$species == "Rat" & d$sex == "Female", ]
-show(g)
-```
 
-![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-63.png) 
+# TODO(ben) Add a graph that compares the same doses at chronic and accute
+# levels.
 
-```r
-ggsave0("results/lifespan_by_cluster_female_rat.png")
-
-g <- d[d$species == "Peromyscus", ]
-show(g)
-```
-
-![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-64.png) 
-
-```r
-ggsave0("results/lifespan_by_cluster_peromyscus.png")
+# TODO(ben) consider a graph with a more liberal interpretation of
+# chronic, like over one minute vs under one minute.
 ```
 
 
@@ -726,121 +723,122 @@ from storer 1979 (3575012.pdf).
 
 
 ```r
-    # Libraries
-    library(ggplot2)
-    library(plyr)
-    
-    # Data
-    setwd('~/janus/scripts')
-    data <- read.csv('data/storer_1979.csv', sep='\t')  
-    
-    # Helpers
-    ggsave0 <- function(...) suppressWarnings(ggsave(..., 
-                                    dpi=100, 
-                                    width=10.24, 
-                                    height=7.68, 
-                                    units='in'))
+# Libraries
+library(ggplot2)
+library(plyr)
 
-    model_10B3 <- function(data){
-        glm(
-            I(1/age) ~ dose + I(dose^2 / (fractions)),
-            data=data,
-            weights=n
-        )
-    }   
-    show <- function(g){
-        original <- g[is.na(g$p_10B3),] 
-        predictions <- g[!is.na(g$p_10B3),]
-        suppressWarnings(print(
-        ggplot(original, aes(
-            dose, 
-            1/age, 
-            label=type,
-            group=type
-        )) +
-            geom_text(size=5) + 
-            geom_smooth(
-                data=predictions,
-                aes(dose, p_10B3),
-                color='black'
-            ) # + 
-            # geom_smooth(
-                # data=predictions,
-                # aes(dose, p_my_analysis), 
-                # color='red'
-            # ) 
-        ))
-    }
-
+# Data
+setwd('~/janus/scripts')
+source('util.R')
+data <- read.csv('data/storer_1979.csv', sep='\t')  
     
-    # Constants
-    threshold = 1.5001
 
-    # Prediction Intervals
-    to_predict <- expand.grid(
-        fractions = c(1, 1000),
-        dose = seq(0, 1.5, 0.1)
+model_10B3 <- function(data){
+    glm(
+        I(1/age) ~ dose + I(dose^2 / (fractions)),
+        data=data,
+        weights=n
     )
-    to_predict$type <- 'A'
-    to_predict$type[to_predict$fractions > 1] <- 'C'
-    
-    # Clean
-    data$fractions <- 1
-    data$fractions[data$rate < 0.1] <- Inf
+}   
+show <- function(g){
+    original <- g[is.na(g$p_10B3),] 
+    predictions <- g[!is.na(g$p_10B3),]
+    suppressWarnings(print(
+    ggplot(original, aes(
+        dose, 
+        1/age, 
+        label=type,
+        group=type
+    )) +
+        geom_text(size=5) + 
+        geom_smooth(
+            data=predictions,
+            aes(dose, p_10B3),
+            color='black'
+        ) # + 
+        # geom_smooth(
+            # data=predictions,
+            # aes(dose, p_my_analysis), 
+            # color='red'
+        # ) 
+    ))
+}
 
-    # Define Acute
-    chronic <- data$rate < 0.1
-    data$type <- 'A'
-    data$type[chronic] <- 'C'
     
-    # Subset
-    data$modeled_in_10B3 <- with(data, 
-        dose < threshold &
-        strain == 'RFM'  &
-        sex == 'F' &
-        rate != 0.4
-    )
-    data$in_my_analysis <- data$type == 'A'
-    
-    # prediction matrix
-    predictions <- to_predict
-    addin <- names(data)[!names(data) %in% names(predictions)]
-    predictions <- merge(data[1, addin], predictions, all=TRUE)
-    
-    # 10B3 Model
-    m <- model_10B3(data[data$modeled_in_10B3,])
-    predictions$p_10B3 <- predict(m, newdata=predictions)
-    
-    # My Model
-    s <- data$modeled_in_10B3 & 
-         data$in_my_analysis
-    m <- model_10B3(data[s,])
-    predictions$p_my_analysis <- predict(m, newdata=predictions)
-    
-    # Merge
-    data$p_10B3 <- NA
-    data$p_my_analysis <- NA
-    
-    data <- rbind(predictions, data)
+# Constants
+threshold = 1.5001
 
-    # Show
-    # Reproduce 10B3
-    # http://www.nap.edu/openbook.php?record_id=11340&page=257
-    #ggsave0('beir_10B3_reproduction.png')
-    g <- data[with(data, 
-        strain == 'RFM' & 
-        sex == 'F' &
-        rate != 0.4
-    ),]
-    show(g)
+# Prediction Intervals
+to_predict <- expand.grid(
+    fractions = c(1, 1000),
+    dose = seq(0, 1.5, 0.1)
+)
+to_predict$type <- 'A'
+to_predict$type[to_predict$fractions > 1] <- 'C'
+
+# Clean
+data$fractions <- 1
+data$fractions[data$rate < 0.1] <- Inf
+
+# Define Acute
+chronic <- data$rate < 0.1
+data$type <- 'A'
+data$type[chronic] <- 'C'
+
+# Subset
+data$modeled_in_10B3 <- with(data, 
+    dose < threshold &
+    strain == 'RFM'  &
+    sex == 'F' &
+    rate != 0.4
+)
+data$in_my_analysis <- data$type == 'A'
+
+# prediction matrix
+predictions <- to_predict
+addin <- names(data)[!names(data) %in% names(predictions)]
+predictions <- merge(data[1, addin], predictions, all=TRUE)
+
+# 10B3 Model
+m <- model_10B3(data[data$modeled_in_10B3,])
+predictions$p_10B3 <- predict(m, newdata=predictions)
+
+# My Model
+s <- data$modeled_in_10B3 & 
+     data$in_my_analysis
+m <- model_10B3(data[s,])
+predictions$p_my_analysis <- predict(m, newdata=predictions)
+
+# Merge
+data$p_10B3 <- NA
+data$p_my_analysis <- NA
+
+data <- rbind(predictions, data)
 ```
 
-```
-## geom_smooth: method="auto" and size of largest group is <1000, so using
-## loess. Use 'method = x' to change the smoothing method.
+#### Show
+##### 10B3
+This is the original [10B3 figure][10B3-citation] from the beir VII report [beir-10b3].
+
+![10B3-image]
+
+[10B3-citation]: http://www.nap.edu/openbook.php?record_id=11340&page=257
+[10B3-image]: http://dl.dropbox.com/u/1131693/bloodrop/10B3.jpg
+
+
+##### Reproduce 10B3
+This is my reproduction of 10B3 to prove that I am faithfully applying their methodology.
+
+```r
+g <- data[with(data, strain == "RFM" & sex == "F" & rate != 0.4), ]
+show(g)
 ```
 
-![plot of chunk unnamed-chunk-7](figure/unnamed-chunk-7.png) 
+![plot of chunk unnamed-chunk-12](Figs/unnamed-chunk-12.png) 
+
+```r
+ggsave_for_ppt("beir_10B3_reproduction.png")
+```
 
 
 ### Results
@@ -850,89 +848,6 @@ I am capable of reproducing their results.  There are two tricks
   2. They weighted by n
 
 Suspiciously they do not include data from table 2, but when I add this in, it does not make a huge difference, so I assume they are just not being careful.
-
-I do however, think that they have cherry picked a well behaved
-example from their dataset and it might be worth showing each
-of the curves to show that the true result is not so easy to
-discern. [update: this seems to be a false acusation, their results are wrong for several reasons, but they do not seem to be malicious]
-
-
-
-
-<a name="cherry"></a>
-
-Oak Ridge Cherry Picking
-========================================================
-The storer data suggests that oak ridge cherry picked the 
-nicest example when showing off their data.  I can show that
-the full story with all of the storer data is not so clean.
-
-
-```r
-
-# Libraries
-library(ggplot2)
-library(plyr)
-
-# Data
-setwd("~/janus/scripts")
-data <- read.csv("data/storer_1979.csv", sep = "\t")
-
-# Helpers
-ggsave0 <- function(...) suppressWarnings(ggsave(..., dpi = 100, width = 10.24, 
-    height = 7.68, units = "in"))
-
-model_10B3 <- function(data) {
-    glm(I(1/age) ~ dose + I(dose^2/(fractions)), data = data, weights = n)
-}
-
-# Constants
-threshold = 1.5001
-
-# Clean
-data$fractions <- 1
-data$fractions[data$rate < 0.1] <- Inf
-
-# Define Acute
-chronic <- data$rate < 0.1
-data$type <- "A"
-data$type[chronic] <- "C"
-
-# Define strata
-data$strata <- paste(data$sex, data$strain)
-
-# Model
-data <- ddply(data, .(strata), function(df) {
-    s <- df$dose < threshold
-    m <- model_10B3(df[s, ])
-    df$p <- NA
-    df$p[s] <- predict(m)
-    
-    df
-})
-
-# Show Show all data behind 10B3
-# http://www.nap.edu/openbook.php?record_id=11340&page=257
-ggplot(data, aes(dose, 1/age, group = type, label = type)) + geom_text(size = 4) + 
-    geom_line(aes(dose, p)) + facet_wrap(~strata)
-```
-
-```
-## Warning: Removed 3 rows containing missing values (geom_path). Warning:
-## Removed 6 rows containing missing values (geom_path). Warning: Removed 1
-## rows containing missing values (geom_path).
-```
-
-![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8.png) 
-
-```r
-ggsave0("beir_10B3_cherry_picked.png")
-```
-
-    
-#### Results
-It does not look strongly cherry picked, I suppose I should retract that acusation.
-
 
 
 <a name="loglike"></a>
@@ -965,7 +880,7 @@ o2
 ```
 
 ```
-## [1] 1.045
+## [1] 0.8918
 ```
 
 ```r
@@ -974,7 +889,7 @@ l - as.numeric(logLik(m))
 ```
 
 ```
-## [1] 0
+## [1] -2.842e-14
 ```
 
 
@@ -993,92 +908,98 @@ from storer 1979 (3575012.pdf).
 
 ```r
 
-    # Libraries
-    library(ggplot2)
-    library(plyr)
-    
-    # Data
-    setwd('~/janus/scripts')
-    data <- read.csv('data/storer_1979.csv', sep='\t')  
-    
-    # Helpers
-    ggsave0 <- function(...) suppressWarnings(ggsave(..., 
-                                    dpi=100, 
-                                    width=10.24, 
-                                    height=7.68, 
-                                    units='in'))
+# Libraries
+library(ggplot2)
+library(plyr)
 
-    model_10B4 <- function(data, o){    
-        glm(
-            I(1/age) ~ I(dose + o*dose^2 / (fractions)),
-            data=data,
-            weights=n
-        )
-    }       
-    normalize_likelihood <- function(l, delta){
-        l <- l - max(l)
-        l <- exp(l)
-        l <- l / sum(l)
-        l <- l / delta
-        
-        l       
-    }
-            
-    # Constants
-    threshold = 1.5001
-    
-    # Clean
-    data$fractions <- 1
-    data$fractions[data$rate < 0.1] <- Inf
+# Data
+setwd('~/janus/scripts')
+data <- read.csv('data/storer_1979.csv', sep='\t')  
 
-    # Define Acute
-    chronic <- data$rate < 0.1
-    data$type <- 'A'
-    data$type[chronic] <- 'C'
-    
-    # Subset
-    data$modeled_in_10B4 <- with(data, 
-        dose < threshold &
-        strain == 'RFM'  &
-        sex == 'F' # &
-        # rate != 0.4
+model_10B4 <- function(data, o){    
+    glm(
+        I(1/age) ~ I(dose + o*dose^2 / (fractions)),
+        data=data,
+        weights=n
     )
-    data$in_my_analysis <- data$type == 'A'
-
-    # Model
-    low = -2
-    high = 6
-    delta = .01
-    o_range = (low/delta):(high/delta) * delta
+}       
+normalize_likelihood <- function(l, delta){
+    l <- l - max(l)
+    l <- exp(l)
+    l <- l / sum(l)
+    l <- l / delta
     
-    get_likelihoods <- function(o_range, data){
-        r <- ldply(o_range, function(o){
-            m <- model_10B4(data, o)
-            l = logLik(m)
-            
-            data.frame(o, l)
-        })
+    l       
+}
         
-        r$l <- normalize_likelihood(r$l, delta)
+# Constants
+threshold = 1.5001
+
+# Clean
+data$fractions <- 1
+data$fractions[data$rate < 0.1] <- Inf
+
+# Define Acute
+chronic <- data$rate < 0.1
+data$type <- 'A'
+data$type[chronic] <- 'C'
+
+# Subset
+data$modeled_in_10B4 <- with(data, 
+    dose < threshold &
+    strain == 'RFM'  &
+    sex == 'F' # &
+    # rate != 0.4
+)
+data$in_my_analysis <- data$type == 'A'
+
+# Model
+low = -2
+high = 6
+delta = .01
+o_range = (low/delta):(high/delta) * delta
+
+get_likelihoods <- function(o_range, data){
+    r <- ldply(o_range, function(o){
+        m <- model_10B4(data, o)
+        l = logLik(m)
         
-        r
-    }
+        data.frame(o, l)
+    })
+    
+    r$l <- normalize_likelihood(r$l, delta)
+    
+    r
+}
 
-    beir_r <- get_likelihoods(o_range, data[data$modeled_in_10B4,])
-    my_r <- get_likelihoods(o_range, data[data$in_my_analysis,])
-
-    # Reproduce 10B4
-    # http://www.nap.edu/openbook.php?record_id=11340&page=258
-    ggplot(beir_r, aes(o, l)) + 
-        geom_path() + 
-        #geom_path(data=my_r, color='red') + 
-        scale_y_continuous(breaks = c(0:5)/5, limits=c(0,1))
+beir_r <- get_likelihoods(o_range, data[data$modeled_in_10B4,])
+my_r <- get_likelihoods(o_range, data[data$in_my_analysis,])
 ```
 
-![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10.png) 
+
+#### Show
+##### 10B4
+This is the original [10B4 figure][10B4-citation] from the beir VII report [beir-10b4].
+
+![10B4-image]
+
+[10B4-citation]: http://www.nap.edu/openbook.php?record_id=11340&page=258
+[10B4-image]: http://dl.dropbox.com/u/1131693/bloodrop/10B4.jpg
+
+
+##### Reproduce 10B4
+This is my reproduction of 10B4 to prove that I am faithfully applying their methodology.
 
 ```r
-    ggsave0('beir_10B4_reproduction.png')  
+
+ggplot(beir_r, aes(o, l)) + geom_path() + # geom_path(data=my_r, color='red') +
+scale_y_continuous(breaks = c(0:5)/5, limits = c(0, 1))
+```
+
+![plot of chunk unnamed-chunk-15](Figs/unnamed-chunk-15.png) 
+
+```r
+ggsave_for_ppt("beir_10B4_reproduction.png")
 ```
 
 
@@ -1100,191 +1021,111 @@ More reason for meta-analysis.
 ========================================================
 *June 2013*
   
-Show graphs like Storer 1979 10-3B but for all data.
+Show graphs like Storer 1979 10-B3 but for all data.
 
 
 ```r
 
-    # Libraries
-    library(ggplot2)
-    library(plyr)
-    
-    # Data
-    setwd('~/janus/scripts')
-    data <- read.csv('data/ddref.csv')  
-    
-    # Helpers
-    ggsave0 <- function(...) suppressWarnings(ggsave(..., 
-                                    dpi=100, 
-                                    width=10.24, 
-                                    height=7.68, 
-                                    units='in'))
+# Libraries
+setwd("~/janus/scripts")
+source("util.R")
+library(ggplot2)
+library(plyr)
 
-    model_10B3 <- function(data){
-        glm(
-            I(1/age) ~ dose + I(dose^2 / (fractions)),
-            data=data,
-            weights=n
-        )
+# Data
+data <- readRDS("data/ddref.rds")
+
+# Helpers
+model_10B3 <- function(data) {
+    glm(I(1/age) ~ dose + I(dose^2/(fractions)), data = data, weights = n)
+}
+show <- function(g) {
+    f <- function(x) round(x, 2)
+    suppressWarnings(print(ggplot(g[is.na(g$p), ], aes(dose, 1/age, label = type, 
+        group = type)) + geom_text(size = 4) + geom_smooth(data = g[!is.na(g$p), 
+        ], aes(dose, p, color = type), method = "lm", formula = "y ~ x + I(x^2)", 
+        se = FALSE) + facet_wrap(~cluster, scales = "free_y")))
+}
+
+# Prediction Intervals
+to_predict <- expand.grid(fractions = c(1, 1000), dose = seq(0, 1.5, 0.1))
+to_predict$type <- "A"
+to_predict$type[to_predict$fractions > 1] <- "C"
+
+
+# Mean Lifespans
+aggregate <- ddply(data, .(cluster, group_id, sex), function(df) {
+    u <- function(x) paste(unique(x), collapse = " ")
+    dont_aggregate <- c("lifespan", "id", "X", "n")
+    data.frame(llply(df[, !names(df) %in% dont_aggregate], u), age = mean(df$lifespan), 
+        age_sd = sd(df$lifespan), n = nrow(df))
+})
+
+# Restore Sanity
+numerics <- names(data)[laply(data, is.numeric)]
+for (n in numerics) {
+    if (n %in% names(aggregate)) {
+        aggregate[, n] <- as.numeric(as.character(aggregate[, n]))
     }
-    show <- function(g){
-        f <- function(x) round(x, 2)
-        g$cluster_name <- with(g, paste0(
-            cluster_name, '\n',
-            #'a=', f(a), 
-            #' B=', f(B), 
-            ' ddref =', f((a + B) / a)
-        ))
-        suppressWarnings(print(
-        ggplot(g[is.na(g$p),], aes(
-                dose, 
-                1/age, 
-                label=type,
-                group=type
-            )) + 
-            geom_text(size=4) + 
-            geom_smooth(
-                data=g[!is.na(g$p),],
-                aes(dose, p, color=type), 
-                method='lm', 
-                formula='y ~ x + I(x^2)',
-                se=FALSE
-            ) +
-            facet_wrap(~ cluster_name)
-        ))
-    }
-    
-    # Define Acute
-    chronic <- data$fractions > 1
-    data$type <- 'A'
-    data$type[chronic] <- 'C'
-    
-    # Prediction Intervals
-    to_predict <- expand.grid(
-        fractions = c(1, 1000),
-        dose = seq(0, 1.5, 0.1)
-    )
-    to_predict$type <- 'A'
-    to_predict$type[to_predict$fractions > 1] <- 'C'
+}
 
+# Model
+m <- c("cluster", "sex", "cluster_name")
+df <- aggregate[aggregate$cluster == aggregate$cluster[1] & aggregate$sex == 
+    aggregate$sex[1] & aggregate$cluster_name == aggregate$cluster_name[1], 
+    ]
+aggregate <- ddply(aggregate, .(cluster, sex, cluster_name), function(df) {
+    # Extract Coefficients
+    m <- model_10B3(df)
+    c <- m$coefficients
+    df$a <- c["dose"]
+    df$B <- c["I(dose^2/(fractions))"]
     
-    # Mean Lifespans
-    aggregate <- ddply(data, .(cluster, group_id, sex), function(df){
-        u <- function(x) paste(unique(x), collapse=' ')
-        dont_aggregate <- c('lifespan', 'id', 'X', 'n')
-        data.frame(
-            llply(df[,!names(df) %in% dont_aggregate], u),
-            age=mean(df$lifespan),
-            age_sd=sd(df$lifespan),
-            n=nrow(df)
-        )   
-    })
+    # Extract Predictions
+    predictions <- to_predict
+    addin <- names(df)[!names(df) %in% names(predictions)]
+    predictions <- merge(df[1, addin], predictions, all = TRUE)
+    predictions$p <- predict(m, newdata = predictions)
     
-    # Restore Sanity
-    numerics <- names(data)[laply(data, is.numeric)]
-    for(n in numerics) {
-        if(n %in% names(aggregate)){
-            aggregate[,n] <- as.numeric(as.character(aggregate[,n]))
-        }
-    }
+    # merge
+    df$p <- NA
+    out <- rbind(df, predictions)
+    
+    out
+})
+
+# TODO(ben) This methodology should look similar to the one we used for
+# the meta analysis TODO(ben) change the colors in order to make the theme
+# consistent throughout the presentation.  I recommend black for chronic
+# effects and red for accute.  Use transparency to represent my new
+# results when I over-lay them so that the old results can still be seen
+# (or visa-versa).
+
+
+# Show As in 10B3 http://www.nap.edu/openbook.php?record_id=11340&page=257
+a <- aggregate
+g <- a
+show(g)
 ```
 
-```
-## Warning: NAs introduced by coercion Warning: NAs introduced by coercion
-## Warning: NAs introduced by coercion Warning: NAs introduced by coercion
-## Warning: NAs introduced by coercion Warning: NAs introduced by coercion
-## Warning: NAs introduced by coercion Warning: NAs introduced by coercion
-## Warning: NAs introduced by coercion Warning: NAs introduced by coercion
-```
+![plot of chunk unnamed-chunk-16](Figs/unnamed-chunk-16.png) 
 
 ```r
-    
-    # Model
-    m <- c('cluster', 'sex', 'cluster_name')
-    df <- aggregate[
-        aggregate$cluster == aggregate$cluster[1] &
-        aggregate$sex == aggregate$sex[1] &
-        aggregate$cluster_name == aggregate$cluster_name[1]
-    ,]
-    aggregate <- ddply(
-        aggregate, 
-        .(cluster, sex, cluster_name), 
-        function(df){
-            # Extract Coefficients
-            m <- model_10B3(df)
-            c <- m$coefficients
-            df$a <- c['dose']
-            df$B <- c['I(dose^2/(fractions))']
-            
-            # Extract Predictions
-            predictions <- to_predict
-            addin <- names(df)[!names(df) %in% names(predictions)]
-            predictions <- merge(df[1, addin], predictions, all=TRUE)
-            predictions$p <- predict(m, newdata=predictions)
-            
-            # merge
-            df$p <- NA
-            out <- rbind(df, predictions)
-            
-            out
-        }
-    )
-
-    # Show
-    # As in 10B3
-    # http://www.nap.edu/openbook.php?record_id=11340&page=257
-    a <- aggregate
-
-    g <- a[a$sex == 'Male' & a$species == "Mouse",]
-    show(g)
-```
-
-![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-111.png) 
-
-```r
-    ggsave0('inverse_lifespan_male_mice.png')
-
-    g <- a[a$sex == 'Female' & a$species == "Mouse",]
-    show(g)
-```
-
-![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-112.png) 
-
-```r
-    ggsave0('inverse_lifespan_female_mice.png')
-
-    g <- a[a$sex == 'Female' & a$species == "Rat",]
-    show(g)
-```
-
-![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-113.png) 
-
-```r
-    ggsave0('inverse_lifespan_female_rat.png')
-    
-    g <- a[a$species == 'Peromyscus',]
-    show(g)
-```
-
-![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-114.png) 
-
-```r
-    ggsave0("inverse_lifespan_peromyscus.png")
+ggsave_for_ppt("inverse_lifespan.png")
 ```
 
 
 #### Results
 
-Turns out that DDREF is consistently present.  When a study
-had both chronic and acute exposures the differences seemed
-genuine.
+This data is far from well behaved!  
 
-The tricky part is the shape of the acute response, it can
-be convoluted in many ways.  Also it can vary widely in terms
-of dose response.  This suggests to me that the differences 
-seen between workers and atomic bomb survivors are not the
-product of a high estimate of DDREF, instead perhaps it is 
-something else!?
+Chronic effects may appear better or worse than projected acute effects.  Sometimes hormesis like respsonses appear.  Its not obvious from this graph because the y-axis is stretched to fit the data, but the magnitude of the effect is changing wildly too.
+
+It is no wonder that radiobiology is full of debate!  
+
+At this point we should be a bit skeptical of organizing the data in this, the BEIR VII manner.  While that approach seemed reasonable given the ORNL data that they worked with, it clearly does not generalize well.  This may be because the underlying statitical approach is flawed, or simply that these graphs a very robust way of displaying the effect.  In any case we question the 'intuitive appeal' of graph 10B3.  While it seemed quite difinitive in isolation, the effect is lost when we try to repeat it on new datasets.
+
+
 
 
 <a name="10B4-all-data"></a>
@@ -1304,12 +1145,10 @@ library(plyr)
 
 # Data
 setwd("~/janus/scripts")
-data <- read.csv("data/ddref.csv")
+data <- readRDS("data/ddref.rds")
+
 
 # Helpers
-ggsave0 <- function(...) suppressWarnings(ggsave(..., dpi = 100, width = 10.24, 
-    height = 7.68, units = "in"))
-
 model_10B4 <- function(data, o) {
     glm(I(1/age) ~ I(dose + o * dose^2/(fractions)), data = data, weights = n)
 }
@@ -1322,11 +1161,6 @@ normalize_likelihood <- function(l, delta) {
     l
 }
 
-
-# Define Acute
-chronic <- data$fractions > 1
-data$type <- "A"
-data$type[chronic] <- "C"
 
 # Mean Lifespans
 aggregate <- ddply(data, .(cluster, group_id, sex), function(df) {
@@ -1343,23 +1177,12 @@ for (n in numerics) {
         aggregate[, n] <- as.numeric(as.character(aggregate[, n]))
     }
 }
-```
-
-```
-## Warning: NAs introduced by coercion Warning: NAs introduced by coercion
-## Warning: NAs introduced by coercion Warning: NAs introduced by coercion
-## Warning: NAs introduced by coercion Warning: NAs introduced by coercion
-## Warning: NAs introduced by coercion Warning: NAs introduced by coercion
-## Warning: NAs introduced by coercion Warning: NAs introduced by coercion
-```
-
-```r
 
 
 # Model
 low = -2
 high = 6
-delta = 0.5  # decrease for higher resolution
+delta = 0.01  # decrease for higher resolution
 o_range = (low/delta):(high/delta) * delta
 
 
@@ -1397,54 +1220,14 @@ show <- function(g) {
     suppressWarnings(print(ggplot(g, aes(o, l)) + geom_path() + ylim(0, 1) + 
         facet_wrap(~cluster_name)))
 }
-g <- a[a$sex == "Male" & a$species == "Mouse", ]
+g <- a
 show(g)
 ```
 
-![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-121.png) 
+![plot of chunk unnamed-chunk-17](Figs/unnamed-chunk-17.png) 
 
 ```r
-ggsave0("inverse_lifespan_profile_male_mice.png")
-
-
-g <- a[a$sex == "Female" & a$species == "Mouse", ]
-show(g)
-```
-
-![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-122.png) 
-
-```r
-ggsave0("inverse_lifespan_profile_female_mice.png")
-
-
-g <- a[a$sex == "Female" & a$species == "Rat", ]
-show(g)
-```
-
-![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-123.png) 
-
-```r
-ggsave0("inverse_lifespan_profile_female_rat.png")
-
-
-g <- a[a$species == "Peromyscus", ]
-show(g)
-```
-
-![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-124.png) 
-
-```r
-ggsave0("inverse_lifespan_profile_peromyscus.png")
-
-
-summary$l <- pmin(summary$l, 1)
-ggplot(summary, aes(o, l)) + geom_path() + ylim(0, 1)
-```
-
-![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-125.png) 
-
-```r
-ggsave0("inverse_lifespan_summary_effect.png")
+ggsave_for_ppt("inverse_lifespan_profile.png")
 ```
 
     
@@ -1468,19 +1251,9 @@ A figure that shows off the principal of meta-regression.
 library(ggplot2)
 library(plyr)
 library(metafor)
-```
-
-```
-## Loading required package: Formula
-## 
-## Loading 'metafor' package (version 1.9-2). For an overview and
-## introduction to the package please type: help(metafor).
-```
-
-```r
 
 # Helpers
-ggsave0 <- function(...) suppressWarnings(ggsave(..., dpi = 100, width = 10.24, 
+ggsave_for_ppt <- function(...) suppressWarnings(ggsave(..., dpi = 100, width = 10.24, 
     height = 7.68, units = "in"))
 
 
@@ -1544,10 +1317,10 @@ ggplot(data, aes(x, yi)) + geom_point() + geom_errorbar(aes(ymin = yi - vi^0.5,
     color = "red") + geom_path(aes(x, p), color = "black")
 ```
 
-![plot of chunk unnamed-chunk-13](figure/unnamed-chunk-13.png) 
+![plot of chunk unnamed-chunk-18](Figs/unnamed-chunk-18.png) 
 
 ```r
-ggsave0("meta_regression_example.png")
+ggsave_for_ppt("meta_regression_example.png")
 ```
 
 
@@ -1578,7 +1351,7 @@ setwd("~/janus/scripts")
 data <- read.csv("data/storer_1979.csv", sep = "\t")
 
 # Helpers
-ggsave0 <- function(...) suppressWarnings(ggsave(..., dpi = 100, width = 10.24, 
+ggsave_for_ppt <- function(...) suppressWarnings(ggsave(..., dpi = 100, width = 10.24, 
     height = 7.68, units = "in"))
 
 model_10B3 <- function(data) {
@@ -1663,10 +1436,10 @@ g <- data[with(data, strain == "RFM" & sex == "F" & rate != 0.4), ]
 show(g)
 ```
 
-![plot of chunk unnamed-chunk-14](figure/unnamed-chunk-14.png) 
+![plot of chunk unnamed-chunk-19](Figs/unnamed-chunk-19.png) 
 
 ```r
-ggsave0("beir_10B3_meta_regression.png")
+ggsave_for_ppt("beir_10B3_meta_regression.png")
 ```
 
 
@@ -1709,111 +1482,112 @@ will come from storer 1979 (3575012.pdf).
 
 ```r
 
-    # Libraries
-    library(ggplot2)
-    library(plyr)
-    library(metafor)
-    
-    # Data
-    setwd('~/janus/scripts')
-    data <- read.csv('data/storer_1979.csv', sep='\t')  
-    
-    # Helpers
-    ggsave0 <- function(...) suppressWarnings(ggsave(..., 
-                                    dpi=100, 
-                                    width=10.24, 
-                                    height=7.68, 
-                                    units='in'))
+# Libraries
+library(ggplot2)
+library(plyr)
+library(metafor)
 
-    model_10B4 <- function(data, o){    
-        glm(
-            I(1/age) ~ I(dose + o*dose^2 / (fractions)),
-            data=data,
-            weights=n
-        )
-    }       
-    model_meta <- function(data, o){    
-        data$curved_dose <- with(data, 
-            dose + o*dose^2 / (fractions)
-        )
-        rma(
-            1/age, 
-            (1/age - 1/(age + sd))^2, 
-            mods = cbind(curved_dose), 
-            data = data,
-            method='ML'
-        )
-    }
-    
-    normalize_likelihood <- function(l, delta){
-        l <- l - max(l)
-        l <- exp(l)
-        l <- l / sum(l)
-        l <- l / delta
-        
-        l       
-    }
-            
-    # Constants
-    threshold = 1.5001
-    
-    # Clean
-    data$fractions <- 1
-    data$fractions[data$rate < 0.1] <- Inf
+# Data
+setwd('~/janus/scripts')
+data <- read.csv('data/storer_1979.csv', sep='\t')  
 
-    # Define Acute
-    chronic <- data$rate < 0.1
-    data$type <- 'A'
-    data$type[chronic] <- 'C'
-    
-    # Subset
-    data$modeled_in_10B4 <- with(data, 
-        dose < threshold &
-        strain == 'RFM'  &
-        sex == 'F' # &
-        # rate != 0.4
+# Helpers
+ggsave_for_ppt <- function(...) suppressWarnings(ggsave(..., 
+                                dpi=100, 
+                                width=10.24, 
+                                height=7.68, 
+                                units='in'))
+
+model_10B4 <- function(data, o){    
+    glm(
+        I(1/age) ~ I(dose + o*dose^2 / (fractions)),
+        data=data,
+        weights=n
     )
-    data$in_my_analysis <- data$type == 'A'
+}       
+model_meta <- function(data, o){    
+    data$curved_dose <- with(data, 
+        dose + o*dose^2 / (fractions)
+    )
+    rma(
+        1/age, 
+        (1/age - 1/(age + sd))^2, 
+        mods = cbind(curved_dose), 
+        data = data,
+        method='ML'
+    )
+}
 
-    # Model
-    low = -2
-    high = 6
-    delta = .1
-    o_range = (low/delta):(high/delta) * delta
+normalize_likelihood <- function(l, delta){
+    l <- l - max(l)
+    l <- exp(l)
+    l <- l / sum(l)
+    l <- l / delta
     
-    get_likelihoods <- function(
-        o_range, 
-        modeling_function=model_10B4,
-        d=data[data$modeled_in_10B4,]
-    ){
-        r <- ldply(o_range, function(o){
-            m <- modeling_function(d, o)
-            l = logLik(m)
-            
-            data.frame(o, l)
-        })
+    l       
+}
         
-        r$l <- normalize_likelihood(r$l, delta)
-        
-        r
-    }
+# Constants
+threshold = 1.5001
 
-    beir_r <- get_likelihoods(o_range)
-    my_r <- get_likelihoods(o_range, model_meta)
+# Clean
+data$fractions <- 1
+data$fractions[data$rate < 0.1] <- Inf
+
+# Define Acute
+chronic <- data$rate < 0.1
+data$type <- 'A'
+data$type[chronic] <- 'C'
+
+# Subset
+data$modeled_in_10B4 <- with(data, 
+    dose < threshold &
+    strain == 'RFM'  &
+    sex == 'F' # &
+    # rate != 0.4
+)
+data$in_my_analysis <- data$type == 'A'
+
+# Model
+low = -2
+high = 6
+delta = .1
+o_range = (low/delta):(high/delta) * delta
+
+get_likelihoods <- function(
+    o_range, 
+    modeling_function=model_10B4,
+    d=data[data$modeled_in_10B4,]
+){
+    r <- ldply(o_range, function(o){
+        m <- modeling_function(d, o)
+        l = logLik(m)
+        
+        data.frame(o, l)
+    })
     
+    r$l <- normalize_likelihood(r$l, delta)
     
-    # Reproduce 10B4
-    # http://www.nap.edu/openbook.php?record_id=11340&page=258
-    ggplot(beir_r, aes(o, l)) + 
-        geom_path() + 
-        geom_path(data=my_r, color='red') + 
-        scale_y_continuous(breaks = c(0:5)/5, limits=c(0,1))
+    r
+}
+
+
+beir_r <- get_likelihoods(o_range)
+my_r <- get_likelihoods(o_range, model_meta)
+
+
+# Reproduce 10B4
+# http://www.nap.edu/openbook.php?record_id=11340&page=258
+ggplot(beir_r, aes(o, l)) + 
+    geom_path() + 
+    geom_path(data=my_r, color='red') + 
+    scale_y_continuous(breaks = c(0:5)/5, limits=c(0,1))
 ```
 
-![plot of chunk unnamed-chunk-15](figure/unnamed-chunk-15.png) 
+![plot of chunk unnamed-chunk-20](Figs/unnamed-chunk-20.png) 
 
 ```r
-    ggsave0('beir_10B4_meta_reression.png')    
+ggsave_for_ppt('beir_10B4_meta_reression.png')    
 ```
 
 
@@ -1840,283 +1614,205 @@ More reason for meta-analysis.
 
 <a name="10B3-meta-all"></a>
 
-Meta Regression on all data
+Meta-regression on all data
 ========================================================
 *June 2013*
 
-Show graphs like Storer 1979 10B3 but for all data using 
-the random effects meta-regression technique.
+Show graphs like Storer 1979 10B3 but for all data using random effects meta-regression.
 
 
 ```r
 
-    # Libraries
-    library(ggplot2)
-    library(plyr)
-    library(metafor)
-    
-    # Data
-    setwd('~/janus/scripts')
-    data <- read.csv('data/ddref.csv')  
-    
-    # Helpers
-    ggsave0 <- function(...) suppressWarnings(ggsave(..., 
-                                    dpi=100, 
-                                    width=10.24, 
-                                    height=7.68, 
-                                    units='in'))
+# Libraries
+library(ggplot2)
+library(plyr)
+library(metafor)
 
-    model_10B3 <- function(data){
-        glm(
-            I(1/age) ~ dose + I(dose^2 / (fractions)),
-            data=data,
-            weights=n
-        )
-    }   
-    model_meta <- function(data){   
-        data$a <- data$dose
-        data$B <- with(data, dose^2 / (fractions))
+# Data
+setwd("~/janus/scripts")
+source("util.R")
+data <- readRDS("data/ddref.rds")
+```
+
+#### Modeling functions
+Specify modeling functions.  
+
+`model_10B3` will fit a linear quadratic model exactly as in the BEIR VII report, without accounting for within or between group error.
+
+
+```r
+model_10B3 <- function(data) {
+    glm(I(1/age) ~ dose * cluster + I(dose^2/fractions) * cluster, data = data, 
+        weights = n)
+}
+```
+
+
+`model_meta` will fit an identical model except that within group and between group error will be accounted for.
+
+
+```r
+model_meta <- function(data){   
+  data$a <- data$dose
+  data$B <- with(data, dose^2 / (fractions))
+  
+  rma(
+    yi, 
+    vi, 
+    mods = ~ a*cluster + B*cluster -a -B -1, 
+    data = data,
+    method="ML"
+  )
+}
+
         
-        # We can only estimate random effects with 
-        # four points or more.
-        method="ML"
-        if(nrow(data) == 3){
-            method="FE"
-        }
-        rma(
-            yi, 
-            vi, 
-            mods = cbind(a, B), 
-            data = data,
-            method=method
-        )
+# Mean Lifespans
+aggregate <- ddply(data, .(cluster, group_id, sex), function(df){
+    u <- function(x) paste(unique(x), collapse=' ')
+    dont_aggregate <- c('lifespan', 'id', 'X', 'n')
+    n <- nrow(df)
+    data.frame(
+        llply(df[,!names(df) %in% dont_aggregate], u),
+        age=mean(df$lifespan),
+        sd=sd(df$lifespan)/n^0.5,
+        n=nrow(df)
+    )   
+})
+
+# Prepare for Meta
+aggregate$yi <- with(aggregate, 1/age)
+aggregate$vi <- with(aggregate, (1/age - 1/(age + sd))^2)   
+
+# Restore Sanity
+numerics <- names(data)[laply(data, is.numeric)]
+for(n in numerics) {
+    if(n %in% names(aggregate)){
+        aggregate[,n] <- as.numeric(as.character(aggregate[,n]))
     }
-    
-    predict_meta <- function(m, newdata){
-        newdata$a <- newdata$dose
-        newdata$B <- with(newdata, dose^2 / (fractions))
-        predict(m, newmods=with(newdata, cbind(a, B)))$pred
-    }       
-    show <- function(g){
-        f <- function(x) round(x, 2)
-        g$cluster_name <- with(g, paste0(
-            cluster_name, '\n',
-            #'a=', f(a), 
-            #' B=', f(B), 
-            ' ddref =', f((a + B) / a)
-        ))      
-        g$cluster_name <- as.factor(as.character(g$cluster_name))
+}
 
-        original <- g[is.na(g$p_10B3),] 
-        predictions <- g[!is.na(g$p_10B3),] 
-        
-        suppressWarnings(print(
+# Model
+m <- model_meta(aggregate)
+c <- coefficients(m)
+aggregate <- aggregate %.%
+  mutate(i=c[paste0('cluster', cluster)],
+         a=c[paste0('a:cluster', cluster)],
+         B=c[paste0('cluster', cluster, ':B')],
+         tau2=m$tau2)
+aggregate$p_my_analysis <- predict(m)$pred
+aggregate$p_10B3 <- predict(model_10B3(aggregate))
 
-        ggplot(original, aes(
-            dose, 
-            1/age, 
-            label=type,
-            group=type
-        )) + 
-            geom_errorbar(aes(
-                ymin=1/age + (vi + tau2)^0.5, 
-                ymax=1/age - (vi + tau2)^0.5
-                ), alpha=0.5, width=.05, color='red') +
-            geom_errorbar(aes(
-                ymin=1/age + vi^0.5, 
-                ymax=1/age - vi^0.5
-            ), alpha=0.5, width=.1) +
-            geom_text(size=4) + 
-            geom_smooth(
-                data = predictions,
-                aes(dose, p_10B3), 
-                method='lm', 
-                formula='y ~ x + I(x^2)',
-                se=FALSE,
-                color='black'
-            ) + 
-            geom_smooth(
-                data = predictions,
-                aes(dose, p_my_analysis), 
-                method='lm', 
-                formula='y ~ x + I(x^2)',
-                se=FALSE,
-                color='red'
-            ) + 
-            facet_wrap(~ cluster_name)  
-          ))
-    }
-            
-    # Define Acute
-    chronic <- data$fractions > 1
-    data$type <- 'A'
-    data$type[chronic] <- 'C'
+# Project
+# Add projections across the entire range (0-1.5 Gy) for
+# acute and protracted exposures.  This will create nicer
+# graphs.
+doses = seq(from=0, to=1.5, by=.1)
+coefficients = unique(aggregate[,c('i', 'a', 'B', 'cluster')])
+projections = ddply(coefficients, .(cluster), function(df){
+  acute <- with(df, cbind(data.frame(
+    dose = doses,
+    type = 'A',
+    fractions = 1,
+    p_my_analysis = i + a * doses + B * doses^2
+  ), df))
+  
+  chronic <- with(df, cbind(data.frame(
+    dose = doses,
+    type = 'C',
+    fractions = 1000,
+    p_my_analysis = i + a * doses
+  ), df))
+  
+  rbind(acute, chronic)
+})
+projections$p_10B3 <- predict(model_10B3(aggregate),
+                              newdata=projections)
 
-    # Prediction Intervals
-    to_predict <- expand.grid(
-        fractions = c(1, 1000),
-        dose = seq(0, 1.5, 0.1)
-    )
-    to_predict$type <- 'A'
-    to_predict$type[to_predict$fractions > 1] <- 'C'
+# Show
+g <- aggregate
+f <- function(x) round(x, 2)
+g$cluster_name <- with(g, paste0(
+    cluster_name, '\n',
+    #'a=', f(a), 
+    #' B=', f(B), 
+    ' ddref =', f((a + B) / a)
+))
+projections$cluster_name <- projections$cluster
+projections$cluster_name <- with(projections, paste0(
+    cluster_name, '\n',
+    #'a=', f(a), 
+    #' B=', f(B), 
+    ' ddref =', f((a + B) / a)
+))
 
-            
-    # Mean Lifespans
-    aggregate <- ddply(data, .(cluster, group_id, sex), function(df){
-        u <- function(x) paste(unique(x), collapse=' ')
-        dont_aggregate <- c('lifespan', 'id', 'X', 'n')
-        n <- nrow(df)
-        data.frame(
-            llply(df[,!names(df) %in% dont_aggregate], u),
-            age=mean(df$lifespan),
-            sd=sd(df$lifespan)/n^0.5,
-            n=nrow(df)
-        )   
-    })
-    
-    # Prepare for Meta
-    aggregate$yi <- with(aggregate, 1/age)
-    aggregate$vi <- with(aggregate, (1/age - 1/(age + sd))^2)   
-    
-    # Restore Sanity
-    numerics <- names(data)[laply(data, is.numeric)]
-    for(n in numerics) {
-        if(n %in% names(aggregate)){
-            aggregate[,n] <- as.numeric(as.character(aggregate[,n]))
-        }
-    }
+ggplot(g, aes(
+    dose, 
+    1/age, 
+    label=type,
+    group=type)) + 
+    geom_errorbar(aes(
+        ymin=1/age + (vi + tau2)^0.5, 
+        ymax=1/age - (vi + tau2)^0.5
+        ), alpha=0.5, width=.05, color='red') +
+    geom_errorbar(aes(
+        ymin=1/age + vi^0.5, 
+        ymax=1/age - vi^0.5
+    ), alpha=0.5, width=.1) +
+    geom_text(size=4) + 
+    geom_smooth(
+        data = projections,
+        aes(dose, p_10B3), 
+        method='lm', 
+        formula='y ~ x + I(x^2)',
+        se=FALSE,
+        color='black'
+    ) + 
+    geom_smooth(
+        data = projections,
+        aes(dose, p_my_analysis), 
+        method='lm', 
+        formula='y ~ x + I(x^2)',
+        se=FALSE,
+        color='red'
+    ) + 
+    facet_wrap(~ cluster_name, scales="free_y")  
 ```
 
-```
-## Warning: NAs introduced by coercion Warning: NAs introduced by coercion
-## Warning: NAs introduced by coercion Warning: NAs introduced by coercion
-## Warning: NAs introduced by coercion Warning: NAs introduced by coercion
-## Warning: NAs introduced by coercion Warning: NAs introduced by coercion
-## Warning: NAs introduced by coercion Warning: NAs introduced by coercion
-```
-
-```r
-    
-    df <- aggregate
-    m <- model_meta(df)
-    df$yi
-```
-
-```
-##   [1] 0.0010149 0.0010306 0.0010648 0.0007236 0.0006847 0.0007361 0.0007443
-##   [8] 0.0011656 0.0011039 0.0011699 0.0011006 0.0011559 0.0010846 0.0013664
-##  [15] 0.0013761 0.0014032 0.0014439 0.0013924 0.0012848 0.0014056 0.0016290
-##  [22] 0.0018094 0.0018482 0.0018572 0.0020534 0.0013886 0.0014070 0.0014709
-##  [29] 0.0014852 0.0015368 0.0015811 0.0013289 0.0012870 0.0014872 0.0015145
-##  [36] 0.0013191 0.0016351 0.0015386 0.0016828 0.0012606 0.0018407 0.0010955
-##  [43] 0.0011125 0.0011109 0.0011116 0.0010775 0.0011217 0.0010797 0.0011135
-##  [50] 0.0011168 0.0010992 0.0011383 0.0010833 0.0011117 0.0011627 0.0011772
-##  [57] 0.0010429 0.0011103 0.0016621 0.0010534 0.0011117 0.0010913 0.0010987
-##  [64] 0.0012715 0.0011117 0.0010539 0.0011530 0.0011291 0.0011248 0.0010970
-##  [71] 0.0011204 0.0012170 0.0012252 0.0012082 0.0012482 0.0011726 0.0011553
-##  [78] 0.0012523 0.0011327 0.0012160 0.0011772 0.0011149 0.0011469 0.0012131
-##  [85] 0.0012082 0.0012545 0.0011775 0.0011556 0.0011526 0.0013136 0.0013527
-##  [92] 0.0013541 0.0013722 0.0014107 0.0012860 0.0013514 0.0016510 0.0016386
-##  [99] 0.0016365 0.0017287 0.0017922 0.0018523 0.0016669 0.0016965 0.0013206
-## [106] 0.0012873 0.0012349 0.0013206 0.0012103 0.0012997
-```
-
-```r
-    predict(m)$pred
-```
-
-```
-##   [1] 0.001212 0.001334 0.001319 0.001212 0.001212 0.001334 0.001319
-##   [8] 0.001212 0.001212 0.001306 0.001306 0.001337 0.001337 0.001212
-##  [15] 0.001306 0.001306 0.001337 0.001337 0.001212 0.001212 0.001267
-##  [22] 0.001306 0.001329 0.001337 0.001305 0.001236 0.001267 0.001306
-##  [29] 0.001337 0.001305 0.001236 0.001212 0.001267 0.001337 0.001212
-##  [36] 0.001236 0.001276 0.001337 0.001212 0.001267 0.001337 0.001257
-##  [43] 0.001231 0.001292 0.001311 0.001212 0.001218 0.001236 0.001267
-##  [50] 0.001292 0.001308 0.001337 0.001212 0.001231 0.001292 0.001311
-##  [57] 0.001212 0.001262 0.001449 0.001212 0.001212 0.001276 0.001287
-##  [64] 0.001332 0.001212 0.001276 0.001332 0.001510 0.001212 0.001292
-##  [71] 0.001332 0.001212 0.001212 0.001306 0.001337 0.001212 0.001212
-##  [78] 0.001276 0.001276 0.001335 0.001335 0.001305 0.001305 0.001212
-##  [85] 0.001306 0.001337 0.001212 0.001306 0.001337 0.001212 0.001449
-##  [92] 0.001267 0.001306 0.001337 0.001274 0.001334 0.001212 0.001449
-##  [99] 0.001446 0.001267 0.001306 0.001337 0.001274 0.001334 0.001212
-## [106] 0.001306 0.001337 0.001212 0.001306 0.001337
-```
+![plot of chunk unnamed-chunk-23](Figs/unnamed-chunk-23.png) 
 
 ```r
 
-    
-    # Model
-    aggregate <- ddply(aggregate, .(cluster, sex), function(df){
-        # Meta Model
-        m <- model_meta(df)
-        c <- coefficients(m)
-        df$a <- c['a']
-        df$B <- c['B']
-        df$tau2 <- m$tau2
+#TODO(ben) clean, document, commit these changes
+#TODO(ben) reorder cluster factor by number of animals
+#TODO(ben) put ggsave in a util function (or just use something better)
 
-        # Setup Predictions
-        predictions <- to_predict
-        addin <- names(df)[!names(df) %in% names(predictions)]
-        predictions <- merge(df[1, addin], predictions, all=TRUE)
-        predictions$p_my_analysis <- 
-            predict_meta(m, newdata=predictions)
-                
-        # BEIR Model    
-        m <- model_10B3(df)
-        predictions$p_10B3 <- predict(m, newdata=predictions)
-        
-        # merge
-        df$p_10B3 <- NA
-        df$p_my_analysis <- NA
-        
-        out <- rbind(df, predictions)
-        
-        out
-    })
 
-    # Show
-    # As in 10B3
-    # http://www.nap.edu/openbook.php?record_id=11340&page=257
-    a <- aggregate
 
-    g <- a[a$sex == 'Male' & a$species == "Mouse",]
-    show(g)
+
+
+
+
+
+
+# Show
+# As in 10B3
+# http://www.nap.edu/openbook.php?record_id=11340&page=257
+a <- aggregate
+
+g <- a
+show(g)
 ```
 
-![plot of chunk unnamed-chunk-16](figure/unnamed-chunk-161.png) 
-
-```r
-    ggsave0('meta_regression_male_mice.png')
-
-    g <- a[a$sex == 'Female' & a$species == "Mouse",]
-    show(g)
+```
+## Error: 'data' must be of a vector type, was 'NULL'
 ```
 
-![plot of chunk unnamed-chunk-16](figure/unnamed-chunk-162.png) 
-
 ```r
-    ggsave0('meta_regression_female_mice.png')
-
-    g <- a[a$sex == 'Female' & a$species == "Rat",]
-    show(g)
+ggsave_for_ppt('meta_regression.png')
 ```
 
-![plot of chunk unnamed-chunk-16](figure/unnamed-chunk-163.png) 
-
-```r
-    ggsave0('meta_regression_female_rat.png')
-
-    g <- a[a$species == "Peromyscus",]
-    show(g)
 ```
-
-![plot of chunk unnamed-chunk-16](figure/unnamed-chunk-164.png) 
-
-```r
-    ggsave0('meta_regression_peromyscus.png')
- 
+## Error: 'data' must be of a vector type, was 'NULL'
 ```
 
 
@@ -2145,10 +1841,10 @@ library(metafor)
 
 # Data
 setwd("~/janus/scripts")
-data <- read.csv("data/ddref.csv")
+data <- readRDS("data/ddref.rds")
 
 # Helpers
-ggsave0 <- function(...) suppressWarnings(ggsave(..., dpi = 100, width = 10.24, 
+ggsave_for_ppt <- function(...) suppressWarnings(ggsave(..., dpi = 100, width = 10.24, 
     height = 7.68, units = "in"))
 
 model_10B4 <- function(data, o) {
@@ -2192,17 +1888,6 @@ for (n in numerics) {
         aggregate[, n] <- as.numeric(as.character(aggregate[, n]))
     }
 }
-```
-
-```
-## Warning: NAs introduced by coercion Warning: NAs introduced by coercion
-## Warning: NAs introduced by coercion Warning: NAs introduced by coercion
-## Warning: NAs introduced by coercion Warning: NAs introduced by coercion
-## Warning: NAs introduced by coercion Warning: NAs introduced by coercion
-## Warning: NAs introduced by coercion Warning: NAs introduced by coercion
-```
-
-```r
 
 # Model
 low = -2
@@ -2267,37 +1952,64 @@ g <- a[a$sex == "Male" & a$species == "Mouse", ]
 show(g)
 ```
 
-![plot of chunk unnamed-chunk-17](figure/unnamed-chunk-171.png) 
+```
+## Error: replacement has 1 row, data has 0
+```
 
 ```r
-ggsave0("meta_regression_profile_male_mice.png")
+ggsave_for_ppt("meta_regression_profile_male_mice.png")
+```
+
+```
+## Error: replacement has 1 row, data has 0
+```
+
+```r
 
 g <- a[a$sex == "Female" & a$species == "Mouse", ]
 show(g)
 ```
 
-![plot of chunk unnamed-chunk-17](figure/unnamed-chunk-172.png) 
+```
+## Error: replacement has 1 row, data has 0
+```
 
 ```r
-ggsave0("meta_regression_profile_female_mice.png")
+ggsave_for_ppt("meta_regression_profile_female_mice.png")
+```
+
+```
+## Error: replacement has 1 row, data has 0
+```
+
+```r
 
 g <- a[a$sex == "Female" & a$species == "Rat", ]
 show(g)
 ```
 
-![plot of chunk unnamed-chunk-17](figure/unnamed-chunk-173.png) 
+```
+## Error: replacement has 1 row, data has 0
+```
 
 ```r
-ggsave0("meta_regression_profile_female_rat.png")
+ggsave_for_ppt("meta_regression_profile_female_rat.png")
+```
+
+```
+## Error: replacement has 1 row, data has 0
+```
+
+```r
 
 g <- a[a$species == "Peromyscus", ]
 show(g)
 ```
 
-![plot of chunk unnamed-chunk-17](figure/unnamed-chunk-174.png) 
+![plot of chunk unnamed-chunk-24](Figs/unnamed-chunk-241.png) 
 
 ```r
-ggsave0("meta_regression_profile_peromyscus.png")
+ggsave_for_ppt("meta_regression_profile_peromyscus.png")
 
 summary$l_10B4 <- pmin(4, summary$l_10B4)
 summary$l_meta <- pmin(4, summary$l_meta)
@@ -2305,10 +2017,10 @@ ggplot(summary, aes(o, l)) + geom_path(aes(o, l_10B4), color = "black") + geom_p
     l_meta), color = "red") + ylim(0, 4)
 ```
 
-![plot of chunk unnamed-chunk-17](figure/unnamed-chunk-175.png) 
+![plot of chunk unnamed-chunk-24](Figs/unnamed-chunk-242.png) 
 
 ```r
-ggsave0("meta_regression_summary_effect.png")
+ggsave_for_ppt("meta_regression_summary_effect.png")
 ```
 
 
