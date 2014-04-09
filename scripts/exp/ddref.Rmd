@@ -504,13 +504,19 @@ d = d %.%
   mutate(n_in_cluster=length(cluster))
 
 # Give the clusters pretty names
+pluralize <- function(x) {
+  c(Mouse='Mice',
+    Rat='Rats',
+    Dog='Dogs',
+    Peromyscus='Peromyscus')[x]
+}
 for(c in unique(d$cluster)) {
-  e = strsplit(c, '--')[[1]]
-  names(e) <- c('sex', 'strain', 'species', 'lab', 'age', 'quality')
+  elements = as.list(strsplit(c, '--')[[1]])
+  names(elements) <- c('sex', 'strain', 'species', 'lab', 'age', 'quality')
   number_of_animals <- sum(d$cluster == c)
-  pretty_cluster_name = paste(
-    number_of_animals, e['sex'], e['strain'], e['species'],
-    '\nexposed to', e['quality'], 'at', e['age'], 'days old')
+  pretty_cluster_name = with(elements, paste(
+    number_of_animals, sex, strain, pluralize(species),
+    '\n', quality, 'at', age, 'days old'))
   d$cluster[d$cluster == c] <- pretty_cluster_name
 }
 
@@ -597,7 +603,7 @@ ggplot(d,
            group=factor(paste(dose, protracted)),
            linetype=protracted)) + 
   geom_density(adjust=2) +
-  facet_wrap(~ cluster_name, scales='free') + 
+  facet_wrap(~ cluster, scales='free') + 
   scale_color_continuous(
     guide = guide_legend(title = "Dose (gy)")
   ) + 
