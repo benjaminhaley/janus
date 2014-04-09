@@ -41,7 +41,6 @@ TODO(ben)
     all of the datasets to generate profiles.
 
 _____________________________________________________________________________  
-^ back to [table of contents](#contents)
 
 
 ```{r global_options, include=FALSE}
@@ -300,7 +299,7 @@ In general we want to cluster on:
 
   `lab, species, strain, and sex`
 ```{r}
-d$cluster = with(d, paste(species, strain, sex, lab))
+d$cluster = with(d, paste(sex, strain, species, lab, sep='--'))
 ```
 But also
 
@@ -329,7 +328,7 @@ for(c in clusters_that_recorded_true_age_at_treatment) {
   d$intended_age_of_treatment[d$cluster == c] <- 
     median(d$intended_age_of_treatment[d$cluster == c], na.rm=TRUE)
 }
-d$cluster <- paste(d$cluster, d$intended_age_of_treatment)
+d$cluster <- paste(d$cluster, d$intended_age_of_treatment, sep='--')
 ```
 
 ##### Radiation Quality
@@ -357,12 +356,14 @@ d <- ddply(d, .(cluster), function(df) {
     df2$quality <- treatment_group$quality[1]
     
     # Add quality to the cluster name
-    df2$cluster <- with(df2, paste(cluster, quality))
+    df2$cluster <- with(df2, paste(cluster, quality, sep='--'))
     
     df2
   })
 })
+```
 
+```{r}
 
 # FILTER
 
@@ -503,7 +504,15 @@ d = d %.%
   mutate(n_in_cluster=length(cluster))
 
 # Give the clusters pretty names
-d$cluster_name <- d$cluster
+for(c in unique(d$cluster)) {
+  e = strsplit(c, '--')[[1]]
+  names(e) <- c('sex', 'strain', 'species', 'lab', 'age', 'quality')
+  number_of_animals <- sum(d$cluster == c)
+  pretty_cluster_name = paste(
+    number_of_animals, e['sex'], e['strain'], e['species'],
+    '\nexposed to', e['quality'], 'at', e['age'], 'days old')
+  d$cluster[d$cluster == c] <- pretty_cluster_name
+}
 
 # Define Acute
 chronic <- d$fractions > 1
@@ -517,8 +526,6 @@ sorted_clusters = names(sort(table(d$cluster),
                              decreasing=TRUE))
 d$cluster <- factor(d$cluster,
                     levels=sorted_clusters)
-d$cluster_name <- factor(d$cluster_name,
-                         levels=sorted_clusters)
 
 
 # Summaries
@@ -582,7 +589,6 @@ d <- readRDS('data/ddref.rds')
 Show the distributions of lifespan.  Notice how radiation tends to shift the curve lower, but how some doses, especially some high doses lead to a double humped curve indicating that there are at least two mechanisms reducing lifespan, one that shifts the first hump left and another responsible for the development of a second hump.
 
 
-
 ```{r}
 
 ggplot(d, 
@@ -591,7 +597,7 @@ ggplot(d,
            group=factor(paste(dose, protracted)),
            linetype=protracted)) + 
   geom_density(adjust=2) +
-  facet_wrap(~ cluster, scales='free') + 
+  facet_wrap(~ cluster_name, scales='free') + 
   scale_color_continuous(
     guide = guide_legend(title = "Dose (gy)")
   ) + 
@@ -607,6 +613,11 @@ ggplot(d,
 
 #TODO(ben) consider a graph with a more liberal interpretation of 
 #          chronic, like over one minute vs under one minute.
+
+
+# TODO(ben) make sure we are never misssing those factors used to cluster on
+# TODO(ben) make sure the names of the radiation treatments are consisten, so that gamma is the same as gamma gamma, before clustering.
+
 
 ```
 
@@ -1798,20 +1809,6 @@ ggplot(g, aes(
 #TODO(ben) put ggsave in a util function (or just use something better)
 
 
-
-
-
-
-
-
-
-# Show
-# As in 10B3
-# http://www.nap.edu/openbook.php?record_id=11340&page=257
-a <- aggregate
-
-g <- a
-show(g)
 ggsave_for_ppt('meta_regression.png')
 
 ```
@@ -1840,170 +1837,157 @@ Show graphs like Storer 1979 10B4 but for all data using the random effects meta
 
 ```{r}
 
+# Libraries
+library(ggplot2)
+library(plyr)
+library(metafor)
 
-    # Libraries
-    library(ggplot2)
-    library(plyr)
-    library(metafor)
+# Data
+setwd('~/janus/scripts')
+data <- readRDS('data/ddref.rds')
+ 
+# Helpers
+ggsave_for_ppt <- function(...) suppressWarnings(ggsave(..., 
+                                dpi=100, 
+                                width=10.24, 
+                                height=7.68, 
+                                units='in'))
 
-    # Data
-    setwd('~/janus/scripts')
-    data <- readRDS('data/ddref.rds')
-     
-    # Helpers
-    ggsave_for_ppt <- function(...) suppressWarnings(ggsave(..., 
-                                    dpi=100, 
-                                    width=10.24, 
-                                    height=7.68, 
-                                    units='in'))
-
-    model_10B4 <- function(data, o){    
-        glm(
-            I(1/age) ~ I(dose + o*dose^2 / (fractions)),
-            data=data,
-            weights=n
-        )
-    }   
-    model_meta <- function(data, o){    
-        data$curved_dose <- with(data, dose + o*dose^2 / (fractions))
-        rma(
-            yi, 
-            vi, 
-            mods = cbind(curved_dose), 
-            data = data,
-            method="ML"
-        )
-    }
-    normalize_likelihood <- function(l, delta){
-        l <- l - max(l)
-        l <- exp(l)
-        l <- l / sum(l)
-        l <- l / delta
-        
-        l       
-    }
-
-    # Define Acute
-    chronic <- data$fractions > 1
-    data$type <- 'A'
-    data$type[chronic] <- 'C'
-            
-    # Mean Lifespans
-    aggregate <- ddply(data, .(cluster, group_id, sex), function(df){
-        u <- function(x) paste(unique(x), collapse=' ')
-        dont_aggregate <- c('lifespan', 'id', 'X', 'n')
-        n <- nrow(df)
-        data.frame(
-            llply(df[,!names(df) %in% dont_aggregate], u),
-            age=mean(df$lifespan),
-            sd=sd(df$lifespan)/n^0.5,
-            n=nrow(df)
-        )   
-    })
-    
-    # Prepare for Meta
-    aggregate$yi <- with(aggregate, 1/age)
-    aggregate$vi <- with(aggregate, (1/age - 1/(age + sd))^2)   
-    
-    # Restore Sanity
-    numerics <- names(data)[laply(data, is.numeric)]
-    for(n in numerics) {
-        if(n %in% names(aggregate)){
-            aggregate[,n] <- as.numeric(as.character(aggregate[,n]))
-        }
-    }
-
-    # Model
-    low = -2
-    high = 6
-    delta = .01   # Reduce to increase resolution
-    o_range = (low/delta):(high/delta) * delta
-
-    # Model
-    aggregate <- ldply(o_range, function(o){
-        ddply(aggregate, .(cluster, sex), function(df){
-                        
-            # BEIR
-            m <- model_10B4(df, o)
-            df$l_10B4 <- logLik(m)
-            
-            # Random Effects
-            m <- model_meta(df, o)
-            df$l_meta <- logLik(m)
-            
-            df$o <- o
-            df
-        })
-    })
-    
-    # Summarize Effect
-    get_summary_effect <- function(o, l){
-        aggregate <- data.frame(o, l)
-        summary <- ddply(aggregate, .(o), function(df){
-            sum(df$l, na.rm=TRUE)
-        })
-        names(summary) <- c('o','l')
-        
-        with(summary, data.frame(o, l))
-    }
-    
-    summary_10B4 <- with(aggregate, get_summary_effect(o, l_10B4))
-    summary_meta <- with(aggregate, get_summary_effect(o, l_meta))
-    summary <- data.frame(
-        o <- summary_10B4$o,
-        l_10B4 <- normalize_likelihood(summary_10B4$l, delta),
-        l_meta <- normalize_likelihood(summary_meta$l, delta)
+model_10B4 <- function(data, o){    
+    glm(
+        I(1/age) ~ I(dose + o*dose^2 / (fractions)),
+        data=data,
+        weights=n
     )
+}   
+model_meta <- function(data, o){    
+    data$curved_dose <- with(data, dose + o*dose^2 / (fractions))
+    rma(
+        yi, 
+        vi, 
+        mods = cbind(curved_dose), 
+        data = data,
+        method="ML"
+    )
+}
+normalize_likelihood <- function(l, delta){
+    l <- l - max(l)
+    l <- exp(l)
+    l <- l / sum(l)
+    l <- l / delta
     
-    # Normalize
-    aggregate <- ddply(aggregate, .(cluster, sex), function(df){
-        df$l_10B4 <- normalize_likelihood(df$l_10B4, delta)
-        df$l_meta <- normalize_likelihood(df$l_meta, delta)
+    l       
+}
+
+# Define Acute
+chronic <- data$fractions > 1
+data$type <- 'A'
+data$type[chronic] <- 'C'
+        
+# Mean Lifespans
+aggregate <- ddply(data, .(cluster, group_id, sex), function(df){
+    u <- function(x) paste(unique(x), collapse=' ')
+    dont_aggregate <- c('lifespan', 'id', 'X', 'n')
+    n <- nrow(df)
+    data.frame(
+        llply(df[,!names(df) %in% dont_aggregate], u),
+        age=mean(df$lifespan),
+        sd=sd(df$lifespan)/n^0.5,
+        n=nrow(df)
+    )   
+})
+
+# Prepare for Meta
+aggregate$yi <- with(aggregate, 1/age)
+aggregate$vi <- with(aggregate, (1/age - 1/(age + sd))^2)   
+
+# Restore Sanity
+numerics <- names(data)[laply(data, is.numeric)]
+for(n in numerics) {
+    if(n %in% names(aggregate)){
+        aggregate[,n] <- as.numeric(as.character(aggregate[,n]))
+    }
+}
+
+# Model
+low = -2
+high = 6
+delta = .01   # Reduce to increase resolution
+o_range = (low/delta):(high/delta) * delta
+
+# Model
+aggregate <- ldply(o_range, function(o){
+    ddply(aggregate, .(cluster, sex), function(df){
+                    
+        # BEIR
+        m <- model_10B4(df, o)
+        df$l_10B4 <- logLik(m)
+        
+        # Random Effects
+        m <- model_meta(df, o)
+        df$l_meta <- logLik(m)
+        
+        df$o <- o
         df
     })
-    
-    
-    # Show
-    # As in 10B4
-    # http://www.nap.edu/openbook.php?record_id=11340&page=257
-    a <- aggregate
+})
 
-    show <- function(g){
-        g$cluster_name <- as.factor(as.character(g$cluster_name))
-        g$l_10B4 <- pmin(g$l_10B4, 1)
-        g$l_meta <- pmin(g$l_meta, 1)
-        suppressWarnings(print(
-        ggplot(g, aes(o, l)) + 
-            geom_path(aes(o, l_10B4), color='black') +
-            geom_path(aes(o, l_meta), color='red') +
-            ylim(0,1) +
-            facet_wrap(~ cluster_name)
-        ))
-    }
-        
-    g <- a[a$sex == 'Male' & a$species == "Mouse",]
-    show(g)
-    ggsave_for_ppt('meta_regression_profile_male_mice.png')
-
-    g <- a[a$sex == 'Female' & a$species == "Mouse",]
-    show(g)
-    ggsave_for_ppt('meta_regression_profile_female_mice.png')
+# Summarize Effect
+get_summary_effect <- function(o, l){
+    aggregate <- data.frame(o, l)
+    summary <- ddply(aggregate, .(o), function(df){
+        sum(df$l, na.rm=TRUE)
+    })
+    names(summary) <- c('o','l')
     
-    g <- a[a$sex == 'Female' & a$species == "Rat",]
-    show(g)
-    ggsave_for_ppt('meta_regression_profile_female_rat.png')
+    with(summary, data.frame(o, l))
+}
 
-    g <- a[a$species == "Peromyscus",]
-    show(g)
-    ggsave_for_ppt('meta_regression_profile_peromyscus.png')
-    
-    summary$l_10B4 <- pmin(4, summary$l_10B4)
-    summary$l_meta <- pmin(4, summary$l_meta)
-    ggplot(summary, aes(o, l)) + 
+summary_10B4 <- with(aggregate, get_summary_effect(o, l_10B4))
+summary_meta <- with(aggregate, get_summary_effect(o, l_meta))
+summary <- data.frame(
+    o <- summary_10B4$o,
+    l_10B4 <- normalize_likelihood(summary_10B4$l, delta),
+    l_meta <- normalize_likelihood(summary_meta$l, delta)
+)
+
+# Normalize
+aggregate <- ddply(aggregate, .(cluster, sex), function(df){
+    df$l_10B4 <- normalize_likelihood(df$l_10B4, delta)
+    df$l_meta <- normalize_likelihood(df$l_meta, delta)
+    df
+})
+
+
+# Show
+# As in 10B4
+# http://www.nap.edu/openbook.php?record_id=11340&page=257
+a <- aggregate
+
+show <- function(g){
+    g$cluster_name <- as.factor(as.character(g$cluster_name))
+    g$l_10B4 <- pmin(g$l_10B4, 1)
+    g$l_meta <- pmin(g$l_meta, 1)
+    suppressWarnings(print(
+    ggplot(g, aes(o, l)) + 
         geom_path(aes(o, l_10B4), color='black') +
         geom_path(aes(o, l_meta), color='red') +
-        ylim(0,4)
-    ggsave_for_ppt('meta_regression_summary_effect.png')
+        ylim(0,1) +
+        facet_wrap(~ cluster_name)
+    ))
+}
+
+g <- a
+show(g)
+ggsave_for_ppt('meta_regression_profile.png')
+
+summary$l_10B4 <- pmin(4, summary$l_10B4)
+summary$l_meta <- pmin(4, summary$l_meta)
+ggplot(summary, aes(o, l)) + 
+    geom_path(aes(o, l_10B4), color='black') +
+    geom_path(aes(o, l_meta), color='red') +
+    ylim(0,4)
+ggsave_for_ppt('meta_regression_summary_effect.png')
   
 ```
 
