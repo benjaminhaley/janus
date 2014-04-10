@@ -251,6 +251,12 @@ threshold_dose <- 1.5
 d[d$strain == 'Beagle' & is.na(d$sex), 'sex'] <- 'Both'
 ## Some of the B6CF1 mice are missing their species
 d[d$strain == 'B6CF1', 'species'] <- 'Mouse'
+## One animal is listed as a control despite having a dose, remove her
+contradictory_dose_and_quality <- (d$quality == 'none (controls)' & 
+                                     d$dose != 0 & 
+                                     !is.na(d$dose) &
+                                     !is.na(d$quality))
+d <- d[!contradictory_dose_and_quality,]
 
 # NA doses
 d$dose[is.na(d$dose)] <- 0
@@ -299,11 +305,6 @@ for(column in names(aliases)) {
   }
 }
 
-
-# TODO(ben) make sure we are never missing those factors used to cluster on
-# TODO(ben) make sure the names of the radiation treatments are consistent, so that gamma is the same as gamma gamma, before clustering.
-# TODO(ben) migrate any cleaning steps before the funnel into the cleanup
-#           script
 ```
 
 #### Define Clusters
@@ -319,7 +320,7 @@ But also
 
 Which require special consideration.
  
-##### Age at Treatment
+##### Intended Age at Treatment
 Was usually recorded 'as intended'.  So that all mice are declared as 56 days old at the age of treatment.  Such precision is dubious-impossible and most likely represents a reconstruction based on the methods described about the experiment.
 
 By contrast, argonne data recorded true age at treatment so that animals vary by up to 50 days within a single cluster.  These animals should not be divided into seperate clusters, because they are all adults.  By contrast animals irradiated at -4 days and 7 days old should be put into seperate age clusters because they represent very different stages of development.
@@ -343,9 +344,15 @@ for(c in clusters_that_recorded_true_age_at_treatment) {
 
 ```
 
-Furthermore, controls groups may control for multiple different age
-at treatments.  Therefore they should be duplicated for each cluster
-they belong in.
+##### Duplicate controls
+Control animals may control for multiple clusters.  For example the same
+cohort could control for mice exposed to gamma rays at 114 days and x-rays
+at 67 days.  Therefore control groups ought to be duplicated and included
+in each cluster that they might control for.
+
+Concretely a control groups should match sex, species, strain, and lab.  It
+should be duplicated for each unique quality and age of first exposure provided
+the aforementioned are the same.
 
 ```{r}
 
@@ -354,57 +361,38 @@ d <- ddply(d, .(cluster), function(df) {
   treatment <- df[df$quality != 'none (controls)',]
   
   # Create a cluster for each non control intended age of treatment
-  ddply(treatment, .(intended_age_of_treatment), function(treatment_group){
+  ddply(treatment, .(quality, intended_age_of_treatment), function(treatment_group){
     
     # Add control to each treatment group
     df2 <- rbind(treatment_group, control)
     
-    # Define intended age of treatment by the treatment group
+    # Define quality and intended age of treatment by the treatment group
     # i.e. 
-    #    42 days, dose = 0  ->  67 days, dose = 0
+    #    NA, quality = 'none (control)'  ->  42 days, quality = 'gamma'
     df2$intended_age_of_treatment <- treatment_group$intended_age_of_treatment[1]
-    
-    # Add quality to the cluster name
-    df2$cluster <- with(df2, paste(cluster, intended_age_of_treatment, sep='--'))
-    
-    df2
-  })
-})
-
-# TODO(ben) Label duplicated data and make a count of it.
-```
-
-##### Radiation Quality
-We also want to cluster on quality, but its a little tricky
-because controls have a different quality, 'none (controls)' from
-irradiated animals even though they are in the same cluster.  So
-actually we want to be sure that:
-
-1. Each cluster has only 1 non-control quality
-2. Control groups are duplicated into each cluster they belong in
-```{r}
-d <- ddply(d, .(cluster), function(df) {
-  control   <- df[df$quality == 'none (controls)',]
-  treatment <- df[df$quality != 'none (controls)',]
-  
-  # Create a cluster for each non control quality
-  ddply(treatment, .(quality), function(treatment_group){
-    
-    # Add control to each treatment group
-    df2 <- rbind(treatment_group, control)
-    
-    # Define quality by the treatment group
-    # i.e. 
-    #    none, dose = 0  ->  gamma, dose = 0
     df2$quality <- treatment_group$quality[1]
     
     # Add quality to the cluster name
-    df2$cluster <- with(df2, paste(cluster, quality, sep='--'))
+    df2$cluster <- with(df2, paste(cluster, 
+                                   intended_age_of_treatment, 
+                                   quality,
+                                   sep='--'))
     
     df2
   })
 })
+
+# Label the duplicates
+d$duplicates <- duplicated(d$id)
+
+# Show that all of them recieved 0 dose
+with(d, all(dose[duplicates] == 0))
+
+# Count the number of duplicates
+table(d$duplicates)  # 74847
+
 ```
+
 
 ```{r}
 
@@ -412,12 +400,12 @@ d <- ddply(d, .(cluster), function(df) {
 
 # Initial counts
 count(d)        
-# 857 treatments
+# 886 treatments
 
 # Only low-LET, whole body
 d <- d[!d$quality %in% bad_qualities,]     
 count(d)        
-# 519 treatments   
+# 518 treatments   
 
 # Dose below threshold (as in BEIR VII)
 d <- d[!(d$dose > threshold_dose),] 
@@ -427,7 +415,7 @@ count(d)
 # Lifespan not NA
 d <- d[!is.na(d$lifespan),]
 count(d)
-# 259 treatments
+# 291 treatments
 
 # No other treatments
 d <- d[d$other_treatments == 'none',]
@@ -465,6 +453,8 @@ d_wo_warnings <- filter_by_n_groups(d_wo_warnings)
 count(d_wo_warnings)
 # 62 treatments
 
+# How many duplicates after filtering?
+table0(d$duplicates)  # 16160 TRUE, 18244 FALSE
 
 # Save
 setwd('~/janus/scripts')
@@ -558,7 +548,7 @@ for(c in unique(d$cluster)) {
   names(elements) <- c('sex', 'strain', 'species', 'lab', 'age', 'quality')
   number_of_animals <- sum(d$cluster == c)
   pretty_cluster_name = with(elements, paste(
-    number_of_animals, sex, strain, pluralize(species),
+    number_of_animals, sex, strain, pluralize(species), lab,
     '\n', quality, 'at', age, 'days old'))
   d$cluster[d$cluster == c] <- pretty_cluster_name
 }
