@@ -243,7 +243,14 @@ aliases <- list(
 
 threshold_dose <- 1.5
 
+
 # Fix
+
+# Stray fixes
+## Some of the beagles were missing gender
+d[d$strain == 'Beagle' & is.na(d$sex), 'sex'] <- 'Both'
+## Some of the B6CF1 mice are missing their species
+d[d$strain == 'B6CF1', 'species'] <- 'Mouse'
 
 # NA doses
 d$dose[is.na(d$dose)] <- 0
@@ -292,6 +299,11 @@ for(column in names(aliases)) {
   }
 }
 
+
+# TODO(ben) make sure we are never missing those factors used to cluster on
+# TODO(ben) make sure the names of the radiation treatments are consistent, so that gamma is the same as gamma gamma, before clustering.
+# TODO(ben) migrate any cleaning steps before the funnel into the cleanup
+#           script
 ```
 
 #### Define Clusters
@@ -328,7 +340,38 @@ for(c in clusters_that_recorded_true_age_at_treatment) {
   d$intended_age_of_treatment[d$cluster == c] <- 
     median(d$intended_age_of_treatment[d$cluster == c], na.rm=TRUE)
 }
-d$cluster <- paste(d$cluster, d$intended_age_of_treatment, sep='--')
+
+```
+
+Furthermore, controls groups may control for multiple different age
+at treatments.  Therefore they should be duplicated for each cluster
+they belong in.
+
+```{r}
+
+d <- ddply(d, .(cluster), function(df) {
+  control   <- df[df$quality == 'none (controls)',]
+  treatment <- df[df$quality != 'none (controls)',]
+  
+  # Create a cluster for each non control intended age of treatment
+  ddply(treatment, .(intended_age_of_treatment), function(treatment_group){
+    
+    # Add control to each treatment group
+    df2 <- rbind(treatment_group, control)
+    
+    # Define intended age of treatment by the treatment group
+    # i.e. 
+    #    42 days, dose = 0  ->  67 days, dose = 0
+    df2$intended_age_of_treatment <- treatment_group$intended_age_of_treatment[1]
+    
+    # Add quality to the cluster name
+    df2$cluster <- with(df2, paste(cluster, intended_age_of_treatment, sep='--'))
+    
+    df2
+  })
+})
+
+# TODO(ben) Label duplicated data and make a count of it.
 ```
 
 ##### Radiation Quality
@@ -369,17 +412,17 @@ d <- ddply(d, .(cluster), function(df) {
 
 # Initial counts
 count(d)        
-# 855 treatments
+# 857 treatments
 
 # Only low-LET, whole body
 d <- d[!d$quality %in% bad_qualities,]     
 count(d)        
-# 487 treatments   
+# 519 treatments   
 
 # Dose below threshold (as in BEIR VII)
 d <- d[!(d$dose > threshold_dose),] 
 count(d)        
-# 259 treatments
+# 291 treatments
 
 # Lifespan not NA
 d <- d[!is.na(d$lifespan),]
@@ -389,7 +432,7 @@ count(d)
 # No other treatments
 d <- d[d$other_treatments == 'none',]
 count(d)
-# 144 treatments
+# 163 treatments
 
 # Remove those that should be excluded
 exclusions <- sort(unique(d$reason))
@@ -399,12 +442,12 @@ for(ex in exclusions){
   print(ex)
   print(count(d))
 }
-# 138 treatments
+# 157 treatments
 
 # Remove cases with few treatment groups    
 d <- filter_by_n_groups(d)
 count(d)        
-# 111 treatments
+# 131 treatments
 
 # Warnings
 # show, but do not remove
@@ -420,7 +463,7 @@ for(w in warnings){
 }
 d_wo_warnings <- filter_by_n_groups(d_wo_warnings)
 count(d_wo_warnings)
-# 56 treatments
+# 62 treatments
 
 
 # Save
@@ -621,8 +664,7 @@ ggplot(d,
 #          chronic, like over one minute vs under one minute.
 
 
-# TODO(ben) make sure we are never misssing those factors used to cluster on
-# TODO(ben) make sure the names of the radiation treatments are consisten, so that gamma is the same as gamma gamma, before clustering.
+
 
 
 ```
