@@ -617,6 +617,8 @@ like.
 library(plyr)
 library(ggplot2)
 library(survival)
+library(dplyr)
+library(directlabels)
 
 # Data
 setwd('~/janus/scripts')
@@ -625,15 +627,14 @@ d <- readRDS('data/ddref.rds')
 ```
 
 #### Lifespan by dose and protraction
-Show the distributions of lifespan.  Notice how radiation tends to shift the curve lower, but how some doses, especially some high doses lead to a double humped curve indicating that there are at least two mechanisms reducing lifespan, one that shifts the first hump left and another responsible for the development of a second hump.
-
+Show the distributions of lifespan.  
 
 ```{r}
 
 ggplot(d, 
        aes(lifespan, 
            color=dose,
-           group=factor(paste(dose, protracted)),
+           group=factor(paste(dose, dose_rate, fractions, protracted)),
            linetype=protracted)) + 
   geom_density(adjust=2) +
   facet_wrap(~ cluster, scales='free') + 
@@ -646,18 +647,82 @@ ggplot(d,
   ) +
   expand_limits(x = -4)
 
+#TODO: Order this graph by:
+#  Age at exposure
+#  Instititution
+#  Gender
 
-#TODO(ben) Add a graph that compares the same doses at chronic and
-#          accute levels.
-
-#TODO(ben) consider a graph with a more liberal interpretation of 
-#          chronic, like over one minute vs under one minute.
-
-
-
-
+# TODO: Look carefully at C57BL/Cnb controls from SCK/CEN
+# TODO: Make smoothing adjustment proportional to group size
 
 ```
+
+A few observations:
+- A second hump in some examples, e.g. RFM/Un Female mice at ORNL
+- 4 Groups less than 30 days old show hormetic responses
+- Females seem to have stronger responses than males on average
+
+#### Label treatment groups
+
+Show the same graphs with individual treatement groups labeled, this is not a figure for papers or presentations, but is handy for those who want to inspect the data very closely (me).
+
+```{r}
+
+d$treatment <- with(d, paste(round(dose, 2), 
+                             'Gy in', 
+                             round(fraction_time, 2), 
+                             'min'))
+d$treatment[d$dose == 0] <- 'control'
+d$treatment[d$fractions > 1] <- paste(d$fractions,
+                                      'fractions of',
+                                      d$treatment, 
+                                      )[d$fractions > 1]
+g <- ggplot(d, 
+       aes(lifespan, 
+           color=treatment)) + 
+  geom_density(adjust=2, alpha=0.1) +
+  facet_wrap(~ cluster, scales='free_x') + 
+  geom_vline(
+    aes(xintercept=intended_age_of_treatment),
+    alpha=0.5
+  ) +
+  expand_limits(x = -4) +
+  expand_limits(y = 0.005)
+
+
+direct.label(g, list("top.bumpup", cex=0.4))
+```
+
+#### Survival plots
+Survival vs time by cluster with indications for dose and protraction.
+
+```{r}
+
+# How many animals were alive after X days in each treatment group?
+d <- d %.%
+  group_by(cluster, dose, dose_rate, fractions) %.%
+  arrange(lifespan) %.%
+  mutate(survival=rank(-lifespan) / length(lifespan))
+
+ggplot(d, 
+       aes(lifespan, 
+           survival,
+           color=dose,
+           group=factor(paste(dose, dose_rate, fractions, protracted)),
+           linetype=protracted)) + 
+  geom_path() +
+  facet_wrap(~ cluster, scales='free') + 
+  scale_color_continuous(
+    guide = guide_legend(title = "Dose (gy)")
+  ) + 
+  geom_vline(
+    aes(xintercept=intended_age_of_treatment),
+    alpha=0.5
+  ) +
+  expand_limits(x = -4)
+
+```
+
 
 _____________________________________________________________________________  
 ^ back to [table of contents](#contents)

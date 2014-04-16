@@ -1686,11 +1686,149 @@ c(
 	data <- merge(data, janus, all=T)
 
 	# Save
-	saveRDS(data, '../data/external4.rds')
+	saveRDS(data, '../data/external3.1.rds')
 
 	
 # Results
 # Janus is merged (fingers crossed)
+
+
+
+###########################################################
+#
+# Merge in Beagles
+# April 2015
+#
+# The Janus Beagle records are more complete than those 
+# available through the ERA.  I will use janus.
+
+# Libraries
+library(plyr)
+library(dplyr)
+
+# Data
+setwd('~/janus/scripts')
+data <- readRDS('../data/external3.1.rds')
+basics <- read.csv('http://s3.amazonaws.com/janus-cloud2/www/dog_tissues/data/basics.csv')
+chronic <- read.csv('http://s3.amazonaws.com/janus-cloud2/www/dog_tissues/data/cobalt_chronic.csv')
+fractionated <- read.csv('http://s3.amazonaws.com/janus-cloud2/www/dog_tissues/data/cobalt_fractionated.csv')
+
+# Helper
+recode_factor <- function(x, before, after){
+  x <- as.character(x)
+  x[x == before] <- after
+  as.factor(x)
+}
+
+# Constants
+era_beagle_study_id <- '1003'
+
+# Limit to those in documented studies that only involved
+# external radiation exposure (5, and 6) see [1]
+# [1]: http://www.ustur.wsu.edu/nra/pdf/ira.pdf
+basics <- basics %.% 
+  filter(study %in% 5:6)
+
+# Remove unnecessary columns
+to_remove <- c(
+  'birth_date',
+  'tissues',
+  'experiment',
+  'era_GroupID',
+  'era_studyID',
+  'dam',
+  'sire',
+  'interrupts',
+  'dose_per_fraction'
+)
+
+basics <- basics[,!names(basics) %in% to_remove]
+chronic <- chronic[,!names(chronic) %in% to_remove]
+fractionated <- fractionated[,!names(fractionated) %in% to_remove]
+
+# Make names compatiable
+names(basics) <- c(
+  'id',
+  'cause_of_death',
+  'lifespan',
+  'sex',
+  'group.id',
+  'remarks',
+  'study.id')
+names(chronic) <- c(
+  'id',
+  'dose',
+  'dose_rate',
+  'fractions',
+  'age.at.treatment')
+names(fractionated) <- c(
+  'id',
+  'fractions',
+  'fraction_time',
+  'age.at.treatment',
+  'dose_rate',
+  'dose')
+
+# Make values compatiable
+basics$sex <- recode_factor(basics$sex, 'F', 'Female')
+basics$sex <- recode_factor(basics$sex, 'M', 'Male')
+basics$sex <- recode_factor(basics$sex, 'U', 'Both')
+
+chronic <- chronic %.%
+  mutate(dose = dose / 100, 
+         dose_rate = dose_rate / (100 * 22*60 ))
+
+fractionated <- fractionated %.%
+  mutate(dose = dose / 100,
+         dose_rate = dose_rate / (100))
+
+# Merge tables
+beagle <- merge(chronic, 
+              fractionated,
+              on='id',
+              all=TRUE)
+beagle <- merge(basics,
+              beagle,
+              on='id',
+              all.x=TRUE)
+
+# Normalize ID values
+beagle <- beagle %.%
+  mutate(study.id = paste0(era_beagle_study_id, '-', study.id),
+         group.id = paste0(study.id, '-', group.id),
+         id = paste0(group.id, '-', id))
+
+# Restrict to animals which died a natural death
+natural_causes_of_death <- c('Age', 
+                             'Radiation',
+                             'Sacrificed Moribund')
+
+
+# add
+beagle$is_vetted <- F
+beagle$unit <- 'grays'
+beagle$assignment_age <- beagle$age.at.treatment
+beagle$cluster <- paste0(beagle$study.id, '-', 1)
+beagle$strain <- 'Dog, Beagle'
+beagle$species <- 'Dog'
+beagle$quality <- 'gamma-rays whole body'
+
+# Remove Beagles from era
+bdata <- 
+  grepl('1003', data$study.id) &
+  data$strain == 'Dog, Beagle'
+data <- data[!bdata,]
+
+# Add Real Beagles
+data <- merge(data, beagle, all=T)
+
+# Save
+saveRDS(data, '../data/external4.rds')
+
+# Results
+# Argonne Beagles are merged (fingers crossed)
+
+
 
 ###########################################################
 # 
