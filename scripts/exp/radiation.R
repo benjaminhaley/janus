@@ -1664,6 +1664,10 @@ c(
 		'C', 
 		NA
 	)
+
+  # cGy -> Gy
+  janus$dose <- janus$dose / 100
+  janus$dose_rate <- janus$dose_rate / 100
 	    		
 	# add
 	janus$is_vetted <- F
@@ -1676,7 +1680,11 @@ c(
 	
 	#   strain (based on species)
 	# 	group.id <- study.id + cached_study.id 
-	
+
+  # Remove animals that died of un-natural causes
+  natural_deaths <- c('Died',
+                      'Sacrifice, moribund')
+  janus <- janus %.% filter(cause_of_death %in% natural_deaths)
 	
 	# Remove Janus from era
 	jdata <- grepl('1003.2', data$study.id)
@@ -1813,6 +1821,11 @@ beagle$strain <- 'Dog, Beagle'
 beagle$species <- 'Dog'
 beagle$quality <- 'gamma-rays whole body'
 
+# Remove animals that died of un-natural causes
+natural_deaths <- c('Radiation',
+                    'Sacrificed Moribund')
+beagle <- beagle %.% filter(cause_of_death %in% natural_deaths)
+
 # Remove Beagles from era
 bdata <- 
   grepl('1003', data$study.id) &
@@ -1886,7 +1899,7 @@ saveRDS(data, '../data/external4.rds')
 
 ###########################################################
 # 
-# Outside Litarture
+# Outside Literature
 #
 # The time is ripe to solve the problems I have found, 
 # consult the outside literature to arbitrate, fill in 
@@ -3275,7 +3288,7 @@ saveRDS(data, '../data/external4.rds')
 	# Filter
 	filter <- with(study_data,		
 		(quality == 'gamma-rays whole body' | is.na(quality)) &
-		dose < 180
+		dose < 1.5
 	)
 	study_data <- study_data[filter,]
 	study_treatments <- study_treatments[filter,]
@@ -3284,31 +3297,47 @@ saveRDS(data, '../data/external4.rds')
 	find_in_file(study)
 	
 	# Fix problems
+  study_data$quality[is.na(study_data$quality)] <- 'none (controls)'
 	groups <- with(study_data, paste(quality, dose, sex))
 	print_for_copy(sort(unique(groups)))
 	ordered_groups <- c(
-		"NA 0 Male",
-		"NA 0 Female",
-		"gamma-rays whole body 86.31 Male",
-		"gamma-rays whole body 86.31 Female",
-		"gamma-rays whole body 137.14 Male",
-		"gamma-rays whole body 137.14 Female"
+		"none (controls) 0 Male",
+		"none (controls) 0 Female",
+		"gamma-rays whole body 0.8631 Male",
+		"gamma-rays whole body 0.8631 Female",
+		"gamma-rays whole body 1.3714 Male",
+		"gamma-rays whole body 1.3714 Female"
 	)
 	ids <- match(groups, ordered_groups)
 	study_data$group.id <- paste0(study_data$study.id, '-', ids)
-	
-	# cGy to Gy
-	study_data$dose <- study_data$dose / 100
-	study_data$dose_rate <- study_data$dose_rate / 100
-	
-	# Control quality
-	study_data$quality[study_data$dose == 0] <- 'none (controls)'
-	
+
 	# Source
 	study_data$source[
 		study_data$quality == 'gamma-rays whole body'
 	] <- 'Co-60'
 		
+  # Check data
+  s <- summarize_study_data(study_data[,])
+  # MAS/lifespan
+  s[,c('n', 'group.id', 'sex', 'MAS')]	
+  # dose
+  s[,c('n', 'group.id', 'sex', 'dose')]
+  # fractions
+  s[,c('n', 'group.id', 'sex', 'fractions')]
+  # dose_rate
+  s[,c('n', 'group.id', 'sex', 'dose_rate')]	
+  # other treatments
+  unique(study_treatments)
+  # quality
+  s[,c('n', 'group.id', 'sex', 'quality')]	
+  # fraction_interval
+  s[,c('n', 'group.id', 'sex', 'fraction_interval')]	
+  # fraction_time
+  s[,c('n', 'group.id', 'sex', 'fraction_time')]	
+  # cluster
+  s[,c('n', 'group.id', 'sex', 'cluster')]	
+
+
 	# Exclude
 	exclusions <- list(
 		list(
@@ -4726,8 +4755,18 @@ saveRDS(data, '../data/external4.rds')
 	# update template (below)
 	# full clean/save (below)
 	# follow ddref.R instructions (on paper)
-	
-	
+
+
+  ### 
+  # Prepare for finishing steps
+  #
+  # Just for simplicity its nice to save as a new name for
+  # the last steps.  This makes it easy to add new cleanup
+  # steps above.
+  
+  data <- readRDS('../data/external4.18.rds')
+  saveRDS(data, '../data/external4.study_fixes.rds')
+
 
 	###
 	# Stray Fixes
@@ -4738,7 +4777,7 @@ saveRDS(data, '../data/external4.rds')
 
 	# Restore from checkpoint
 	setwd('~/janus/scripts')
-	data <- readRDS('../data/external4.18.rds')
+	data <- readRDS('../data/external4.study_fixes.rds')
 
 	clusters <- list(
 		# Cluster : Group Ids
@@ -4781,7 +4820,7 @@ saveRDS(data, '../data/external4.rds')
 	
 	# Save checkpoint
 	setwd('~/janus/scripts')
-	saveRDS(data, '../data/external4.19.rds')
+	saveRDS(data, '../data/external4.stray_fixes.rds')
 	
 	
 	
@@ -4790,7 +4829,7 @@ saveRDS(data, '../data/external4.rds')
 	
 	# Restore from checkpoint
 	setwd('~/janus/scripts')
-	data <- readRDS('../data/external4.19.rds')
+	data <- readRDS('../data/external4.stray_fixes.rds')
 	
 	# constants
 	strains <- data.frame(

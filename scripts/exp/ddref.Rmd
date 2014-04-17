@@ -279,13 +279,9 @@ d$day_fractions[s] <- d$fractions[s] * d$fraction_interval[s]
 # Add lab
 d$lab <- sub('(^[0-9]*).*$', '\\1', d$study_id)
 
-# Correct Assignment age
-d <- d %.%
-  group_by(cluster) %.%
-  mutate(assignment_age=min(assignment_age, 
-                            lifespan, 
-                            na.rm=T))
 
+# If assignment age is not listed, assume it is zero
+d$assignment_age[is.na(d$assignment_age)] <- 0
 
 # Age at last treatment
 d$age_at_last_treatment <- d$age_at_treatment
@@ -312,72 +308,67 @@ In general we want to cluster on:
 
   `lab, species, strain, and sex`
 ```{r}
-d$cluster = with(d, paste(sex, strain, species, lab, sep='--'))
+d$cluster = with(d, paste(sex, 
+                          strain, 
+                          species, 
+                          lab, sep='--'))
 ```
 But also
 
-    `age_at_treatment and quality`
+    `assignment_age and quality`
 
 Which require special consideration.
  
-##### Intended Age at Treatment
-Was usually recorded 'as intended'.  So that all mice are declared as 56 days old at the age of treatment.  Such precision is dubious-impossible and most likely represents a reconstruction based on the methods described about the experiment.
+##### Intended Assignment Age
+Assignment age was usually recorded 'as intended'.  So that all mice in a group have an assignment age of 56 days old.  Such precision is dubious/impossible and most likely represents a reconstruction based on the methods described about the experiment.
 
-By contrast, argonne data recorded true age at treatment so that animals vary by up to 50 days within a single cluster.  These animals should not be divided into seperate clusters, because they are all adults.  By contrast animals irradiated at -4 days and 7 days old should be put into seperate age clusters because they represent very different stages of development.
+By contrast, argonne data recorded true age at treatment assignment so that animals vary by up to 50 days within a single cluster.  These animals should not be divided into seperate clusters, because they are all adults.  By contrast animals irradiated at -4 days and 7 days old should be put into seperate age clusters because they represent very different stages of development.
 
 The most complete way to handle this situation is do define a lifestage by age for each species and use this for clustering.  But this approach is arbitrary, contrived, and needlessly complex.
 
-Instead we will define a new feild, intended_age_at_treatment.  For most groups this will be the reported age_at_treatment.  For agronne groups we will define it by the median.
+Instead we will define a new feild, `approximate_assignment_age`.  For most groups this will be the reported `assignment_age`.  For argonne groups we will define it by the median `assignment_age`.
+
 ```{r}
-d$intended_age_of_treatment <- d$age_at_treatment
-labs_that_recorded_true_age_at_treatment <- c(
+d$intended_assignment_age <- d$assignment_age
+labs_that_recorded_true_age_at_assignment <- c(
   'ANL'
 )
-clusters_that_recorded_true_age_at_treatment = unique(
+clusters_that_recorded_true_age_at_assignment = unique(
   d$cluster[
-    d$lab %in% labs_that_recorded_true_age_at_treatment
+    d$lab %in% labs_that_recorded_true_age_at_assignment
 ])
-for(c in clusters_that_recorded_true_age_at_treatment) {
-  d$intended_age_of_treatment[d$cluster == c] <- 
-    median(d$intended_age_of_treatment[d$cluster == c], na.rm=TRUE)
+for(c in clusters_that_recorded_true_age_at_assignment) {
+  d$intended_assignment_age[d$cluster == c] <- 
+    median(d$assignment_age[d$cluster == c])
 }
-
+d$cluster <- paste(d$cluster, d$intended_assignment_age, sep='--')
 ```
 
 ##### Duplicate controls
-Control animals may control for multiple clusters.  For example the same
-cohort could control for mice exposed to gamma rays at 114 days and x-rays
-at 67 days.  Therefore control groups ought to be duplicated and included
-in each cluster that they might control for.
+Control animals may control for multiple clusters.  For example the same mouse could control for a group exposed to gamma rays and others exposed to x-rays.  Therefore control groups ought to be duplicated and included in each cluster that they might control for.
 
-Concretely a control groups should match sex, species, strain, and lab.  It
-should be duplicated for each unique quality and age of first exposure provided
-the aforementioned are the same.
+Concretely, control animals should match sex, species, strain, assignment age, and lab.  Controls should be duplicated for each unique quality and age of first exposure provided the aforementioned criteria are met.
 
 ```{r}
-
 d <- ddply(d, .(cluster), function(df) {
   control   <- df[df$quality == 'none (controls)',]
   treatment <- df[df$quality != 'none (controls)',]
   
   # Create a cluster for each non control intended age of treatment
-  ddply(treatment, .(quality, intended_age_of_treatment), function(treatment_group){
-    
+  ddply(treatment, .(quality), function(treatment_group){
+        
     # Add control to each treatment group
     df2 <- rbind(treatment_group, control)
     
-    # Define quality and intended age of treatment by the treatment group
+    # Define quality by the treatment group
     # i.e. 
-    #    NA, quality = 'none (control)'  ->  42 days, quality = 'gamma'
-    df2$intended_age_of_treatment <- treatment_group$intended_age_of_treatment[1]
+    #    quality = 'none (control)'  ->  quality = 'gamma'
     df2$quality <- treatment_group$quality[1]
     
     # Add quality to the cluster name
     df2$cluster <- with(df2, paste(cluster, 
-                                   intended_age_of_treatment, 
                                    quality,
-                                   sep='--'))
-    
+                                   sep='--'))    
     df2
   })
 })
@@ -389,38 +380,47 @@ d$duplicates <- duplicated(d$id)
 with(d, all(dose[duplicates] == 0))
 
 # Count the number of duplicates
-table(d$duplicates)  # 74847
+table(d$duplicates)  # 23657
 
 ```
 
 
 ```{r}
 
+# TODO: make sure the counts don't have duplicates
+# TODO: keep track of individual counts (or cluster counts)
+# TODO: add groups to ANL data
+
 # FILTER
 
 # Initial counts
 count(d)        
-# 886 treatments
+# 804 treatments
 
 # Only low-LET, whole body
 d <- d[!d$quality %in% bad_qualities,]     
 count(d)        
-# 518 treatments   
+# 447 treatments   
 
 # Dose below threshold (as in BEIR VII)
 d <- d[!(d$dose > threshold_dose),] 
 count(d)        
-# 291 treatments
+# 215 treatments
 
 # Lifespan not NA
 d <- d[!is.na(d$lifespan),]
 count(d)
-# 291 treatments
+# 215 treatments
 
 # No other treatments
 d <- d[d$other_treatments == 'none',]
 count(d)
-# 163 treatments
+# 157 treatments
+
+# Died before their 'assignment age'
+d <- d[d$lifespan > d$assignment_age,]
+count(d)
+# 157 treatments
 
 # Remove those that should be excluded
 exclusions <- sort(unique(d$reason))
@@ -430,12 +430,12 @@ for(ex in exclusions){
   print(ex)
   print(count(d))
 }
-# 157 treatments
+# 151 treatments
 
 # Remove cases with few treatment groups    
 d <- filter_by_n_groups(d)
 count(d)        
-# 131 treatments
+# 123 treatments
 
 # Warnings
 # show, but do not remove
@@ -451,16 +451,16 @@ for(w in warnings){
 }
 d_wo_warnings <- filter_by_n_groups(d_wo_warnings)
 count(d_wo_warnings)
-# 62 treatments
+# 55 treatments
 
 # How many duplicates after filtering?
-table0(d$duplicates)  # 16160 TRUE, 18244 FALSE
+table0(d$duplicates)  # 8608 TRUE, 17798 FALSE
 
 # Save
 setwd('~/janus/scripts')
 saveRDS(d, '../data/funneled.rds')
 ```
-_____________________________________________________________________________  
+___________________________________________________________________
 ^ back to [table of contents](#contents)
 
 
@@ -593,7 +593,7 @@ write.csv(d,file='data/ddref.csv')
 Data is filtered and saved as ddref.csv for later use.  
 See ddref_group_summaries.csv and ddref_cluster_summaries.csv
 for some pretty results.  See also the funnel graph.
-_____________________________________________________________________________  
+____________________________________________________________________
 ^ back to [table of contents](#contents)
 
 
@@ -631,7 +631,7 @@ Show the distributions of lifespan.
 
 ```{r}
 
-ggplot(d, 
+ggplot(d,
        aes(lifespan, 
            color=dose,
            group=factor(paste(dose, dose_rate, fractions, protracted)),
@@ -642,10 +642,11 @@ ggplot(d,
     guide = guide_legend(title = "Dose (gy)")
   ) + 
   geom_vline(
-    aes(xintercept=intended_age_of_treatment),
+    aes(xintercept=intended_assignment_age),
     alpha=0.5
   ) +
   expand_limits(x = -4)
+
 
 #TODO: Order this graph by:
 #  Age at exposure
@@ -668,29 +669,32 @@ Show the same graphs with individual treatement groups labeled, this is not a fi
 
 ```{r}
 
-d$treatment <- with(d, paste(round(dose, 2), 
-                             'Gy in', 
-                             round(fraction_time, 2), 
-                             'min'))
-d$treatment[d$dose == 0] <- 'control'
-d$treatment[d$fractions > 1] <- paste(d$fractions,
-                                      'fractions of',
-                                      d$treatment, 
-                                      )[d$fractions > 1]
-g <- ggplot(d, 
+g <- d %.% filter(grepl('^6532', cluster))
+# g <- d
+g <- ggplot(g,
        aes(lifespan, 
-           color=treatment)) + 
-  geom_density(adjust=2, alpha=0.1) +
-  facet_wrap(~ cluster, scales='free_x') + 
+           color=group_id,
+           group=factor(paste(dose, dose_rate, fractions, protracted)),
+           linetype=protracted)) + 
+  geom_density(adjust=2) +
+  facet_wrap(~ cluster, scales='free') + 
   geom_vline(
-    aes(xintercept=intended_age_of_treatment),
+    aes(xintercept=intended_assignment_age),
     alpha=0.5
   ) +
-  expand_limits(x = -4) +
-  expand_limits(y = 0.005)
+  expand_limits(x = -4)
 
 
-direct.label(g, list("top.bumpup", cex=0.4))
+direct.label(g, list("top.bumptwice", cex=0.6))
+
+
+d %.% 
+  filter(study_id == '1003-22') %.%
+  group_by(group_id) %.%
+  summarize(n=length(id),
+            dose=mean(dose, na.rm=T),
+            age=mean(lifespan, na.rm=T)) %.%
+  arrange(group_id)
 ```
 
 #### Survival plots
@@ -716,7 +720,7 @@ ggplot(d,
     guide = guide_legend(title = "Dose (gy)")
   ) + 
   geom_vline(
-    aes(xintercept=intended_age_of_treatment),
+    aes(xintercept=intended_assignment_age),
     alpha=0.5
   ) +
   expand_limits(x = -4)
