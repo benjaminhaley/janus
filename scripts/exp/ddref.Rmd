@@ -22,6 +22,7 @@ TODO(ben)
   - [Data Funnel](#data_funnel) - Which data will we analyze?
   - [Data Cleaning](#data_cleaning) - Damn, data, you look good!
   - [Concordance](#concordance) - Show what the data looks like.
+  - [Atomic Bomb Survivors](#lss) - Load data from atomic bomb survivors as well.
 - Analysis
   - [Reproduce BEIR 10B3](#10B3) - Show that we can fit the same model of
     lifespan vs. dose as oak ridge.
@@ -630,16 +631,17 @@ d <- readRDS('data/ddref.rds')
 Show the distributions of lifespan.  
 
 ```{r}
-
 ggplot(d,
        aes(lifespan, 
            color=dose,
-           group=factor(paste(dose, dose_rate, fractions, protracted)),
-           linetype=protracted)) + 
+           group=factor(paste(dose, 
+                              dose_rate)),
+           y=..scaled..)) + 
   geom_density(adjust=2) +
   facet_wrap(~ cluster, scales='free') + 
-  scale_color_continuous(
-    guide = guide_legend(title = "Dose (gy)")
+  scale_colour_gradient(
+    guide = guide_legend(title = "Dose (gy)"),
+    trans = "sqrt"
   ) + 
   geom_vline(
     aes(xintercept=intended_assignment_age),
@@ -647,7 +649,7 @@ ggplot(d,
   ) +
   expand_limits(x = -4)
 
-
+# TODO: keep looking at this graph, I left off at 1133, the first TNO
 #TODO: Order this graph by:
 #  Age at exposure
 #  Instititution
@@ -655,13 +657,19 @@ ggplot(d,
 
 # TODO: Look carefully at C57BL/Cnb controls from SCK/CEN
 # TODO: Make smoothing adjustment proportional to group size
+# TODO: make survival curves that show the difference in % survival between a group and the cluster average
+# TODO: graph that shows only directly comparable protracted v not
+# TODO: make a handy table with references so I can cross check these results
 
 ```
 
+Outstanding Issues:
+- 1133 TNO mice have a strong X-ray reaction, except that the control (beneath) also is shifted in this direction.  Something is rotten, unfortunately I cannot find any published reports of lifespan to proof this against.
+
 A few observations:
-- A second hump in some examples, e.g. RFM/Un Female mice at ORNL
-- 4 Groups less than 30 days old show hormetic responses
-- Females seem to have stronger responses than males on average
+- **Different clusters show very different responses.**  For example, compare Female RFM/UN Mice from ORNL to Female C57Bl/6Bd mice.  The former show a strong response to gamma rays, the latter a weak response or no response.
+- **The cluster used to estimate DDREF shows a particularly strong response**.  RFM/Un mice from ORNL were used as the acute condition in the estimate of DDREF from BEIR VII (chronic exposure is not shown here because individual level data is not available).  Notably, this is one of the stronger radiation responses seen in any cluster, including other similar ones from ORNL.
+- **Occasional appearance of early effects** For example RFM/Un Female mice at ORNL show a bimodal response, a general reduction in lifespan, but also a distinct increase in early deaths.  This kind of response is only seen in a few of the clusters, others have weak responses or show a general increase in mortality without a specific early response.
 
 #### Label treatment groups
 
@@ -669,13 +677,11 @@ Show the same graphs with individual treatement groups labeled, this is not a fi
 
 ```{r}
 
-g <- d %.% filter(grepl('^6532', cluster))
-# g <- d
-g <- ggplot(g,
+g <- ggplot(d %.% filter(grepl('^6977', cluster)),
        aes(lifespan, 
            color=group_id,
-           group=factor(paste(dose, dose_rate, fractions, protracted)),
-           linetype=protracted)) + 
+           group=group_id
+           )) + 
   geom_density(adjust=2) +
   facet_wrap(~ cluster, scales='free') + 
   geom_vline(
@@ -684,17 +690,8 @@ g <- ggplot(g,
   ) +
   expand_limits(x = -4)
 
+direct.label(g, list("top.points", cex=0.6))
 
-direct.label(g, list("top.bumptwice", cex=0.6))
-
-
-d %.% 
-  filter(study_id == '1003-22') %.%
-  group_by(group_id) %.%
-  summarize(n=length(id),
-            dose=mean(dose, na.rm=T),
-            age=mean(lifespan, na.rm=T)) %.%
-  arrange(group_id)
 ```
 
 #### Survival plots
@@ -728,10 +725,167 @@ ggplot(d,
 ```
 
 
-_____________________________________________________________________________  
+__________________________________________________________________
 ^ back to [table of contents](#contents)
 
 
+
+
+<a name="lss"></a>
+
+Atomic bomb survivor data
+========================================================
+*April 2014*
+For comparison, let's load data from the atomic bomb survivors, [lss14][lss], and see how lifespan changes as a function of dose in these populations using similar visualizations.
+
+Acknowledgement:
+This report makes use of data obtained from the Radiation Effects Research Foundation (RERF), Hiroshima and Nagasaki, Japan. RERF is a private, non-profit foundation funded by the Japanese Ministry of Health, Labour and Welfare and the U.S. Department of Energy, the latter through the National Academy of Sciences.The conclusions in this report are those of the authors and do not necessarily reflect the scientific judgment of RERF or its funding agencies.
+Please send a copy of any reprints that make use of these data to:
+Archives Unit, Library and Archives Section
+Department of Information Technology
+Radiation Effects Research Foundation
+5-2 Hijiyama Park
+Minami-ku Hiroshima, 732-0815 JAPAN
+
+[lss]: http://rerf.jp/library/dl_e/lss14_document.pdf
+
+```{r}
+
+# Libraries
+library(dplyr)
+library(plyr)
+
+# Helper functions
+get_max_map <- function(min_map, max=Inf) {
+  max_map <- c(min_map[2:length(min_map)], max)
+  names(max_map) <- names(min_map)
+  max_map
+}
+get_mean_map <- function(min_map, max=Inf) {
+  mean_map <- (min_map + get_max_map(min_map, max)) / 2
+  mean_map
+}
+
+# Load data
+setwd('~/janus/')
+data <- read.csv('data/lss14/lss14.csv')
+
+# Define Terms
+sex_map <- c('1'='♂',
+             '2'='♀')
+agecat_min_map <- c('1'=0,
+                    '2'=5,
+                    '3'=10,
+                    '4'=15,
+                    '5'=20,
+                    '6'=25,
+                    '7'=30,
+                    '8'=35,
+                    '9'=40,
+                    '10'=45,
+                    '11'=50,
+                    '12'=55,
+                    '13'=60,
+                    '14'=65,
+                    '15'=70,
+                    '16'=75,
+                    '17'=80,
+                    '18'=85,
+                    '19'=90,
+                    '20'=95,
+                    '21'=100)
+
+agecat_mean_map <- get_mean_map(agecat_min_map, 120)
+dose_min_map <- c('1'=0.000,
+                  '2'=0.005,
+                  '3'=0.020,
+                  '4'=0.040,
+                  '5'=0.060,
+                  '6'=0.080,
+                  '7'=0.100,
+                  '8'=0.125,
+                  '9'=0.150,
+                  '10'=0.175,
+                  '11'=0.200,
+                  '12'=0.250,
+                  '13'=0.300,
+                  '14'=0.500,
+                  '15'=0.750,
+                  '16'=1.000,
+                  '17'=1.250,
+                  '18'=1.500,
+                  '19'=1.750,
+                  '20'=2.000,
+                  '21'=2.500,
+                  '22'=3.000)
+
+dose_mean_map = get_mean_map(dose_min_map, 4)
+
+threshold = 1.5001
+
+# Fix data
+data <- data %.% 
+  # Thin
+  # Only select interesting columns
+  select(death,
+         city,
+         sex, 
+         agexcat,
+         agecat, 
+         dosecat,
+         agex,
+         age) %.%
+  # Translate
+  # Values into different units
+  mutate(sex = sex_map[sex],
+         agex = agecat_mean_map[agexcat],
+         age = agecat_mean_map[agecat],
+         dose = dose_mean_map[dosecat]) %.%
+  # Shorten
+  # Remove those with a dose above threshold
+  filter(dose < threshold)
+
+# Define values
+
+# One row per death
+long <- ldply(unique(data$death), function(n) {
+  d <- data[data$death == n,]
+  d[rep(1:nrow(d), n),]
+})
+
+# Prove it was actually done
+sum(data$death) == 49879
+nrow(long) == 49879
+
+# Update data
+long <- long %.% select(-death)
+
+# Reduce resolution 
+# (as it is there are too many categories for graphing)
+g <- long %.% 
+  mutate(agex = round(agex/20)*20,
+         age_string = paste0(agex, '+ years'),
+         lifespan = age)
+
+# Show it off
+ggplot(g, aes(x=lifespan, 
+              color=dose, 
+              group=factor(dose),
+              y=..scaled..)) +
+  geom_density(adjust=2) +
+  scale_colour_gradient(
+    guide = guide_legend(title = "Dose (gy)"),
+    trans = "sqrt",
+    breaks= c(0,0.5,1.0,1.5)
+  ) + 
+  geom_vline(
+    aes(xintercept=agex),
+    alpha=0.5
+  ) +
+  facet_wrap( ~ age_string + sex)
+
+__________________________________________________________________
+^ back to [table of contents](#contents)
 
 
 

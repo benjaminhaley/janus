@@ -3525,7 +3525,7 @@ saveRDS(data, '../data/external4.rds')
 	s <- summarize_study_data(study_data[
 	,])
 	# MAS/lifespan
-	s[,c('n', 'strain', 'sex', 'lifespan')]	
+	s[,c('n', 'strain', 'sex', 'dose', 'lifespan')]	
 	# dose
 	s[,c('n', 'strain', 'sex', 'dose')]
 	# fractions
@@ -3749,7 +3749,7 @@ saveRDS(data, '../data/external4.rds')
 	# Check data
 	s <- summarize_study_data(study_data)
 	# MAS/lifespan
-	s[,c('n', 'strain', 'lifespan')]		# fail
+	s[,c('n', 'strain', 'dose', 'lifespan')]		# fail
 	# dose
 	s[,c('n', 'strain', 'dose')]
 	# fractions

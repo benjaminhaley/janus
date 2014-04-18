@@ -15,6 +15,10 @@
 # The data that I am using is the lls14 dataset from rerf.jp (see
 # acknowledgement).
 #
+# Read more in the documentation [1].
+#
+# [1]: http://rerf.jp/library/dl_e/lss14_document.pdf
+#
 #
 # Acknowledgement:
 # This report makes use of data obtained from the Radiation Effects Research Foundation (RERF), Hiroshima and Nagasaki, Japan. RERF is a private, non-profit foundation funded by the Japanese Ministry of Health, Labour and Welfare and the U.S. Department of Energy, the latter through the National Academy of Sciences.The conclusions in this report are those of the authors and do not necessarily reflect the scientific judgment of RERF or its funding agencies.
@@ -49,11 +53,11 @@
 	)
 	
 	# Reshape
+  n <- 100
 	small <- data[sample(n)[1:1000],]
 	m <- melt(data)
 	m2 <- melt(small[,of_interest])
 	two_way <- ddply(m2, .(variable), function(df) data.frame(df, m2))
-
 	
 	# Graph
 	ggplot(m, aes(value)) + 
@@ -372,3 +376,142 @@
 # the standard errors contracts when weights are applied.  
 # The range is 0.34 - 0.49 in the unweighted model and only 0.40 to 
 # 0.431 in the weighted model.
+
+
+##################################################################
+#
+# Just life expectancy
+#
+# Lets just see if we can look at the life expectancy of individuals
+#
+
+# Libraries
+library(dplyr)
+library(plyr)
+
+# Helper functions
+get_max_map <- function(min_map, max=Inf) {
+  max_map <- c(min_map[2:length(min_map)], max)
+  names(max_map) <- names(min_map)
+  max_map
+}
+get_mean_map <- function(min_map, max=Inf) {
+  mean_map <- (min_map + get_max_map(min_map, max)) / 2
+  mean_map
+}
+
+# Load data
+setwd('~/janus/')
+data <- read.csv('data/lss14/lss14.csv')
+
+# Define Terms
+sex_map <- c('1'='♂',
+             '2'='♀')
+agecat_min_map <- c('1'=0,
+                    '2'=5,
+                    '3'=10,
+                    '4'=15,
+                    '5'=20,
+                    '6'=25,
+                    '7'=30,
+                    '8'=35,
+                    '9'=40,
+                    '10'=45,
+                    '11'=50,
+                    '12'=55,
+                    '13'=60,
+                    '14'=65,
+                    '15'=70,
+                    '16'=75,
+                    '17'=80,
+                    '18'=85,
+                    '19'=90,
+                    '20'=95,
+                    '21'=100)
+agecat_mean_map <- get_mean_map(agecat_min_map, 120)
+dose_min_map <- c('1'=0.000,
+                  '2'=0.005,
+                  '3'=0.020,
+                  '4'=0.040,
+                  '5'=0.060,
+                  '6'=0.080,
+                  '7'=0.100,
+                  '8'=0.125,
+                  '9'=0.150,
+                  '10'=0.175,
+                  '11'=0.200,
+                  '12'=0.250,
+                  '13'=0.300,
+                  '14'=0.500,
+                  '15'=0.750,
+                  '16'=1.000,
+                  '17'=1.250,
+                  '18'=1.500,
+                  '19'=1.750,
+                  '20'=2.000,
+                  '21'=2.500,
+                  '22'=3.000)
+dose_mean_map = get_mean_map(dose_min_map, 4)
+
+threshold = 1.5001
+
+# Fix data
+data <- data %.% 
+  # Thin
+  # Only select interesting columns
+  select(death,
+         city,
+         sex, 
+         agexcat,
+         agecat, 
+         dosecat,
+         agex,
+         age) %.%
+  # Translate
+  # Values into different units
+  mutate(sex = sex_map[sex],
+         agex = agecat_mean_map[agexcat],
+         age = agecat_mean_map[agecat],
+         dose = dose_mean_map[dosecat]) %.%
+  # Shorten
+  # Remove those with a dose above threshold
+  filter(dose < threshold)
+
+# Define values
+
+# One row per death
+long <- ldply(unique(data$death), function(n) {
+  d <- data[data$death == n,]
+  d[rep(1:nrow(d), n),]
+})
+
+# Prove it true
+sum(data$death) == 49879
+nrow(long) == 49879
+
+# Update data
+long <- long %.% select(-death)
+
+# Reduce resolution 
+# (as it is there are too many categories for graphing)
+g <- long %.% 
+  mutate(agex = round(agex/20)*20,
+         age_string = paste0(agex, '+ years'),
+         lifespan = age)
+
+# Show it off
+ggplot(g, aes(x=lifespan, 
+              color=dose, 
+              group=factor(dose),
+              y=..scaled..)) +
+  geom_density(adjust=2) +
+  scale_colour_gradient(
+    guide = guide_legend(title = "Dose (gy)"),
+    trans = "sqrt",
+    breaks= c(0,0.5,1.0,1.5)
+  ) + 
+  geom_vline(
+    aes(xintercept=agex),
+    alpha=0.5
+  ) +
+  facet_wrap( ~ age_string + sex)
