@@ -1,6 +1,7 @@
 DDREF
 ========================================================
 Measure ddref, for my thesis. ([public link][1])  
+benjamin.haley@gmail.com  
 *last update: April 2014*
 
 [1]: http://rpubs.com/benjaminhaley/ddref
@@ -15,18 +16,17 @@ TODO(ben)
 
 - Background 
   - [Defining DDREF](#defining_ddref) - What is the equation?
-  - [Cumulative ERR](#cumulative_err) - A new way of graphing risk.
   - [Log Likelihood](#loglike) - How is log likelihood calculated?
   - [Metaregression](#metaregression) - Show the principals of metaregression.
 - Data
   - [Data Funnel](#data_funnel) - Which data will we analyze?
-  - [Data Cleaning](#data_cleaning) - Damn, data, you look good!
-  - [Concordance](#concordance) - Show what the data looks like.
+  - [Data Cleaning](#cleaning) - Damn, data, you look good!
+  - [Concordance](#concordance) - Tables describing the data in detail.
+  - [Visual Concordance](#visual_concordance) - Show what the data looks like.
+  - [Atomic Bomb Survivors](#lss) - Load data from atomic bomb survivors as well.
 - Analysis
   - [Reproduce BEIR 10B3](#10B3) - Show that we can fit the same model of
     lifespan vs. dose as oak ridge.
-  - [Cherry Picking](#cherry) - I thought Oak Ridge was cheating, I was wrong.
-    Sorry!
   - [Reproduce BEIR 10B4](#10B4) - Show that we can reproduce the
     likelihood profiles from BEIR VII.
   - [10B3 on all data](#10B3-all-data) - Fit 1/lifespan models on all of the
@@ -41,8 +41,8 @@ TODO(ben)
     all of the datasets.
   - [10B4 metareression on all data](#10B4-meta-all) Apply meta regression to
     all of the datasets to generate profiles.
+
 _____________________________________________________________________________  
-^ back to [table of contents](#contents)
 
 
 
@@ -126,118 +126,11 @@ dose and dose rate reduction
    repair processes take up to 24 hours, so this might be a
    natural break point.
 5. Estimate DDREF at 1 Sv to make it compatible with lss estimates
+
 _____________________________________________________________________________  
 ^ back to [table of contents](#contents)
 
 
-
-
-
-<a name="cumulative_err"></a>
-
-BACKGROUND: Cumulative ERR
-========================================================
-*May 2013*
-
-Survival curves are a great way to look at time course data
-but it is difficult to see the nature of the relationship between
-a variable and multiple survival curves.
-
-For example if mortality is increasing as the square of dose, this
-is not visually obvious from a survival curve.
-
-We could show relative mortality vs dose, but mortality estimates 
-are quite variable for any given time point, and this variation 
-might obscure the relationship.  Instead we might display
-cumulative relative mortality vs dose.  Cumulative mortality
-is better behaved than point estimates of mortality and so the
-relative cumulative mortality should also be better behaved.  Excess
-relative risk should also be similar for cumulative estimates vs
-point estimates.
-
-Here I want to try and draw these graphs I propose.
-
-
-```r
-
-# Libraries
-library(plyr)
-library(ggplot2)
-library(reshape2)
-
-# Constants
-baseline_mortality <- function(time) 1e-06 * time^2
-times <- 1:300
-observations_per_group = 100
-err <- function(dose) 1 + dose + dose^2
-doses <- 0:10
-
-# Data
-groups <- rep(observations_per_group, length(doses))
-names(groups) <- doses
-survival <- data.frame(llply(groups))
-names(survival) <- names(groups)
-for (time in times) {
-    for (d in (1:length(doses))) {
-        dose <- doses[d]
-        mortality <- baseline_mortality(time) * err(dose)
-        groups[d] <- sum(runif(groups[d]) > mortality)
-    }
-    survival <- rbind(survival, groups)
-}
-survival$time <- c(0, times)
-
-# Survival
-survival <- melt(survival, id.vars = "time")
-names(survival) <- c("time", "dose", "n")
-survival$dose <- as.numeric(as.character(survival$dose))
-survival$survival <- survival$n/observations_per_group
-survival$cumulative_mortality <- -log(survival$survival)
-survival$cumulative_err <- survival$cumulative_mortality/survival$cumulative_mortality[survival$dose == 
-    0]
-```
-
-
-### Cumulative mortality
-
-
-```r
-# Graph
-ggplot(survival, aes(time, survival, color = as.factor(dose))) + geom_path()
-```
-
-![plot of chunk unnamed-chunk-2](Figs/unnamed-chunk-2.png) 
-
-
-### Cumulative Relative mortality vs dose
-
-
-```r
-g <- survival[abs(survival$cumulative_err) < Inf & !is.na(survival$cumulative_err), 
-    ]
-ggplot(g, aes(dose, cumulative_err, color = time)) + geom_point() + geom_smooth(method = "lm", 
-    formula = y ~ poly(x, 2))
-```
-
-![plot of chunk unnamed-chunk-3](Figs/unnamed-chunk-3.png) 
-
-
-
-### Results
-
-Surival curves actually mask a quadratic relation.  Cumulative
-excess relative risk makes it much more obvious (see graphs).
-Notably, the actual curve in the excess relative risk model is
-not a good approximation of the dose response curve, probably
-because points with high error bars are weighted equally and
-thereby bias the result.
-
-### Conclusions
-
-I recommend including generating the cumulative excess relative
-risk graphs in my report.
-_____________________________________________________________________________  
-^ back to [table of contents](#contents)
 
 
 
@@ -270,8 +163,9 @@ table0 <- function(...) table(..., useNA = "ifany")
 # Report for funnel graph
 count <- function(data) {
     count_unique <- function(x) length(unique(x))
-    with(data, c(clusters = count_unique(cluster), studies = count_unique(file), 
-        treatments = count_unique(group_id), animals = count_unique(id), exclude = count_unique(id[exclude])))
+    with(data, c(studies = count_unique(file), clusters = count_unique(cluster), 
+        treatments = count_unique(group_id), animals = count_unique(id), `not vetted` = count_unique(id) - 
+            count_unique(id[is_vetted]), `to exclude` = count_unique(id[exclude])))
 }
 
 filter_by_n_groups <- function(data, threshold = 3) {
@@ -302,7 +196,17 @@ aliases <- list(quality = c(`gamma-rays Co-60` = "γ-ray", `gamma-rays Co-60, ga
 
 threshold_dose <- 1.5
 
+
 # Fix
+
+# Stray fixes Some of the beagles were missing gender
+d[d$strain == "Beagle" & is.na(d$sex), "sex"] <- "Both"
+## Some of the B6CF1 mice are missing their species
+d[d$strain == "B6CF1", "species"] <- "Mouse"
+## One animal is listed as a control despite having a dose, remove her
+contradictory_dose_and_quality <- (d$quality == "none (controls)" & d$dose != 
+    0 & !is.na(d$dose) & !is.na(d$quality))
+d <- d[!contradictory_dose_and_quality, ]
 
 # NA doses
 d$dose[is.na(d$dose)] <- 0
@@ -325,10 +229,13 @@ d$day_fractions[s] <- d$fractions[s] * d$fraction_interval[s]
 # Add lab
 d$lab <- sub("(^[0-9]*).*$", "\\1", d$study_id)
 
-# Correct Assignment age
-d <- d %.% group_by(cluster) %.% mutate(assignment_age = min(assignment_age, 
-    lifespan, na.rm = T))
+# If assignment age is not listed, assume it is zero
+d$assignment_age[is.na(d$assignment_age)] <- 0
 
+# If an animal is a control, it should have no age at treatment Nor an age
+# at last treatment
+d$age_at_treatment[d$dose == 0] <- NA
+d$age_at_last_treatment[d$dose == 0] <- NA
 
 # Age at last treatment
 d$age_at_last_treatment <- d$age_at_treatment
@@ -353,67 +260,92 @@ In general we want to cluster on:
   `lab, species, strain, and sex`
 
 ```r
-d$cluster = with(d, paste(species, strain, sex, lab))
+d$cluster = with(d, paste(sex, strain, species, lab, sep = "--"))
 ```
 
 But also
 
-    `age_at_treatment and quality`
+    `assignment_age and quality`
 
 Which require special consideration.
  
-##### Age at Treatment
-Was usually recorded 'as intended'.  So that all mice are declared as 56 days old at the age of treatment.  Such precision is dubious-impossible and most likely represents a reconstruction based on the methods described about the experiment.
+##### Intended Assignment Age
+Assignment age was usually recorded 'as intended'.  So that all mice in a group have an assignment age of 56 days old.  Such precision is dubious/impossible and most likely represents a reconstruction based on the methods described about the experiment.
 
-By contrast, argonne data recorded true age at treatment so that animals vary by up to 50 days within a single cluster.  These animals should not be divided into seperate clusters, because they are all adults.  By contrast animals irradiated at -4 days and 7 days old should be put into seperate age clusters because they represent very different stages of development.
+By contrast, argonne data recorded true age at treatment assignment so that animals vary by up to 50 days within a single cluster.  These animals should not be divided into seperate clusters, because they are all adults.  By contrast animals irradiated at -4 days and 7 days old should be put into seperate age clusters because they represent very different stages of development.
 
 The most complete way to handle this situation is do define a lifestage by age for each species and use this for clustering.  But this approach is arbitrary, contrived, and needlessly complex.
 
-Instead we will define a new feild, intended_age_at_treatment.  For most groups this will be the reported age_at_treatment.  For agronne groups we will define it by the median.
+Instead we will define a new feild, `approximate_assignment_age`.  For most groups this will be the reported `assignment_age`.  For argonne groups we will define it by the median `assignment_age`.
+
 
 ```r
-d$intended_age_of_treatment <- d$age_at_treatment
-labs_that_recorded_true_age_at_treatment <- c("ANL")
-clusters_that_recorded_true_age_at_treatment = unique(d$cluster[d$lab %in% labs_that_recorded_true_age_at_treatment])
-for (c in clusters_that_recorded_true_age_at_treatment) {
-    d$intended_age_of_treatment[d$cluster == c] <- median(d$intended_age_of_treatment[d$cluster == 
-        c], na.rm = TRUE)
+d$intended_assignment_age <- d$assignment_age
+labs_that_recorded_true_age_at_assignment <- c("ANL")
+clusters_that_recorded_true_age_at_assignment = unique(d$cluster[d$lab %in% 
+    labs_that_recorded_true_age_at_assignment])
+for (c in clusters_that_recorded_true_age_at_assignment) {
+    d$intended_assignment_age[d$cluster == c] <- median(d$assignment_age[d$cluster == 
+        c])
 }
-d$cluster <- paste(d$cluster, d$intended_age_of_treatment)
+d$cluster <- paste(d$cluster, d$intended_assignment_age, sep = "--")
 ```
 
 
-##### Radiation Quality
-We also want to cluster on quality, but its a little tricky
-because controls have a different quality, 'none (controls)' from
-irradiated animals even though they are in the same cluster.  So
-actually we want to be sure that:
+##### Duplicate controls
+Control animals may control for multiple clusters.  For example the same mouse could control for a group exposed to gamma rays and others exposed to x-rays.  Therefore control groups ought to be duplicated and included in each cluster that they might control for.
 
-1. Each cluster has only 1 non-control quality
-2. Control groups are duplicated into each cluster they belong in
+Concretely, control animals should match sex, species, strain, assignment age, and lab.  Controls should be duplicated for each unique quality and age of first exposure provided the aforementioned criteria are met.
+
 
 ```r
 d <- ddply(d, .(cluster), function(df) {
     control <- df[df$quality == "none (controls)", ]
     treatment <- df[df$quality != "none (controls)", ]
     
-    # Create a cluster for each non control quality
+    # Create a cluster for each non control intended age of treatment
     ddply(treatment, .(quality), function(treatment_group) {
         
         # Add control to each treatment group
         df2 <- rbind(treatment_group, control)
         
-        # Define quality by the treatment group i.e.  none, dose = 0 -> gamma,
-        # dose = 0
+        # Define quality by the treatment group i.e.  quality = 'none (control)'
+        # -> quality = 'gamma'
         df2$quality <- treatment_group$quality[1]
         
         # Add quality to the cluster name
-        df2$cluster <- with(df2, paste(cluster, quality))
-        
+        df2$cluster <- with(df2, paste(cluster, quality, sep = "--"))
         df2
     })
 })
 
+# Label the duplicates
+d$duplicates <- duplicated(d$id)
+
+# Show that all of them recieved 0 dose
+with(d, all(dose[duplicates] == 0))
+```
+
+```
+## [1] TRUE
+```
+
+```r
+
+# Count the number of duplicates
+table(d$duplicates)  # 23657
+```
+
+```
+## 
+##  FALSE   TRUE 
+## 116542  23657
+```
+
+
+
+
+```r
 
 # FILTER
 
@@ -422,12 +354,11 @@ count(d)
 ```
 
 ```
-##   clusters    studies treatments    animals    exclude 
-##         83         31        855     123013       8234
+##    studies   clusters treatments    animals not vetted to exclude 
+##         24         82        819     116542      63290       8112
 ```
 
 ```r
-# 855 treatments
 
 # Only low-LET, whole body
 d <- d[!d$quality %in% bad_qualities, ]
@@ -435,12 +366,11 @@ count(d)
 ```
 
 ```
-##   clusters    studies treatments    animals    exclude 
-##         43         31        487      79240       8234
+##    studies   clusters treatments    animals not vetted to exclude 
+##         24         43        451      76096      26385       8112
 ```
 
 ```r
-# 487 treatments
 
 # Dose below threshold (as in BEIR VII)
 d <- d[!(d$dose > threshold_dose), ]
@@ -448,12 +378,11 @@ count(d)
 ```
 
 ```
-##   clusters    studies treatments    animals    exclude 
-##         35         29        259      42994       4627
+##    studies   clusters treatments    animals not vetted to exclude 
+##         23         35        224      45502       9392       4505
 ```
 
 ```r
-# 259 treatments
 
 # Lifespan not NA
 d <- d[!is.na(d$lifespan), ]
@@ -461,12 +390,11 @@ count(d)
 ```
 
 ```
-##   clusters    studies treatments    animals    exclude 
-##         35         29        259      42986       4627
+##    studies   clusters treatments    animals not vetted to exclude 
+##         23         35        224      45494       9392       4505
 ```
 
 ```r
-# 259 treatments
 
 # No other treatments
 d <- d[d$other_treatments == "none", ]
@@ -474,12 +402,23 @@ count(d)
 ```
 
 ```
-##   clusters    studies treatments    animals    exclude 
-##         34         23        144      39774       4607
+##    studies   clusters treatments    animals not vetted to exclude 
+##         21         34        167      42815       8004       4455
 ```
 
 ```r
-# 144 treatments
+
+# Died before their 'assignment age'
+d <- d[d$lifespan > d$assignment_age, ]
+count(d)
+```
+
+```
+##    studies   clusters treatments    animals not vetted to exclude 
+##         21         34        167      42720       7967       4450
+```
+
+```r
 
 # Remove those that should be excluded
 exclusions <- sort(unique(d$reason))
@@ -493,30 +432,20 @@ for (ex in exclusions) {
 
 ```
 ## [1] "see exclusion-1 in radiation.R"
-##   clusters    studies treatments    animals    exclude 
-##         34         23        143      39694       4527 
-## [1] "see exclusion-2 in radiation.R"
-##   clusters    studies treatments    animals    exclude 
-##         34         23        143      39683       4516 
-## [1] "see exclusion-3 in radiation.R"
-##   clusters    studies treatments    animals    exclude 
-##         34         23        143      39613       4446 
+##    studies   clusters treatments    animals not vetted to exclude 
+##         21         34        166      42713       7967       4443 
 ## [1] "see exclusion-5 in radiation.R"
-##   clusters    studies treatments    animals    exclude 
-##         34         23        142      39594       4427 
-## [1] "see exclusion-6 in radiation.R"
-##   clusters    studies treatments    animals    exclude 
-##         34         23        142      39593       4426 
+##    studies   clusters treatments    animals not vetted to exclude 
+##         21         34        165      42692       7967       4422 
 ## [1] "see exclusion-7 in radiation.R"
-##   clusters    studies treatments    animals    exclude 
-##         34         23        141      35880        713 
+##    studies   clusters treatments    animals not vetted to exclude 
+##         21         34        164      38979       7967        709 
 ## [1] "see exclusion-8 in radiation.R"
-##   clusters    studies treatments    animals    exclude 
-##         34         22        138      35167          0
+##    studies   clusters treatments    animals not vetted to exclude 
+##         20         34        161      38270       7967          0
 ```
 
 ```r
-# 138 treatments
 
 # Remove cases with few treatment groups
 d <- filter_by_n_groups(d)
@@ -524,12 +453,11 @@ count(d)
 ```
 
 ```
-##   clusters    studies treatments    animals    exclude 
-##         22         14        111      25102          0
+##    studies   clusters treatments    animals not vetted to exclude 
+##         12         23        136      32823       3170          0
 ```
 
 ```r
-# 111 treatments
 
 # Warnings show, but do not remove
 warnings <- sort(unique(d$warning_reason))
@@ -543,27 +471,30 @@ for (w in warnings) {
 ```
 
 ```
+## [1] "see warning-1 in radiation.R"
+##    studies   clusters treatments    animals not vetted to exclude 
+##         11         21        124      24390       3170          0 
 ## [1] "see warning-2 in radiation.R"
-##   clusters    studies treatments    animals    exclude 
-##         20         13         99      16669          0 
+##    studies   clusters treatments    animals not vetted to exclude 
+##         10         21        115      23912       3170          0 
 ## [1] "see warning-3 in radiation.R"
-##   clusters    studies treatments    animals    exclude 
-##         19         12         92      16384          0 
+##    studies   clusters treatments    animals not vetted to exclude 
+##          9         16         81      21877       3170          0 
 ## [1] "see warning-4 in radiation.R"
-##   clusters    studies treatments    animals    exclude 
-##         15         11         68      15045          0 
+##    studies   clusters treatments    animals not vetted to exclude 
+##          9         16         80      21447       3170          0 
 ## [1] "see warning-5 in radiation.R"
-##   clusters    studies treatments    animals    exclude 
-##         15         11         67      14615          0 
+##    studies   clusters treatments    animals not vetted to exclude 
+##          9         16         78      21143       3170          0 
 ## [1] "see warning-6 in radiation.R"
-##   clusters    studies treatments    animals    exclude 
-##         15         11         65      14307          0 
+##    studies   clusters treatments    animals not vetted to exclude 
+##          8         15         75      20896       3170          0 
+## [1] "see warning-7 in radiation.R"
+##    studies   clusters treatments    animals not vetted to exclude 
+##          8         15         74      20543       3170          0 
 ## [1] "see warning-8 in radiation.R"
-##   clusters    studies treatments    animals    exclude 
-##         15         11         64      13954          0 
-## [1] "see warning-9 in radiation.R"
-##   clusters    studies treatments    animals    exclude 
-##         14         10         60      12851          0
+##    studies   clusters treatments    animals not vetted to exclude 
+##          7         14         70      19440       3170          0
 ```
 
 ```r
@@ -572,20 +503,31 @@ count(d_wo_warnings)
 ```
 
 ```
-##   clusters    studies treatments    animals    exclude 
-##         12          9         56      12575          0
+##    studies   clusters treatments    animals not vetted to exclude 
+##          7         13         68      19348       3170          0
 ```
 
 ```r
-# 56 treatments
+# clusters studies treatments animals exclude 13 7 65 19348 0
 
+# How many duplicates after filtering?
+table0(d$duplicates)  # 11899 TRUE, 21307 FALSE
+```
+
+```
+## 
+## FALSE  TRUE 
+## 21307 11899
+```
+
+```r
 
 # Save
 setwd("~/janus/scripts")
 saveRDS(d, "../data/funneled.rds")
 ```
 
-_____________________________________________________________________________  
+___________________________________________________________________
 ^ back to [table of contents](#contents)
 
 
@@ -594,7 +536,7 @@ _____________________________________________________________________________
 
 <a name="cleaning"></a>
 
-Clean and Summarize
+Clean
 ========================================================
 DDREF data has been filtered.  Now its time to prettify it.
 
@@ -602,6 +544,7 @@ DDREF data has been filtered.  Now its time to prettify it.
 ```r
 # Libraries
 library(plyr)
+library(dplyr)
 library(ggplot2)
 library(survival)
 
@@ -609,45 +552,27 @@ library(survival)
 setwd("~/janus/scripts")
 d <- readRDS("../data/funneled.rds")
 
-# Helpers Print treatment data
-get_treatment <- function(data) {
-    with(data, paste(round(dose, 3), "Gy", "at", round(dose_rate, 3), "Gy/min", 
-        "in", fractions, "fractions"))
-}
-
-# Print group summaries
-summarize_numeric <- function(x) {
-    n <- length(x)
-    na_message <- ""
-    if (any(is.na(x))) {
-        na_message <- paste0(" missing ", sum(is.na(x)))
-    }
-    paste0(round(mean(x, na.rm = T), 1), " +/- ", round(sd(x, na.rm = T)/n^0.5, 
-        1), na_message)
-}
-group_summary <- function(data) {
-    .all <- function(x, c = " ") paste(unique(x), collapse = c)
-    treatments <- get_treatment(data)
-    with(data, c(strain = .all(strain), males = sum(sex == "Male"), females = sum(sex == 
-        "Female"), mean_lifespan = summarize_numeric(lifespan), age_at_treatment = summarize_numeric(age_at_treatment), 
-        treatments = .all(treatments, "\n"), other_treatments = .all(other_treatments), 
-        warnings = .all(warning_reason)))
-}
-
 # Clean
 
 # Is acute?
 d$acute <- d$fractions == 1 | d$dose == 0
 d$protracted <- d$fractions > 1 & d$dose > 0
 
-# Other Treatments
-d$other_treatments[d$other_treatments == "none"] <- ""
-
 # Observations per cluster
 d = d %.% group_by(cluster) %.% mutate(n_in_cluster = length(cluster))
 
 # Give the clusters pretty names
-d$cluster_name <- d$cluster
+pluralize <- function(x) {
+    c(Mouse = "Mice", Rat = "Rats", Dog = "Dogs", Peromyscus = "Peromyscus")[x]
+}
+for (c in unique(d$cluster)) {
+    elements = as.list(strsplit(c, "--")[[1]])
+    names(elements) <- c("sex", "strain", "species", "lab", "age", "quality")
+    number_of_animals <- sum(d$cluster == c)
+    pretty_cluster = with(elements, paste(number_of_animals, sex, strain, pluralize(species), 
+        lab, "\n", quality, "at", age, "days old"))
+    d$cluster[d$cluster == c] <- pretty_cluster
+}
 
 # Define Acute
 chronic <- d$fractions > 1
@@ -658,18 +583,6 @@ d$type[chronic] <- "C"
 # with the most observations first in ggplots
 sorted_clusters = names(sort(table(d$cluster), decreasing = TRUE))
 d$cluster <- factor(d$cluster, levels = sorted_clusters)
-d$cluster_name <- factor(d$cluster_name, levels = sorted_clusters)
-
-
-# Summaries
-group_summaries <- ddply(d, .(group_id), function(df) {
-    group_summary(df)
-})
-cluster_summaries <- ddply(d, .(cluster), function(df) {
-    group_summary(df)
-})
-write.csv(group_summaries, file = "results/ddref_group_summaries.csv")
-write.csv(cluster_summaries, file = "results/ddref_cluster_summaries.csv")
 
 # Save Data for later use
 saveRDS(d, "data/ddref.rds")
@@ -678,10 +591,359 @@ write.csv(d, file = "data/ddref.csv")
 
 
 ### Results
-Data is filtered and saved as ddref.csv for later use.  
-See ddref_group_summaries.csv and ddref_cluster_summaries.csv
-for some pretty results.  See also the funnel graph.
-_____________________________________________________________________________  
+Data is so fresh and so clean.
+
+
+
+<a name="concordance"></a>
+
+Concordance
+========================================================
+*April 2013*
+
+Give a detailed description of the dataset for those that want to make a close inspection.
+
+
+
+```r
+
+# Libraries
+library(plyr)
+library(dplyr)
+library(ggplot2)
+library(survival)
+
+# Data
+setwd('~/janus/scripts')
+d <- readRDS('data/ddref.rds')
+
+# Helpers
+group_summary <- function(data){
+    .all <- function(x, c=' ') paste(unique(x), collapse=c)
+    summary <- with(data, c(
+        ' ♂ '          = sum(sex == '♂'),
+        ' ♀ '          = sum(sex == '♀'),
+        'avg. age'      = round(mean(lifespan)),
+        'dose'          = .all(signif(dose, 1)),
+        'rate'          = .all(signif(dose_rate, 1)),
+        '# fractions'   = .all(fractions),
+        warnings        = .all(gsub('[^0-9]', '', warning_reason))
+    ))
+    summary[summary == 0] <- '-'
+    summary[is.na(summary)] <- '-'  
+    summary
+}
+
+find_in_file <- function(pattern, file='exp/radiation.R'){
+		lines <- readLines(file)
+		lines[grepl(pattern, lines)]
+}
+```
+
+
+#### Group details
+Show the details of each treatment group in the dataset organized by cluster
+
+
+```r
+for (cluster in unique(d$cluster)) {
+    cat("\n", cluster, "\n------------------------------------------------\n")
+    df <- d[d$cluster == cluster, ]
+    print(ddply(df, .(group_id), function(df) {
+        group_summary(df)
+    }), row.names = FALSE)
+}
+```
+
+```
+## 
+##  6381 ♀ B6CF1 Mice ANL 
+##  γ-ray at 114 days old 
+## ------------------------------------------------
+##    group_id  ♂    ♀  avg. age dose  rate # fractions warnings
+##   1003-20-2   -  857      945    -     -           1         
+##   1003-20-4   -  397      903  0.9  0.04           1         
+##   1003-21-2   -  185      932    -     -           1         
+##   1003-21-4   -  200      936  0.9  0.04           1         
+##   1003-22-4   -  464      970    -     -           1         
+##   1003-24-7   -  175      991    -     -           1         
+##   1003-25-8   -   50      960    -     -           1         
+##   1003-26-2   - 1138      978    -     -           1         
+##   1003-26-3   -  497      963  0.2  0.01           1         
+##   1003-26-4   -  346      968  0.4  0.02           1         
+##   1003-26-5   -  194      935  0.9  0.04           1         
+##   1003-29-2   -  584      986    -     -           1         
+##   1003-29-4   -  598      957    1 8e-04          60         
+##  1003-30-14   -  399      977    -     -           1         
+##  1003-xx-11   -  297      846    -     -           1         
+## 
+##  173 ♀ BC3F1 Mice ENEA 
+##  X-ray at -4 days old 
+## ------------------------------------------------
+##  group_id  ♂   ♀  avg. age dose rate # fractions warnings
+##     3-5-2   -  39      866    -    -           1         
+##     3-5-4   -  40      883  0.3  0.1           1         
+##     3-5-6   -  44      850  0.9  0.1           1         
+##     3-5-8   -  50      872    2  0.1           1         
+## 
+##  816 ♀ BC3F1 Mice ENEA 
+##  X-ray at 91 days old 
+## ------------------------------------------------
+##  group_id  ♂   ♀  avg. age dose rate # fractions warnings
+##     3-1-1   - 353      889    -    -           1        7
+##     3-1-2   - 100      912  0.4  0.6           1         
+##     3-1-3   -  84      893  0.8  0.6           1         
+##     3-1-9   - 279      865    -    -           1         
+## 
+##  1133 ♀ BN/BRIJ Rats TNO 
+##  X-ray at 56 days old 
+## ------------------------------------------------
+##  group_id  ♂   ♀  avg. age dose rate # fractions warnings
+##  11-1-114   - 114      594    -    -           1        2
+##  11-1-118   -  37      793  0.2 0.06           1        2
+##  11-1-122   -  49      543    1 0.06           1        2
+##  11-2-100   -  60      913  0.2 0.06           1        3
+##  11-2-104   -  60      899 0.08 0.06           1        3
+##  11-2-112   -  60      900  0.4 0.06           1        3
+##  11-2-114   -  60      900  0.4 0.06          20        3
+##   11-2-24   -  30      667    -    -           1        3
+##   11-2-30   -  60      829  0.4 0.06          10        3
+##   11-2-51   - 140      928    -    -           1        3
+##   11-2-53   -  80      892 0.02 0.06           1        3
+##   11-2-54   -  80      926  0.1 0.06           1        3
+##   11-2-55   -  40      898  0.2 0.06           1        3
+##   11-2-57   -  80      895  0.4 0.06           1        3
+##   11-2-58   -  80      910  0.4 0.06           5        3
+##   11-2-59   -  20      878    1 0.06           1        3
+##   11-2-99   -  83      923    -    -           1        3
+## 
+##  1000 ♀ C3Hf/Bd Mice ORNL 
+##  γ-ray at 70 days old 
+## ------------------------------------------------
+##   group_id  ♂   ♀  avg. age dose rate # fractions warnings
+##  1007-2-11   - 249      727  0.5  0.4           1         
+##  1007-2-13   - 250      693    1  0.4           1         
+##   1007-2-9   - 501      778    -    -           1         
+## 
+##  995 ♀ C57BL/6Bd Mice ORNL 
+##  γ-ray at 70 days old 
+## ------------------------------------------------
+##  group_id  ♂   ♀  avg. age dose rate # fractions warnings
+##  1007-2-1   - 491      858    -    -           1         
+##  1007-2-3   - 253      855  0.5  0.4           1         
+##  1007-2-5   - 251      865    1  0.4           1         
+## 
+##  6977 ♀ RFM/Un Mice ORNL 
+##  γ-ray at 70 days old 
+## ------------------------------------------------
+##   group_id  ♂    ♀  avg. age dose rate # fractions warnings
+##  1007-3-10   -  930      614  0.2  0.4           1        1
+##  1007-3-11   - 1064      553  0.5  0.4           1        1
+##  1007-3-12   -  237      541  0.8  0.4           1        1
+##  1007-3-13   - 1045      538    1  0.4           1        1
+##  1007-3-14   - 1005      487    2  0.4           1        1
+##   1007-3-9   - 2696      632  0.1  0.4           1        1
+## 
+##  248 ♀ SD/RIJ Rats TNO 
+##  X-ray at 56 days old 
+## ------------------------------------------------
+##  group_id  ♂   ♀  avg. age dose rate # fractions warnings
+##   11-1-56   -  79      660    -    -           1        2
+##   11-1-60   -  40      758  0.1 0.06           1        2
+##   11-1-64   -  49      612  0.3 0.06           1        2
+##   11-1-68   -  20      650    1 0.06           1        2
+##   11-2-50   -  60      851    -    -           1        3
+## 
+##  120 ♀ WAG/RIJ Rats TNO 
+##  γ-ray at 117 days old 
+## ------------------------------------------------
+##  group_id  ♂   ♀  avg. age dose  rate # fractions warnings
+##   11-2-36   -  40      949  0.3   0.9           1        3
+##   11-2-42   -  40      867    1   0.9           1        3
+##   11-2-44   -  40      886    1 0.001         120        3
+## 
+##  892 ♀ WAG/RIJ Rats TNO 
+##  X-ray at 56 days old 
+## ------------------------------------------------
+##  group_id  ♂   ♀  avg. age dose rate # fractions warnings
+##    11-1-5   -  40      777  0.2 0.06           1        2
+##    11-1-9   -  50      672    1 0.06           1        2
+##    11-2-1   -  44      836    -    -           1        3
+##  11-2-102   -  60      900 0.08 0.06           1        3
+##  11-2-108   -  60      860  0.4 0.06           1        3
+##  11-2-110   -  60      849  0.4 0.06          20        3
+##   11-2-23   -  40      944    -    -           1        3
+##   11-2-29   -  59      849  0.4 0.06          10        3
+##   11-2-31   -  40      900    -    -           1        3
+##   11-2-46   -  60      924  0.8 0.06           1        3
+##   11-2-49   -  60      956    -    -           1        3
+##    11-2-7   - 100      959    -    -           1        3
+##    11-2-8   -  60      901  0.2 0.06          10        3
+##    11-2-9   -  60      602    1 0.06          10        3
+##   11-2-98   -  99      949    -    -           1        3
+## 
+##  503 ♀ WAG/RIJ Rats TNO 
+##  γ-ray at 56 days old 
+## ------------------------------------------------
+##  group_id  ♂   ♀  avg. age dose  rate # fractions warnings
+##    11-2-1   -  44      836    -     -           1        3
+##   11-2-23   -  40      944    -     -           1        3
+##   11-2-31   -  40      900    -     -           1        3
+##   11-2-34   -  40      916  0.3   0.9           1        3
+##   11-2-38   -  40      910  0.3 0.001         120        3
+##   11-2-40   -  40      786    1   0.9           1        3
+##   11-2-49   -  60      956    -     -           1        3
+##    11-2-7   - 100      959    -     -           1        3
+##   11-2-98   -  99      949    -     -           1        3
+## 
+##  4614 ♂ B6CF1 Mice ANL 
+##  γ-ray at 113 days old 
+## ------------------------------------------------
+##    group_id  ♂   ♀  avg. age dose  rate # fractions warnings
+##   1003-20-1 843   -      952    -     -           1         
+##   1003-20-3 386   -      922  0.9  0.04           1         
+##   1003-21-1 200   -      985    -     -           1         
+##   1003-21-3 199   -      970  0.9  0.04           1         
+##   1003-21-5 160   -      939    1  0.07           1         
+##   1003-22-4 557   -      985    -     -           1         
+##   1003-24-7 310   -      987    -     -           1         
+##   1003-25-8  60   -     1011    -     -           1         
+##   1003-26-1 200   -     1043    -     -           1         
+##  1003-28-12 120   -     1020    -     -           1         
+##   1003-29-1 592   -      993    -     -           1         
+##   1003-29-3 594   -      971    1 8e-04          60         
+##  1003-30-14 393   -     1007    -     -           1         
+## 
+##  1232 ♂ BALB/c/Cnb Mice SCK/CEN 
+##  γ-ray at 84 days old 
+## ------------------------------------------------
+##  group_id  ♂   ♀  avg. age dose rate # fractions warnings
+##     9-5-1 322   -      766    -    -           1         
+##    9-5-10 113   -      751    1    4          10        5
+##     9-5-2 191   -      745  0.2    4           1        5
+##     9-5-3 194   -      736  0.5    4           1         
+##     9-5-4 191   -      732    1    4           1         
+##     9-5-8 111   -      778  0.2    4          10         
+##     9-5-9 110   -      740  0.5    4          10         
+## 
+##  189 ♂ BC3F1 Mice ENEA 
+##  X-ray at -4 days old 
+## ------------------------------------------------
+##  group_id  ♂   ♀  avg. age dose rate # fractions warnings
+##     3-5-1  34   -      853    -    -           1         
+##     3-5-3  48   -      799  0.3  0.1           1         
+##     3-5-5  61   -      822  0.9  0.1           1         
+##     3-5-7  46   -      897    2  0.1           1         
+## 
+##  1103 ♂ BC3F1 Mice ENEA 
+##  X-ray at 35 days old 
+## ------------------------------------------------
+##  group_id  ♂   ♀  avg. age dose rate # fractions warnings
+##     3-2-1 758   -      822    -    -           1        8
+##    3-2-10 193   -      816    -    -           1        8
+##     3-2-2  44   -      828  0.5  0.3           1        8
+##     3-2-3 108   -      801    1  0.3           1        8
+## 
+##  126 ♂ BC3F1 Mice ENEA 
+##  X-ray at 580 days old 
+## ------------------------------------------------
+##  group_id  ♂   ♀  avg. age dose rate # fractions warnings
+##    3-5-35  41   -      886    -    -           1         
+##    3-5-36  42   -      901  0.5  0.1           1         
+##    3-5-37  43   -      874    1  0.1           1         
+## 
+##  522 ♂ BC3F1 Mice ENEA 
+##  X-ray at 92 days old 
+## ------------------------------------------------
+##  group_id  ♂   ♀  avg. age dose rate # fractions warnings
+##    3-5-19 430   -      824    -    -           1        4
+##    3-5-20  44   -      828  0.5  0.1           1         
+##    3-5-21  48   -      797    1  0.1           1         
+## 
+##  994 ♂ C3Hf/Bd Mice ORNL 
+##  γ-ray at 70 days old 
+## ------------------------------------------------
+##   group_id  ♂   ♀  avg. age dose rate # fractions warnings
+##  1007-2-10 502   -      732    -    -           1         
+##  1007-2-12 244   -      713  0.5  0.4           1         
+##  1007-2-14 248   -      721    1  0.4           1         
+## 
+##  1016 ♂ C57BL/6Bd Mice ORNL 
+##  γ-ray at 70 days old 
+## ------------------------------------------------
+##  group_id  ♂   ♀  avg. age dose rate # fractions warnings
+##  1007-2-2 502   -      906    -    -           1         
+##  1007-2-4 254   -      909  0.5  0.4           1         
+##  1007-2-6 260   -      922    1  0.4           1         
+## 
+##  247 ♂ C57BL/Cnb Mice SCK/CEN 
+##  X-ray at 7 days old 
+## ------------------------------------------------
+##  group_id  ♂   ♀  avg. age dose rate # fractions warnings
+##     9-7-1 105   -      757    -    -           1        6
+##    9-7-10  72   -      777  0.5    1           1        6
+##    9-7-11  70   -      810    1    1           1        6
+## 
+##  1686 ♂ C57BL/Cnb Mice SCK/CEN 
+##  γ-ray at 84 days old 
+## ------------------------------------------------
+##  group_id  ♂   ♀  avg. age dose rate # fractions warnings
+##     9-6-1 467   -      613    -    -           1         
+##    9-6-10 115   -      615    1  0.3          10         
+##    9-6-14 104   -      622    1  0.3           8         
+##     9-6-2 241   -      581  0.2  0.3           1         
+##     9-6-3 236   -      564  0.5  0.3           1         
+##     9-6-4 241   -      550    1  0.3           1         
+##     9-6-8 107   -      605  0.2  0.3          10         
+##     9-6-9 109   -      604  0.5  0.3          10         
+##     9-8-1  66   -      594    -    -           1         
+## 
+##  783 ♂ leucopus Peromyscus ANL 
+##  γ-ray at 137 days old 
+## ------------------------------------------------
+##   group_id  ♂   ♀  avg. age  dose  rate # fractions warnings
+##  1003-27-1 210   -     1388     -     -           1         
+##  1003-27-2 203   -     1461     -     -           1         
+##  1003-27-3 189   -     1358 0.009 4e-04           1         
+##  1003-27-4 181   -     1350  0.01 7e-04           1         
+## 
+##  1456 ♂ RFM/Un Mice ORNL 
+##  γ-ray at 70 days old 
+## ------------------------------------------------
+##  group_id  ♂   ♀  avg. age dose rate # fractions warnings
+##  1007-3-1 430   -      711    -    -           1        1
+##  1007-3-2 256   -      720  0.1  0.4           1        1
+##  1007-3-3  94   -      711  0.2  0.4           1        1
+##  1007-3-4 247   -      680  0.5  0.4           1        1
+##  1007-3-5 230   -      673    1  0.4           1        1
+##  1007-3-6 199   -      651    2  0.4           1        1
+```
+
+
+#### Warnings
+Some issues were found when digging through the input data that were not judged to be severe enough to exclude the data, but do exemplify deviations from our expectations.  These are listed as follows.
+
+
+```r
+# Warnings are listed in radiation.R on lines that start with the
+# following prefix
+prefix <- "# warning-"
+
+# Get a list of all the warnings relevant to this dataset
+warnings <- gsub("[^0-9]", "", unique(d$warning_reason))
+warnings <- sort(as.numeric(warnings[warnings != ""]))
+
+# Find the corresponding warning definition in radiation.R
+warning_prefixes <- paste0(prefix, warnings)
+for (p in warning_prefixes) cat(find_in_file(p), "\n")
+```
+
+```
+## Error: cannot open the connection
+```
+
+
+____________________________________________________________________
 ^ back to [table of contents](#contents)
 
 
@@ -689,13 +951,11 @@ _____________________________________________________________________________
 
 
 
-
-
-<a name="concordance"></a>
+<a name="visual_concordance"></a>
 
 Show Data
 ========================================================
-*June 2013*
+*April 2014*
 
 Now that the data is reasonably clean, show what it looks
 like.
@@ -706,6 +966,8 @@ like.
 library(plyr)
 library(ggplot2)
 library(survival)
+library(dplyr)
+library(directlabels)
 
 # Data
 setwd("~/janus/scripts")
@@ -714,35 +976,202 @@ d <- readRDS("data/ddref.rds")
 
 
 #### Lifespan by dose and protraction
-Show the distributions of lifespan.  Notice how radiation tends to shift the curve lower, but how some doses, especially some high doses lead to a double humped curve indicating that there are at least two mechanisms reducing lifespan, one that shifts the first hump left and another responsible for the development of a second hump.
+Show the distributions of lifespan.  
 
 
+```r
+ggplot(d, aes(lifespan, color = dose, group = factor(paste(dose, dose_rate)), 
+    y = ..scaled..)) + geom_density(adjust = 2) + facet_wrap(~cluster, scales = "free") + 
+    scale_colour_gradient(guide = guide_legend(title = "Dose (gy)"), trans = "sqrt") + 
+    geom_vline(aes(xintercept = intended_assignment_age), alpha = 0.5) + expand_limits(x = -4)
+```
+
+![plot of chunk unnamed-chunk-11](Figs/unnamed-chunk-11.png) 
+
+```r
+
+# TODO: keep looking at this graph, I left off at 1133, the first TNO TODO
+# vet these unvetted controls - '1003-xx' '1003-22' '1003-24' '1003-25'
+# '1003-30' '3-1' '1003-28' '9-8' TODO check that groups with warnings are
+# not too weird in the visual concordance TODO: graph that shows only
+# directly comparable protracted v not TODO: make survival curves that
+# show the difference in % survival between a group and the cluster
+# average
+```
+
+
+Outstanding Issues:
+- 1133 TNO mice have a strong X-ray reaction, except that the control (beneath) also is shifted in this direction.  Something is rotten, unfortunately I cannot find any published reports of lifespan to proof this against.
+
+A few observations:
+- **Different clusters show very different responses.**  For example, compare Female RFM/UN Mice from ORNL to Female C57Bl/6Bd mice.  The former show a strong response to gamma rays, the latter a weak response or no response.
+- **The cluster used to estimate DDREF shows a particularly strong response**.  RFM/Un mice from ORNL were used as the acute condition in the estimate of DDREF from BEIR VII (chronic exposure is not shown here because individual level data is not available).  Notably, this is one of the stronger radiation responses seen in any cluster, including other similar ones from ORNL.
+- **Occasional appearance of early effects** For example RFM/Un Female mice at ORNL show a bimodal response, a general reduction in lifespan, but also a distinct increase in early deaths.  This kind of response is only seen in a few of the clusters, others have weak responses or show a general increase in mortality without a specific early response.
+
+#### Label treatment groups
+
+Show the same graphs with individual treatement groups labeled, this is not a figure for papers or presentations, but is handy for those who want to inspect the data very closely (me).
 
 
 ```r
 
-ggplot(d, aes(lifespan, color = dose, group = factor(paste(dose, protracted)), 
-    linetype = protracted)) + geom_density(adjust = 2) + facet_wrap(~cluster, 
+# TODO this graph should include age_at_last treatment too
+
+g <- ggplot(d %.% filter(grepl("^1133", cluster)), aes(lifespan, color = group_id, 
+    group = group_id)) + geom_density(adjust = 2) + facet_wrap(~cluster, scales = "free") + 
+    geom_vline(aes(xintercept = intended_assignment_age, color = group_id)) + 
+    geom_vline(aes(xintercept = age_at_treatment, color = group_id)) + geom_vline(aes(xintercept = age_at_last_treatment, 
+    color = group_id)) + expand_limits(x = -4)
+
+direct.label(g, list("top.points", cex = 0.6))
+```
+
+![plot of chunk unnamed-chunk-12](Figs/unnamed-chunk-12.png) 
+
+
+#### Survival plots
+Survival vs time by cluster with indications for dose and protraction.
+
+
+```r
+
+# How many animals were alive after X days in each treatment group?
+d <- d %.% group_by(cluster, dose, dose_rate, fractions) %.% arrange(lifespan) %.% 
+    mutate(survival = rank(-lifespan)/length(lifespan))
+
+ggplot(d, aes(lifespan, survival, color = dose, group = factor(paste(dose, dose_rate, 
+    fractions, protracted)), linetype = protracted)) + geom_path() + facet_wrap(~cluster, 
     scales = "free") + scale_color_continuous(guide = guide_legend(title = "Dose (gy)")) + 
-    geom_vline(aes(xintercept = intended_age_of_treatment), alpha = 0.5) + expand_limits(x = -4)
+    geom_vline(aes(xintercept = intended_assignment_age), alpha = 0.5) + expand_limits(x = -4)
 ```
 
-![plot of chunk unnamed-chunk-10](Figs/unnamed-chunk-10.png) 
-
-```r
+![plot of chunk unnamed-chunk-13](Figs/unnamed-chunk-13.png) 
 
 
-# TODO(ben) Add a graph that compares the same doses at chronic and accute
-# levels.
 
-# TODO(ben) consider a graph with a more liberal interpretation of
-# chronic, like over one minute vs under one minute.
-```
-
-_____________________________________________________________________________  
+__________________________________________________________________
 ^ back to [table of contents](#contents)
 
 
+
+
+<a name="lss"></a>
+
+Atomic bomb survivor data
+========================================================
+*April 2014*
+For comparison, let's load data from the atomic bomb survivors, [lss14][lss], and see how lifespan changes as a function of dose in these populations using similar visualizations.
+
+Acknowledgement:
+This report makes use of data obtained from the Radiation Effects Research Foundation (RERF), Hiroshima and Nagasaki, Japan. RERF is a private, non-profit foundation funded by the Japanese Ministry of Health, Labour and Welfare and the U.S. Department of Energy, the latter through the National Academy of Sciences.The conclusions in this report are those of the authors and do not necessarily reflect the scientific judgment of RERF or its funding agencies.
+Please send a copy of any reprints that make use of these data to:
+Archives Unit, Library and Archives Section
+Department of Information Technology
+Radiation Effects Research Foundation
+5-2 Hijiyama Park
+Minami-ku Hiroshima, 732-0815 JAPAN
+
+[lss]: http://rerf.jp/library/dl_e/lss14_document.pdf
+
+
+```r
+
+# Libraries
+library(dplyr)
+library(plyr)
+
+# Helper functions
+get_max_map <- function(min_map, max = Inf) {
+    max_map <- c(min_map[2:length(min_map)], max)
+    names(max_map) <- names(min_map)
+    max_map
+}
+get_mean_map <- function(min_map, max = Inf) {
+    mean_map <- (min_map + get_max_map(min_map, max))/2
+    mean_map
+}
+
+# Load data
+setwd("~/janus/")
+data <- read.csv("data/lss14/lss14.csv")
+
+# Define Terms
+sex_map <- c(`1` = "♂", `2` = "♀")
+agecat_min_map <- c(`1` = 0, `2` = 5, `3` = 10, `4` = 15, `5` = 20, `6` = 25, 
+    `7` = 30, `8` = 35, `9` = 40, `10` = 45, `11` = 50, `12` = 55, `13` = 60, 
+    `14` = 65, `15` = 70, `16` = 75, `17` = 80, `18` = 85, `19` = 90, `20` = 95, 
+    `21` = 100)
+
+agecat_mean_map <- get_mean_map(agecat_min_map, 120)
+dose_min_map <- c(`1` = 0, `2` = 0.005, `3` = 0.02, `4` = 0.04, `5` = 0.06, 
+    `6` = 0.08, `7` = 0.1, `8` = 0.125, `9` = 0.15, `10` = 0.175, `11` = 0.2, 
+    `12` = 0.25, `13` = 0.3, `14` = 0.5, `15` = 0.75, `16` = 1, `17` = 1.25, 
+    `18` = 1.5, `19` = 1.75, `20` = 2, `21` = 2.5, `22` = 3)
+
+dose_mean_map = get_mean_map(dose_min_map, 4)
+
+threshold = 1.5001
+
+# Fix data
+data <- data %.% # Thin Only select interesting columns
+select(death, city, sex, agexcat, agecat, dosecat, agex, age) %.% # Translate Values into different units
+mutate(sex = sex_map[sex], agex = agecat_mean_map[agexcat], age = agecat_mean_map[agecat], 
+    dose = dose_mean_map[dosecat]) %.% # Shorten Remove those with a dose above threshold
+filter(dose < threshold)
+
+# Define values
+
+# One row per death
+long <- ldply(unique(data$death), function(n) {
+    d <- data[data$death == n, ]
+    d[rep(1:nrow(d), n), ]
+})
+
+# Prove it was actually done
+sum(data$death) == 49879
+```
+
+```
+## [1] TRUE
+```
+
+```r
+nrow(long) == 49879
+```
+
+```
+## [1] TRUE
+```
+
+```r
+
+# Update data
+long <- long %.% select(-death)
+
+# Reduce resolution (as it is there are too many categories for graphing)
+g <- long %.% mutate(agex = round(agex/20) * 20, age_string = paste0(agex, "+ years"), 
+    lifespan = age)
+
+# Show it off
+ggplot(g, aes(x = lifespan, color = dose, group = factor(dose), y = ..scaled..)) + 
+    geom_density(adjust = 2) + scale_colour_gradient(guide = guide_legend(title = "Dose (gy)"), 
+    trans = "sqrt", breaks = c(0, 0.5, 1, 1.5), limits = c(0, 1.5)) + geom_vline(aes(xintercept = agex), 
+    alpha = 0.5) + facet_wrap(~age_string + sex)
+```
+
+![plot of chunk unnamed-chunk-14](Figs/unnamed-chunk-14.png) 
+
+```r
+
+# TODO: Currently this ignores persons who are still alive (mostly in the
+# 0-40 year range at the time of exposure), I should fix the data set so
+# that these people are represented too.  TODO: It would be nice to have a
+# survival curve version of this graph.  TODO: reduce the number of dose
+# categories, probably < 5 per facet
+```
+
+__________________________________________________________________
+^ back to [table of contents](#contents)
 
 
 
@@ -871,7 +1300,7 @@ g <- data[with(data, strain == "RFM" & sex == "F" & rate != 0.4), ]
 show(g)
 ```
 
-![plot of chunk unnamed-chunk-12](Figs/unnamed-chunk-12.png) 
+![plot of chunk unnamed-chunk-16](Figs/unnamed-chunk-16.png) 
 
 ```r
 ggsave_for_ppt("beir_10B3_reproduction.png")
@@ -885,6 +1314,7 @@ I am capable of reproducing their results.  There are two tricks
   2. They weighted by n
 
 Suspiciously they do not include data from table 2, but when I add this in, it does not make a huge difference, so I assume they are just not being careful.
+
 _____________________________________________________________________________  
 ^ back to [table of contents](#contents)
 
@@ -925,7 +1355,7 @@ o2
 ```
 
 ```
-## [1] 1.083
+## [1] 0.8735
 ```
 
 ```r
@@ -934,8 +1364,9 @@ l - as.numeric(logLik(m))
 ```
 
 ```
-## [1] 2.842e-14
+## [1] 0
 ```
+
 
 _____________________________________________________________________________  
 ^ back to [table of contents](#contents)
@@ -1045,7 +1476,7 @@ ggplot(beir_r, aes(o, l)) + geom_path() + # geom_path(data=my_r, color='red') +
 scale_y_continuous(breaks = c(0:5)/5, limits = c(0, 1))
 ```
 
-![plot of chunk unnamed-chunk-15](Figs/unnamed-chunk-15.png) 
+![plot of chunk unnamed-chunk-19](Figs/unnamed-chunk-19.png) 
 
 ```r
 ggsave_for_ppt("beir_10B4_reproduction.png")
@@ -1061,6 +1492,7 @@ It could be that the shoulder is very narrow, though this would be surprising gi
 It could also be that there is some systematic bias between chronic and high dose experiments.  For instance the high dose rate was even higher than the experimenters thought that it was.
 
 More reason for meta-analysis.
+
 _____________________________________________________________________________  
 ^ back to [table of contents](#contents)
 
@@ -1123,11 +1555,10 @@ for (n in numerics) {
 }
 
 # Model
-m <- c("cluster", "sex", "cluster_name")
+m <- c("cluster", "sex", "cluster")
 df <- aggregate[aggregate$cluster == aggregate$cluster[1] & aggregate$sex == 
-    aggregate$sex[1] & aggregate$cluster_name == aggregate$cluster_name[1], 
-    ]
-aggregate <- ddply(aggregate, .(cluster, sex, cluster_name), function(df) {
+    aggregate$sex[1] & aggregate$cluster == aggregate$cluster[1], ]
+aggregate <- ddply(aggregate, .(cluster, sex, cluster), function(df) {
     # Extract Coefficients
     m <- model_10B3(df)
     c <- m$coefficients
@@ -1161,7 +1592,7 @@ g <- a
 show(g)
 ```
 
-![plot of chunk unnamed-chunk-16](Figs/unnamed-chunk-16.png) 
+![plot of chunk unnamed-chunk-20](Figs/unnamed-chunk-20.png) 
 
 ```r
 ggsave_for_ppt("inverse_lifespan.png")
@@ -1177,6 +1608,7 @@ Chronic effects may appear better or worse than projected acute effects.  Someti
 It is no wonder that radiobiology is full of debate!  
 
 At this point we should be a bit skeptical of organizing the data in this, the BEIR VII manner.  While that approach seemed reasonable given the ORNL data that they worked with, it clearly does not generalize well.  This may be because the underlying statitical approach is flawed, or simply that these graphs a very robust way of displaying the effect.  In any case we question the 'intuitive appeal' of graph 10B3.  While it seemed quite difinitive in isolation, the effect is lost when we try to repeat it on new datasets.
+
 _____________________________________________________________________________  
 ^ back to [table of contents](#contents)
 
@@ -1272,16 +1704,16 @@ aggregate <- ddply(aggregate, .(cluster, sex), function(df) {
 a <- aggregate
 
 show <- function(g) {
-    g$cluster_name <- as.factor(as.character(g$cluster_name))
+    g$cluster <- as.factor(as.character(g$cluster))
     g$l <- pmin(g$l, 1)
     suppressWarnings(print(ggplot(g, aes(o, l)) + geom_path() + ylim(0, 1) + 
-        facet_wrap(~cluster_name)))
+        facet_wrap(~cluster)))
 }
 g <- a
 show(g)
 ```
 
-![plot of chunk unnamed-chunk-17](Figs/unnamed-chunk-17.png) 
+![plot of chunk unnamed-chunk-21](Figs/unnamed-chunk-21.png) 
 
 ```r
 ggsave_for_ppt("inverse_lifespan_profile.png")
@@ -1290,6 +1722,7 @@ ggsave_for_ppt("inverse_lifespan_profile.png")
     
 #### Results
 Looks bad, we are way too confident!
+
 _____________________________________________________________________________  
 ^ back to [table of contents](#contents)
 
@@ -1379,11 +1812,12 @@ ggplot(data, aes(x, yi)) + geom_point() + geom_errorbar(aes(ymin = yi - vi^0.5,
     color = "red") + geom_path(aes(x, p), color = "black")
 ```
 
-![plot of chunk unnamed-chunk-18](Figs/unnamed-chunk-18.png) 
+![plot of chunk unnamed-chunk-22](Figs/unnamed-chunk-22.png) 
 
 ```r
 ggsave_for_ppt("meta_regression_example.png")
 ```
+
 
 _____________________________________________________________________________  
 ^ back to [table of contents](#contents)
@@ -1504,7 +1938,7 @@ g <- data[with(data, strain == "RFM" & sex == "F" & rate != 0.4), ]
 show(g)
 ```
 
-![plot of chunk unnamed-chunk-19](Figs/unnamed-chunk-19.png) 
+![plot of chunk unnamed-chunk-23](Figs/unnamed-chunk-23.png) 
 
 ```r
 ggsave_for_ppt("beir_10B3_meta_regression.png")
@@ -1524,6 +1958,7 @@ REML
 Viechtbauer W (2005). Bias and Eciency of Meta-Analytic Variance 
 
 Estimators in the Random-Eects Model." Journal of Educational  and Behavioral Statistics, 30(3), 261-293.
+
 _____________________________________________________________________________  
 ^ back to [table of contents](#contents)
 
@@ -1660,7 +2095,7 @@ ggplot(beir_r, aes(o, l)) +
     scale_y_continuous(breaks = c(0:5)/5, limits=c(0,1))
 ```
 
-![plot of chunk unnamed-chunk-20](Figs/unnamed-chunk-20.png) 
+![plot of chunk unnamed-chunk-24](Figs/unnamed-chunk-24.png) 
 
 ```r
 ggsave_for_ppt('beir_10B4_meta_reression.png')    
@@ -1683,6 +2118,7 @@ dose rate was even higher than the experimenters thought that
 it was.
 
 More reason for meta-analysis.
+
 _____________________________________________________________________________  
 ^ back to [table of contents](#contents)
 
@@ -1775,6 +2211,13 @@ for(n in numerics) {
 
 # Model
 m <- model_meta(aggregate)
+```
+
+```
+## Error: Model matrix not of full rank. Cannot fit model.
+```
+
+```r
 c <- coefficients(m)
 aggregate <- aggregate %.%
   mutate(i=c[paste0('cluster', cluster)],
@@ -1782,6 +2225,13 @@ aggregate <- aggregate %.%
          B=c[paste0('cluster', cluster, ':B')],
          tau2=m$tau2)
 aggregate$p_my_analysis <- predict(m)$pred
+```
+
+```
+## Error: replacement has 9 rows, data has 146
+```
+
+```r
 aggregate$p_10B3 <- predict(model_10B3(aggregate))
 
 # Project
@@ -1813,15 +2263,15 @@ projections$p_10B3 <- predict(model_10B3(aggregate),
 # Show
 g <- aggregate
 f <- function(x) round(x, 2)
-g$cluster_name <- with(g, paste0(
-    cluster_name, '\n',
+g$cluster <- with(g, paste0(
+    cluster, '\n',
     #'a=', f(a), 
     #' B=', f(B), 
     ' ddref =', f((a + B) / a)
 ))
-projections$cluster_name <- projections$cluster
-projections$cluster_name <- with(projections, paste0(
-    cluster_name, '\n',
+projections$cluster <- projections$cluster
+projections$cluster <- with(projections, paste0(
+    cluster, '\n',
     #'a=', f(a), 
     #' B=', f(B), 
     ' ddref =', f((a + B) / a)
@@ -1857,10 +2307,10 @@ ggplot(g, aes(
         se=FALSE,
         color='red'
     ) + 
-    facet_wrap(~ cluster_name, scales="free_y")  
+    facet_wrap(~ cluster, scales="free_y")  
 ```
 
-![plot of chunk unnamed-chunk-23](Figs/unnamed-chunk-23.png) 
+![plot of chunk unnamed-chunk-27](Figs/unnamed-chunk-27.png) 
 
 ```r
 
@@ -1869,38 +2319,14 @@ ggplot(g, aes(
 #TODO(ben) put ggsave in a util function (or just use something better)
 
 
-
-
-
-
-
-
-
-# Show
-# As in 10B3
-# http://www.nap.edu/openbook.php?record_id=11340&page=257
-a <- aggregate
-
-g <- a
-show(g)
-```
-
-```
-## Error: 'data' must be of a vector type, was 'NULL'
-```
-
-```r
 ggsave_for_ppt('meta_regression.png')
-```
-
-```
-## Error: 'data' must be of a vector type, was 'NULL'
 ```
 
 
 #### Results
 
 Curves don't change that radically, though standard errors often change rather dramatically!
+
 _____________________________________________________________________________  
 ^ back to [table of contents](#contents)
 
@@ -1921,7 +2347,6 @@ Show graphs like Storer 1979 10B4 but for all data using the random effects meta
 
 
 ```r
-
 
 # Libraries
 library(ggplot2)
@@ -2029,76 +2454,22 @@ aggregate <- ddply(aggregate, .(cluster, sex), function(df) {
 a <- aggregate
 
 show <- function(g) {
-    g$cluster_name <- as.factor(as.character(g$cluster_name))
+    g$cluster <- as.factor(as.character(g$cluster))
     g$l_10B4 <- pmin(g$l_10B4, 1)
     g$l_meta <- pmin(g$l_meta, 1)
     suppressWarnings(print(ggplot(g, aes(o, l)) + geom_path(aes(o, l_10B4), 
         color = "black") + geom_path(aes(o, l_meta), color = "red") + ylim(0, 
-        1) + facet_wrap(~cluster_name)))
+        1) + facet_wrap(~cluster)))
 }
 
-g <- a[a$sex == "Male" & a$species == "Mouse", ]
+g <- a
 show(g)
 ```
 
-```
-## Error: replacement has 1 row, data has 0
-```
+![plot of chunk unnamed-chunk-28](Figs/unnamed-chunk-281.png) 
 
 ```r
-ggsave_for_ppt("meta_regression_profile_male_mice.png")
-```
-
-```
-## Error: replacement has 1 row, data has 0
-```
-
-```r
-
-g <- a[a$sex == "Female" & a$species == "Mouse", ]
-show(g)
-```
-
-```
-## Error: replacement has 1 row, data has 0
-```
-
-```r
-ggsave_for_ppt("meta_regression_profile_female_mice.png")
-```
-
-```
-## Error: replacement has 1 row, data has 0
-```
-
-```r
-
-g <- a[a$sex == "Female" & a$species == "Rat", ]
-show(g)
-```
-
-```
-## Error: replacement has 1 row, data has 0
-```
-
-```r
-ggsave_for_ppt("meta_regression_profile_female_rat.png")
-```
-
-```
-## Error: replacement has 1 row, data has 0
-```
-
-```r
-
-g <- a[a$species == "Peromyscus", ]
-show(g)
-```
-
-![plot of chunk unnamed-chunk-24](Figs/unnamed-chunk-241.png) 
-
-```r
-ggsave_for_ppt("meta_regression_profile_peromyscus.png")
+ggsave_for_ppt("meta_regression_profile.png")
 
 summary$l_10B4 <- pmin(4, summary$l_10B4)
 summary$l_meta <- pmin(4, summary$l_meta)
@@ -2106,7 +2477,7 @@ ggplot(summary, aes(o, l)) + geom_path(aes(o, l_10B4), color = "black") + geom_p
     l_meta), color = "red") + ylim(0, 4)
 ```
 
-![plot of chunk unnamed-chunk-24](Figs/unnamed-chunk-242.png) 
+![plot of chunk unnamed-chunk-28](Figs/unnamed-chunk-282.png) 
 
 ```r
 ggsave_for_ppt("meta_regression_summary_effect.png")
@@ -2116,6 +2487,7 @@ ggsave_for_ppt("meta_regression_summary_effect.png")
 #### Results
 
 We still seem to have biased likelihood estimates, but things are improving a bit...
+
 _____________________________________________________________________________  
 ^ back to [table of contents](#contents)
 

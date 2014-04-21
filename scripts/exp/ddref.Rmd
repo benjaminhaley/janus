@@ -20,8 +20,9 @@ TODO(ben)
   - [Metaregression](#metaregression) - Show the principals of metaregression.
 - Data
   - [Data Funnel](#data_funnel) - Which data will we analyze?
-  - [Data Cleaning](#data_cleaning) - Damn, data, you look good!
-  - [Concordance](#concordance) - Show what the data looks like.
+  - [Data Cleaning](#cleaning) - Damn, data, you look good!
+  - [Concordance](#concordance) - Tables describing the data in detail.
+  - [Visual Concordance](#visual_concordance) - Show what the data looks like.
   - [Atomic Bomb Survivors](#lss) - Load data from atomic bomb survivors as well.
 - Analysis
   - [Reproduce BEIR 10B3](#10B3) - Show that we can fit the same model of
@@ -172,11 +173,12 @@ table0 <- function(...) table(..., useNA='ifany')
 count <- function(data){
   count_unique <- function(x) length(unique(x))
   with(data, c(
-    clusters=count_unique(cluster),
-    studies=count_unique(file),
-    treatments=count_unique(group_id),
-    animals=count_unique(id),
-    exclude=count_unique(id[exclude])
+    studies      = count_unique(file),
+    clusters     = count_unique(cluster),
+    treatments   = count_unique(group_id),
+    animals      = count_unique(id),
+    'not vetted' = count_unique(id) - count_unique(id[is_vetted]),
+    'to exclude' = count_unique(id[exclude])
   ))
 }
 
@@ -280,9 +282,13 @@ d$day_fractions[s] <- d$fractions[s] * d$fraction_interval[s]
 # Add lab
 d$lab <- sub('(^[0-9]*).*$', '\\1', d$study_id)
 
-
 # If assignment age is not listed, assume it is zero
 d$assignment_age[is.na(d$assignment_age)] <- 0
+
+# If an animal is a control, it should have no age at treatment
+# Nor an age at last treatment
+d$age_at_treatment[d$dose == 0] <- NA
+d$age_at_last_treatment[d$dose == 0] <- NA
 
 # Age at last treatment
 d$age_at_last_treatment <- d$age_at_treatment
@@ -388,40 +394,30 @@ table(d$duplicates)  # 23657
 
 ```{r}
 
-# TODO: make sure the counts don't have duplicates
-# TODO: keep track of individual counts (or cluster counts)
-# TODO: add groups to ANL data
-
 # FILTER
 
 # Initial counts
 count(d)        
-# 804 treatments
 
 # Only low-LET, whole body
 d <- d[!d$quality %in% bad_qualities,]     
 count(d)        
-# 447 treatments   
 
 # Dose below threshold (as in BEIR VII)
 d <- d[!(d$dose > threshold_dose),] 
 count(d)        
-# 215 treatments
 
 # Lifespan not NA
 d <- d[!is.na(d$lifespan),]
 count(d)
-# 215 treatments
 
 # No other treatments
 d <- d[d$other_treatments == 'none',]
 count(d)
-# 157 treatments
 
 # Died before their 'assignment age'
 d <- d[d$lifespan > d$assignment_age,]
 count(d)
-# 157 treatments
 
 # Remove those that should be excluded
 exclusions <- sort(unique(d$reason))
@@ -431,12 +427,13 @@ for(ex in exclusions){
   print(ex)
   print(count(d))
 }
-# 151 treatments
 
 # Remove cases with few treatment groups    
 d <- filter_by_n_groups(d)
-count(d)        
-# 123 treatments
+count(d) 
+# [1] "see warning-7 in radiation.R"
+#    studies   clusters treatments    animals not vetted to exclude 
+#          7         14         70      19440       3170          0 
 
 # Warnings
 # show, but do not remove
@@ -452,10 +449,11 @@ for(w in warnings){
 }
 d_wo_warnings <- filter_by_n_groups(d_wo_warnings)
 count(d_wo_warnings)
-# 55 treatments
+#   clusters    studies treatments    animals    exclude 
+#         13          7         65      19348          0  
 
 # How many duplicates after filtering?
-table0(d$duplicates)  # 8608 TRUE, 17798 FALSE
+table0(d$duplicates)  # 11899 TRUE, 21307 FALSE
 
 # Save
 setwd('~/janus/scripts')
@@ -470,13 +468,14 @@ ___________________________________________________________________
 
 <a name="cleaning"></a>
 
-Clean and Summarize
+Clean
 ========================================================
 DDREF data has been filtered.  Now its time to prettify it.
 
 ```{r}
 # Libraries
 library(plyr)
+library(dplyr)
 library(ggplot2)
 library(survival)
 
@@ -484,53 +483,11 @@ library(survival)
 setwd('~/janus/scripts')
 d <- readRDS('../data/funneled.rds')
 
-# Helpers
-# Print treatment data
-get_treatment <- function(data){
-    with(data, paste(
-        round(dose, 3), 'Gy',
-        'at', round(dose_rate, 3),'Gy/min', 
-        'in', fractions, 'fractions'
-    ))
-}
-
-# Print group summaries
-summarize_numeric <- function(x){
-    n <- length(x)
-    na_message <- ''
-    if(any(is.na(x))){
-        na_message <- paste0(' missing ', sum(is.na(x)))
-    }
-    paste0(
-        round(mean(x, na.rm=T), 1),
-        ' +/- ',
-        round(sd(x, na.rm=T)/n^0.5, 1),
-        na_message
-    )
-}
-group_summary <- function(data){
-    .all <- function(x, c=' ') paste(unique(x), collapse=c)
-    treatments <- get_treatment(data)
-    with(data, c(
-        strain          = .all(strain),
-        males           = sum(sex == 'Male'),
-        females         = sum(sex == 'Female'),
-        mean_lifespan   = summarize_numeric(lifespan),
-        age_at_treatment= summarize_numeric(age_at_treatment),
-        treatments      = .all(treatments, '\n'),
-        other_treatments= .all(other_treatments),
-        warnings        = .all(warning_reason)
-    ))
-}
-
 # Clean
 
 # Is acute?
 d$acute <- d$fractions == 1 | d$dose == 0
 d$protracted <- d$fractions > 1 & d$dose > 0
-
-# Other Treatments
-d$other_treatments[d$other_treatments == 'none'] <- ''
 
 # Observations per cluster
 d = d %.%
@@ -548,10 +505,10 @@ for(c in unique(d$cluster)) {
   elements = as.list(strsplit(c, '--')[[1]])
   names(elements) <- c('sex', 'strain', 'species', 'lab', 'age', 'quality')
   number_of_animals <- sum(d$cluster == c)
-  pretty_cluster_name = with(elements, paste(
+  pretty_cluster = with(elements, paste(
     number_of_animals, sex, strain, pluralize(species), lab,
     '\n', quality, 'at', age, 'days old'))
-  d$cluster[d$cluster == c] <- pretty_cluster_name
+  d$cluster[d$cluster == c] <- pretty_cluster
 }
 
 # Define Acute
@@ -567,23 +524,6 @@ sorted_clusters = names(sort(table(d$cluster),
 d$cluster <- factor(d$cluster,
                     levels=sorted_clusters)
 
-
-# Summaries
-group_summaries <- ddply(d, .(group_id), function(df){
-    group_summary(df)
-})
-cluster_summaries <- ddply(d, .(cluster), function(df){
-    group_summary(df)
-})  
-write.csv(
-    group_summaries, 
-    file='results/ddref_group_summaries.csv'
-)
-write.csv(
-    cluster_summaries, 
-    file='results/ddref_cluster_summaries.csv'
-)
-
 # Save Data for later use
 saveRDS(d, 'data/ddref.rds')
 write.csv(d,file='data/ddref.csv')
@@ -591,9 +531,87 @@ write.csv(d,file='data/ddref.csv')
 ```
 
 ### Results
-Data is filtered and saved as ddref.csv for later use.  
-See ddref_group_summaries.csv and ddref_cluster_summaries.csv
-for some pretty results.  See also the funnel graph.
+Data is so fresh and so clean.
+
+
+
+<a name="concordance"></a>
+
+Concordance
+========================================================
+*April 2013*
+
+Give a detailed description of the dataset for those that want to make a close inspection.
+
+
+```{r}
+
+# Libraries
+library(plyr)
+library(dplyr)
+library(ggplot2)
+library(survival)
+
+# Data
+setwd('~/janus/scripts')
+d <- readRDS('data/ddref.rds')
+
+# Helpers
+group_summary <- function(data){
+    .all <- function(x, c=' ') paste(unique(x), collapse=c)
+    summary <- with(data, c(
+        ' ♂ '          = sum(sex == '♂'),
+        ' ♀ '          = sum(sex == '♀'),
+        'avg. age'      = round(mean(lifespan)),
+        'dose'          = .all(signif(dose, 1)),
+        'rate'          = .all(signif(dose_rate, 1)),
+        '# fractions'   = .all(fractions),
+        warnings        = .all(gsub('[^0-9]', '', warning_reason))
+    ))
+    summary[summary == 0] <- '-'
+    summary[is.na(summary)] <- '-'  
+    summary
+}
+
+find_in_file <- function(pattern, file='exp/radiation.R'){
+		lines <- readLines(file)
+		lines[grepl(pattern, lines)]
+}
+```
+
+#### Group details
+Show the details of each treatment group in the dataset organized by cluster
+
+```{r}
+for(cluster in unique(d$cluster)) {
+  cat('\n', 
+      cluster, 
+      '\n------------------------------------------------\n')
+  df <- d[d$cluster == cluster,]
+  print(ddply(df, .(group_id), function(df) {
+    group_summary(df)
+  }), row.names=FALSE)
+}
+```
+
+#### Warnings
+Some issues were found when digging through the input data that were not judged to be severe enough to exclude the data, but do exemplify deviations from our expectations.  These are listed as follows.
+
+```{r}
+# Warnings are listed in radiation.R on lines that start with
+# the following prefix
+prefix <- "# warning-"
+
+# Get a list of all the warnings relevant to this dataset
+warnings <- gsub('[^0-9]', '', unique(d$warning_reason))
+warnings <- sort(as.numeric(warnings[warnings != ""]))
+
+# Find the corresponding warning definition in radiation.R
+warning_prefixes <- paste0(prefix, warnings)
+for(p in warning_prefixes) cat(find_in_file(p), '\n')
+
+```
+
 ____________________________________________________________________
 ^ back to [table of contents](#contents)
 
@@ -602,13 +620,11 @@ ____________________________________________________________________
 
 
 
-
-
-<a name="concordance"></a>
+<a name="visual_concordance"></a>
 
 Show Data
 ========================================================
-*June 2013*
+*April 2014*
 
 Now that the data is reasonably clean, show what it looks
 like.
@@ -650,16 +666,12 @@ ggplot(d,
   expand_limits(x = -4)
 
 # TODO: keep looking at this graph, I left off at 1133, the first TNO
-#TODO: Order this graph by:
-#  Age at exposure
-#  Instititution
-#  Gender
-
-# TODO: Look carefully at C57BL/Cnb controls from SCK/CEN
-# TODO: Make smoothing adjustment proportional to group size
-# TODO: make survival curves that show the difference in % survival between a group and the cluster average
+# TODO vet these unvetted controls -   "1003-xx" "1003-22" "1003-24" "1003-25" "1003-30" "3-1"     "1003-28" "9-8"
+# TODO check that groups with warnings are not too weird in the visual concordance
 # TODO: graph that shows only directly comparable protracted v not
-# TODO: make a handy table with references so I can cross check these results
+# TODO: remove number of mice from cluster names and give them a numeric id (so that their full name can be printed)
+# TODO: make survival curves that show the difference in % survival between a group and the cluster average
+# TODO: Elevate warnings to exclusions if I cannot co-oberate data with external sources.  That would apply to warnings 2, 3, 8.  It would remove the 1133 TNO data which really does not make any sense and convolutes our story.  I really think I should.
 
 ```
 
@@ -677,7 +689,9 @@ Show the same graphs with individual treatement groups labeled, this is not a fi
 
 ```{r}
 
-g <- ggplot(d %.% filter(grepl('^6977', cluster)),
+# TODO this graph should include age_at_last treatment too
+
+g <- ggplot(d %.% filter(grepl('^1016', cluster)),
        aes(lifespan, 
            color=group_id,
            group=group_id
@@ -685,12 +699,17 @@ g <- ggplot(d %.% filter(grepl('^6977', cluster)),
   geom_density(adjust=2) +
   facet_wrap(~ cluster, scales='free') + 
   geom_vline(
-    aes(xintercept=intended_assignment_age),
-    alpha=0.5
+    aes(xintercept=intended_assignment_age, color=group_id)
   ) +
-  expand_limits(x = -4)
+  geom_vline(
+    aes(xintercept=age_at_treatment, color=group_id)
+  ) + 
+  geom_vline(
+    aes(xintercept=age_at_last_treatment, color=group_id)
+  ) +  
+  expand_limits(x = -4, y = 0.005)
 
-direct.label(g, list("top.points", cex=0.6))
+direct.label(g, list("top.bumptwice", cex=0.6))
 
 ```
 
@@ -876,7 +895,8 @@ ggplot(g, aes(x=lifespan,
   scale_colour_gradient(
     guide = guide_legend(title = "Dose (gy)"),
     trans = "sqrt",
-    breaks= c(0,0.5,1.0,1.5)
+    breaks= c(0,0.5,1.0,1.5),
+    limits= c(0,1.5)
   ) + 
   geom_vline(
     aes(xintercept=agex),
@@ -884,6 +904,11 @@ ggplot(g, aes(x=lifespan,
   ) +
   facet_wrap( ~ age_string + sex)
 
+# TODO: Currently this ignores persons who are still alive (mostly in the 0-40 year range at the time of exposure), I should fix the data set so that these people are represented too.
+# TODO: It would be nice to have a survival curve version of this graph.
+# TODO: reduce the number of dose categories, probably < 5 per facet
+
+```
 __________________________________________________________________
 ^ back to [table of contents](#contents)
 
@@ -1277,15 +1302,15 @@ for(n in numerics) {
 }
 
 # Model
-m <- c('cluster', 'sex', 'cluster_name')
+m <- c('cluster', 'sex', 'cluster')
 df <- aggregate[
     aggregate$cluster == aggregate$cluster[1] &
     aggregate$sex == aggregate$sex[1] &
-    aggregate$cluster_name == aggregate$cluster_name[1]
+    aggregate$cluster == aggregate$cluster[1]
 ,]
 aggregate <- ddply(
     aggregate, 
-    .(cluster, sex, cluster_name), 
+    .(cluster, sex, cluster), 
     function(df){
         # Extract Coefficients
         m <- model_10B3(df)
@@ -1439,13 +1464,13 @@ aggregate <- ddply(aggregate, .(cluster, sex), function(df){
 a <- aggregate
 
 show <- function(g){
-    g$cluster_name <- as.factor(as.character(g$cluster_name))
+    g$cluster <- as.factor(as.character(g$cluster))
     g$l <- pmin(g$l, 1)
     suppressWarnings(print(
     ggplot(g, aes(o, l)) + 
         geom_path() +
         ylim(0,1) +
-        facet_wrap(~ cluster_name)
+        facet_wrap(~ cluster)
     ))
 }
 g <- a
@@ -2019,15 +2044,15 @@ projections$p_10B3 <- predict(model_10B3(aggregate),
 # Show
 g <- aggregate
 f <- function(x) round(x, 2)
-g$cluster_name <- with(g, paste0(
-    cluster_name, '\n',
+g$cluster <- with(g, paste0(
+    cluster, '\n',
     #'a=', f(a), 
     #' B=', f(B), 
     ' ddref =', f((a + B) / a)
 ))
-projections$cluster_name <- projections$cluster
-projections$cluster_name <- with(projections, paste0(
-    cluster_name, '\n',
+projections$cluster <- projections$cluster
+projections$cluster <- with(projections, paste0(
+    cluster, '\n',
     #'a=', f(a), 
     #' B=', f(B), 
     ' ddref =', f((a + B) / a)
@@ -2063,7 +2088,7 @@ ggplot(g, aes(
         se=FALSE,
         color='red'
     ) + 
-    facet_wrap(~ cluster_name, scales="free_y")  
+    facet_wrap(~ cluster, scales="free_y")  
 
 #TODO(ben) clean, document, commit these changes
 #TODO(ben) reorder cluster factor by number of animals
@@ -2226,7 +2251,7 @@ aggregate <- ddply(aggregate, .(cluster, sex), function(df){
 a <- aggregate
 
 show <- function(g){
-    g$cluster_name <- as.factor(as.character(g$cluster_name))
+    g$cluster <- as.factor(as.character(g$cluster))
     g$l_10B4 <- pmin(g$l_10B4, 1)
     g$l_meta <- pmin(g$l_meta, 1)
     suppressWarnings(print(
@@ -2234,7 +2259,7 @@ show <- function(g){
         geom_path(aes(o, l_10B4), color='black') +
         geom_path(aes(o, l_meta), color='red') +
         ylim(0,1) +
-        facet_wrap(~ cluster_name)
+        facet_wrap(~ cluster)
     ))
 }
 
