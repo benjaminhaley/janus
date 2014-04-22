@@ -2252,22 +2252,6 @@ saveRDS(data, '../data/external4.rds')
 
 
 
-	#### Start with one ####
-	study = '9-8'
-	show_groups(study)
-	
-	# *note this study involved only abdomen exposures, which I
-	# discovered while working on it.  I will cease efforst and
-	# set to dump to true for the rest of the study
-	
-	data$to_dump <- NA
-	data$to_dump[data$study.id == study] <- TRUE
-	
-	### Develop concordance ###
-
-## UCL Brussels is the University Catholique de Louvain, belgian's largest French speaking University.
-## Leuven a Belgian city only 25 km from Brussels, notable for its university and as the headquarters of Anheuser-Busch InBev and production center of Stella Artois.
-		
 				
 		
 		
@@ -4571,8 +4555,7 @@ saveRDS(data, '../data/external4.rds')
 	# Filter
 	# so we only have the groups needed to estimate ddref
 	filter <- with(study_data,		
-		! quality %in% 'neutrons 1-10 MeV' &
-		! group.id %in% '3-1-9'
+		(! quality %in% 'neutrons 1-10 MeV')
 	)
 	table0(filter)
 	study_data <- study_data[filter,]
@@ -4581,17 +4564,38 @@ saveRDS(data, '../data/external4.rds')
 	# Fix problems
 	# but only the ones that might affect ddref estimates
 	doses <- data.frame(
-		group= c('3-1-2', '3-1-7', '3-1-8'),
-		dose = c(   0.4,    12.8,    25.6 )
-	)
+		group= c('3-1-1', 
+             '3-1-2', 
+		         '3-1-3', 
+		         '3-1-4', 
+		         '3-1-5', 
+		         '3-1-6', 
+		         '3-1-7', 
+             '3-1-8'),
+		dose = c( 0.00,
+              0.04,    
+              0.08,
+              0.16,
+              0.32,
+              0.64,
+              1.28,
+              2.56),
+    rate = c(0.00,
+             0.06,
+             0.06,
+             0.06,
+             0.06,
+             0.64,
+             0.64,
+             0.64))
 	for(g in doses$group){
-		study_data$dose[study_data$group.id == g] <- 
-			doses$dose[doses$group == g]
+    m <- study_data$group.id == g
+		study_data$dose[m] <- with(doses, dose[group == g])
+		study_data$dose_rate[study_data$group.id == g] <- with(doses, rate[group == g])
 	}
 	study_data$fractions <- 1
-	study_data$dose_rate <- 0.6
 	study_data$fraction_time <- with(study_data, dose / dose_rate)
-	study_data$age.at.treatment <- 6 * 7
+	study_data$age.at.treatment <- 5 * 7
 	study_data$source[
 		study_data$quality == 'X-rays whole body'
 	] <- 'x-ray'	
@@ -5024,6 +5028,773 @@ saveRDS(data, '../data/external4.rds')
   saveRDS(data, '../data/external4.21.rds')
 
 
+  ###
+  # Pick a study
+  study <- '1003-xx'
+  
+  # Restore from checkpoint
+  setwd('~/janus/scripts')
+  data <- readRDS('../data/external4.21.rds')
+  
+  # Read title/basic description
+  # List sources
+  # Missing from anl-95-3.pdf (would be JM-11) and the Gray Book
+  # I think we need to leave this one out!
+  # Check for lifespan data
+  
+  # Get Data
+  study_data <- get_study_data(study)
+  study_treatments <- get_study_treatments(study)
+  
+  # Filter
+  filter <- with(study_data,    
+                 (quality == 'gamma-rays whole body' | is.na(quality)) &
+                   dose <= 1.5
+  )
+  study_data <- study_data[filter,]
+  study_treatments <- study_treatments[filter,]
+  
+  # Check for existing problems
+  find_in_file(study)
+  
+  # Fix problems
+  study_data$quality[is.na(study_data$quality)] <- 'none (controls)'
+  groups <- with(study_data, paste(quality, dose, sex))
+  print_for_copy(sort(unique(groups)))
+  ordered_groups <- c(
+    "gamma-rays whole body 0 Female"
+  )
+  ids <- match(groups, ordered_groups)
+  study_data$group.id <- paste0(study_data$study.id, '-', ids)
+  study_data$fractions[study_data$dose == 0] <- 1
+  study_data$fraction_time[study_data$dose == 0] <- NA
+  
+  # Source
+  study_data$source[
+    study_data$quality == 'gamma-rays whole body'
+    ] <- 'Co-60'
+  
+  # Check data
+  s <- summarize_study_data(study_data[,])
+  # MAS/lifespan
+  s[,c('n', 'dose', 'sex', 'MAS')]  
+  # dose
+  s[,c('n', 'group.id', 'sex', 'dose')]
+  # fractions
+  s[,c('n', 'dose', 'sex', 'fractions')]
+  # dose_rate
+  s[,c('n', 'group.id', 'sex', 'dose_rate')]	  # table0(study_data$dose_rate)
+  # other treatments
+  unique(study_treatments)
+  # quality
+  s[,c('n', 'group.id', 'sex', 'quality')]	
+  # fraction_interval
+  s[,c('n', 'group.id', 'sex', 'fraction_interval')]	
+  # fraction_time
+  s[,c('n', 'group.id', 'sex', 'fraction_time')]	
+  # cluster
+  s[,c('n', 'group.id', 'sex', 'cluster')]	
+  
+  # Add exclusions
+  exclusions <- list(
+    list(
+      who=with(study_data, id == id),
+      why="see exclusion-12 in radiation.R")
+  )
+  study_data <- add_exclusions(exclusions, study_data)
+  table0(study_data$exclude)
+  
+  # Add warnings
+  warnings <- list(
+  )
+  study_data <- add_warnings(warnings, study_data)
+  table0(study_data$warning)
+  
+  # Vet
+  study_data$is_vetted <- TRUE
+  
+  # Merge
+  rows <- match(study_data$id, data$id)
+  cols <- relevant_columns
+  data[rows,cols] <- study_data[,cols]
+  
+  # Save checkpoint
+  setwd('~/janus/scripts')
+  saveRDS(data, '../data/external4.22.rds')
+
+
+  ###
+  # Pick a study
+  study <- '1003-22'
+  
+  # Restore from checkpoint
+  setwd('~/janus/scripts')
+  data <- readRDS('../data/external4.22.rds')
+  
+  # Read title/basic description
+  # List sources
+  # JM-4 from ANL-95-3
+  # Check for lifespan data
+  
+  # Get Data
+  study_data <- get_study_data(study)
+  study_treatments <- get_study_treatments(study)
+  
+  # Filter
+  filter <- with(study_data,    
+                 (quality == 'gamma-rays whole body' | is.na(quality)) &
+                   dose <= 1.5
+  )
+  study_data <- study_data[filter,]
+  study_treatments <- study_treatments[filter,]
+  
+  # Check for existing problems
+  find_in_file(study)
+  
+  # Fix problems
+  study_data$quality[is.na(study_data$quality)] <- 'none (controls)'
+  groups <- with(study_data, paste(quality, dose, sex))
+  print_for_copy(sort(unique(groups)))
+  # Note these are the merged controls from 
+  # JM-4K, JM-4W, JM-4L1, and JM-4L2
+  ordered_groups <- c(
+    "none (controls) 0 Male",
+    "none (controls) 0 Female"
+  )
+  ids <- match(groups, ordered_groups)
+  study_data$group.id <- paste0(study_data$study.id, '-', ids)
+  study_data$fractions[study_data$dose == 0] <- 1
+  study_data$fraction_time[study_data$dose == 0] <- NA
+  
+  # Source
+  study_data$source[
+    study_data$quality == 'gamma-rays whole body'
+    ] <- 'Co-60'
+  
+  # Check data
+  s <- summarize_study_data(study_data[,])
+  # MAS/lifespan
+  s[,c('n', 'dose', 'sex', 'MAS')]  
+  # dose
+  s[,c('n', 'group.id', 'sex', 'dose')]
+  # fractions
+  s[,c('n', 'dose', 'sex', 'fractions')]
+  # dose_rate
+  s[,c('n', 'group.id', 'sex', 'dose_rate')]    # table0(study_data$dose_rate)
+  # other treatments
+  unique(study_treatments)
+  # quality
+  s[,c('n', 'group.id', 'sex', 'quality')]	
+  # fraction_interval
+  s[,c('n', 'group.id', 'sex', 'fraction_interval')]	
+  # fraction_time
+  s[,c('n', 'group.id', 'sex', 'fraction_time')]	
+  # cluster
+  s[,c('n', 'group.id', 'sex', 'cluster')]	
+  
+  # Add exclusions
+  exclusions <- list(
+  )
+  study_data <- add_exclusions(exclusions, study_data)
+  table0(study_data$exclude)
+  
+  # Add warnings
+  warnings <- list(
+  )
+  study_data <- add_warnings(warnings, study_data)
+  table0(study_data$warning)
+  
+  # Vet
+  study_data$is_vetted <- TRUE
+  
+  # Merge
+  rows <- match(study_data$id, data$id)
+  cols <- relevant_columns
+  data[rows,cols] <- study_data[,cols]
+  
+  # Save checkpoint
+  setwd('~/janus/scripts')
+  saveRDS(data, '../data/external4.23.rds')
+
+
+
+  ###
+  # Pick a study
+  study <- '1003-24'
+  
+  # Restore from checkpoint
+  setwd('~/janus/scripts')
+  data <- readRDS('../data/external4.23.rds')
+  
+  # Read title/basic description
+  # List sources
+  # JM-7 from ANL-95-3
+  # Check for lifespan data
+  
+  # Get Data
+  study_data <- get_study_data(study)
+  study_treatments <- get_study_treatments(study)
+  
+  # Filter
+  filter <- with(study_data,    
+                 (quality == 'gamma-rays whole body' | is.na(quality)) &
+                   dose <= 1.5
+  )
+  study_data <- study_data[filter,]
+  study_treatments <- study_treatments[filter,]
+  
+  # Check for existing problems
+  find_in_file(study)
+  
+  # Fix problems
+  study_data$quality[is.na(study_data$quality)] <- 'none (controls)'
+  groups <- with(study_data, paste(quality, dose, sex))
+  print_for_copy(sort(unique(groups)))
+  ordered_groups <- c(
+    "none (controls) 0 Male",
+    "none (controls) 0 Female"
+  )
+  ids <- match(groups, ordered_groups)
+  study_data$group.id <- paste0(study_data$study.id, '-', ids)
+  study_data$fractions[study_data$dose == 0] <- 1
+  study_data$fraction_time[study_data$dose == 0] <- NA
+  
+  # Source
+  study_data$source[
+    study_data$quality == 'gamma-rays whole body'
+    ] <- 'Co-60'
+  
+  # Check data
+  s <- summarize_study_data(study_data[,])
+  # MAS/lifespan
+  s[,c('n', 'dose', 'sex', 'MAS')]  
+  # dose
+  s[,c('n', 'group.id', 'sex', 'dose')]
+  # fractions
+  s[,c('n', 'dose', 'sex', 'fractions')]
+  # dose_rate
+  s[,c('n', 'group.id', 'sex', 'dose_rate')]    # table0(study_data$dose_rate)
+  # other treatments
+  unique(study_treatments)
+  # quality
+  s[,c('n', 'group.id', 'sex', 'quality')]  
+  # fraction_interval
+  s[,c('n', 'group.id', 'sex', 'fraction_interval')]	
+  # fraction_time
+  s[,c('n', 'group.id', 'sex', 'fraction_time')]	
+  # cluster
+  s[,c('n', 'group.id', 'sex', 'cluster')]	
+  
+  # Add exclusions
+  exclusions <- list(
+  )
+  study_data <- add_exclusions(exclusions, study_data)
+  table0(study_data$exclude)
+  
+  # Add warnings
+  warnings <- list(    
+    list(
+      who=with(study_data, group.id == "1003-24-1"),
+      why="see warning-6 in radiation.R"
+    )
+  )
+  study_data <- add_warnings(warnings, study_data)
+  table0(study_data$warning)
+  
+  # Vet
+  study_data$is_vetted <- TRUE
+  
+  # Merge
+  rows <- match(study_data$id, data$id)
+  cols <- relevant_columns
+  data[rows,cols] <- study_data[,cols]
+  
+  # Save checkpoint
+  setwd('~/janus/scripts')
+  saveRDS(data, '../data/external4.24.rds')
+
+
+  ###
+  # Pick a study
+  study <- '1003-25'
+  
+  # Restore from checkpoint
+  setwd('~/janus/scripts')
+  data <- readRDS('../data/external4.24.rds')
+  
+  # Read title/basic description
+  # List sources
+  # JM-8 from ANL-95-3
+  # Check for lifespan data
+  
+  # Get Data
+  study_data <- get_study_data(study)
+  study_treatments <- get_study_treatments(study)
+  
+  # Filter
+  filter <- with(study_data,    
+                 (quality == 'gamma-rays whole body' | is.na(quality)) &
+                   dose <= 1.5
+  )
+  study_data <- study_data[filter,]
+  study_treatments <- study_treatments[filter,]
+  
+  # Check for existing problems
+  find_in_file(study)
+  
+  # Fix problems
+  study_data$quality[is.na(study_data$quality)] <- 'none (controls)'
+  groups <- with(study_data, paste(quality, dose, sex))
+  print_for_copy(sort(unique(groups)))
+  ordered_groups <- c(
+    "none (controls) 0 Male",
+    "none (controls) 0 Female"
+  )
+  ids <- match(groups, ordered_groups)
+  study_data$group.id <- paste0(study_data$study.id, '-', ids)
+  study_data$fractions[study_data$dose == 0] <- 1
+  study_data$fraction_time[study_data$dose == 0] <- NA
+  
+  # Source
+  study_data$source[
+    study_data$quality == 'gamma-rays whole body'
+    ] <- 'Co-60'
+  
+  # Check data
+  s <- summarize_study_data(study_data[,])
+  # MAS/lifespan
+  s[,c('n', 'dose', 'sex', 'MAS')]  
+  # dose
+  s[,c('n', 'group.id', 'sex', 'dose')]
+  # fractions
+  s[,c('n', 'dose', 'sex', 'fractions')]
+  # dose_rate
+  s[,c('n', 'group.id', 'sex', 'dose_rate')]    # table0(study_data$dose_rate)
+  # other treatments
+  unique(study_treatments)
+  # quality
+  s[,c('n', 'group.id', 'sex', 'quality')]  
+  # fraction_interval
+  s[,c('n', 'group.id', 'sex', 'fraction_interval')]  
+  # fraction_time
+  s[,c('n', 'group.id', 'sex', 'fraction_time')]	
+  # cluster
+  s[,c('n', 'group.id', 'sex', 'cluster')]	
+  
+  # Add exclusions
+  exclusions <- list(
+  )
+  study_data <- add_exclusions(exclusions, study_data)
+  table0(study_data$exclude)
+  
+  # Add warnings
+  warnings <- list(    
+  )
+  study_data <- add_warnings(warnings, study_data)
+  table0(study_data$warning)
+  
+  # Vet
+  study_data$is_vetted <- TRUE
+  
+  # Merge
+  rows <- match(study_data$id, data$id)
+  cols <- relevant_columns
+  data[rows,cols] <- study_data[,cols]
+  
+  # Save checkpoint
+  setwd('~/janus/scripts')
+  saveRDS(data, '../data/external4.25.rds')
+
+
+  ###
+  # Pick a study
+  study <- '1003-30'
+  
+  # Restore from checkpoint
+  setwd('~/janus/scripts')
+  data <- readRDS('../data/external4.25.rds')
+  
+  # Read title/basic description
+  # List sources
+  # JM-14 from ANL-95-3
+  # Check for lifespan data
+  
+  # Get Data
+  study_data <- get_study_data(study)
+  study_treatments <- get_study_treatments(study)
+  
+  # Filter
+  filter <- with(study_data,    
+                 (is.na(quality) | 
+                    quality == 'gamma-rays whole body' | 
+                    quality == 'gamma-rays Co-60') &
+                 (is.na(dose) |
+                    dose <= 1.5) &
+                 (other_treatments == "none")
+  )
+  study_data <- study_data[filter,]
+  study_treatments <- study_treatments[filter,]
+  
+  # Check for existing problems
+  find_in_file(study)
+  
+  # Fix problems
+  study_data$quality[is.na(study_data$quality)] <- 'none (controls)'
+  groups <- with(study_data, paste(quality, dose, sex))
+  print_for_copy(sort(unique(groups)))
+  ordered_groups <- c(
+    "none (controls) 0 Male",
+    "none (controls) 0 Female"
+  )
+  ids <- match(groups, ordered_groups)
+  study_data$group.id <- paste0(study_data$study.id, '-', ids)
+  study_data$fractions[study_data$dose == 0] <- 1
+  study_data$fraction_time[study_data$dose == 0] <- NA
+  
+  # Source
+  study_data$source[
+    study_data$quality == 'gamma-rays whole body'
+    ] <- 'Co-60'
+  
+  # Check data
+  s <- summarize_study_data(study_data[,])
+  # MAS/lifespan
+  s[,c('n', 'dose', 'sex', 'MAS')]  
+  # dose
+  s[,c('n', 'group.id', 'sex', 'dose')]
+  # fractions
+  s[,c('n', 'dose', 'sex', 'fractions')]
+  # dose_rate
+  s[,c('n', 'group.id', 'sex', 'dose_rate')]    # table0(study_data$dose_rate)
+  # other treatments
+  unique(study_treatments)
+  # quality
+  s[,c('n', 'group.id', 'sex', 'quality')]  
+  # fraction_interval
+  s[,c('n', 'group.id', 'sex', 'fraction_interval')]  
+  # fraction_time
+  s[,c('n', 'group.id', 'sex', 'fraction_time')]  
+  # cluster
+  s[,c('n', 'group.id', 'sex', 'cluster')]	
+  
+  # Add exclusions
+  exclusions <- list(
+  )
+  study_data <- add_exclusions(exclusions, study_data)
+  table0(study_data$exclude)
+  
+  # Add warnings
+  warnings <- list(    
+  )
+  study_data <- add_warnings(warnings, study_data)
+  table0(study_data$warning)
+  
+  # Vet
+  study_data$is_vetted <- TRUE
+  
+  # Merge
+  rows <- match(study_data$id, data$id)
+  cols <- relevant_columns
+  data[rows,cols] <- study_data[,cols]
+  
+  # Save checkpoint
+  setwd('~/janus/scripts')
+  saveRDS(data, '../data/external4.26.rds')
+
+
+  ###
+  # Pick a study
+  study <- '1003-28'
+  
+  # Restore from checkpoint
+  setwd('~/janus/scripts')
+  data <- readRDS('../data/external4.26.rds')
+  
+  # Read title/basic description
+  # List sources
+  # JM-12 from ANL-95-3
+  # Check for lifespan data
+  
+  # Get Data
+  study_data <- get_study_data(study)
+  study_treatments <- get_study_treatments(study)
+  
+  # Filter
+  filter <- with(study_data,    
+                 (is.na(quality) | 
+                    quality == 'gamma-rays whole body' | 
+                    quality == 'gamma-rays Co-60') &
+                   (is.na(dose) |
+                      dose <= 1.5) &
+                   (other_treatments == "none")
+  )
+  study_data <- study_data[filter,]
+  study_treatments <- study_treatments[filter,]
+  
+  # Check for existing problems
+  find_in_file(study)
+  
+  # Fix problems
+  study_data$quality[is.na(study_data$quality)] <- 'none (controls)'
+  groups <- with(study_data, paste(quality, dose, sex))
+  print_for_copy(sort(unique(groups)))
+  ordered_groups <- c(
+    "none (controls) 0 Male"
+  )
+  ids <- match(groups, ordered_groups)
+  study_data$group.id <- paste0(study_data$study.id, '-', ids)
+  study_data$fractions[study_data$dose == 0] <- 1
+  study_data$fraction_time[study_data$dose == 0] <- NA
+  
+  # Source
+  study_data$source[
+    study_data$quality == 'gamma-rays whole body'
+    ] <- 'Co-60'
+  
+  # Check data
+  s <- summarize_study_data(study_data[,])
+  # MAS/lifespan
+  s[,c('n', 'dose', 'sex', 'MAS')]  
+  # dose
+  s[,c('n', 'group.id', 'sex', 'dose')]
+  # fractions
+  s[,c('n', 'dose', 'sex', 'fractions')]
+  # dose_rate
+  s[,c('n', 'group.id', 'sex', 'dose_rate')]    # table0(study_data$dose_rate)
+  # other treatments
+  unique(study_treatments)
+  # quality
+  s[,c('n', 'group.id', 'sex', 'quality')]  
+  # fraction_interval
+  s[,c('n', 'group.id', 'sex', 'fraction_interval')]  
+  # fraction_time
+  s[,c('n', 'group.id', 'sex', 'fraction_time')]  
+  # cluster
+  s[,c('n', 'group.id', 'sex', 'cluster')]  
+  
+  # Add exclusions
+  exclusions <- list(
+  )
+  study_data <- add_exclusions(exclusions, study_data)
+  table0(study_data$exclude)
+  
+  # Add warnings
+  warnings <- list(    
+  )
+  study_data <- add_warnings(warnings, study_data)
+  table0(study_data$warning)
+  
+  # Vet
+  study_data$is_vetted <- TRUE
+  
+  # Merge
+  rows <- match(study_data$id, data$id)
+  cols <- relevant_columns
+  data[rows,cols] <- study_data[,cols]
+  
+  # Save checkpoint
+  setwd('~/janus/scripts')
+  saveRDS(data, '../data/external4.27.rds')
+
+
+  ###
+  # Pick a study
+  study <- '1003-28'
+  
+  # Restore from checkpoint
+  setwd('~/janus/scripts')
+  data <- readRDS('../data/external4.26.rds')
+  
+  # Read title/basic description
+  # List sources
+  # JM-12 from ANL-95-3
+  # Check for lifespan data
+  
+  # Get Data
+  study_data <- get_study_data(study)
+  study_treatments <- get_study_treatments(study)
+  
+  # Filter
+  filter <- with(study_data,    
+                 (is.na(quality) | 
+                    quality == 'gamma-rays whole body' | 
+                    quality == 'gamma-rays Co-60') &
+                   (is.na(dose) |
+                      dose <= 1.5) &
+                   (other_treatments == "none")
+  )
+  study_data <- study_data[filter,]
+  study_treatments <- study_treatments[filter,]
+  
+  # Check for existing problems
+  find_in_file(study)
+  
+  # Fix problems
+  study_data$quality[is.na(study_data$quality)] <- 'none (controls)'
+  groups <- with(study_data, paste(quality, dose, sex))
+  print_for_copy(sort(unique(groups)))
+  ordered_groups <- c(
+    "none (controls) 0 Male"
+  )
+  ids <- match(groups, ordered_groups)
+  study_data$group.id <- paste0(study_data$study.id, '-', ids)
+  study_data$fractions[study_data$dose == 0] <- 1
+  study_data$fraction_time[study_data$dose == 0] <- NA
+  
+  # Source
+  study_data$source[
+    study_data$quality == 'gamma-rays whole body'
+    ] <- 'Co-60'
+  
+  # Check data
+  s <- summarize_study_data(study_data[,])
+  # MAS/lifespan
+  s[,c('n', 'dose', 'sex', 'MAS')]  
+  # dose
+  s[,c('n', 'group.id', 'sex', 'dose')]
+  # fractions
+  s[,c('n', 'dose', 'sex', 'fractions')]
+  # dose_rate
+  s[,c('n', 'group.id', 'sex', 'dose_rate')]    # table0(study_data$dose_rate)
+  # other treatments
+  unique(study_treatments)
+  # quality
+  s[,c('n', 'group.id', 'sex', 'quality')]  
+  # fraction_interval
+  s[,c('n', 'group.id', 'sex', 'fraction_interval')]  
+  # fraction_time
+  s[,c('n', 'group.id', 'sex', 'fraction_time')]  
+  # cluster
+  s[,c('n', 'group.id', 'sex', 'cluster')]  
+  
+  # Add exclusions
+  exclusions <- list(
+  )
+  study_data <- add_exclusions(exclusions, study_data)
+  table0(study_data$exclude)
+  
+  # Add warnings
+  warnings <- list(    
+  )
+  study_data <- add_warnings(warnings, study_data)
+  table0(study_data$warning)
+  
+  # Vet
+  study_data$is_vetted <- TRUE
+  
+  # Merge
+  rows <- match(study_data$id, data$id)
+  cols <- relevant_columns
+  data[rows,cols] <- study_data[,cols]
+  
+  # Save checkpoint
+  setwd('~/janus/scripts')
+  saveRDS(data, '../data/external4.27.rds')
+
+  ###
+  # Pick a study
+  study <- '9-8'
+  
+  # Restore from checkpoint
+  setwd('~/janus/scripts')
+  data <- readRDS('../data/external4.27.rds')
+  
+  # Read title/basic description
+  # No references are listed in the Gray book and could not
+  # find a good one in google scholar [1].  Moreoever, this
+  # study only deals with partial body irradiation, so only
+  # the controls are usuable.  The point is that I should exclude
+  # even these controls because no cooberating source can be
+  # found.
+  # [1]: http://scholar.google.com/scholar?q=Maisin+Carbon+Tetrachloride+on+Liver+Tumors+C57BL+Mice&btnG=&hl=en&as_sdt=0%2C14
+  # Check for lifespan data
+  
+  # Get Data
+  study_data <- get_study_data(study)
+  study_treatments <- get_study_treatments(study)
+  
+  # Filter
+  filter <- with(study_data,    
+                 (is.na(quality) | 
+                    quality == 'gamma-rays whole body' | 
+                    quality == 'gamma-rays Co-60' |
+                    quality == 'none (controls)') &
+                   (is.na(dose) |
+                      dose <= 1.5) &
+                   (other_treatments == "none")
+  )
+  study_data <- study_data[filter,]
+  study_treatments <- study_treatments[filter,]
+  
+  # Check for existing problems
+  find_in_file(study)
+  
+  # Fix problems
+  study_data$quality[is.na(study_data$quality)] <- 'none (controls)'
+  groups <- with(study_data, paste(quality, dose, sex))
+  print_for_copy(sort(unique(groups)))
+  ordered_groups <- c(
+    "none (controls) 0 Male"
+  )
+  ids <- match(groups, ordered_groups)
+  study_data$group.id <- paste0(study_data$study.id, '-', ids)
+  study_data$fractions[study_data$dose == 0] <- 1
+  study_data$fraction_time[study_data$dose == 0] <- NA
+  
+  # Source
+  study_data$source <- 'x-ray'
+  
+  # Check data
+  s <- summarize_study_data(study_data[,])
+  # MAS/lifespan
+  s[,c('n', 'dose', 'sex', 'MAS')]  
+  # dose
+  s[,c('n', 'group.id', 'sex', 'dose')]
+  # fractions
+  s[,c('n', 'dose', 'sex', 'fractions')]
+  # dose_rate
+  s[,c('n', 'group.id', 'sex', 'dose_rate')]    # table0(study_data$dose_rate)
+  # other treatments
+  unique(study_treatments)
+  # quality
+  s[,c('n', 'group.id', 'sex', 'quality')]  
+  # fraction_interval
+  s[,c('n', 'group.id', 'sex', 'fraction_interval')]  
+  # fraction_time
+  s[,c('n', 'group.id', 'sex', 'fraction_time')]  
+  # cluster
+  s[,c('n', 'group.id', 'sex', 'cluster')]  
+  
+  # Add exclusions
+  exclusions <- list(
+    list(
+      who=with(study_data, id == id),
+      why="see exclusion-13 in radiation.R"
+    )
+  )
+  study_data <- add_exclusions(exclusions, study_data)
+  table0(study_data$exclude)
+  
+  # Add warnings
+  warnings <- list(    
+  )
+  study_data <- add_warnings(warnings, study_data)
+  table0(study_data$warning)
+  
+  # Vet
+  study_data$is_vetted <- TRUE
+  
+  # Merge
+  rows <- match(study_data$id, data$id)
+  cols <- relevant_columns
+  data[rows,cols] <- study_data[,cols]
+  
+  # Save checkpoint
+  setwd('~/janus/scripts')
+  saveRDS(data, '../data/external4.28.rds')
+
+
+
   ### 
   # Prepare for finishing steps
   #
@@ -5031,7 +5802,7 @@ saveRDS(data, '../data/external4.rds')
   # the last steps.  This makes it easy to add new cleanup
   # steps above.
   
-  data <- readRDS('../data/external4.21.rds')
+  data <- readRDS('../data/external4.28.rds')
   saveRDS(data, '../data/external4.study_fixes.rds')
 
 
@@ -5184,6 +5955,8 @@ saveRDS(data, '../data/external4.rds')
 # exclusion-9: I could not find an external source to verify lifespan or even the animals per treatment group for this study.  The only source that had a table (Solleveld, Leukemia Research Vol 10 No 7 pp 755-759) had animal number and lifespan different than what is reported here.
 # exclusion-10: As with 11-1, I could not find an external source to verify lifespan or even the animals per treatment group for this study.  See validation_of_11-1_and_11-2.txt for my work on finding sources.
 # exclusion-11: none of this could be checked with a published reference because the only published reference, 3578595.pdf, deals with neutron exposure.
+# exclusion-12: xx or JM-11 is not detailed in the Gray Book (http://www.ustur.wsu.edu/nra/pdf/ira.pdf) or in anl-95-3 (http://dl.dropbox.com/u/1131693/bloodrop/anl-95-3.pdf) I cannot confirm the lifespan or find additional information about these animals.
+# exclusion-13: No reference is listed for these animals and could not find one using google scholar.  Therefore they will be excluded because the lifespan information cannot be confirmed.  This is not a sersious loss because this was a study of local exposures and only the control data would be usuable in the current anlaysis.
 
 # Warnings
 # Some data might be excluded from analysis or might be kept in, this 
@@ -5194,6 +5967,7 @@ saveRDS(data, '../data/external4.rds')
 # warning-3: 9-5-2 and 9-5-10 the mean lifespans in the data (738 and 739) are not the same at those in 3575970.pdf table 1 (743 and 747).  These are the only two discrepiances and are both less than 10 days.  Probably ok.
 # warning-4: mean lifespans in 9-7 are consistently off by 2 (both up and down) from those in 3579307.pdf table 1.  The disparity is small, much less than the standard deviation, but still a bit worrisome.
 # warning-5: 3-1-1 has a lifespan two days higher in the data (889) than in 3577210.pdf table 1 (887).  This is the only problem in this dataset which makes me think that the data is correct and the original table is wrong.
+# warning-6: 1003-24-1 Has a mean lifespan of 878 days in the data and 887 days in table 11 of anl-95-3.  The counts and standard errors are the same and the total size of the disprepiancy is small ~10 days.  I am guessing that the table contains a typo
 
 
 ###########################################################

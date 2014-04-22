@@ -431,9 +431,9 @@ for(ex in exclusions){
 # Remove cases with few treatment groups    
 d <- filter_by_n_groups(d)
 count(d) 
-# [1] "see warning-7 in radiation.R"
+
 #    studies   clusters treatments    animals not vetted to exclude 
-#          7         14         70      19440       3170          0 
+#          8         17         95      29072          0          0 
 
 # Warnings
 # show, but do not remove
@@ -449,11 +449,11 @@ for(w in warnings){
 }
 d_wo_warnings <- filter_by_n_groups(d_wo_warnings)
 count(d_wo_warnings)
-#   clusters    studies treatments    animals    exclude 
-#         13          7         65      19348          0  
+#    studies   clusters treatments    animals not vetted to exclude 
+#          6         13         73      18903          0          0 
 
 # How many duplicates after filtering?
-table0(d$duplicates)  # 11899 TRUE, 21307 FALSE
+table0(d$duplicates)  # 19462 FALSE 9610 TRUE
 
 # Save
 setwd('~/janus/scripts')
@@ -483,7 +483,13 @@ library(survival)
 setwd('~/janus/scripts')
 d <- readRDS('../data/funneled.rds')
 
-# Clean
+# Helpers
+pluralize <- function(x) {
+  c(Mouse='Mice',
+    Rat='Rats',
+    Dog='Dogs',
+    Peromyscus='Peromyscus')[x]
+}
 
 # Is acute?
 d$acute <- d$fractions == 1 | d$dose == 0
@@ -495,18 +501,11 @@ d = d %.%
   mutate(n_in_cluster=length(cluster))
 
 # Give the clusters pretty names
-pluralize <- function(x) {
-  c(Mouse='Mice',
-    Rat='Rats',
-    Dog='Dogs',
-    Peromyscus='Peromyscus')[x]
-}
 for(c in unique(d$cluster)) {
   elements = as.list(strsplit(c, '--')[[1]])
   names(elements) <- c('sex', 'strain', 'species', 'lab', 'age', 'quality')
-  number_of_animals <- sum(d$cluster == c)
   pretty_cluster = with(elements, paste(
-    number_of_animals, sex, strain, pluralize(species), lab,
+    sex, strain, pluralize(species), lab,
     '\n', quality, 'at', age, 'days old'))
   d$cluster[d$cluster == c] <- pretty_cluster
 }
@@ -612,6 +611,20 @@ for(p in warning_prefixes) cat(find_in_file(p), '\n')
 
 ```
 
+#### Study Details
+Here are a description of each of the original studies used in this analysis as provided by the 'Gray Book' ([Gerber et al. 1996](#gerber_1996)).  Studies can easily be found by lab and study id which are the first two parts of the group id.  Concretely, a group id of 1007-3-6 is the sixth groups from the third study conducted at lab 1007, Oak Ridge National Laboratory.
+
+##### 1003-20
+
+
+
+
+##### References
+<a name="gerber_1996"></a>
+Gerber, Watson, Sugahara, Okada. International Radiobiology Archives of Long-Term Animal Studies I. Descriptions of Participating Institutions and Studies. 1996. [link](http://www.ustur.wsu.edu/nra/pdf/ira.pdf)
+
+
+
 ____________________________________________________________________
 ^ back to [table of contents](#contents)
 
@@ -665,8 +678,8 @@ ggplot(d,
   ) +
   expand_limits(x = -4)
 
+# TODO: triple check ORNL because it is a lynch pin in my argument
 # TODO: keep looking at this graph, I left off at 1133, the first TNO
-# TODO vet these unvetted controls -   "1003-xx" "1003-22" "1003-24" "1003-25" "1003-30" "3-1"     "1003-28" "9-8"
 # TODO check that groups with warnings are not too weird in the visual concordance
 # TODO: graph that shows only directly comparable protracted v not
 # TODO: remove number of mice from cluster names and give them a numeric id (so that their full name can be printed)
@@ -907,6 +920,7 @@ ggplot(g, aes(x=lifespan,
 # TODO: Currently this ignores persons who are still alive (mostly in the 0-40 year range at the time of exposure), I should fix the data set so that these people are represented too.
 # TODO: It would be nice to have a survival curve version of this graph.
 # TODO: reduce the number of dose categories, probably < 5 per facet
+# TODO: Tanja wants to see these results seperated by city
 
 ```
 __________________________________________________________________
