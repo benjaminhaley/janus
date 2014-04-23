@@ -614,7 +614,161 @@ for(p in warning_prefixes) cat(find_in_file(p), '\n')
 #### Study Details
 Here are a description of each of the original studies used in this analysis as provided by the 'Gray Book' ([Gerber et al. 1996](#gerber_1996)).  Studies can easily be found by lab and study id which are the first two parts of the group id.  Concretely, a group id of 1007-3-6 is the sixth groups from the third study conducted at lab 1007, Oak Ridge National Laboratory.
 
+
+##### 3-1
+
+![][3-1]
+More detail in ([Covelli 1988][Covelli 1988])
+
+[3-1]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.27.18.png
+[Covelli 1988]: http://dl.dropbox.com/u/1131693/bloodrop/3577210.pdf
+
+
+##### 3-5
+
+![][3-5]
+More detail in ([Covelli 1984][Covelli 1984])
+
+[3-5]: https://www.dropbox.com/s/k3nxjj2r4m3rkcl/Screenshot%202014-04-23%2014.25.17.png
+[Covelli 1984]: http://dl.dropbox.com/u/1131693/bloodrop/3576356.pdf 
+
+
+##### 9-5
+
+![][9-5]
+More detail in ([Maisin 1983][Maisin 1983])
+
+[9-5]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.28.32.png
+[Maisin 1983]: http://dl.dropbox.com/u/1131693/bloodrop/3575970.pdf 
+
+
+##### 9-6
+
+![][9-6]
+![][9-6-2]
+More detail in ([Author Date][Author Date])
+
+[9-6]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.29.07.png
+[9-6-2]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.29.42.png
+[Author Date]: http://dl.dropbox.com/u/1131693/bloodrop/3577205.pdf 
+
+
+##### 9-7
+
+![][9-7]
+More detail in ([Maisin 1988][Maisin 1988])
+
+[9-7]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.30.19.png
+[Maisin 1988]: Reference 
+
+
 ##### 1003-20
+
+![][1003-20]
+More detail in ([Grahn 1995][Grahn 1995])
+
+[1003-20]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-22%2016.36.24.png
+[Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf
+
+
+##### 1003-21
+
+![][1003-21]
+More detail in ([Grahn 1995][Grahn 1995])
+
+[1003-21]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.20.41.png
+[Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf 
+
+
+##### 1003-22 (only controls)
+
+![][1003-22]
+More detail in ([Grahn 1995][Grahn 1995])
+
+[1003-22]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.21.26.png
+[Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf
+
+
+##### 1003-24 (only controls)
+
+![][1003-24]
+More detail in ([Grahn 1995][Grahn 1995])
+
+[1003-24]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.22.00.png
+[Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf 
+
+
+##### 1003-25 (only controls)
+
+![][1003-25]
+More detail in ([Grahn 1995][Grahn 1995])
+
+[1003-25]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.22.34.png
+[Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf 
+
+
+##### 1003-26
+
+![][1003-26]
+More detail in ([Grahn 1995][Grahn 1995])
+
+[1003-26]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.23.02.png
+[Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf 
+
+
+##### 1003-27
+
+![][1003-27]
+More detail in ([Grahn 1995][Grahn 1995])
+
+[1003-27]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.26.08.png
+[Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf
+
+
+##### 1003-28 (only controls)
+
+![][1003-28]
+More detail in ([Grahn 1995][Grahn 1995])
+
+[1003-28]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.23.34.png
+[Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf
+
+
+##### 1003-29
+
+![][1003-29]
+More detail in ([Grahn 1995][Grahn 1995])
+
+[1003-29]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.23.59.png
+[Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf
+
+
+##### 1003-30 (only controls)
+
+![][1003-30]
+More detail in ([Grahn 1995][Grahn 1995])
+
+[1003-30]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.24.25.png
+[Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf
+
+
+
+##### 1007-2
+
+![][1007-2]
+More detail in ([Storer 1988][Storer 1988])
+
+[1007-2]: https://www.dropbox.com/s/v7iptyzoi9t7b1j/Screenshot%202014-04-23%2014.31.08.png
+[Storer 1988]: http://dl.dropbox.com/u/1131693/bloodrop/3577229.pdf 
+
+
+##### 1007-3
+
+![][1007-3]
+More detail in ([Ullrich 1979][Ullrich 1979])
+
+[1007-3]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.31.26.png
+[Ullrich 1979]: http://dl.dropbox.com/u/1131693/bloodrop/3575061.pdf 
 
 
 
