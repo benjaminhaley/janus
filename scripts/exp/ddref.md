@@ -1,10 +1,10 @@
-DDREF
+[DDREF][public link]
 ========================================================
-Measure ddref, for my thesis. ([public link][1])  
+Measure ddref, for my thesis.  
 benjamin.haley@gmail.com  
 *last update: April 2014*
 
-[1]: http://rpubs.com/benjaminhaley/ddref
+[public link]: http://rpubs.com/benjaminhaley/ddref
 
 
 # Abstract
@@ -52,7 +52,7 @@ _____________________________________________________________________________
 
 Defining DDREF
 ========================================================
-*April 2013*
+*Last update: April 2013*
 
 ##### What is DDREF?
 DDREF is defined ambiguosly.  It can be derived from acute
@@ -139,7 +139,7 @@ _____________________________________________________________________________
 
 DATA: Data Funnel
 ========================================================
-*April 2013*
+*Last update: April 2013*
 
 ### Introduction:
 Create a data set that might be used for DDREF analysis and
@@ -473,6 +473,7 @@ count(d)
 ```
 
 ```r
+
 # studies clusters treatments animals not vetted to exclude 8 17 95 29072
 # 0 0
 
@@ -592,8 +593,13 @@ d$type[chronic] <- "C"
 
 # Order clusters By number of observations.  This will put the cluster
 # with the most observations first in ggplots
-sorted_clusters = names(sort(table(d$cluster), decreasing = TRUE))
-d$cluster <- factor(d$cluster, levels = sorted_clusters)
+sort_by_n <- function(x) {
+    factor(x, levels = names(sort(table(x), decreasing = TRUE)))
+}
+d$cluster = sort_by_n(d$cluster)
+d$cluster_id <- as.numeric(d$cluster)
+d$cluster <- with(d, paste0(cluster_id, " - ", cluster))
+d$cluster = sort_by_n(d$cluster)
 
 # Save Data for later use
 saveRDS(d, "data/ddref.rds")
@@ -610,7 +616,7 @@ Data is so fresh and so clean.
 
 Concordance
 ========================================================
-*April 2013*
+*Last update: April 2013*
 
 Give a detailed description of the dataset for those that want to make a close inspection.
 
@@ -668,7 +674,7 @@ for (cluster in unique(d$cluster)) {
 
 ```
 ## 
-##  ♀ B6CF1 Mice ANL 
+##  2 - ♀ B6CF1 Mice ANL 
 ##  γ-ray at 114 days old 
 ## ------------------------------------------------
 ##   group_id  ♂    ♀  avg. age dose  rate # fractions warnings
@@ -687,7 +693,7 @@ for (cluster in unique(d$cluster)) {
 ##  1003-29-4   -  598      957    1 8e-04          60         
 ##  1003-30-2   -  399      977    -     -           1         
 ## 
-##  ♀ BC3F1 Mice ENEA 
+##  16 - ♀ BC3F1 Mice ENEA 
 ##  X-ray at -4 days old 
 ## ------------------------------------------------
 ##  group_id  ♂   ♀  avg. age dose rate # fractions warnings
@@ -696,7 +702,7 @@ for (cluster in unique(d$cluster)) {
 ##     3-5-6   -  44      850  0.9  0.1           1         
 ##     3-5-8   -  50      872    2  0.1           1         
 ## 
-##  ♀ BC3F1 Mice ENEA 
+##  7 - ♀ BC3F1 Mice ENEA 
 ##  X-ray at 91 days old 
 ## ------------------------------------------------
 ##  group_id  ♂   ♀  avg. age dose rate # fractions warnings
@@ -709,7 +715,7 @@ for (cluster in unique(d$cluster)) {
 ##     3-1-7   -  60      707    1  0.6           1         
 ##     3-1-9   - 279      865    -    -           1         
 ## 
-##  ♀ C3Hf/Bd Mice ORNL 
+##  9 - ♀ C3Hf/Bd Mice ORNL 
 ##  γ-ray at 70 days old 
 ## ------------------------------------------------
 ##   group_id  ♂   ♀  avg. age dose rate # fractions warnings
@@ -717,7 +723,7 @@ for (cluster in unique(d$cluster)) {
 ##  1007-2-13   - 250      693    1  0.4           1         
 ##   1007-2-9   - 501      778    -    -           1         
 ## 
-##  ♀ C57BL/6Bd Mice ORNL 
+##  10 - ♀ C57BL/6Bd Mice ORNL 
 ##  γ-ray at 70 days old 
 ## ------------------------------------------------
 ##  group_id  ♂   ♀  avg. age dose rate # fractions warnings
@@ -725,7 +731,7 @@ for (cluster in unique(d$cluster)) {
 ##  1007-2-3   - 253      855  0.5  0.4           1         
 ##  1007-2-5   - 251      865    1  0.4           1         
 ## 
-##  ♀ RFM/Un Mice ORNL 
+##  1 - ♀ RFM/Un Mice ORNL 
 ##  γ-ray at 70 days old 
 ## ------------------------------------------------
 ##   group_id  ♂    ♀  avg. age dose rate # fractions warnings
@@ -736,7 +742,7 @@ for (cluster in unique(d$cluster)) {
 ##  1007-3-14   - 1005      487    2  0.4           1        1
 ##   1007-3-9   - 2696      632  0.1  0.4           1        1
 ## 
-##  ♂ B6CF1 Mice ANL 
+##  3 - ♂ B6CF1 Mice ANL 
 ##  γ-ray at 113 days old 
 ## ------------------------------------------------
 ##   group_id  ♂   ♀  avg. age dose  rate # fractions warnings
@@ -754,7 +760,7 @@ for (cluster in unique(d$cluster)) {
 ##  1003-29-3 594   -      971    1 8e-04          60         
 ##  1003-30-1 393   -     1007    -     -           1         
 ## 
-##  ♂ BALB/c/Cnb Mice SCK/CEN 
+##  6 - ♂ BALB/c/Cnb Mice SCK/CEN 
 ##  γ-ray at 84 days old 
 ## ------------------------------------------------
 ##  group_id  ♂   ♀  avg. age dose rate # fractions warnings
@@ -766,7 +772,7 @@ for (cluster in unique(d$cluster)) {
 ##     9-5-8 111   -      778  0.2    4          10         
 ##     9-5-9 110   -      740  0.5    4          10         
 ## 
-##  ♂ BC3F1 Mice ENEA 
+##  15 - ♂ BC3F1 Mice ENEA 
 ##  X-ray at -4 days old 
 ## ------------------------------------------------
 ##  group_id  ♂   ♀  avg. age dose rate # fractions warnings
@@ -775,7 +781,7 @@ for (cluster in unique(d$cluster)) {
 ##     3-5-5  61   -      822  0.9  0.1           1         
 ##     3-5-7  46   -      897    2  0.1           1         
 ## 
-##  ♂ BC3F1 Mice ENEA 
+##  17 - ♂ BC3F1 Mice ENEA 
 ##  X-ray at 580 days old 
 ## ------------------------------------------------
 ##  group_id  ♂   ♀  avg. age dose rate # fractions warnings
@@ -783,7 +789,7 @@ for (cluster in unique(d$cluster)) {
 ##    3-5-36  42   -      901  0.5  0.1           1         
 ##    3-5-37  43   -      874    1  0.1           1         
 ## 
-##  ♂ BC3F1 Mice ENEA 
+##  13 - ♂ BC3F1 Mice ENEA 
 ##  X-ray at 92 days old 
 ## ------------------------------------------------
 ##  group_id  ♂   ♀  avg. age dose rate # fractions warnings
@@ -791,7 +797,7 @@ for (cluster in unique(d$cluster)) {
 ##    3-5-20  44   -      828  0.5  0.1           1         
 ##    3-5-21  48   -      797    1  0.1           1         
 ## 
-##  ♂ C3Hf/Bd Mice ORNL 
+##  11 - ♂ C3Hf/Bd Mice ORNL 
 ##  γ-ray at 70 days old 
 ## ------------------------------------------------
 ##   group_id  ♂   ♀  avg. age dose rate # fractions warnings
@@ -799,7 +805,7 @@ for (cluster in unique(d$cluster)) {
 ##  1007-2-12 244   -      713  0.5  0.4           1         
 ##  1007-2-14 248   -      721    1  0.4           1         
 ## 
-##  ♂ C57BL/6Bd Mice ORNL 
+##  8 - ♂ C57BL/6Bd Mice ORNL 
 ##  γ-ray at 70 days old 
 ## ------------------------------------------------
 ##  group_id  ♂   ♀  avg. age dose rate # fractions warnings
@@ -807,7 +813,7 @@ for (cluster in unique(d$cluster)) {
 ##  1007-2-4 254   -      909  0.5  0.4           1         
 ##  1007-2-6 260   -      922    1  0.4           1         
 ## 
-##  ♂ C57BL/Cnb Mice SCK/CEN 
+##  14 - ♂ C57BL/Cnb Mice SCK/CEN 
 ##  X-ray at 7 days old 
 ## ------------------------------------------------
 ##  group_id  ♂   ♀  avg. age dose rate # fractions warnings
@@ -815,7 +821,7 @@ for (cluster in unique(d$cluster)) {
 ##    9-7-10  72   -      777  0.5    1           1        4
 ##    9-7-11  70   -      810    1    1           1        4
 ## 
-##  ♂ C57BL/Cnb Mice SCK/CEN 
+##  4 - ♂ C57BL/Cnb Mice SCK/CEN 
 ##  γ-ray at 84 days old 
 ## ------------------------------------------------
 ##  group_id  ♂   ♀  avg. age dose rate # fractions warnings
@@ -828,7 +834,7 @@ for (cluster in unique(d$cluster)) {
 ##     9-6-8 107   -      605  0.2  0.3          10         
 ##     9-6-9 109   -      604  0.5  0.3          10         
 ## 
-##  ♂ leucopus Peromyscus ANL 
+##  12 - ♂ leucopus Peromyscus ANL 
 ##  γ-ray at 137 days old 
 ## ------------------------------------------------
 ##   group_id  ♂   ♀  avg. age  dose  rate # fractions warnings
@@ -837,7 +843,7 @@ for (cluster in unique(d$cluster)) {
 ##  1003-27-3 189   -     1358 0.009 4e-04           1         
 ##  1003-27-4 181   -     1350  0.01 7e-04           1         
 ## 
-##  ♂ RFM/Un Mice ORNL 
+##  5 - ♂ RFM/Un Mice ORNL 
 ##  γ-ray at 70 days old 
 ## ------------------------------------------------
 ##  group_id  ♂   ♀  avg. age dose rate # fractions warnings
@@ -876,7 +882,162 @@ for (p in warning_prefixes) cat(find_in_file(p), "\n")
 #### Study Details
 Here are a description of each of the original studies used in this analysis as provided by the 'Gray Book' ([Gerber et al. 1996](#gerber_1996)).  Studies can easily be found by lab and study id which are the first two parts of the group id.  Concretely, a group id of 1007-3-6 is the sixth groups from the third study conducted at lab 1007, Oak Ridge National Laboratory.
 
+TODO(later) summarize this information in a table
+
+##### 3-1
+
+![][3-1]  
+More detail in ([Covelli 1988][Covelli 1988])
+
+[3-1]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-24%2020.59.22.png
+[Covelli 1988]: http://dl.dropbox.com/u/1131693/bloodrop/3577210.pdf
+
+
+##### 3-5
+
+![][3-5]  
+More detail in ([Covelli 1984][Covelli 1984])
+
+[3-5]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.25.17.png
+[Covelli 1984]: http://dl.dropbox.com/u/1131693/bloodrop/3576356.pdf 
+
+
+##### 9-5
+
+![][9-5]  
+More detail in ([Maisin 1983][Maisin 1983])
+
+[9-5]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.28.32.png
+[Maisin 1983]: http://dl.dropbox.com/u/1131693/bloodrop/3575970.pdf 
+
+
+##### 9-6
+
+![][9-6]  
+![][9-6-2]  
+More detail in ([Author Date][Author Date])
+
+[9-6]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.29.07.png
+[9-6-2]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.29.42.png
+[Author Date]: http://dl.dropbox.com/u/1131693/bloodrop/3577205.pdf 
+
+
+##### 9-7
+
+![][9-7]  
+More detail in ([Maisin 1988][Maisin 1988])
+
+[9-7]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.30.19.png
+[Maisin 1988]: Reference 
+
+
 ##### 1003-20
+
+![][1003-20]  
+More detail in ([Grahn 1995][Grahn 1995])
+
+[1003-20]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-22%2016.36.24.png
+[Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf
+
+
+##### 1003-21
+
+![][1003-21]  
+More detail in ([Grahn 1995][Grahn 1995])
+
+[1003-21]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.20.41.png
+[Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf 
+
+
+##### 1003-22 (only controls)
+
+![][1003-22]  
+More detail in ([Grahn 1995][Grahn 1995])
+
+[1003-22]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.21.26.png
+[Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf
+
+
+##### 1003-24 (only controls)
+
+![][1003-24]  
+More detail in ([Grahn 1995][Grahn 1995])
+
+[1003-24]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.22.00.png
+[Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf 
+
+
+##### 1003-25 (only controls)
+
+![][1003-25]  
+More detail in ([Grahn 1995][Grahn 1995])
+
+[1003-25]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.22.34.png
+[Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf 
+
+
+##### 1003-26
+
+![][1003-26]  
+More detail in ([Grahn 1995][Grahn 1995])
+
+[1003-26]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.23.02.png
+[Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf 
+
+
+##### 1003-27
+
+![][1003-27]  
+More detail in ([Grahn 1995][Grahn 1995])
+
+[1003-27]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.26.08.png
+[Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf
+
+
+##### 1003-28 (only controls)
+
+![][1003-28]  
+More detail in ([Grahn 1995][Grahn 1995])
+
+[1003-28]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.23.34.png
+[Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf
+
+
+##### 1003-29
+
+![][1003-29]  
+More detail in ([Grahn 1995][Grahn 1995])
+
+[1003-29]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.23.59.png
+[Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf
+
+
+##### 1003-30 (only controls)
+
+![][1003-30]  
+More detail in ([Grahn 1995][Grahn 1995])
+
+[1003-30]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.24.25.png
+[Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf
+
+
+
+##### 1007-2
+
+![][1007-2]  
+More detail in ([Storer 1988][Storer 1988])
+
+[1007-2]: https://www.dropbox.com/s/v7iptyzoi9t7b1j/Screenshot%202014-04-23%2014.31.08.png
+[Storer 1988]: http://dl.dropbox.com/u/1131693/bloodrop/3577229.pdf 
+
+
+##### 1007-3
+
+![][1007-3]  
+More detail in ([Ullrich 1979][Ullrich 1979])
+
+[1007-3]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.31.26.png
+[Ullrich 1979]: http://dl.dropbox.com/u/1131693/bloodrop/3575012.pdf 
 
 
 
@@ -899,7 +1060,7 @@ ____________________________________________________________________
 
 Show Data
 ========================================================
-*April 2014*
+*Last Update: April 2014*
 
 Now that the data is reasonably clean, show what it looks
 like.
@@ -919,8 +1080,7 @@ d <- readRDS("data/ddref.rds")
 ```
 
 
-#### Lifespan by dose and protraction
-Show the distributions of lifespan.  
+
 
 
 ```r
@@ -932,24 +1092,26 @@ ggplot(d, aes(lifespan, color = dose, group = factor(paste(dose, dose_rate)),
 
 ![plot of chunk unnamed-chunk-11](Figs/unnamed-chunk-11.png) 
 
-```r
+#### Figure: Lifespan by dose and cluster
+Density plots show the frequency, y-axis, of a given lifespan (in days), x-axis.  Sepperate density curves are shown for each distinct dose and dose rate.  The total dose delivered is labeled by color as shown in the figure legend.  The mean age at first exposure is denoted by a gray vertical line on each graph.
 
-# TODO: triple check ORNL because it is a lynch pin in my argument TODO:
-# keep looking at this graph, I left off at 1133, the first TNO TODO check
-# that groups with warnings are not too weird in the visual concordance
-# TODO: graph that shows only directly comparable protracted v not TODO:
-# remove number of mice from cluster names and give them a numeric id (so
-# that their full name can be printed) TODO: make survival curves that
-# show the difference in % survival between a group and the cluster
-# average TODO: Elevate warnings to exclusions if I cannot co-oberate data
-# with external sources.  That would apply to warnings 2, 3, 8.  It would
-# remove the 1133 TNO data which really does not make any sense and
-# convolutes our story.  I really think I should.
+Clusters are sepperated by facets and labeled with sex, strain, species, lab, quality of radiation, and mean age at first exposure (in days).  The clusters are ordered by the number of animals in the cluster.  The cluster with the most animals, Male RFM/Un Mice from ORNL, are at the top left and the cluster with the least animals is furthest to the right on the bottom row.
+
+
+```r
+# TODO: keep looking at this graph, I left off at 1133, the first TNO TODO
+# check that groups with warnings are not too weird in the visual
+# concordance TODO: graph that shows only directly comparable protracted v
+# not TODO: remove number of mice from cluster names and give them a
+# numeric id (so that their full name can be printed) TODO: make survival
+# curves that show the difference in % survival between a group and the
+# cluster average TODO: Elevate warnings to exclusions if I cannot
+# co-oberate data with external sources.  That would apply to warnings 2,
+# 3, 8.  It would remove the 1133 TNO data which really does not make any
+# sense and convolutes our story.  I really think I should.
+
 ```
 
-
-Outstanding Issues:
-- 1133 TNO mice have a strong X-ray reaction, except that the control (beneath) also is shifted in this direction.  Something is rotten, unfortunately I cannot find any published reports of lifespan to proof this against.
 
 A few observations:
 - **Different clusters show very different responses.**  For example, compare Female RFM/UN Mice from ORNL to Female C57Bl/6Bd mice.  The former show a strong response to gamma rays, the latter a weak response or no response.
@@ -965,18 +1127,16 @@ Show the same graphs with individual treatement groups labeled, this is not a fi
 
 # TODO this graph should include age_at_last treatment too
 
-g <- ggplot(d %.% filter(grepl("^1016", cluster)), aes(lifespan, color = group_id, 
+g <- ggplot(d %.% filter(cluster_id == 15), aes(lifespan, y = ..scaled.., color = group_id, 
     group = group_id)) + geom_density(adjust = 2) + facet_wrap(~cluster, scales = "free") + 
     geom_vline(aes(xintercept = intended_assignment_age, color = group_id)) + 
     geom_vline(aes(xintercept = age_at_treatment, color = group_id)) + geom_vline(aes(xintercept = age_at_last_treatment, 
-    color = group_id)) + expand_limits(x = -4, y = 0.005)
+    color = group_id)) + expand_limits(x = -4, y = 1.3)
 
 direct.label(g, list("top.bumptwice", cex = 0.6))
 ```
 
-```
-## Error: replacement has 1 row, data has 0
-```
+![plot of chunk unnamed-chunk-13](Figs/unnamed-chunk-13.png) 
 
 
 #### Survival plots
@@ -995,7 +1155,7 @@ ggplot(d, aes(lifespan, survival, color = dose, group = factor(paste(dose, dose_
     geom_vline(aes(xintercept = intended_assignment_age), alpha = 0.5) + expand_limits(x = -4)
 ```
 
-![plot of chunk unnamed-chunk-13](Figs/unnamed-chunk-13.png) 
+![plot of chunk unnamed-chunk-14](Figs/unnamed-chunk-14.png) 
 
 
 
@@ -1009,7 +1169,7 @@ __________________________________________________________________
 
 Atomic bomb survivor data
 ========================================================
-*April 2014*
+*Last update: April 2014*
 For comparison, let's load data from the atomic bomb survivors, [lss14][lss], and see how lifespan changes as a function of dose in these populations using similar visualizations.
 
 Acknowledgement:
@@ -1109,7 +1269,7 @@ ggplot(g, aes(x = lifespan, color = dose, group = factor(dose), y = ..scaled..))
     alpha = 0.5) + facet_wrap(~age_string + sex)
 ```
 
-![plot of chunk unnamed-chunk-14](Figs/unnamed-chunk-14.png) 
+![plot of chunk unnamed-chunk-15](Figs/unnamed-chunk-15.png) 
 
 ```r
 
@@ -1133,7 +1293,7 @@ __________________________________________________________________
 
 Reproduce BEIR 10B3
 ========================================================
-*June 2013*
+*Last update: June 2013*
 
 Reproduce the BEIR estimates on the oak ridge lifespan data
 from storer 1979 (3575012.pdf).
@@ -1251,7 +1411,7 @@ g <- data[with(data, strain == "RFM" & sex == "F" & rate != 0.4), ]
 show(g)
 ```
 
-![plot of chunk unnamed-chunk-16](Figs/unnamed-chunk-16.png) 
+![plot of chunk unnamed-chunk-17](Figs/unnamed-chunk-17.png) 
 
 ```r
 ggsave_for_ppt("beir_10B3_reproduction.png")
@@ -1306,7 +1466,7 @@ o2
 ```
 
 ```
-## [1] 1.017
+## [1] 0.7294
 ```
 
 ```r
@@ -1332,7 +1492,7 @@ _____________________________________________________________________________
 
 Reproduce BEIR 10B4
 ========================================================
-*June 2013*
+*Last update: June 2013*
 Reproduce the BEIR estimates on the oak ridge lifespan data
 from storer 1979 (3575012.pdf).
 
@@ -1427,7 +1587,7 @@ ggplot(beir_r, aes(o, l)) + geom_path() + # geom_path(data=my_r, color='red') +
 scale_y_continuous(breaks = c(0:5)/5, limits = c(0, 1))
 ```
 
-![plot of chunk unnamed-chunk-19](Figs/unnamed-chunk-19.png) 
+![plot of chunk unnamed-chunk-20](Figs/unnamed-chunk-20.png) 
 
 ```r
 ggsave_for_ppt("beir_10B4_reproduction.png")
@@ -1455,7 +1615,7 @@ _____________________________________________________________________________
 
 1/lifespan on all data
 ========================================================
-*June 2013*
+*Last update: June 2013*
   
 Show graphs like Storer 1979 10-B3 but for all data.
 
@@ -1543,7 +1703,7 @@ g <- a
 show(g)
 ```
 
-![plot of chunk unnamed-chunk-20](Figs/unnamed-chunk-20.png) 
+![plot of chunk unnamed-chunk-21](Figs/unnamed-chunk-21.png) 
 
 ```r
 ggsave_for_ppt("inverse_lifespan.png")
@@ -1572,7 +1732,7 @@ _____________________________________________________________________________
 
 1/lifespan profiles on all data
 ========================================================
-*June 2013*
+*Last update: June 2013*
 
 Show graphs like Storer 1979 10B4 but for all data.
 
@@ -1664,7 +1824,7 @@ g <- a
 show(g)
 ```
 
-![plot of chunk unnamed-chunk-21](Figs/unnamed-chunk-21.png) 
+![plot of chunk unnamed-chunk-22](Figs/unnamed-chunk-22.png) 
 
 ```r
 ggsave_for_ppt("inverse_lifespan_profile.png")
@@ -1687,7 +1847,7 @@ _____________________________________________________________________________
 
 Meta Regression Figure
 ========================================================
-*June 2013*
+*Last update: June 2013*
 
 A figure that shows off the principal of meta-regression.
 
@@ -1763,7 +1923,7 @@ ggplot(data, aes(x, yi)) + geom_point() + geom_errorbar(aes(ymin = yi - vi^0.5,
     color = "red") + geom_path(aes(x, p), color = "black")
 ```
 
-![plot of chunk unnamed-chunk-22](Figs/unnamed-chunk-22.png) 
+![plot of chunk unnamed-chunk-23](Figs/unnamed-chunk-23.png) 
 
 ```r
 ggsave_for_ppt("meta_regression_example.png")
@@ -1785,7 +1945,7 @@ _____________________________________________________________________________
 
 Meta Regression of BEIR 10B3
 ========================================================
-*June 2013*
+*Last update: June 2013*
 
 BEIR fits oak ridge data as if they are points, but actually each point represents many samples and we know the standard deviation of this estimate.  Therefore meta-regression is a more appropriate form of analysis.  Here we show the fit by meta-regression.
 
@@ -1889,7 +2049,7 @@ g <- data[with(data, strain == "RFM" & sex == "F" & rate != 0.4), ]
 show(g)
 ```
 
-![plot of chunk unnamed-chunk-23](Figs/unnamed-chunk-23.png) 
+![plot of chunk unnamed-chunk-24](Figs/unnamed-chunk-24.png) 
 
 ```r
 ggsave_for_ppt("beir_10B3_meta_regression.png")
@@ -1924,7 +2084,7 @@ _____________________________________________________________________________
 
 Meta Regression of BEIR 10B4
 ========================================================
-*June 2013*
+*Last update: June 2013*
 
 BEIR VII estimates are based on ordinary linary regresssion
 of mean lifespans per group ignoring the fact that these means
@@ -2046,7 +2206,7 @@ ggplot(beir_r, aes(o, l)) +
     scale_y_continuous(breaks = c(0:5)/5, limits=c(0,1))
 ```
 
-![plot of chunk unnamed-chunk-24](Figs/unnamed-chunk-24.png) 
+![plot of chunk unnamed-chunk-25](Figs/unnamed-chunk-25.png) 
 
 ```r
 ggsave_for_ppt('beir_10B4_meta_reression.png')    
@@ -2085,7 +2245,7 @@ _____________________________________________________________________________
 
 Meta-regression on all data
 ========================================================
-*June 2013*
+*Last update: June 2013*
 
 Show graphs like Storer 1979 10B3 but for all data using random effects meta-regression.
 
@@ -2261,7 +2421,7 @@ ggplot(g, aes(
     facet_wrap(~ cluster, scales="free_y")  
 ```
 
-![plot of chunk unnamed-chunk-27](Figs/unnamed-chunk-27.png) 
+![plot of chunk unnamed-chunk-28](Figs/unnamed-chunk-28.png) 
 
 ```r
 
@@ -2292,7 +2452,7 @@ _____________________________________________________________________________
 
 Meta Regression profiles on all data
 ========================================================
-*June 2013*
+*Last update: June 2013*
 
 Show graphs like Storer 1979 10B4 but for all data using the random effects meta regression.
 
@@ -2417,7 +2577,7 @@ g <- a
 show(g)
 ```
 
-![plot of chunk unnamed-chunk-28](Figs/unnamed-chunk-281.png) 
+![plot of chunk unnamed-chunk-29](Figs/unnamed-chunk-291.png) 
 
 ```r
 ggsave_for_ppt("meta_regression_profile.png")
@@ -2428,7 +2588,7 @@ ggplot(summary, aes(o, l)) + geom_path(aes(o, l_10B4), color = "black") + geom_p
     l_meta), color = "red") + ylim(0, 4)
 ```
 
-![plot of chunk unnamed-chunk-28](Figs/unnamed-chunk-282.png) 
+![plot of chunk unnamed-chunk-29](Figs/unnamed-chunk-292.png) 
 
 ```r
 ggsave_for_ppt("meta_regression_summary_effect.png")

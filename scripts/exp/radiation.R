@@ -4605,7 +4605,7 @@ saveRDS(data, '../data/external4.rds')
 	s <- summarize_study_data(study_data[
 	,])
 	# MAS/lifespan
-	s[,c('n', 'dose', 'lifespan')]
+	s[,c('n', 'dose', 'sex', 'lifespan')]
 	# strain
 	s[,c('n', 'dose', 'strain')]
 	# sex
@@ -5950,7 +5950,7 @@ saveRDS(data, '../data/external4.rds')
 # exclusion-4: These groups recieved some form of estrogen exposure, but given this exposure, they do not have a sufficient number of different treatments to be included (need 3 or more).  We could simply put them in different clusters and they would be eliminated during the funnel, but easier to eliminate them here.
 # exclusion-5: These groups all include animals with an age of death of 6993 days, clearly impossible.
 # exclusion-6: These animals have impossible lifespans, 0.  11-2-39 has exactly 8 animals with a lifespan of 0 and there are 8 more in the data than in the description.  The remaining animals from groups 11-2-45 and 46 have simply been excluded.
-# exclusion-7: These groups have mean lifespans that differ substantially (more than one standard deviation) from those reported in the literature (table 1 of Ullrich 1979 - jstor.org/stable/pdfplus/3575012.pdf).  This seems to be because of a number of exclusions due to lost or sacrificed animals which can no longer be detected in this version of the dataset.  Concretely, 1007-3-8 is off by 21 days (614 vs 635).  1007-3-16 is off by 122 days (294 vs 417).  Other groups in this study are affected as well, but by less than one standard deviation.
+# exclusion-7: These groups have mean lifespans that differ substantially (more than one standard deviation) from those reported in the literature (table 1 of Ullrich 1979 - jstor.org/stable/pdfplus/3575012.pdf).  This seems to be because of a number of exclusions due to lost or sacrificed animals which can no longer be detected in this version of the dataset.  Concretely, 1007-3-8 is off by 21 days (614 vs 635).  1007-3-16 is off by 122 days (294 vs 417).  I searched dillagently through the death record codes to find animals that should be excluded which would correct these anomolies and I could not.  The problem seems to be an incomplete data source.  Other groups in this study are affected as well, but by less than one standard deviation.
 # exclusion-8: These groups are identical to those from 3-2.
 # exclusion-9: I could not find an external source to verify lifespan or even the animals per treatment group for this study.  The only source that had a table (Solleveld, Leukemia Research Vol 10 No 7 pp 755-759) had animal number and lifespan different than what is reported here.
 # exclusion-10: As with 11-1, I could not find an external source to verify lifespan or even the animals per treatment group for this study.  See validation_of_11-1_and_11-2.txt for my work on finding sources.
@@ -5962,7 +5962,7 @@ saveRDS(data, '../data/external4.rds')
 # Some data might be excluded from analysis or might be kept in, this 
 # contains descriptions of why.
 #
-# warning-1: Mean lifespan in the groups in this study varied from those reported in the formal literature (table 1 of Ullrich 1979 - jstor.org/stable/pdfplus/3575012.pdf).  Two groups varied substantially as noted in exclusion-7.  The others varied by 0-8 days, always less than one standard deviation of the mean.
+# warning-1: Mean lifespan in the groups in this study varied from those reported in the formal literature (table 1 of Ullrich 1979 - jstor.org/stable/pdfplus/3575012.pdf).  Two groups varied substantially as noted in exclusion-7.  The others varied by 0-8 days, always less than one standard deviation of the mean.  I searched dillegently for cause of death annotations which should be excluded to correct the figures, but I could not find any.  The problem seems to originate with the data source.
 # warning-2: Group 3-5-19 has 430 animals with a mean lifespan of 824 days in the data but should only have 203 animals with a mean lifespan of 827 days according to 3576356.pdf table II.  The difference in mean lifespan is small and this is the only group with such a disparity, which makes me think its probably worth including regardless.
 # warning-3: 9-5-2 and 9-5-10 the mean lifespans in the data (738 and 739) are not the same at those in 3575970.pdf table 1 (743 and 747).  These are the only two discrepiances and are both less than 10 days.  Probably ok.
 # warning-4: mean lifespans in 9-7 are consistently off by 2 (both up and down) from those in 3579307.pdf table 1.  The disparity is small, much less than the standard deviation, but still a bit worrisome.
