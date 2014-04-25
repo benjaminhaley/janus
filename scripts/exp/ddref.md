@@ -22,7 +22,7 @@ TODO(ben)
   - [Data Funnel](#data_funnel) - Which data will we analyze?
   - [Data Cleaning](#cleaning) - Damn, data, you look good!
   - [Concordance](#concordance) - Tables describing the data in detail.
-  - [Visual Concordance](#visual_concordance) - Show what the data looks like.
+  - [Visualize](#visual_concordance) - Show what the data looks like.
   - [Atomic Bomb Survivors](#lss) - Load data from atomic bomb survivors as well.
 - Analysis
   - [Reproduce BEIR 10B3](#10B3) - Show that we can fit the same model of
@@ -197,11 +197,9 @@ aliases <- list(quality = c(`gamma-rays Co-60` = "γ-ray", `gamma-rays Co-60, ga
 threshold_dose <- 1.5
 
 
-# Fix
+# Fix TODO(later) move these fixes to radiation.R
 
-# Stray fixes Some of the beagles were missing gender
-d[d$strain == "Beagle" & is.na(d$sex), "sex"] <- "Both"
-## Some of the B6CF1 mice are missing their species
+# Stray fixes Some of the B6CF1 mice are missing their species
 d[d$strain == "B6CF1", "species"] <- "Mouse"
 ## One animal is listed as a control despite having a dose, remove her
 contradictory_dose_and_quality <- (d$quality == "none (controls)" & d$dose != 
@@ -280,6 +278,10 @@ Instead we will define a new feild, `approximate_assignment_age`.  For most grou
 
 
 ```r
+# TODO: Cluster concordance should be labeled with the unique studies or
+# labs that the cluster represents TODO: Group listings within a cluster
+# should be in a good order TODO: dose estimates within cluster groups
+# should have two signficant digits
 d$intended_assignment_age <- d$assignment_age
 labs_that_recorded_true_age_at_assignment <- c("ANL")
 clusters_that_recorded_true_age_at_assignment = unique(d$cluster[d$lab %in% 
@@ -408,7 +410,8 @@ count(d)
 
 ```r
 
-# Died before their 'assignment age'
+# Died before their 'assignment age' TODO(later) why should there be any
+# mice that died before their assignemtn age?
 d <- d[d$lifespan > d$assignment_age, ]
 count(d)
 ```
@@ -477,6 +480,18 @@ count(d)
 # studies clusters treatments animals not vetted to exclude 8 17 95 29072
 # 0 0
 
+# How many duplicates after filtering?
+table0(d$duplicates)  # 19462 FALSE 9610 TRUE
+```
+
+```
+## 
+## FALSE  TRUE 
+## 19462  9610
+```
+
+```r
+
 # Warnings show, but do not remove
 warnings <- sort(unique(d$warning_reason))
 warnings <- warnings[warnings != ""]
@@ -522,18 +537,6 @@ count(d_wo_warnings)
 ```r
 # studies clusters treatments animals not vetted to exclude 6 13 73 18903
 # 0 0
-
-# How many duplicates after filtering?
-table0(d$duplicates)  # 19462 FALSE 9610 TRUE
-```
-
-```
-## 
-## FALSE  TRUE 
-## 19462  9610
-```
-
-```r
 
 # Save
 setwd("~/janus/scripts")
@@ -641,7 +644,7 @@ group_summary <- function(data){
         ' ♂ '          = sum(sex == '♂'),
         ' ♀ '          = sum(sex == '♀'),
         'avg. age'      = round(mean(lifespan)),
-        'dose'          = .all(signif(dose, 1)),
+        'dose'          = .all(signif(dose, 2)),
         'rate'          = .all(signif(dose_rate, 1)),
         '# fractions'   = .all(fractions),
         warnings        = .all(gsub('[^0-9]', '', warning_reason))
@@ -663,94 +666,62 @@ Show the details of each treatment group in the dataset organized by cluster
 
 
 ```r
-for (cluster in unique(d$cluster)) {
+# TODO Make sure these are in the correct order
+for (id in sort(unique(d$cluster_id))) {
+    df <- d[d$cluster_id == id, ]
+    cluster <- as.character(df$cluster[1])
     cat("\n", cluster, "\n------------------------------------------------\n")
-    df <- d[d$cluster == cluster, ]
-    print(ddply(df, .(group_id), function(df) {
+    s <- ddply(df, .(group_id), function(df) {
         group_summary(df)
-    }), row.names = FALSE)
+    })
+    s <- s %.% mutate(study = sub("^[0-9]*-", "", group_id), group = as.numeric(sub("^[0-9]*-", 
+        "", study)), study = as.numeric(sub("-[0-9]*$", "", study))) %.% arrange(study, 
+        group) %.% select(-study, -group)
+    print(s, row.names = FALSE)
 }
 ```
 
 ```
+## 
+##  1 - ♀ RFM/Un Mice ORNL 
+##  γ-ray at 70 days old 
+## ------------------------------------------------
+##   group_id  ♂    ♀  avg. age dose rate # fractions warnings
+##   1007-3-9   - 2696      632  0.1  0.4           1        1
+##  1007-3-10   -  930      614 0.25  0.4           1        1
+##  1007-3-11   - 1064      553  0.5  0.4           1        1
+##  1007-3-12   -  237      541 0.75  0.4           1        1
+##  1007-3-13   - 1045      538    1  0.4           1        1
+##  1007-3-14   - 1005      487  1.5  0.4           1        1
 ## 
 ##  2 - ♀ B6CF1 Mice ANL 
 ##  γ-ray at 114 days old 
 ## ------------------------------------------------
 ##   group_id  ♂    ♀  avg. age dose  rate # fractions warnings
 ##  1003-20-2   -  857      945    -     -           1         
-##  1003-20-4   -  397      903  0.9  0.04           1         
+##  1003-20-4   -  397      903 0.86  0.04           1         
 ##  1003-21-2   -  185      932    -     -           1         
-##  1003-21-4   -  200      936  0.9  0.04           1         
+##  1003-21-4   -  200      936 0.86  0.04           1         
 ##  1003-22-2   -  464      970    -     -           1         
 ##  1003-24-2   -  175      991    -     -           1         
 ##  1003-25-2   -   50      960    -     -           1         
 ##  1003-26-2   - 1138      978    -     -           1         
-##  1003-26-3   -  497      963  0.2  0.01           1         
-##  1003-26-4   -  346      968  0.4  0.02           1         
-##  1003-26-5   -  194      935  0.9  0.04           1         
+##  1003-26-3   -  497      963 0.22  0.01           1         
+##  1003-26-4   -  346      968 0.43  0.02           1         
+##  1003-26-5   -  194      935 0.86  0.04           1         
 ##  1003-29-2   -  584      986    -     -           1         
 ##  1003-29-4   -  598      957    1 8e-04          60         
 ##  1003-30-2   -  399      977    -     -           1         
-## 
-##  16 - ♀ BC3F1 Mice ENEA 
-##  X-ray at -4 days old 
-## ------------------------------------------------
-##  group_id  ♂   ♀  avg. age dose rate # fractions warnings
-##     3-5-2   -  39      866    -    -           1         
-##     3-5-4   -  40      883  0.3  0.1           1         
-##     3-5-6   -  44      850  0.9  0.1           1         
-##     3-5-8   -  50      872    2  0.1           1         
-## 
-##  7 - ♀ BC3F1 Mice ENEA 
-##  X-ray at 91 days old 
-## ------------------------------------------------
-##  group_id  ♂   ♀  avg. age dose rate # fractions warnings
-##     3-1-1   - 353      889    -    -           1        5
-##     3-1-2   - 100      912 0.04 0.06           1         
-##     3-1-3   -  84      893 0.08 0.06           1         
-##     3-1-4   -  53      854  0.2 0.06           1         
-##     3-1-5   -  58      874  0.3 0.06           1         
-##     3-1-6   -  57      833  0.6  0.6           1         
-##     3-1-7   -  60      707    1  0.6           1         
-##     3-1-9   - 279      865    -    -           1         
-## 
-##  9 - ♀ C3Hf/Bd Mice ORNL 
-##  γ-ray at 70 days old 
-## ------------------------------------------------
-##   group_id  ♂   ♀  avg. age dose rate # fractions warnings
-##  1007-2-11   - 249      727  0.5  0.4           1         
-##  1007-2-13   - 250      693    1  0.4           1         
-##   1007-2-9   - 501      778    -    -           1         
-## 
-##  10 - ♀ C57BL/6Bd Mice ORNL 
-##  γ-ray at 70 days old 
-## ------------------------------------------------
-##  group_id  ♂   ♀  avg. age dose rate # fractions warnings
-##  1007-2-1   - 491      858    -    -           1         
-##  1007-2-3   - 253      855  0.5  0.4           1         
-##  1007-2-5   - 251      865    1  0.4           1         
-## 
-##  1 - ♀ RFM/Un Mice ORNL 
-##  γ-ray at 70 days old 
-## ------------------------------------------------
-##   group_id  ♂    ♀  avg. age dose rate # fractions warnings
-##  1007-3-10   -  930      614  0.2  0.4           1        1
-##  1007-3-11   - 1064      553  0.5  0.4           1        1
-##  1007-3-12   -  237      541  0.8  0.4           1        1
-##  1007-3-13   - 1045      538    1  0.4           1        1
-##  1007-3-14   - 1005      487    2  0.4           1        1
-##   1007-3-9   - 2696      632  0.1  0.4           1        1
 ## 
 ##  3 - ♂ B6CF1 Mice ANL 
 ##  γ-ray at 113 days old 
 ## ------------------------------------------------
 ##   group_id  ♂   ♀  avg. age dose  rate # fractions warnings
 ##  1003-20-1 843   -      952    -     -           1         
-##  1003-20-3 386   -      922  0.9  0.04           1         
+##  1003-20-3 386   -      922 0.86  0.04           1         
 ##  1003-21-1 200   -      985    -     -           1         
-##  1003-21-3 199   -      970  0.9  0.04           1         
-##  1003-21-5 160   -      939    1  0.07           1         
+##  1003-21-3 199   -      970 0.86  0.04           1         
+##  1003-21-5 160   -      939  1.4  0.07           1         
 ##  1003-22-1 557   -      985    -     -           1         
 ##  1003-24-1 310   -      987    -     -           1        6
 ##  1003-25-1  60   -     1011    -     -           1         
@@ -760,50 +731,54 @@ for (cluster in unique(d$cluster)) {
 ##  1003-29-3 594   -      971    1 8e-04          60         
 ##  1003-30-1 393   -     1007    -     -           1         
 ## 
+##  4 - ♂ C57BL/Cnb Mice SCK/CEN 
+##  γ-ray at 84 days old 
+## ------------------------------------------------
+##  group_id  ♂   ♀  avg. age dose rate # fractions warnings
+##     9-6-1 467   -      613    -    -           1         
+##     9-6-2 241   -      581 0.25  0.3           1         
+##     9-6-3 236   -      564  0.5  0.3           1         
+##     9-6-4 241   -      550    1  0.3           1         
+##     9-6-8 107   -      605 0.25  0.3          10         
+##     9-6-9 109   -      604  0.5  0.3          10         
+##    9-6-10 115   -      615    1  0.3          10         
+##    9-6-14 104   -      622    1  0.3           8         
+## 
+##  5 - ♂ RFM/Un Mice ORNL 
+##  γ-ray at 70 days old 
+## ------------------------------------------------
+##  group_id  ♂   ♀  avg. age dose rate # fractions warnings
+##  1007-3-1 430   -      711    -    -           1        1
+##  1007-3-2 256   -      720  0.1  0.4           1        1
+##  1007-3-3  94   -      711 0.25  0.4           1        1
+##  1007-3-4 247   -      680  0.5  0.4           1        1
+##  1007-3-5 230   -      673    1  0.4           1        1
+##  1007-3-6 199   -      651  1.5  0.4           1        1
+## 
 ##  6 - ♂ BALB/c/Cnb Mice SCK/CEN 
 ##  γ-ray at 84 days old 
 ## ------------------------------------------------
 ##  group_id  ♂   ♀  avg. age dose rate # fractions warnings
 ##     9-5-1 322   -      766    -    -           1         
-##    9-5-10 113   -      751    1    4          10        3
-##     9-5-2 191   -      745  0.2    4           1        3
+##     9-5-2 191   -      745 0.25    4           1        3
 ##     9-5-3 194   -      736  0.5    4           1         
 ##     9-5-4 191   -      732    1    4           1         
-##     9-5-8 111   -      778  0.2    4          10         
+##     9-5-8 111   -      778 0.25    4          10         
 ##     9-5-9 110   -      740  0.5    4          10         
+##    9-5-10 113   -      751    1    4          10        3
 ## 
-##  15 - ♂ BC3F1 Mice ENEA 
-##  X-ray at -4 days old 
+##  7 - ♀ BC3F1 Mice ENEA 
+##  X-ray at 91 days old 
 ## ------------------------------------------------
 ##  group_id  ♂   ♀  avg. age dose rate # fractions warnings
-##     3-5-1  34   -      853    -    -           1         
-##     3-5-3  48   -      799  0.3  0.1           1         
-##     3-5-5  61   -      822  0.9  0.1           1         
-##     3-5-7  46   -      897    2  0.1           1         
-## 
-##  17 - ♂ BC3F1 Mice ENEA 
-##  X-ray at 580 days old 
-## ------------------------------------------------
-##  group_id  ♂   ♀  avg. age dose rate # fractions warnings
-##    3-5-35  41   -      886    -    -           1         
-##    3-5-36  42   -      901  0.5  0.1           1         
-##    3-5-37  43   -      874    1  0.1           1         
-## 
-##  13 - ♂ BC3F1 Mice ENEA 
-##  X-ray at 92 days old 
-## ------------------------------------------------
-##  group_id  ♂   ♀  avg. age dose rate # fractions warnings
-##    3-5-19 430   -      824    -    -           1        2
-##    3-5-20  44   -      828  0.5  0.1           1         
-##    3-5-21  48   -      797    1  0.1           1         
-## 
-##  11 - ♂ C3Hf/Bd Mice ORNL 
-##  γ-ray at 70 days old 
-## ------------------------------------------------
-##   group_id  ♂   ♀  avg. age dose rate # fractions warnings
-##  1007-2-10 502   -      732    -    -           1         
-##  1007-2-12 244   -      713  0.5  0.4           1         
-##  1007-2-14 248   -      721    1  0.4           1         
+##     3-1-1   - 353      889    -    -           1        5
+##     3-1-2   - 100      912 0.04 0.06           1         
+##     3-1-3   -  84      893 0.08 0.06           1         
+##     3-1-4   -  53      854 0.16 0.06           1         
+##     3-1-5   -  58      874 0.32 0.06           1         
+##     3-1-6   -  57      833 0.64  0.6           1         
+##     3-1-7   -  60      707  1.3  0.6           1         
+##     3-1-9   - 279      865    -    -           1         
 ## 
 ##  8 - ♂ C57BL/6Bd Mice ORNL 
 ##  γ-ray at 70 days old 
@@ -813,6 +788,47 @@ for (cluster in unique(d$cluster)) {
 ##  1007-2-4 254   -      909  0.5  0.4           1         
 ##  1007-2-6 260   -      922    1  0.4           1         
 ## 
+##  9 - ♀ C3Hf/Bd Mice ORNL 
+##  γ-ray at 70 days old 
+## ------------------------------------------------
+##   group_id  ♂   ♀  avg. age dose rate # fractions warnings
+##   1007-2-9   - 501      778    -    -           1         
+##  1007-2-11   - 249      727  0.5  0.4           1         
+##  1007-2-13   - 250      693    1  0.4           1         
+## 
+##  10 - ♀ C57BL/6Bd Mice ORNL 
+##  γ-ray at 70 days old 
+## ------------------------------------------------
+##  group_id  ♂   ♀  avg. age dose rate # fractions warnings
+##  1007-2-1   - 491      858    -    -           1         
+##  1007-2-3   - 253      855  0.5  0.4           1         
+##  1007-2-5   - 251      865    1  0.4           1         
+## 
+##  11 - ♂ C3Hf/Bd Mice ORNL 
+##  γ-ray at 70 days old 
+## ------------------------------------------------
+##   group_id  ♂   ♀  avg. age dose rate # fractions warnings
+##  1007-2-10 502   -      732    -    -           1         
+##  1007-2-12 244   -      713  0.5  0.4           1         
+##  1007-2-14 248   -      721    1  0.4           1         
+## 
+##  12 - ♂ leucopus Peromyscus ANL 
+##  γ-ray at 137 days old 
+## ------------------------------------------------
+##   group_id  ♂   ♀  avg. age   dose  rate # fractions warnings
+##  1003-27-1 210   -     1388      -     -           1         
+##  1003-27-2 203   -     1461      -     -           1         
+##  1003-27-3 189   -     1358 0.0086 4e-04           1         
+##  1003-27-4 181   -     1350  0.014 7e-04           1         
+## 
+##  13 - ♂ BC3F1 Mice ENEA 
+##  X-ray at 92 days old 
+## ------------------------------------------------
+##  group_id  ♂   ♀  avg. age dose rate # fractions warnings
+##    3-5-19 430   -      824    -    -           1        2
+##    3-5-20  44   -      828  0.5  0.1           1         
+##    3-5-21  48   -      797    1  0.1           1         
+## 
 ##  14 - ♂ C57BL/Cnb Mice SCK/CEN 
 ##  X-ray at 7 days old 
 ## ------------------------------------------------
@@ -821,38 +837,31 @@ for (cluster in unique(d$cluster)) {
 ##    9-7-10  72   -      777  0.5    1           1        4
 ##    9-7-11  70   -      810    1    1           1        4
 ## 
-##  4 - ♂ C57BL/Cnb Mice SCK/CEN 
-##  γ-ray at 84 days old 
+##  15 - ♂ BC3F1 Mice ENEA 
+##  X-ray at -4 days old 
 ## ------------------------------------------------
 ##  group_id  ♂   ♀  avg. age dose rate # fractions warnings
-##     9-6-1 467   -      613    -    -           1         
-##    9-6-10 115   -      615    1  0.3          10         
-##    9-6-14 104   -      622    1  0.3           8         
-##     9-6-2 241   -      581  0.2  0.3           1         
-##     9-6-3 236   -      564  0.5  0.3           1         
-##     9-6-4 241   -      550    1  0.3           1         
-##     9-6-8 107   -      605  0.2  0.3          10         
-##     9-6-9 109   -      604  0.5  0.3          10         
+##     3-5-1  34   -      853    -    -           1         
+##     3-5-3  48   -      799  0.3  0.1           1         
+##     3-5-5  61   -      822  0.9  0.1           1         
+##     3-5-7  46   -      897  1.5  0.1           1         
 ## 
-##  12 - ♂ leucopus Peromyscus ANL 
-##  γ-ray at 137 days old 
-## ------------------------------------------------
-##   group_id  ♂   ♀  avg. age  dose  rate # fractions warnings
-##  1003-27-1 210   -     1388     -     -           1         
-##  1003-27-2 203   -     1461     -     -           1         
-##  1003-27-3 189   -     1358 0.009 4e-04           1         
-##  1003-27-4 181   -     1350  0.01 7e-04           1         
-## 
-##  5 - ♂ RFM/Un Mice ORNL 
-##  γ-ray at 70 days old 
+##  16 - ♀ BC3F1 Mice ENEA 
+##  X-ray at -4 days old 
 ## ------------------------------------------------
 ##  group_id  ♂   ♀  avg. age dose rate # fractions warnings
-##  1007-3-1 430   -      711    -    -           1        1
-##  1007-3-2 256   -      720  0.1  0.4           1        1
-##  1007-3-3  94   -      711  0.2  0.4           1        1
-##  1007-3-4 247   -      680  0.5  0.4           1        1
-##  1007-3-5 230   -      673    1  0.4           1        1
-##  1007-3-6 199   -      651    2  0.4           1        1
+##     3-5-2   -  39      866    -    -           1         
+##     3-5-4   -  40      883  0.3  0.1           1         
+##     3-5-6   -  44      850  0.9  0.1           1         
+##     3-5-8   -  50      872  1.5  0.1           1         
+## 
+##  17 - ♂ BC3F1 Mice ENEA 
+##  X-ray at 580 days old 
+## ------------------------------------------------
+##  group_id  ♂   ♀  avg. age dose rate # fractions warnings
+##    3-5-35  41   -      886    -    -           1         
+##    3-5-36  42   -      901  0.5  0.1           1         
+##    3-5-37  43   -      874    1  0.1           1
 ```
 
 
@@ -1027,7 +1036,7 @@ More detail in ([Grahn 1995][Grahn 1995])
 ![][1007-2]  
 More detail in ([Storer 1988][Storer 1988])
 
-[1007-2]: https://www.dropbox.com/s/v7iptyzoi9t7b1j/Screenshot%202014-04-23%2014.31.08.png
+[1007-2]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.31.08.png
 [Storer 1988]: http://dl.dropbox.com/u/1131693/bloodrop/3577229.pdf 
 
 
@@ -1058,7 +1067,7 @@ ____________________________________________________________________
 
 <a name="visual_concordance"></a>
 
-Show Data
+Visualize
 ========================================================
 *Last Update: April 2014*
 
@@ -1084,10 +1093,11 @@ d <- readRDS("data/ddref.rds")
 
 
 ```r
-ggplot(d, aes(lifespan, color = dose, group = factor(paste(dose, dose_rate)), 
-    y = ..scaled..)) + geom_density(adjust = 2) + facet_wrap(~cluster, scales = "free") + 
-    scale_colour_gradient(guide = guide_legend(title = "Dose (gy)"), trans = "sqrt") + 
-    geom_vline(aes(xintercept = intended_assignment_age), alpha = 0.5) + expand_limits(x = -4)
+ggplot(d, aes(lifespan, color = dose, group = factor(paste(dose, dose_rate, 
+    fractions)), y = ..scaled..)) + geom_density(adjust = 2) + facet_wrap(~cluster, 
+    scales = "free") + scale_colour_gradient(guide = guide_legend(title = "Dose (gy)"), 
+    trans = "sqrt") + geom_vline(aes(xintercept = intended_assignment_age), 
+    alpha = 0.5) + expand_limits(x = -4)
 ```
 
 ![plot of chunk unnamed-chunk-11](Figs/unnamed-chunk-11.png) 
@@ -1099,24 +1109,59 @@ Clusters are sepperated by facets and labeled with sex, strain, species, lab, qu
 
 
 ```r
-# TODO: keep looking at this graph, I left off at 1133, the first TNO TODO
-# check that groups with warnings are not too weird in the visual
-# concordance TODO: graph that shows only directly comparable protracted v
-# not TODO: remove number of mice from cluster names and give them a
-# numeric id (so that their full name can be printed) TODO: make survival
-# curves that show the difference in % survival between a group and the
-# cluster average TODO: Elevate warnings to exclusions if I cannot
-# co-oberate data with external sources.  That would apply to warnings 2,
-# 3, 8.  It would remove the 1133 TNO data which really does not make any
-# sense and convolutes our story.  I really think I should.
+# TODO(later): graph that shows only directly comparable protracted v not
+# TODO(later): make survival curves that show the difference in % survival
+# between a group and the cluster average TODO(later): figure out what is
+# the cause of early effects in ORNL data based on the pathology codes
+# released with that dataset.  TODO: Add figure legends
 
 ```
 
 
 A few observations:
-- **Different clusters show very different responses.**  For example, compare Female RFM/UN Mice from ORNL to Female C57Bl/6Bd mice.  The former show a strong response to gamma rays, the latter a weak response or no response.
-- **The cluster used to estimate DDREF shows a particularly strong response**.  RFM/Un mice from ORNL were used as the acute condition in the estimate of DDREF from BEIR VII (chronic exposure is not shown here because individual level data is not available).  Notably, this is one of the stronger radiation responses seen in any cluster, including other similar ones from ORNL.
-- **Occasional appearance of early effects** For example RFM/Un Female mice at ORNL show a bimodal response, a general reduction in lifespan, but also a distinct increase in early deaths.  This kind of response is only seen in a few of the clusters, others have weak responses or show a general increase in mortality without a specific early response.
+- **Different clusters show very different responses to the same total dose.**  For example, compare Female RFM/UN Mice from ORNL (1) to Female C57Bl/6Bd mice from the same institution (10).  The only difference between these experiments is the strain of mice used.  The former show a strong response to gamma rays, the latter a weak response or no response.  These differences could reflect strain-specific differences in radiosensitivity or methodological errors in the way that the studies were conducted.
+- **The cluster used to estimate DDREF shows a particularly strong and early response**.  RFM/Un mice from ORNL were used as the acute condition in the estimate of DDREF from BEIR VII (chronic exposure is not shown here because individual level data is not available).  Notably, this is one of the stronger radiation responses seen in any cluster, including other similar ones from ORNL.  Moreover, the response is bimodal, with an unusual early effect.  This suggests that the acute effects are being over-estmimate in BEIR VII and that DDREF should be closer to one, that is the difference between acute and protracted exposure is smaller than the BEIR VII estimate.
+
+
+```r
+comparable_doses <- d %.% ungroup() %.% group_by(cluster_id, dose) %.% summarize(n_groups = n_unique(fractions, 
+    dose_rate)) %.% filter(n_groups > 1)
+```
+
+```
+## Error: could not find function "n_unique"
+```
+
+```r
+
+g <- d %.% ungroup() %.% filter(cluster_id %in% comparable_doses$cluster_id, 
+    dose %in% c(comparable_doses$dose, 0))
+```
+
+```
+## Error: object 'comparable_doses' not found
+```
+
+```r
+
+ggplot(g, aes(lifespan, color = dose, group = factor(paste(dose, dose_rate, 
+    fractions)), linetype = protracted, y = ..scaled..)) + geom_density(adjust = 2) + 
+    facet_grid(dose ~ cluster, scales = "free") + scale_colour_gradient(guide = guide_legend(title = "Dose (gy)")) + 
+    geom_vline(aes(xintercept = intended_assignment_age), alpha = 0.5) + expand_limits(x = -4)
+```
+
+```
+## Error: object 'g' not found
+```
+
+```r
+
+# TODO: Why doesn't ANL have comparable groups that recieved the same dose
+# at different fractions.  I am guessing they do, but the way that we are
+# defining 'intended age at first assignment' is removing these results
+```
+
+
 
 #### Label treatment groups
 
@@ -1125,18 +1170,19 @@ Show the same graphs with individual treatement groups labeled, this is not a fi
 
 ```r
 
-# TODO this graph should include age_at_last treatment too
+# TODO(later) remove this graph from the presented materials
 
-g <- ggplot(d %.% filter(cluster_id == 15), aes(lifespan, y = ..scaled.., color = group_id, 
-    group = group_id)) + geom_density(adjust = 2) + facet_wrap(~cluster, scales = "free") + 
-    geom_vline(aes(xintercept = intended_assignment_age, color = group_id)) + 
-    geom_vline(aes(xintercept = age_at_treatment, color = group_id)) + geom_vline(aes(xintercept = age_at_last_treatment, 
-    color = group_id)) + expand_limits(x = -4, y = 1.3)
+# g <- ggplot(d %.% filter(cluster_id == 15), aes(lifespan, y =
+# ..scaled.., color=group_id, group=group_id )) + geom_density(adjust=2) +
+# facet_wrap(~ cluster, scales='free') + geom_vline(
+# aes(xintercept=intended_assignment_age, color=group_id) ) + geom_vline(
+# aes(xintercept=age_at_treatment, color=group_id) ) + geom_vline(
+# aes(xintercept=age_at_last_treatment, color=group_id) ) +
+# expand_limits(x = -4, y = 1.3)
+# 
+# direct.label(g, list('top.bumptwice', cex=0.6))
 
-direct.label(g, list("top.bumptwice", cex = 0.6))
 ```
-
-![plot of chunk unnamed-chunk-13](Figs/unnamed-chunk-13.png) 
 
 
 #### Survival plots
@@ -1144,19 +1190,38 @@ Survival vs time by cluster with indications for dose and protraction.
 
 
 ```r
-
-# How many animals were alive after X days in each treatment group?
+# TODO this graph should include age_at_last treatment too How many
+# animals were alive after X days in each treatment group?
 d <- d %.% group_by(cluster, dose, dose_rate, fractions) %.% arrange(lifespan) %.% 
     mutate(survival = rank(-lifespan)/length(lifespan))
 
 ggplot(d, aes(lifespan, survival, color = dose, group = factor(paste(dose, dose_rate, 
-    fractions, protracted)), linetype = protracted)) + geom_path() + facet_wrap(~cluster, 
-    scales = "free") + scale_color_continuous(guide = guide_legend(title = "Dose (gy)")) + 
-    geom_vline(aes(xintercept = intended_assignment_age), alpha = 0.5) + expand_limits(x = -4)
+    fractions)))) + geom_path() + facet_wrap(~cluster, scales = "free") + scale_color_continuous(guide = guide_legend(title = "Dose (gy)"), 
+    trans = "sqrt") + geom_vline(aes(xintercept = intended_assignment_age), 
+    alpha = 0.5) + expand_limits(x = -4)
 ```
 
-![plot of chunk unnamed-chunk-14](Figs/unnamed-chunk-14.png) 
+![plot of chunk unnamed-chunk-15](Figs/unnamed-chunk-15.png) 
 
+
+
+
+```r
+# TODO this graph should include age_at_last treatment too How many
+# animals were alive after X days in each treatment group?
+d <- d %.% ungroup() %.% group_by(cluster, dose, dose_rate, fractions) %.% arrange(lifespan) %.% 
+    mutate(group_survival = rank(-lifespan)/length(lifespan))
+
+# How many animals were alive after X days in each cluster?
+d <- d %.% ungroup() %.% group_by(cluster) %.% arrange(lifespan) %.% mutate(cluster_survival = rank(-lifespan)/length(lifespan))
+
+ggplot(d, aes(lifespan, group_survival - cluster_survival, color = dose, group = factor(paste(dose, 
+    dose_rate, fractions)))) + geom_path() + facet_wrap(~cluster, scales = "free_x") + 
+    scale_color_continuous(guide = guide_legend(title = "Dose (gy)"), trans = "sqrt") + 
+    geom_vline(aes(xintercept = intended_assignment_age), alpha = 0.5)
+```
+
+![plot of chunk unnamed-chunk-16](Figs/unnamed-chunk-16.png) 
 
 
 __________________________________________________________________
@@ -1269,7 +1334,7 @@ ggplot(g, aes(x = lifespan, color = dose, group = factor(dose), y = ..scaled..))
     alpha = 0.5) + facet_wrap(~age_string + sex)
 ```
 
-![plot of chunk unnamed-chunk-15](Figs/unnamed-chunk-15.png) 
+![plot of chunk unnamed-chunk-17](Figs/unnamed-chunk-17.png) 
 
 ```r
 
@@ -1411,7 +1476,7 @@ g <- data[with(data, strain == "RFM" & sex == "F" & rate != 0.4), ]
 show(g)
 ```
 
-![plot of chunk unnamed-chunk-17](Figs/unnamed-chunk-17.png) 
+![plot of chunk unnamed-chunk-19](Figs/unnamed-chunk-19.png) 
 
 ```r
 ggsave_for_ppt("beir_10B3_reproduction.png")
@@ -1466,7 +1531,7 @@ o2
 ```
 
 ```
-## [1] 0.7294
+## [1] 1.08
 ```
 
 ```r
@@ -1587,7 +1652,7 @@ ggplot(beir_r, aes(o, l)) + geom_path() + # geom_path(data=my_r, color='red') +
 scale_y_continuous(breaks = c(0:5)/5, limits = c(0, 1))
 ```
 
-![plot of chunk unnamed-chunk-20](Figs/unnamed-chunk-20.png) 
+![plot of chunk unnamed-chunk-22](Figs/unnamed-chunk-22.png) 
 
 ```r
 ggsave_for_ppt("beir_10B4_reproduction.png")
@@ -1703,7 +1768,7 @@ g <- a
 show(g)
 ```
 
-![plot of chunk unnamed-chunk-21](Figs/unnamed-chunk-21.png) 
+![plot of chunk unnamed-chunk-23](Figs/unnamed-chunk-23.png) 
 
 ```r
 ggsave_for_ppt("inverse_lifespan.png")
@@ -1824,7 +1889,7 @@ g <- a
 show(g)
 ```
 
-![plot of chunk unnamed-chunk-22](Figs/unnamed-chunk-22.png) 
+![plot of chunk unnamed-chunk-24](Figs/unnamed-chunk-24.png) 
 
 ```r
 ggsave_for_ppt("inverse_lifespan_profile.png")
@@ -1923,7 +1988,7 @@ ggplot(data, aes(x, yi)) + geom_point() + geom_errorbar(aes(ymin = yi - vi^0.5,
     color = "red") + geom_path(aes(x, p), color = "black")
 ```
 
-![plot of chunk unnamed-chunk-23](Figs/unnamed-chunk-23.png) 
+![plot of chunk unnamed-chunk-25](Figs/unnamed-chunk-25.png) 
 
 ```r
 ggsave_for_ppt("meta_regression_example.png")
@@ -2049,7 +2114,7 @@ g <- data[with(data, strain == "RFM" & sex == "F" & rate != 0.4), ]
 show(g)
 ```
 
-![plot of chunk unnamed-chunk-24](Figs/unnamed-chunk-24.png) 
+![plot of chunk unnamed-chunk-26](Figs/unnamed-chunk-26.png) 
 
 ```r
 ggsave_for_ppt("beir_10B3_meta_regression.png")
@@ -2206,7 +2271,7 @@ ggplot(beir_r, aes(o, l)) +
     scale_y_continuous(breaks = c(0:5)/5, limits=c(0,1))
 ```
 
-![plot of chunk unnamed-chunk-25](Figs/unnamed-chunk-25.png) 
+![plot of chunk unnamed-chunk-27](Figs/unnamed-chunk-27.png) 
 
 ```r
 ggsave_for_ppt('beir_10B4_meta_reression.png')    
@@ -2421,7 +2486,7 @@ ggplot(g, aes(
     facet_wrap(~ cluster, scales="free_y")  
 ```
 
-![plot of chunk unnamed-chunk-28](Figs/unnamed-chunk-28.png) 
+![plot of chunk unnamed-chunk-30](Figs/unnamed-chunk-30.png) 
 
 ```r
 
@@ -2577,7 +2642,7 @@ g <- a
 show(g)
 ```
 
-![plot of chunk unnamed-chunk-29](Figs/unnamed-chunk-291.png) 
+![plot of chunk unnamed-chunk-31](Figs/unnamed-chunk-311.png) 
 
 ```r
 ggsave_for_ppt("meta_regression_profile.png")
@@ -2588,7 +2653,7 @@ ggplot(summary, aes(o, l)) + geom_path(aes(o, l_10B4), color = "black") + geom_p
     l_meta), color = "red") + ylim(0, 4)
 ```
 
-![plot of chunk unnamed-chunk-29](Figs/unnamed-chunk-292.png) 
+![plot of chunk unnamed-chunk-31](Figs/unnamed-chunk-312.png) 
 
 ```r
 ggsave_for_ppt("meta_regression_summary_effect.png")

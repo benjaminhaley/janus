@@ -248,10 +248,9 @@ threshold_dose <- 1.5
 
 
 # Fix
+# TODO(later) move these fixes to radiation.R
 
 # Stray fixes
-## Some of the beagles were missing gender
-d[d$strain == 'Beagle' & is.na(d$sex), 'sex'] <- 'Both'
 ## Some of the B6CF1 mice are missing their species
 d[d$strain == 'B6CF1', 'species'] <- 'Mouse'
 ## One animal is listed as a control despite having a dose, remove her
@@ -336,6 +335,9 @@ The most complete way to handle this situation is do define a lifestage by age f
 Instead we will define a new feild, `approximate_assignment_age`.  For most groups this will be the reported `assignment_age`.  For argonne groups we will define it by the median `assignment_age`.
 
 ```{r}
+# TODO: Cluster concordance should be labeled with the unique studies or labs that the cluster represents
+# TODO: Group listings within a cluster should be in a good order
+# TODO: dose estimates within cluster groups should have two signficant digits
 d$intended_assignment_age <- d$assignment_age
 labs_that_recorded_true_age_at_assignment <- c(
   'ANL'
@@ -416,6 +418,7 @@ d <- d[d$other_treatments == 'none',]
 count(d)
 
 # Died before their 'assignment age'
+# TODO(later) why should there be any mice that died before their assignemtn age?
 d <- d[d$lifespan > d$assignment_age,]
 count(d)
 
@@ -435,6 +438,9 @@ count(d)
 #    studies   clusters treatments    animals not vetted to exclude 
 #          8         17         95      29072          0          0 
 
+# How many duplicates after filtering?
+table0(d$duplicates)  # 19462 FALSE 9610 TRUE
+
 # Warnings
 # show, but do not remove
 warnings <- sort(unique(d$warning_reason))
@@ -451,9 +457,6 @@ d_wo_warnings <- filter_by_n_groups(d_wo_warnings)
 count(d_wo_warnings)
 #    studies   clusters treatments    animals not vetted to exclude 
 #          6         13         73      18903          0          0 
-
-# How many duplicates after filtering?
-table0(d$duplicates)  # 19462 FALSE 9610 TRUE
 
 # Save
 setwd('~/janus/scripts')
@@ -566,7 +569,7 @@ group_summary <- function(data){
         ' ♂ '          = sum(sex == '♂'),
         ' ♀ '          = sum(sex == '♀'),
         'avg. age'      = round(mean(lifespan)),
-        'dose'          = .all(signif(dose, 1)),
+        'dose'          = .all(signif(dose, 2)),
         'rate'          = .all(signif(dose_rate, 1)),
         '# fractions'   = .all(fractions),
         warnings        = .all(gsub('[^0-9]', '', warning_reason))
@@ -586,14 +589,22 @@ find_in_file <- function(pattern, file='exp/radiation.R'){
 Show the details of each treatment group in the dataset organized by cluster
 
 ```{r}
-for(cluster in unique(d$cluster)) {
+for(id in sort(unique(d$cluster_id))) {
+  df <- d[d$cluster_id == id,]
+  cluster <- as.character(df$cluster[1])
   cat('\n', 
       cluster, 
       '\n------------------------------------------------\n')
-  df <- d[d$cluster == cluster,]
-  print(ddply(df, .(group_id), function(df) {
+  s <- ddply(df, .(group_id), function(df) {
     group_summary(df)
-  }), row.names=FALSE)
+  })
+  s <- s %.% 
+    mutate(study=sub('^[0-9]*-', '', group_id),
+           group=as.numeric(sub('^[0-9]*-', '', study)),
+           study=as.numeric(sub('-[0-9]*$', '', study))) %.%
+    arrange(study, group) %.%
+    select(-study, -group)
+  print(s, row.names=FALSE)
 }
 ```
 
@@ -620,7 +631,8 @@ Here are a description of each of the original studies used in this analysis as 
 
 TODO(later) summarize this information in a table
 
-##### 3-1
+##### 3-1 
+cluster 7 - ♀ BC3F1 Mice ENEA X-ray at 91 days old  
 
 ![][3-1]  
 More detail in ([Covelli 1988][Covelli 1988])
@@ -629,7 +641,11 @@ More detail in ([Covelli 1988][Covelli 1988])
 [Covelli 1988]: http://dl.dropbox.com/u/1131693/bloodrop/3577210.pdf
 
 
-##### 3-5
+##### 3-5 
+cluster 13 - ♂ BC3F1 Mice ENEA X-ray at 92 days old  
+cluster 15 - ♂ BC3F1 Mice ENEA X-ray at -4 days old  
+cluster 16 - ♀ BC3F1 Mice ENEA X-ray at -4 days old   
+cluster 17 - ♂ BC3F1 Mice ENEA X-ray at 580 days old   
 
 ![][3-5]  
 More detail in ([Covelli 1984][Covelli 1984])
@@ -638,7 +654,8 @@ More detail in ([Covelli 1984][Covelli 1984])
 [Covelli 1984]: http://dl.dropbox.com/u/1131693/bloodrop/3576356.pdf 
 
 
-##### 9-5
+##### 9-5 
+cluster 6 - ♂ BALB/c/Cnb Mice SCK/CEN γ-ray at 84 days old  
 
 ![][9-5]  
 More detail in ([Maisin 1983][Maisin 1983])
@@ -647,18 +664,20 @@ More detail in ([Maisin 1983][Maisin 1983])
 [Maisin 1983]: http://dl.dropbox.com/u/1131693/bloodrop/3575970.pdf 
 
 
-##### 9-6
+##### 9-6 
+cluster 4 - ♂ C57BL/Cnb Mice SCK/CEN γ-ray at 84 days old  
 
 ![][9-6]  
 ![][9-6-2]  
-More detail in ([Author Date][Author Date])
+More detail in ([Maisin 1988][Maisin 1988])
 
 [9-6]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.29.07.png
 [9-6-2]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.29.42.png
-[Author Date]: http://dl.dropbox.com/u/1131693/bloodrop/3577205.pdf 
+[Maisin 1988]: http://dl.dropbox.com/u/1131693/bloodrop/3577205.pdf 
 
 
-##### 9-7
+##### 9-7 
+cluster 14 - ♂ C57BL/Cnb Mice SCK/CEN X-ray at 7 days old
 
 ![][9-7]  
 More detail in ([Maisin 1988][Maisin 1988])
@@ -667,7 +686,9 @@ More detail in ([Maisin 1988][Maisin 1988])
 [Maisin 1988]: Reference 
 
 
-##### 1003-20
+##### 1003-20 
+cluster 2 - ♀ B6CF1 Mice ANL γ-ray at 114 days old   
+cluster 3 - ♂ B6CF1 Mice ANL γ-ray at 113 days old    
 
 ![][1003-20]  
 More detail in ([Grahn 1995][Grahn 1995])
@@ -676,7 +697,9 @@ More detail in ([Grahn 1995][Grahn 1995])
 [Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf
 
 
-##### 1003-21
+##### 1003-21 
+cluster 2 - ♀ B6CF1 Mice ANL γ-ray at 114 days old   
+cluster 3 - ♂ B6CF1 Mice ANL γ-ray at 113 days old  
 
 ![][1003-21]  
 More detail in ([Grahn 1995][Grahn 1995])
@@ -685,7 +708,9 @@ More detail in ([Grahn 1995][Grahn 1995])
 [Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf 
 
 
-##### 1003-22 (only controls)
+##### 1003-22 cluster  (only controls)
+cluster 2 - ♀ B6CF1 Mice ANL γ-ray at 114 days old   
+cluster 3 - ♂ B6CF1 Mice ANL γ-ray at 113 days old  
 
 ![][1003-22]  
 More detail in ([Grahn 1995][Grahn 1995])
@@ -694,7 +719,9 @@ More detail in ([Grahn 1995][Grahn 1995])
 [Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf
 
 
-##### 1003-24 (only controls)
+##### 1003-24 cluster  (only controls)
+cluster 2 - ♀ B6CF1 Mice ANL γ-ray at 114 days old  
+cluster 3 - ♂ B6CF1 Mice ANL γ-ray at 113 days old  
 
 ![][1003-24]  
 More detail in ([Grahn 1995][Grahn 1995])
@@ -703,7 +730,9 @@ More detail in ([Grahn 1995][Grahn 1995])
 [Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf 
 
 
-##### 1003-25 (only controls)
+##### 1003-25 cluster  (only controls)
+cluster 2 - ♀ B6CF1 Mice ANL γ-ray at 114 days old  
+cluster 3 - ♂ B6CF1 Mice ANL γ-ray at 113 days old  
 
 ![][1003-25]  
 More detail in ([Grahn 1995][Grahn 1995])
@@ -712,7 +741,9 @@ More detail in ([Grahn 1995][Grahn 1995])
 [Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf 
 
 
-##### 1003-26
+##### 1003-26 cluster 
+cluster 2 - ♀ B6CF1 Mice ANL γ-ray at 114 days old  
+cluster 3 - ♂ B6CF1 Mice ANL γ-ray at 113 days old  
 
 ![][1003-26]  
 More detail in ([Grahn 1995][Grahn 1995])
@@ -721,7 +752,8 @@ More detail in ([Grahn 1995][Grahn 1995])
 [Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf 
 
 
-##### 1003-27
+##### 1003-27 cluster 
+cluster 12 - ♂ leucopus Peromyscus ANL γ-ray at 137 days old   
 
 ![][1003-27]  
 More detail in ([Grahn 1995][Grahn 1995])
@@ -730,7 +762,9 @@ More detail in ([Grahn 1995][Grahn 1995])
 [Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf
 
 
-##### 1003-28 (only controls)
+##### 1003-28 cluster  (only controls)
+cluster 2 - ♀ B6CF1 Mice ANL γ-ray at 114 days old  
+cluster 3 - ♂ B6CF1 Mice ANL γ-ray at 113 days old  
 
 ![][1003-28]  
 More detail in ([Grahn 1995][Grahn 1995])
@@ -739,7 +773,9 @@ More detail in ([Grahn 1995][Grahn 1995])
 [Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf
 
 
-##### 1003-29
+##### 1003-29 cluster 
+cluster 2 - ♀ B6CF1 Mice ANL γ-ray at 114 days old  
+cluster 3 - ♂ B6CF1 Mice ANL γ-ray at 113 days old  
 
 ![][1003-29]  
 More detail in ([Grahn 1995][Grahn 1995])
@@ -748,7 +784,9 @@ More detail in ([Grahn 1995][Grahn 1995])
 [Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf
 
 
-##### 1003-30 (only controls)
+##### 1003-30 cluster  (only controls)
+cluster 2 - ♀ B6CF1 Mice ANL γ-ray at 114 days old  
+cluster 3 - ♂ B6CF1 Mice ANL γ-ray at 113 days old  
 
 ![][1003-30]  
 More detail in ([Grahn 1995][Grahn 1995])
@@ -758,16 +796,22 @@ More detail in ([Grahn 1995][Grahn 1995])
 
 
 
-##### 1007-2
+##### 1007-2 
+cluster 8 - ♂ C57BL/6Bd Mice ORNL γ-ray at 70 days old 
+cluster 9 - ♀ C3Hf/Bd Mice ORNL γ-ray at 70 days old 
+cluster 10 - ♀ C57BL/6Bd Mice ORNL γ-ray at 70 days old  
+cluster 11 - ♂ C3Hf/Bd Mice ORNL γ-ray at 70 days old 
 
 ![][1007-2]  
 More detail in ([Storer 1988][Storer 1988])
 
-[1007-2]: https://www.dropbox.com/s/v7iptyzoi9t7b1j/Screenshot%202014-04-23%2014.31.08.png
+[1007-2]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.31.08.png
 [Storer 1988]: http://dl.dropbox.com/u/1131693/bloodrop/3577229.pdf 
 
 
-##### 1007-3
+##### 1007-3 
+cluster 1 - ♀ RFM/Un Mice ORNL γ-ray at 70 days old   
+cluster 5 - ♂ RFM/Un Mice ORNL γ-ray at 70 days old  
 
 ![][1007-3]  
 More detail in ([Ullrich 1979][Ullrich 1979])
@@ -822,7 +866,8 @@ ggplot(d,
        aes(lifespan, 
            color=dose,
            group=factor(paste(dose, 
-                              dose_rate)),
+                              dose_rate,
+                              fractions)),
            y=..scaled..)) + 
   geom_density(adjust=2) +
   facet_wrap(~ cluster, scales='free') + 
@@ -843,19 +888,50 @@ Density plots show the frequency, y-axis, of a given lifespan (in days), x-axis.
 Clusters are sepperated by facets and labeled with sex, strain, species, lab, quality of radiation, and mean age at first exposure (in days).  The clusters are ordered by the number of animals in the cluster.  The cluster with the most animals, Male RFM/Un Mice from ORNL, are at the top left and the cluster with the least animals is furthest to the right on the bottom row.
 
 ```{r}
-# TODO check that groups with warnings are not too weird in the visual concordance
-# TODO: graph that shows only directly comparable protracted v not
-# TODO: remove number of mice from cluster names and give them a numeric id (so that their full name can be printed)
-# TODO: make survival curves that show the difference in % survival between a group and the cluster average
-# TODO: Elevate warnings to exclusions if I cannot co-oberate data with external sources.  That would apply to warnings 2, 3, 8.  It would remove the 1133 TNO data which really does not make any sense and convolutes our story.  I really think I should.
-# TODO: figure out what is the cause of early effects in ORNL data based on the pathology codes released with that dataset.
+# TODO(later): make survival curves that show the difference in % survival between a group and the cluster average
+# TODO(later): figure out what is the cause of early effects in ORNL data based on the pathology codes released with that dataset.
+# TODO: Add figure legends
 
 ```
 
 A few observations:
-- **Different clusters show very different responses.**  For example, compare Female RFM/UN Mice from ORNL to Female C57Bl/6Bd mice.  The former show a strong response to gamma rays, the latter a weak response or no response.
-- **The cluster used to estimate DDREF shows a particularly strong response**.  RFM/Un mice from ORNL were used as the acute condition in the estimate of DDREF from BEIR VII (chronic exposure is not shown here because individual level data is not available).  Notably, this is one of the stronger radiation responses seen in any cluster, including other similar ones from ORNL.
-- **Occasional appearance of early effects** For example RFM/Un Female mice at ORNL show a bimodal response, a general reduction in lifespan, but also a distinct increase in early deaths.  This kind of response is only seen in a few of the clusters, others have weak responses or show a general increase in mortality without a specific early response.
+- **Different clusters show very different responses to the same total dose.**  For example, compare Female RFM/UN Mice from ORNL (1) to Female C57Bl/6Bd mice from the same institution (10).  The only difference between these experiments is the strain of mice used.  The former show a strong response to gamma rays, the latter a weak response or no response.  These differences could reflect strain-specific differences in radiosensitivity or methodological errors in the way that the studies were conducted.
+- **The cluster used to estimate DDREF shows a particularly strong and early response**.  RFM/Un mice from ORNL were used as the acute condition in the estimate of DDREF from BEIR VII (chronic exposure is not shown here because individual level data is not available).  Notably, this is one of the stronger radiation responses seen in any cluster, including other similar ones from ORNL.  Moreover, the response is bimodal, with an unusual early effect.  This suggests that the acute effects are being over-estmimate in BEIR VII and that DDREF should be closer to one, that is the difference between acute and protracted exposure is smaller than the BEIR VII estimate.
+
+```{r}
+comparable_doses <- d %.%
+  ungroup() %.%
+  group_by(cluster_id, dose) %.%
+  summarize(n_groups=n_unique(fractions, dose_rate)) %.%
+  filter(n_groups > 1)
+
+g <- d %.%
+  ungroup() %.%
+  filter(cluster_id %in% comparable_doses$cluster_id,
+         dose %in% c(comparable_doses$dose, 0))
+
+ggplot(g,
+       aes(lifespan, 
+           color=dose,
+           group=factor(paste(dose, 
+                              dose_rate,
+                              fractions)),
+           linetype = protracted,
+           y=..scaled..)) + 
+  geom_density(adjust=2) +
+  facet_grid(dose~cluster, scales='free') + 
+  scale_colour_gradient(
+    guide = guide_legend(title = "Dose (gy)")
+  ) + 
+  geom_vline(
+    aes(xintercept=intended_assignment_age),
+    alpha=0.5
+  ) +
+  expand_limits(x = -4)
+
+# TODO: Why doesn't ANL have comparable groups that recieved the same dose at different fractions.  I am guessing they do, but the way that we are defining 'intended age at first assignment' is removing these results
+```
+
 
 #### Label treatment groups
 
@@ -863,28 +939,28 @@ Show the same graphs with individual treatement groups labeled, this is not a fi
 
 ```{r}
 
-# TODO this graph should include age_at_last treatment too
+# TODO(later) remove this graph from the presented materials
 
-g <- ggplot(d %.% filter(cluster_id == 15),
-       aes(lifespan, 
-           y = ..scaled..,
-           color=group_id,
-           group=group_id
-           )) + 
-  geom_density(adjust=2) +
-  facet_wrap(~ cluster, scales='free') + 
-  geom_vline(
-    aes(xintercept=intended_assignment_age, color=group_id)
-  ) +
-  geom_vline(
-    aes(xintercept=age_at_treatment, color=group_id)
-  ) + 
-  geom_vline(
-    aes(xintercept=age_at_last_treatment, color=group_id)
-  ) +  
-  expand_limits(x = -4, y = 1.3)
-
-direct.label(g, list("top.bumptwice", cex=0.6))
+# g <- ggplot(d %.% filter(cluster_id == 15),
+#        aes(lifespan, 
+#            y = ..scaled..,
+#            color=group_id,
+#            group=group_id
+#            )) + 
+#   geom_density(adjust=2) +
+#   facet_wrap(~ cluster, scales='free') + 
+#   geom_vline(
+#     aes(xintercept=intended_assignment_age, color=group_id)
+#   ) +
+#   geom_vline(
+#     aes(xintercept=age_at_treatment, color=group_id)
+#   ) + 
+#   geom_vline(
+#     aes(xintercept=age_at_last_treatment, color=group_id)
+#   ) +  
+#   expand_limits(x = -4, y = 1.3)
+# 
+# direct.label(g, list("top.bumptwice", cex=0.6))
 
 ```
 
@@ -892,7 +968,7 @@ direct.label(g, list("top.bumptwice", cex=0.6))
 Survival vs time by cluster with indications for dose and protraction.
 
 ```{r}
-
+# TODO this graph should include age_at_last treatment too
 # How many animals were alive after X days in each treatment group?
 d <- d %.%
   group_by(cluster, dose, dose_rate, fractions) %.%
@@ -903,12 +979,12 @@ ggplot(d,
        aes(lifespan, 
            survival,
            color=dose,
-           group=factor(paste(dose, dose_rate, fractions, protracted)),
-           linetype=protracted)) + 
+           group=factor(paste(dose, dose_rate, fractions)))) + 
   geom_path() +
   facet_wrap(~ cluster, scales='free') + 
   scale_color_continuous(
-    guide = guide_legend(title = "Dose (gy)")
+    guide = guide_legend(title = "Dose (gy)"),
+    trans = "sqrt"
   ) + 
   geom_vline(
     aes(xintercept=intended_assignment_age),
@@ -918,6 +994,39 @@ ggplot(d,
 
 ```
 
+
+```{r}
+# TODO this graph should include age_at_last treatment too
+# How many animals were alive after X days in each treatment group?
+d <- d %.%
+  ungroup() %.%
+  group_by(cluster, dose, dose_rate, fractions) %.%
+  arrange(lifespan) %.%
+  mutate(group_survival=rank(-lifespan) / length(lifespan))
+
+# How many animals were alive after X days in each cluster?
+d <- d %.%
+  ungroup() %.%
+  group_by(cluster) %.%
+  arrange(lifespan) %.%
+  mutate(cluster_survival=rank(-lifespan) / length(lifespan))
+
+ggplot(d, 
+       aes(lifespan, 
+           group_survival - cluster_survival,
+           color=dose,
+           group=factor(paste(dose, dose_rate, fractions)))) + 
+  geom_path() +
+  facet_wrap(~ cluster, scales='free_x') + 
+  scale_color_continuous(
+    guide = guide_legend(title = "Dose (gy)"),
+    trans = "sqrt"
+  ) + 
+  geom_vline(
+    aes(xintercept=intended_assignment_age),
+    alpha=0.5
+  )
+```
 
 __________________________________________________________________
 ^ back to [table of contents](#contents)
@@ -930,6 +1039,7 @@ __________________________________________________________________
 Atomic bomb survivor data
 ========================================================
 *Last update: April 2014*
+
 For comparison, let's load data from the atomic bomb survivors, [lss14][lss], and see how lifespan changes as a function of dose in these populations using similar visualizations.
 
 Acknowledgement:

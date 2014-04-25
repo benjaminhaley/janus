@@ -1628,7 +1628,13 @@ c(
 		'Mus musculus', 
 		'Mouse'
 	)
-	janus$species <- recode_factor(
+  # By error 1003-xx is missing its species assignment
+  janus$species <- recode_factor(
+    janus$species, 
+    '', 
+    'Mouse'
+  )
+  janus$species <- recode_factor(
 		janus$species, 
 		'Peromyscus leucopus', 
 		'Peromyscus'
