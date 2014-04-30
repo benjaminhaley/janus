@@ -196,7 +196,6 @@ aliases <- list(quality = c(`gamma-rays Co-60` = "γ-ray", `gamma-rays Co-60, ga
 
 threshold_dose <- 1.5
 
-
 # Fix TODO(later) move these fixes to radiation.R
 
 # Stray fixes Some of the B6CF1 mice are missing their species
@@ -278,10 +277,6 @@ Instead we will define a new feild, `approximate_assignment_age`.  For most grou
 
 
 ```r
-# TODO: Cluster concordance should be labeled with the unique studies or
-# labs that the cluster represents TODO: Group listings within a cluster
-# should be in a good order TODO: dose estimates within cluster groups
-# should have two signficant digits
 d$intended_assignment_age <- d$assignment_age
 labs_that_recorded_true_age_at_assignment <- c("ANL")
 clusters_that_recorded_true_age_at_assignment = unique(d$cluster[d$lab %in% 
@@ -575,7 +570,7 @@ pluralize <- function(x) {
 
 # Is acute?
 d$acute <- d$fractions == 1 | d$dose == 0
-d$protracted <- d$fractions > 1 & d$dose > 0
+d$protracted <- d$dose > 0 & (d$fractions > 1 | d$dose_rate < 0.01)
 
 # Observations per cluster
 d = d %.% group_by(cluster) %.% mutate(n_in_cluster = length(cluster))
@@ -666,7 +661,6 @@ Show the details of each treatment group in the dataset organized by cluster
 
 
 ```r
-# TODO Make sure these are in the correct order
 for (id in sort(unique(d$cluster_id))) {
     df <- d[d$cluster_id == id, ]
     cluster <- as.character(df$cluster[1])
@@ -892,8 +886,10 @@ for (p in warning_prefixes) cat(find_in_file(p), "\n")
 Here are a description of each of the original studies used in this analysis as provided by the 'Gray Book' ([Gerber et al. 1996](#gerber_1996)).  Studies can easily be found by lab and study id which are the first two parts of the group id.  Concretely, a group id of 1007-3-6 is the sixth groups from the third study conducted at lab 1007, Oak Ridge National Laboratory.
 
 TODO(later) summarize this information in a table
+TODO(later) this information should be stored as data, not text
 
-##### 3-1
+##### 3-1 
+cluster 7 - ♀ BC3F1 Mice ENEA X-ray at 91 days old  
 
 ![][3-1]  
 More detail in ([Covelli 1988][Covelli 1988])
@@ -902,7 +898,11 @@ More detail in ([Covelli 1988][Covelli 1988])
 [Covelli 1988]: http://dl.dropbox.com/u/1131693/bloodrop/3577210.pdf
 
 
-##### 3-5
+##### 3-5 
+cluster 13 - ♂ BC3F1 Mice ENEA X-ray at 92 days old  
+cluster 15 - ♂ BC3F1 Mice ENEA X-ray at -4 days old  
+cluster 16 - ♀ BC3F1 Mice ENEA X-ray at -4 days old   
+cluster 17 - ♂ BC3F1 Mice ENEA X-ray at 580 days old   
 
 ![][3-5]  
 More detail in ([Covelli 1984][Covelli 1984])
@@ -911,7 +911,8 @@ More detail in ([Covelli 1984][Covelli 1984])
 [Covelli 1984]: http://dl.dropbox.com/u/1131693/bloodrop/3576356.pdf 
 
 
-##### 9-5
+##### 9-5 
+cluster 6 - ♂ BALB/c/Cnb Mice SCK/CEN γ-ray at 84 days old  
 
 ![][9-5]  
 More detail in ([Maisin 1983][Maisin 1983])
@@ -920,18 +921,20 @@ More detail in ([Maisin 1983][Maisin 1983])
 [Maisin 1983]: http://dl.dropbox.com/u/1131693/bloodrop/3575970.pdf 
 
 
-##### 9-6
+##### 9-6 
+cluster 4 - ♂ C57BL/Cnb Mice SCK/CEN γ-ray at 84 days old  
 
 ![][9-6]  
 ![][9-6-2]  
-More detail in ([Author Date][Author Date])
+More detail in ([Maisin 1988][Maisin 1988])
 
 [9-6]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.29.07.png
 [9-6-2]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.29.42.png
-[Author Date]: http://dl.dropbox.com/u/1131693/bloodrop/3577205.pdf 
+[Maisin 1988]: http://dl.dropbox.com/u/1131693/bloodrop/3577205.pdf 
 
 
-##### 9-7
+##### 9-7 
+cluster 14 - ♂ C57BL/Cnb Mice SCK/CEN X-ray at 7 days old
 
 ![][9-7]  
 More detail in ([Maisin 1988][Maisin 1988])
@@ -940,7 +943,9 @@ More detail in ([Maisin 1988][Maisin 1988])
 [Maisin 1988]: Reference 
 
 
-##### 1003-20
+##### 1003-20 
+cluster 2 - ♀ B6CF1 Mice ANL γ-ray at 114 days old   
+cluster 3 - ♂ B6CF1 Mice ANL γ-ray at 113 days old    
 
 ![][1003-20]  
 More detail in ([Grahn 1995][Grahn 1995])
@@ -949,7 +954,9 @@ More detail in ([Grahn 1995][Grahn 1995])
 [Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf
 
 
-##### 1003-21
+##### 1003-21 
+cluster 2 - ♀ B6CF1 Mice ANL γ-ray at 114 days old   
+cluster 3 - ♂ B6CF1 Mice ANL γ-ray at 113 days old  
 
 ![][1003-21]  
 More detail in ([Grahn 1995][Grahn 1995])
@@ -958,7 +965,9 @@ More detail in ([Grahn 1995][Grahn 1995])
 [Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf 
 
 
-##### 1003-22 (only controls)
+##### 1003-22 cluster  (only controls)
+cluster 2 - ♀ B6CF1 Mice ANL γ-ray at 114 days old   
+cluster 3 - ♂ B6CF1 Mice ANL γ-ray at 113 days old  
 
 ![][1003-22]  
 More detail in ([Grahn 1995][Grahn 1995])
@@ -967,7 +976,9 @@ More detail in ([Grahn 1995][Grahn 1995])
 [Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf
 
 
-##### 1003-24 (only controls)
+##### 1003-24 cluster  (only controls)
+cluster 2 - ♀ B6CF1 Mice ANL γ-ray at 114 days old  
+cluster 3 - ♂ B6CF1 Mice ANL γ-ray at 113 days old  
 
 ![][1003-24]  
 More detail in ([Grahn 1995][Grahn 1995])
@@ -976,7 +987,9 @@ More detail in ([Grahn 1995][Grahn 1995])
 [Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf 
 
 
-##### 1003-25 (only controls)
+##### 1003-25 cluster  (only controls)
+cluster 2 - ♀ B6CF1 Mice ANL γ-ray at 114 days old  
+cluster 3 - ♂ B6CF1 Mice ANL γ-ray at 113 days old  
 
 ![][1003-25]  
 More detail in ([Grahn 1995][Grahn 1995])
@@ -985,7 +998,9 @@ More detail in ([Grahn 1995][Grahn 1995])
 [Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf 
 
 
-##### 1003-26
+##### 1003-26 cluster 
+cluster 2 - ♀ B6CF1 Mice ANL γ-ray at 114 days old  
+cluster 3 - ♂ B6CF1 Mice ANL γ-ray at 113 days old  
 
 ![][1003-26]  
 More detail in ([Grahn 1995][Grahn 1995])
@@ -994,7 +1009,8 @@ More detail in ([Grahn 1995][Grahn 1995])
 [Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf 
 
 
-##### 1003-27
+##### 1003-27 cluster 
+cluster 12 - ♂ leucopus Peromyscus ANL γ-ray at 137 days old   
 
 ![][1003-27]  
 More detail in ([Grahn 1995][Grahn 1995])
@@ -1003,7 +1019,9 @@ More detail in ([Grahn 1995][Grahn 1995])
 [Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf
 
 
-##### 1003-28 (only controls)
+##### 1003-28 cluster  (only controls)
+cluster 2 - ♀ B6CF1 Mice ANL γ-ray at 114 days old  
+cluster 3 - ♂ B6CF1 Mice ANL γ-ray at 113 days old  
 
 ![][1003-28]  
 More detail in ([Grahn 1995][Grahn 1995])
@@ -1012,7 +1030,9 @@ More detail in ([Grahn 1995][Grahn 1995])
 [Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf
 
 
-##### 1003-29
+##### 1003-29 cluster 
+cluster 2 - ♀ B6CF1 Mice ANL γ-ray at 114 days old  
+cluster 3 - ♂ B6CF1 Mice ANL γ-ray at 113 days old  
 
 ![][1003-29]  
 More detail in ([Grahn 1995][Grahn 1995])
@@ -1021,7 +1041,9 @@ More detail in ([Grahn 1995][Grahn 1995])
 [Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf
 
 
-##### 1003-30 (only controls)
+##### 1003-30 cluster  (only controls)
+cluster 2 - ♀ B6CF1 Mice ANL γ-ray at 114 days old  
+cluster 3 - ♂ B6CF1 Mice ANL γ-ray at 113 days old  
 
 ![][1003-30]  
 More detail in ([Grahn 1995][Grahn 1995])
@@ -1031,7 +1053,11 @@ More detail in ([Grahn 1995][Grahn 1995])
 
 
 
-##### 1007-2
+##### 1007-2 
+cluster 8 - ♂ C57BL/6Bd Mice ORNL γ-ray at 70 days old 
+cluster 9 - ♀ C3Hf/Bd Mice ORNL γ-ray at 70 days old 
+cluster 10 - ♀ C57BL/6Bd Mice ORNL γ-ray at 70 days old  
+cluster 11 - ♂ C3Hf/Bd Mice ORNL γ-ray at 70 days old 
 
 ![][1007-2]  
 More detail in ([Storer 1988][Storer 1988])
@@ -1040,7 +1066,9 @@ More detail in ([Storer 1988][Storer 1988])
 [Storer 1988]: http://dl.dropbox.com/u/1131693/bloodrop/3577229.pdf 
 
 
-##### 1007-3
+##### 1007-3 
+cluster 1 - ♀ RFM/Un Mice ORNL γ-ray at 70 days old   
+cluster 5 - ♂ RFM/Un Mice ORNL γ-ray at 70 days old  
 
 ![][1007-3]  
 More detail in ([Ullrich 1979][Ullrich 1979])
@@ -1093,9 +1121,12 @@ d <- readRDS("data/ddref.rds")
 
 
 ```r
+# TODO(later): figure out what is the cause of early effects in ORNL data
+# based on the pathology codes released with that dataset.
+
 ggplot(d, aes(lifespan, color = dose, group = factor(paste(dose, dose_rate, 
     fractions)), y = ..scaled..)) + geom_density(adjust = 2) + facet_wrap(~cluster, 
-    scales = "free") + scale_colour_gradient(guide = guide_legend(title = "Dose (gy)"), 
+    scales = "free") + scale_colour_gradient(guide = guide_legend(title = "Dose (Gy)"), 
     trans = "sqrt") + geom_vline(aes(xintercept = intended_assignment_age), 
     alpha = 0.5) + expand_limits(x = -4)
 ```
@@ -1107,121 +1138,87 @@ Density plots show the frequency, y-axis, of a given lifespan (in days), x-axis.
 
 Clusters are sepperated by facets and labeled with sex, strain, species, lab, quality of radiation, and mean age at first exposure (in days).  The clusters are ordered by the number of animals in the cluster.  The cluster with the most animals, Male RFM/Un Mice from ORNL, are at the top left and the cluster with the least animals is furthest to the right on the bottom row.
 
-
-```r
-# TODO(later): graph that shows only directly comparable protracted v not
-# TODO(later): make survival curves that show the difference in % survival
-# between a group and the cluster average TODO(later): figure out what is
-# the cause of early effects in ORNL data based on the pathology codes
-# released with that dataset.  TODO: Add figure legends
-
-```
-
-
-A few observations:
+##### Related observations:
 - **Different clusters show very different responses to the same total dose.**  For example, compare Female RFM/UN Mice from ORNL (1) to Female C57Bl/6Bd mice from the same institution (10).  The only difference between these experiments is the strain of mice used.  The former show a strong response to gamma rays, the latter a weak response or no response.  These differences could reflect strain-specific differences in radiosensitivity or methodological errors in the way that the studies were conducted.
-- **The cluster used to estimate DDREF shows a particularly strong and early response**.  RFM/Un mice from ORNL were used as the acute condition in the estimate of DDREF from BEIR VII (chronic exposure is not shown here because individual level data is not available).  Notably, this is one of the stronger radiation responses seen in any cluster, including other similar ones from ORNL.  Moreover, the response is bimodal, with an unusual early effect.  This suggests that the acute effects are being over-estmimate in BEIR VII and that DDREF should be closer to one, that is the difference between acute and protracted exposure is smaller than the BEIR VII estimate.
+- **The cluster used to estimate DDREF shows a particularly strong and early response**.  RFM/Un mice from ORNL were used as the acute condition in the estimate of DDREF from BEIR VII (chronic exposure is not shown here because individual level data is not available).  Notably, this is the strongest radiation response seen in any cluster, including other similar ones from ORNL.  Moreover, the response is bimodal, with an early effect that is not seen in other clusters.  This suggests that the acute effects are being over-estmimated in BEIR VII and that DDREF should be closer to one.
 
 
 ```r
+n_unique <- function(...) length(unique(paste(...)))
+
 comparable_doses <- d %.% ungroup() %.% group_by(cluster_id, dose) %.% summarize(n_groups = n_unique(fractions, 
     dose_rate)) %.% filter(n_groups > 1)
-```
-
-```
-## Error: could not find function "n_unique"
-```
-
-```r
 
 g <- d %.% ungroup() %.% filter(cluster_id %in% comparable_doses$cluster_id, 
     dose %in% c(comparable_doses$dose, 0))
-```
-
-```
-## Error: object 'comparable_doses' not found
-```
-
-```r
 
 ggplot(g, aes(lifespan, color = dose, group = factor(paste(dose, dose_rate, 
     fractions)), linetype = protracted, y = ..scaled..)) + geom_density(adjust = 2) + 
-    facet_grid(dose ~ cluster, scales = "free") + scale_colour_gradient(guide = guide_legend(title = "Dose (gy)")) + 
-    geom_vline(aes(xintercept = intended_assignment_age), alpha = 0.5) + expand_limits(x = -4)
+    facet_grid(dose ~ cluster, scales = "free") + scale_colour_gradient(guide = guide_legend(title = "Dose (Gy)"), 
+    breaks = c(0, 0.5, 1, 1.5), limits = c(0, 1.5)) + geom_vline(aes(xintercept = intended_assignment_age), 
+    alpha = 0.5) + expand_limits(x = -4)
 ```
 
-```
-## Error: object 'g' not found
-```
+![plot of chunk unnamed-chunk-12](Figs/unnamed-chunk-12.png) 
 
-```r
+#### Figure: Directly comparable protracted exposures
+Similar to the figure above, except that the data has been limited to those cases were there are two groups in the same cluster with the same dose, but differences in dose rate or number of fractions.  Doses that were delivered more slowly are labeled as protracted (dashed line).  Facets of the graph are defined by cluster and total dose delivered.  Controls are included for comparison.
 
-# TODO: Why doesn't ANL have comparable groups that recieved the same dose
-# at different fractions.  I am guessing they do, but the way that we are
-# defining 'intended age at first assignment' is removing these results
-```
+##### Additional details
+In cluster 4, doses were broken into 10 or 8 fractions seperrated by three hours or 1 day respectively.  In cluster 6 doses were broken into 10 fractions sepperated by one day.  Notably both of these experiments were conducted at the same laboratory (SCK/CEN) using the same irradiator (a CS-137 source).  
 
+*Note, ORNL also conducted experiments with directly comparable doses both acute and protracted, but individual level data is not avaiable for the acute exposures.
 
+##### Observations
+The effects of fractionation are decidely ambivilant.  Cluster 4 shows signs of high DDREF, cluster 6 shows signs of a DDREF close to 1.  The only substantial difference between these experiments is the strain used.  Three facts might account for this observation, perhaps DDREF is strain specific, perhaps there were methodological errors in the way these studies were conducted, or perhaps random events are obscuring the true pattern.
 
-#### Label treatment groups
-
-Show the same graphs with individual treatement groups labeled, this is not a figure for papers or presentations, but is handy for those who want to inspect the data very closely (me).
 
 
 ```r
-
-# TODO(later) remove this graph from the presented materials
-
-# g <- ggplot(d %.% filter(cluster_id == 15), aes(lifespan, y =
-# ..scaled.., color=group_id, group=group_id )) + geom_density(adjust=2) +
-# facet_wrap(~ cluster, scales='free') + geom_vline(
-# aes(xintercept=intended_assignment_age, color=group_id) ) + geom_vline(
-# aes(xintercept=age_at_treatment, color=group_id) ) + geom_vline(
-# aes(xintercept=age_at_last_treatment, color=group_id) ) +
-# expand_limits(x = -4, y = 1.3)
-# 
-# direct.label(g, list('top.bumptwice', cex=0.6))
-
-```
-
-
-#### Survival plots
-Survival vs time by cluster with indications for dose and protraction.
-
-
-```r
-# TODO this graph should include age_at_last treatment too How many
-# animals were alive after X days in each treatment group?
 d <- d %.% group_by(cluster, dose, dose_rate, fractions) %.% arrange(lifespan) %.% 
     mutate(survival = rank(-lifespan)/length(lifespan))
 
 ggplot(d, aes(lifespan, survival, color = dose, group = factor(paste(dose, dose_rate, 
-    fractions)))) + geom_path() + facet_wrap(~cluster, scales = "free") + scale_color_continuous(guide = guide_legend(title = "Dose (gy)"), 
+    fractions)))) + geom_path() + facet_wrap(~cluster, scales = "free") + scale_color_continuous(guide = guide_legend(title = "Dose (Gy)"), 
     trans = "sqrt") + geom_vline(aes(xintercept = intended_assignment_age), 
     alpha = 0.5) + expand_limits(x = -4)
 ```
 
-![plot of chunk unnamed-chunk-15](Figs/unnamed-chunk-15.png) 
+![plot of chunk unnamed-chunk-13](Figs/unnamed-chunk-13.png) 
 
+#### Figure: Survival plots
+As before, but presented as traditional survival plots instead.  The y axis represents the fraction of animals alive a at a given time.  Other elements are organizeds as before.
+
+##### Related observations
+This does not tell us anything new, I've included it because survival plots are standard.  Personally I find them less informative than the lifespan density plots shown above.
 
 
 
 ```r
-# TODO this graph should include age_at_last treatment too How many
-# animals were alive after X days in each treatment group?
 d <- d %.% ungroup() %.% group_by(cluster, dose, dose_rate, fractions) %.% arrange(lifespan) %.% 
     mutate(group_survival = rank(-lifespan)/length(lifespan))
 
 # How many animals were alive after X days in each cluster?
 d <- d %.% ungroup() %.% group_by(cluster) %.% arrange(lifespan) %.% mutate(cluster_survival = rank(-lifespan)/length(lifespan))
 
-ggplot(d, aes(lifespan, group_survival - cluster_survival, color = dose, group = factor(paste(dose, 
-    dose_rate, fractions)))) + geom_path() + facet_wrap(~cluster, scales = "free_x") + 
-    scale_color_continuous(guide = guide_legend(title = "Dose (gy)"), trans = "sqrt") + 
-    geom_vline(aes(xintercept = intended_assignment_age), alpha = 0.5)
+ggplot(d, aes(lifespan, group_survival - cluster_survival, color = dose, linetype = protracted, 
+    group = factor(paste(dose, dose_rate, fractions)))) + geom_path() + facet_wrap(~cluster, 
+    scales = "free_x") + scale_color_continuous(guide = guide_legend(title = "Dose (Gy)"), 
+    trans = "sqrt") + geom_vline(aes(xintercept = intended_assignment_age), 
+    alpha = 0.5)
 ```
 
-![plot of chunk unnamed-chunk-16](Figs/unnamed-chunk-16.png) 
+![plot of chunk unnamed-chunk-14](Figs/unnamed-chunk-14.png) 
+
+#### Figure: Relative survival plots
+Like the survival plot above, expecept that survival group within the entire cluster is subtracted from survival within a particular group.  The result is a graph which emphasizes the differences between survival.  Groups with positive values (above y=0) are surviving longer than the cluster average, groups with negative values (below y=0) are surviving less time than the cluster average.  In this graph groups with protracted exposures (multiple fractions or dose rates < 0.01 Gy/min)
+
+##### Related observations
+- **Useful graph, but difficult to interpret** This is actually one of my favorite visualizations of this data because it really uses all of the space of the graph to convey information.  However, it takes some thought to wrap one's head around it, so it might not be suitable for presentation in a paper.
+- **Cluster 1 does not look as extreme in this graph** It is clear that some clusters show effects roughly as strong as cluster 1 (the cluster used to estimate acute effects in the DDREF estimate).  Concretely clusters 7 (Female BC3F1 mice) and 9 (Female C3Hf/Bd Mice) have responses of similar strength.  Still, no responses happen as early as those in cluster 1, so it is still a suspicious case suggesting that DDREF has been over-estimated.
+- **Protraction appears to alievate or eliminate the effects of exposure** In this graph it was possible to meaningfully show protracted groups.  The general trend is that protraction seems to be beneficial.  This is especially obvious in cluster 4, but generally corroborated with clusters 2, 3, and 6 in which the protracted treatment groups tend to cluster with the control and low dose groups.
+
+
 
 
 __________________________________________________________________
@@ -1235,6 +1232,7 @@ __________________________________________________________________
 Atomic bomb survivor data
 ========================================================
 *Last update: April 2014*
+
 For comparison, let's load data from the atomic bomb survivors, [lss14][lss], and see how lifespan changes as a function of dose in these populations using similar visualizations.
 
 Acknowledgement:
@@ -1282,22 +1280,22 @@ dose_min_map <- c(`1` = 0, `2` = 0.005, `3` = 0.02, `4` = 0.04, `5` = 0.06,
     `6` = 0.08, `7` = 0.1, `8` = 0.125, `9` = 0.15, `10` = 0.175, `11` = 0.2, 
     `12` = 0.25, `13` = 0.3, `14` = 0.5, `15` = 0.75, `16` = 1, `17` = 1.25, 
     `18` = 1.5, `19` = 1.75, `20` = 2, `21` = 2.5, `22` = 3)
-
 dose_mean_map = get_mean_map(dose_min_map, 4)
+
+ctime_min_map <- c(`1` = 1951, `2` = 1956, `3` = 1961, `4` = 1966, `5` = 1971, 
+    `6` = 1976, `7` = 1981, `8` = 1986, `9` = 1991, `10` = 1996, `11` = 2001)
 
 threshold = 1.5001
 
 # Fix data
-data <- data %.% # Thin Only select interesting columns
-select(death, city, sex, agexcat, agecat, dosecat, agex, age) %.% # Translate Values into different units
-mutate(sex = sex_map[sex], agex = agecat_mean_map[agexcat], age = agecat_mean_map[agecat], 
-    dose = dose_mean_map[dosecat]) %.% # Shorten Remove those with a dose above threshold
+data <- data %.% # Translate Values into different units
+mutate(sex = sex_map[sex], agex = agecat_min_map[agexcat], age = agecat_min_map[agecat], 
+    dose = dose_mean_map[dosecat], ctime = ctime_min_map[ctime]) %.% # Thin Only select the colums of interest
+select(city, sex, agex, age, dose, subjects, death, ctime) %.% # Shorten Remove those with a dose above threshold
 filter(dose < threshold)
 
-# Define values
-
 # One row per death
-long <- ldply(unique(data$death), function(n) {
+dead <- ldply(unique(data$death), function(n) {
     d <- data[data$death == n, ]
     d[rep(1:nrow(d), n), ]
 })
@@ -1311,7 +1309,7 @@ sum(data$death) == 49879
 ```
 
 ```r
-nrow(long) == 49879
+nrow(dead) == 49879
 ```
 
 ```
@@ -1320,32 +1318,154 @@ nrow(long) == 49879
 
 ```r
 
-# Update data
-long <- long %.% select(-death)
+# Clean dead Make it truly represent one individual per row by removing
+# aggregated values
+dead <- dead %.% select(-subjects, -death) %.% mutate(alive = 0)
+
+# One row for each person still alive Note, defining the minimum age for
+# people still alive is a little challenging because the relationship
+# between age and calendar time is not one to one.  Concretely someone
+# exposed at age 0-5 might be 5, 10, or 15 years old in 1950
+table0(dead$age[dead$agex == 0 & dead$ctime == 1951])
+```
+
+```
+## 
+##  5 10 15 
+## 27 15  1
+```
+
+```r
+# this makes it difficult to know their projected age at some later date,
+# like 2004.
+# 
+# To overcome this challenge we will calculate the distribution of min
+# calendar time - min age for a given age at exposure and use this
+# distribution of difference to project a distribution of min ages for a
+# new calendar time (2004 and later, for which we have no more data.
+living <- ddply(data, .(agex, dose, city, sex), function(df) {
+    subjects = sum(df$subjects)
+    dead = sum(df$death)
+    living = subjects - dead
+    .all <- function(x) unique(df[x])
+    
+    if (living == 0) {
+        return(NULL)
+    }
+    
+    # There should be one row for each living person and age should be a
+    # distribution.  see explanation above
+    same_agex = data[data$agex == df$agex[1], ]
+    age = sample(with(same_agex, 2004 + age - ctime), size = living, replace = TRUE)
+    
+    data.frame(city = .all("city"), sex = .all("sex"), agex = .all("agex"), 
+        age = age, dose = .all("dose"), ctime = 2004, alive = 1)
+})
+
+# Merge living and dead
+long <- rbind(dead, living)
+
+# Prove that long is the correct size
+nrow(long) == 85498
+```
+
+```
+## [1] TRUE
+```
+
+```r
+sum(data$subjects) == 85498
+```
+
+```
+## [1] TRUE
+```
+
+```r
+
+# Prove that ages look reasonable
+ggplot(long, aes(ctime, age, color = alive)) + geom_point(alpha = 0.002) + facet_wrap(~agex)
+```
+
+![plot of chunk unnamed-chunk-16](Figs/unnamed-chunk-16.png) 
+
+```r
 
 # Reduce resolution (as it is there are too many categories for graphing)
-g <- long %.% mutate(agex = round(agex/20) * 20, age_string = paste0(agex, "+ years"), 
-    lifespan = age)
+g <- long %.% mutate(agex = floor(agex/20) * 20, age_string = paste0(agex, "+ years"), 
+    lifespan = age, dose = round(dose * 2)/2)
+```
 
+
+
+```r
 # Show it off
-ggplot(g, aes(x = lifespan, color = dose, group = factor(dose), y = ..scaled..)) + 
-    geom_density(adjust = 2) + scale_colour_gradient(guide = guide_legend(title = "Dose (gy)"), 
+ggplot(g %.% filter(!alive), aes(x = lifespan, color = dose, group = factor(paste0(dose)), 
+    y = ..scaled..)) + geom_density(adjust = 2) + scale_colour_gradient(guide = guide_legend(title = "Mean Dose (Sv)"), 
     trans = "sqrt", breaks = c(0, 0.5, 1, 1.5), limits = c(0, 1.5)) + geom_vline(aes(xintercept = agex), 
-    alpha = 0.5) + facet_wrap(~age_string + sex)
+    alpha = 0.5) + facet_wrap(~age_string + sex) + xlim(0, 100)
 ```
 
 ![plot of chunk unnamed-chunk-17](Figs/unnamed-chunk-17.png) 
 
-```r
+#### Figure: LSS lifespan by dose, sex, and age at exposure
+Analogous the the lifespan density plots shown for animals except that this details survivors of the atomic bomb exposures in Hiroshima and Nagasaki.  Lifespan of survivors who died is shown on the x axis in years, the height of each line shows the relative frequency of this lifespan compared to others.  All density curves are scaled so that their maximum value is 1.  Density curves are groups by age at exposure and gender (shown in the facet labels) and by minimum total dose (Sv) designed by line color.  Age of exposure is also designated by a vertical line.
 
-# TODO: Currently this ignores persons who are still alive (mostly in the
-# 0-40 year range at the time of exposure), I should fix the data set so
-# that these people are represented too.  TODO: It would be nice to have a
-# survival curve version of this graph.  TODO: reduce the number of dose
-# categories, probably < 5 per facet TODO: Tanja wants to see these
-# results seperated by city
+##### Related observations
+- **Artifacts are introduced by those still alive** Most survivors expososed at 0-20 years old and many survivors exposed at 20-40 years old are still alive.  That means that only the 40+ year old survivors represent a complete dataset.
+- **Effect are not as strong as those seen in ORNL data** qualitatively the effects of radiation exposure seem milder than those observed in the ORNL data set.  Thse are no strong signs of an early effect.
+
+
+
+```r
+# Note by multiplying age * alive plus a small amount we ensure that
+# survivors who are still alive always have a higher rank than those that
+# have already died.
+g <- g %.% group_by(agex, dose, sex) %.% arrange(age) %.% mutate(survival = rank(-age * 
+    (alive + 1e-04))/length(age))
+
+ggplot(g %.% filter(!alive), aes(age, survival, color = dose, group = factor(dose))) + 
+    geom_path() + facet_wrap(~age_string + sex) + scale_colour_gradient(guide = guide_legend(title = "Mean Dose (Sv)"), 
+    trans = "sqrt", breaks = c(0, 0.5, 1, 1.5), limits = c(0, 1.5)) + geom_vline(aes(xintercept = agex), 
+    alpha = 0.5)
 ```
 
+![plot of chunk unnamed-chunk-18](Figs/unnamed-chunk-18.png) 
+
+#### Figure: LSS survival by dose, sex, and age at exposure
+As before.
+
+##### Observations
+- **Not as extreme as ORNL** This view shows more strongly that the effects seen in the ORNL data used in DDREF analysis were stronger than those seen in the atomic bomb survivors.
+
+
+```r
+g <- g %.% ungroup() %.% group_by(agex, dose, sex) %.% arrange(age) %.% mutate(group_survival = rank(-age * 
+    (alive + 1e-04))/length(age))
+
+# How many animals were alive after X days in each cluster?
+g <- g %.% ungroup() %.% group_by(agex, sex) %.% arrange(age) %.% mutate(cluster_survival = rank(-age * 
+    (alive + 1e-04))/length(age))
+
+ggplot(g, aes(age, group_survival - cluster_survival, color = dose, group = factor(dose))) + 
+    geom_path() + facet_wrap(~age_string + sex) + scale_colour_gradient(guide = guide_legend(title = "Mean Dose (Sv)"), 
+    trans = "sqrt", breaks = c(0, 0.5, 1, 1.5), limits = c(0, 1.5)) + geom_vline(aes(xintercept = agex), 
+    alpha = 0.5)
+```
+
+![plot of chunk unnamed-chunk-19](Figs/unnamed-chunk-19.png) 
+
+#### Figure: Relative LSS survival
+As with the animal data we the difference between survival of an entire cluster (defined by age of exposure and sex) and a group exposed to a particular dose within that group.
+
+##### Related observations
+- **Effect of radiation on human survival is weak and noisy** At the most extreme points of the graph surival might differ by 0.1 (10%), and it is often positive, indicating that much of the difference observed is noise.  This is similar to the effects seen on animal survival outside of ORNL which show weak and noisy responses.
+
+
+# TODO: Tanja wants to see these results seperated by city
+# TODO: I would like to see one survival curve per gender where n is the number of people that were exposed at that age or earlier
+
+```
 __________________________________________________________________
 ^ back to [table of contents](#contents)
 
@@ -1476,7 +1596,7 @@ g <- data[with(data, strain == "RFM" & sex == "F" & rate != 0.4), ]
 show(g)
 ```
 
-![plot of chunk unnamed-chunk-19](Figs/unnamed-chunk-19.png) 
+![plot of chunk unnamed-chunk-21](Figs/unnamed-chunk-21.png) 
 
 ```r
 ggsave_for_ppt("beir_10B3_reproduction.png")
@@ -1531,7 +1651,7 @@ o2
 ```
 
 ```
-## [1] 1.08
+## [1] 0.8058
 ```
 
 ```r
@@ -1540,7 +1660,7 @@ l - as.numeric(logLik(m))
 ```
 
 ```
-## [1] 0
+## [1] -2.842e-14
 ```
 
 
@@ -1652,7 +1772,7 @@ ggplot(beir_r, aes(o, l)) + geom_path() + # geom_path(data=my_r, color='red') +
 scale_y_continuous(breaks = c(0:5)/5, limits = c(0, 1))
 ```
 
-![plot of chunk unnamed-chunk-22](Figs/unnamed-chunk-22.png) 
+![plot of chunk unnamed-chunk-24](Figs/unnamed-chunk-24.png) 
 
 ```r
 ggsave_for_ppt("beir_10B4_reproduction.png")
@@ -1768,7 +1888,7 @@ g <- a
 show(g)
 ```
 
-![plot of chunk unnamed-chunk-23](Figs/unnamed-chunk-23.png) 
+![plot of chunk unnamed-chunk-25](Figs/unnamed-chunk-25.png) 
 
 ```r
 ggsave_for_ppt("inverse_lifespan.png")
@@ -1889,7 +2009,7 @@ g <- a
 show(g)
 ```
 
-![plot of chunk unnamed-chunk-24](Figs/unnamed-chunk-24.png) 
+![plot of chunk unnamed-chunk-26](Figs/unnamed-chunk-26.png) 
 
 ```r
 ggsave_for_ppt("inverse_lifespan_profile.png")
@@ -1988,7 +2108,7 @@ ggplot(data, aes(x, yi)) + geom_point() + geom_errorbar(aes(ymin = yi - vi^0.5,
     color = "red") + geom_path(aes(x, p), color = "black")
 ```
 
-![plot of chunk unnamed-chunk-25](Figs/unnamed-chunk-25.png) 
+![plot of chunk unnamed-chunk-27](Figs/unnamed-chunk-27.png) 
 
 ```r
 ggsave_for_ppt("meta_regression_example.png")
@@ -2114,7 +2234,7 @@ g <- data[with(data, strain == "RFM" & sex == "F" & rate != 0.4), ]
 show(g)
 ```
 
-![plot of chunk unnamed-chunk-26](Figs/unnamed-chunk-26.png) 
+![plot of chunk unnamed-chunk-28](Figs/unnamed-chunk-28.png) 
 
 ```r
 ggsave_for_ppt("beir_10B3_meta_regression.png")
@@ -2271,7 +2391,7 @@ ggplot(beir_r, aes(o, l)) +
     scale_y_continuous(breaks = c(0:5)/5, limits=c(0,1))
 ```
 
-![plot of chunk unnamed-chunk-27](Figs/unnamed-chunk-27.png) 
+![plot of chunk unnamed-chunk-29](Figs/unnamed-chunk-29.png) 
 
 ```r
 ggsave_for_ppt('beir_10B4_meta_reression.png')    
@@ -2486,7 +2606,7 @@ ggplot(g, aes(
     facet_wrap(~ cluster, scales="free_y")  
 ```
 
-![plot of chunk unnamed-chunk-30](Figs/unnamed-chunk-30.png) 
+![plot of chunk unnamed-chunk-32](Figs/unnamed-chunk-32.png) 
 
 ```r
 
@@ -2642,7 +2762,7 @@ g <- a
 show(g)
 ```
 
-![plot of chunk unnamed-chunk-31](Figs/unnamed-chunk-311.png) 
+![plot of chunk unnamed-chunk-33](Figs/unnamed-chunk-331.png) 
 
 ```r
 ggsave_for_ppt("meta_regression_profile.png")
@@ -2653,7 +2773,7 @@ ggplot(summary, aes(o, l)) + geom_path(aes(o, l_10B4), color = "black") + geom_p
     l_meta), color = "red") + ylim(0, 4)
 ```
 
-![plot of chunk unnamed-chunk-31](Figs/unnamed-chunk-312.png) 
+![plot of chunk unnamed-chunk-33](Figs/unnamed-chunk-332.png) 
 
 ```r
 ggsave_for_ppt("meta_regression_summary_effect.png")

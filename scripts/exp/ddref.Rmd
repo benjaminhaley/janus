@@ -246,7 +246,6 @@ aliases <- list(
 
 threshold_dose <- 1.5
 
-
 # Fix
 # TODO(later) move these fixes to radiation.R
 
@@ -335,9 +334,6 @@ The most complete way to handle this situation is do define a lifestage by age f
 Instead we will define a new feild, `approximate_assignment_age`.  For most groups this will be the reported `assignment_age`.  For argonne groups we will define it by the median `assignment_age`.
 
 ```{r}
-# TODO: Cluster concordance should be labeled with the unique studies or labs that the cluster represents
-# TODO: Group listings within a cluster should be in a good order
-# TODO: dose estimates within cluster groups should have two signficant digits
 d$intended_assignment_age <- d$assignment_age
 labs_that_recorded_true_age_at_assignment <- c(
   'ANL'
@@ -496,7 +492,9 @@ pluralize <- function(x) {
 
 # Is acute?
 d$acute <- d$fractions == 1 | d$dose == 0
-d$protracted <- d$fractions > 1 & d$dose > 0
+d$protracted <-  d$dose > 0 & 
+                 (d$fractions > 1 |
+                  d$dose_rate < 0.01)
 
 # Observations per cluster
 d = d %.%
@@ -630,6 +628,7 @@ for(p in warning_prefixes) cat(find_in_file(p), '\n')
 Here are a description of each of the original studies used in this analysis as provided by the 'Gray Book' ([Gerber et al. 1996](#gerber_1996)).  Studies can easily be found by lab and study id which are the first two parts of the group id.  Concretely, a group id of 1007-3-6 is the sixth groups from the third study conducted at lab 1007, Oak Ridge National Laboratory.
 
 TODO(later) summarize this information in a table
+TODO(later) this information should be stored as data, not text
 
 ##### 3-1 
 cluster 7 - ♀ BC3F1 Mice ENEA X-ray at 91 days old  
@@ -856,12 +855,13 @@ library(directlabels)
 # Data
 setwd('~/janus/scripts')
 d <- readRDS('data/ddref.rds')
-
 ```
 
 
 
 ```{r}
+# TODO(later): figure out what is the cause of early effects in ORNL data based on the pathology codes released with that dataset.
+
 ggplot(d,
        aes(lifespan, 
            color=dose,
@@ -872,7 +872,7 @@ ggplot(d,
   geom_density(adjust=2) +
   facet_wrap(~ cluster, scales='free') + 
   scale_colour_gradient(
-    guide = guide_legend(title = "Dose (gy)"),
+    guide = guide_legend(title = "Dose (Gy)"),
     trans = "sqrt"
   ) + 
   geom_vline(
@@ -880,25 +880,19 @@ ggplot(d,
     alpha=0.5
   ) +
   expand_limits(x = -4)
-
 ```
 #### Figure: Lifespan by dose and cluster
 Density plots show the frequency, y-axis, of a given lifespan (in days), x-axis.  Sepperate density curves are shown for each distinct dose and dose rate.  The total dose delivered is labeled by color as shown in the figure legend.  The mean age at first exposure is denoted by a gray vertical line on each graph.
 
 Clusters are sepperated by facets and labeled with sex, strain, species, lab, quality of radiation, and mean age at first exposure (in days).  The clusters are ordered by the number of animals in the cluster.  The cluster with the most animals, Male RFM/Un Mice from ORNL, are at the top left and the cluster with the least animals is furthest to the right on the bottom row.
 
-```{r}
-# TODO(later): make survival curves that show the difference in % survival between a group and the cluster average
-# TODO(later): figure out what is the cause of early effects in ORNL data based on the pathology codes released with that dataset.
-# TODO: Add figure legends
-
-```
-
-A few observations:
+##### Related observations:
 - **Different clusters show very different responses to the same total dose.**  For example, compare Female RFM/UN Mice from ORNL (1) to Female C57Bl/6Bd mice from the same institution (10).  The only difference between these experiments is the strain of mice used.  The former show a strong response to gamma rays, the latter a weak response or no response.  These differences could reflect strain-specific differences in radiosensitivity or methodological errors in the way that the studies were conducted.
-- **The cluster used to estimate DDREF shows a particularly strong and early response**.  RFM/Un mice from ORNL were used as the acute condition in the estimate of DDREF from BEIR VII (chronic exposure is not shown here because individual level data is not available).  Notably, this is one of the stronger radiation responses seen in any cluster, including other similar ones from ORNL.  Moreover, the response is bimodal, with an unusual early effect.  This suggests that the acute effects are being over-estmimate in BEIR VII and that DDREF should be closer to one, that is the difference between acute and protracted exposure is smaller than the BEIR VII estimate.
+- **The cluster used to estimate DDREF shows a particularly strong and early response**.  RFM/Un mice from ORNL were used as the acute condition in the estimate of DDREF from BEIR VII (chronic exposure is not shown here because individual level data is not available).  Notably, this is the strongest radiation response seen in any cluster, including other similar ones from ORNL.  Moreover, the response is bimodal, with an early effect that is not seen in other clusters.  This suggests that the acute effects are being over-estmimated in BEIR VII and that DDREF should be closer to one.
 
 ```{r}
+n_unique <- function(...) length(unique(paste(...)))
+
 comparable_doses <- d %.%
   ungroup() %.%
   group_by(cluster_id, dose) %.%
@@ -921,25 +915,103 @@ ggplot(g,
   geom_density(adjust=2) +
   facet_grid(dose~cluster, scales='free') + 
   scale_colour_gradient(
-    guide = guide_legend(title = "Dose (gy)")
+    guide = guide_legend(title = "Dose (Gy)"),
+    breaks= c(0,0.5,1.0,1.5),
+    limits= c(0,1.5)
   ) + 
   geom_vline(
     aes(xintercept=intended_assignment_age),
     alpha=0.5
   ) +
   expand_limits(x = -4)
-
-# TODO: Why doesn't ANL have comparable groups that recieved the same dose at different fractions.  I am guessing they do, but the way that we are defining 'intended age at first assignment' is removing these results
 ```
+#### Figure: Directly comparable protracted exposures
+Similar to the figure above, except that the data has been limited to those cases were there are two groups in the same cluster with the same dose, but differences in dose rate or number of fractions.  Doses that were delivered more slowly are labeled as protracted (dashed line).  Facets of the graph are defined by cluster and total dose delivered.  Controls are included for comparison.
 
+##### Additional details
+In cluster 4, doses were broken into 10 or 8 fractions seperrated by three hours or 1 day respectively.  In cluster 6 doses were broken into 10 fractions sepperated by one day.  Notably both of these experiments were conducted at the same laboratory (SCK/CEN) using the same irradiator (a CS-137 source).  
 
-#### Label treatment groups
+*Note, ORNL also conducted experiments with directly comparable doses both acute and protracted, but individual level data is not avaiable for the acute exposures.
 
-Show the same graphs with individual treatement groups labeled, this is not a figure for papers or presentations, but is handy for those who want to inspect the data very closely (me).
+##### Observations
+The effects of fractionation are decidely ambivilant.  Cluster 4 shows signs of high DDREF, cluster 6 shows signs of a DDREF close to 1.  The only substantial difference between these experiments is the strain used.  Three facts might account for this observation, perhaps DDREF is strain specific, perhaps there were methodological errors in the way these studies were conducted, or perhaps random events are obscuring the true pattern.
+
 
 ```{r}
+d <- d %.%
+  group_by(cluster, dose, dose_rate, fractions) %.%
+  arrange(lifespan) %.%
+  mutate(survival=rank(-lifespan) / length(lifespan))
 
-# TODO(later) remove this graph from the presented materials
+ggplot(d, 
+       aes(lifespan, 
+           survival,
+           color=dose,
+           group=factor(paste(dose, dose_rate, fractions)))) + 
+  geom_path() +
+  facet_wrap(~ cluster, scales='free') + 
+  scale_color_continuous(
+    guide = guide_legend(title = "Dose (Gy)"),
+    trans = "sqrt"
+  ) + 
+  geom_vline(
+    aes(xintercept=intended_assignment_age),
+    alpha=0.5
+  ) +
+  expand_limits(x = -4)
+```
+#### Figure: Survival plots
+As before, but presented as traditional survival plots instead.  The y axis represents the fraction of animals alive a at a given time.  Other elements are organizeds as before.
+
+##### Related observations
+This does not tell us anything new, I've included it because survival plots are standard.  Personally I find them less informative than the lifespan density plots shown above.
+
+
+```{r}
+d <- d %.%
+  ungroup() %.%
+  group_by(cluster, dose, dose_rate, fractions) %.%
+  arrange(lifespan) %.%
+  mutate(group_survival=rank(-lifespan) / length(lifespan))
+
+# How many animals were alive after X days in each cluster?
+d <- d %.%
+  ungroup() %.%
+  group_by(cluster) %.%
+  arrange(lifespan) %.%
+  mutate(cluster_survival=rank(-lifespan) / length(lifespan))
+
+ggplot(d, 
+       aes(lifespan, 
+           group_survival - cluster_survival,
+           color=dose,
+           linetype=protracted,
+           group=factor(paste(dose, dose_rate, fractions)))) + 
+  geom_path() +
+  facet_wrap(~ cluster, scales='free_x') + 
+  scale_color_continuous(
+    guide = guide_legend(title = "Dose (Gy)"),
+    trans = "sqrt"
+  ) + 
+  geom_vline(
+    aes(xintercept=intended_assignment_age),
+    alpha=0.5
+  )
+```
+#### Figure: Relative survival plots
+Like the survival plot above, expecept that survival group within the entire cluster is subtracted from survival within a particular group.  The result is a graph which emphasizes the differences between survival.  Groups with positive values (above y=0) are surviving longer than the cluster average, groups with negative values (below y=0) are surviving less time than the cluster average.  In this graph groups with protracted exposures (multiple fractions or dose rates < 0.01 Gy/min)
+
+##### Related observations
+- **Useful graph, but difficult to interpret** This is actually one of my favorite visualizations of this data because it really uses all of the space of the graph to convey information.  However, it takes some thought to wrap one's head around it, so it might not be suitable for presentation in a paper.
+- **Cluster 1 does not look as extreme in this graph** It is clear that some clusters show effects roughly as strong as cluster 1 (the cluster used to estimate acute effects in the DDREF estimate).  Concretely clusters 7 (Female BC3F1 mice) and 9 (Female C3Hf/Bd Mice) have responses of similar strength.  Still, no responses happen as early as those in cluster 1, so it is still a suspicious case suggesting that DDREF has been over-estimated.
+- **Protraction appears to alievate or eliminate the effects of exposure** In this graph it was possible to meaningfully show protracted groups.  The general trend is that protraction seems to be beneficial.  This is especially obvious in cluster 4, but generally corroborated with clusters 2, 3, and 6 in which the protracted treatment groups tend to cluster with the control and low dose groups.
+
+
+```{r, echo=FALSE}
+# Note echo=FALSE prevents this code from appearing in our report
+#### Label treatment groups
+
+# Show the same graphs with individual treatement groups labeled, this is not a figure for papers or presentations, but is handy for those who want to inspect the data very closely (me).
 
 # g <- ggplot(d %.% filter(cluster_id == 15),
 #        aes(lifespan, 
@@ -961,73 +1033,7 @@ Show the same graphs with individual treatement groups labeled, this is not a fi
 #   expand_limits(x = -4, y = 1.3)
 # 
 # direct.label(g, list("top.bumptwice", cex=0.6))
-
 ```
-
-#### Survival plots
-Survival vs time by cluster with indications for dose and protraction.
-
-```{r}
-# TODO this graph should include age_at_last treatment too
-# How many animals were alive after X days in each treatment group?
-d <- d %.%
-  group_by(cluster, dose, dose_rate, fractions) %.%
-  arrange(lifespan) %.%
-  mutate(survival=rank(-lifespan) / length(lifespan))
-
-ggplot(d, 
-       aes(lifespan, 
-           survival,
-           color=dose,
-           group=factor(paste(dose, dose_rate, fractions)))) + 
-  geom_path() +
-  facet_wrap(~ cluster, scales='free') + 
-  scale_color_continuous(
-    guide = guide_legend(title = "Dose (gy)"),
-    trans = "sqrt"
-  ) + 
-  geom_vline(
-    aes(xintercept=intended_assignment_age),
-    alpha=0.5
-  ) +
-  expand_limits(x = -4)
-
-```
-
-
-```{r}
-# TODO this graph should include age_at_last treatment too
-# How many animals were alive after X days in each treatment group?
-d <- d %.%
-  ungroup() %.%
-  group_by(cluster, dose, dose_rate, fractions) %.%
-  arrange(lifespan) %.%
-  mutate(group_survival=rank(-lifespan) / length(lifespan))
-
-# How many animals were alive after X days in each cluster?
-d <- d %.%
-  ungroup() %.%
-  group_by(cluster) %.%
-  arrange(lifespan) %.%
-  mutate(cluster_survival=rank(-lifespan) / length(lifespan))
-
-ggplot(d, 
-       aes(lifespan, 
-           group_survival - cluster_survival,
-           color=dose,
-           group=factor(paste(dose, dose_rate, fractions)))) + 
-  geom_path() +
-  facet_wrap(~ cluster, scales='free_x') + 
-  scale_color_continuous(
-    guide = guide_legend(title = "Dose (gy)"),
-    trans = "sqrt"
-  ) + 
-  geom_vline(
-    aes(xintercept=intended_assignment_age),
-    alpha=0.5
-  )
-```
-
 __________________________________________________________________
 ^ back to [table of contents](#contents)
 
@@ -1122,63 +1128,136 @@ dose_min_map <- c('1'=0.000,
                   '20'=2.000,
                   '21'=2.500,
                   '22'=3.000)
-
 dose_mean_map = get_mean_map(dose_min_map, 4)
+
+ctime_min_map <- c('1'=1951,
+                  '2'=1956,
+                  '3'=1961,
+                  '4'=1966,
+                  '5'=1971,
+                  '6'=1976,
+                  '7'=1981,
+                  '8'=1986,
+                  '9'=1991,
+                  '10'=1996,
+                  '11'=2001)
 
 threshold = 1.5001
 
 # Fix data
 data <- data %.% 
-  # Thin
-  # Only select interesting columns
-  select(death,
-         city,
-         sex, 
-         agexcat,
-         agecat, 
-         dosecat,
-         agex,
-         age) %.%
   # Translate
   # Values into different units
   mutate(sex = sex_map[sex],
-         agex = agecat_mean_map[agexcat],
-         age = agecat_mean_map[agecat],
-         dose = dose_mean_map[dosecat]) %.%
+         agex = agecat_min_map[agexcat],
+         age  = agecat_min_map[agecat],
+         dose = dose_mean_map[dosecat],
+         ctime= ctime_min_map[ctime]) %.%
+  # Thin
+  # Only select the colums of interest
+  select(city, 
+         sex, 
+         agex, 
+         age,
+         dose, 
+         subjects, 
+         death,
+         ctime) %.%
   # Shorten
   # Remove those with a dose above threshold
   filter(dose < threshold)
 
-# Define values
-
 # One row per death
-long <- ldply(unique(data$death), function(n) {
+dead <- ldply(unique(data$death), function(n) {
   d <- data[data$death == n,]
   d[rep(1:nrow(d), n),]
 })
 
 # Prove it was actually done
 sum(data$death) == 49879
-nrow(long) == 49879
+nrow(dead) == 49879
 
-# Update data
-long <- long %.% select(-death)
+# Clean dead
+# Make it truly represent one individual per row by removing
+# aggregated values
+dead <- dead %.%
+  select(-subjects, -death) %.%
+  mutate('alive' = 0)
+
+# One row for each person still alive
+# Note, defining the minimum age for people still alive is
+# a little challenging because the relationship between age
+# and calendar time is not one to one.  Concretely someone
+# exposed at age 0-5 might be 5, 10, or 15 years old in 1950
+table0(dead$age[dead$agex == 0 & 
+                dead$ctime == 1951])
+# this makes it difficult to know their projected age at some
+# later date, like 2004.
+#
+# To overcome this challenge we will calculate the distribution
+# of min calendar time - min age for a given age at exposure and
+# use this distribution of difference to project a distribution
+# of min ages for a new calendar time (2004 and later, for which
+# we have no more data.
+living <- ddply(data, .(agex, dose, city, sex), function(df){
+  subjects = sum(df$subjects)
+  dead = sum(df$death)
+  living = subjects - dead
+  .all <- function(x) unique(df[x])
+  
+  if(living == 0){
+    return(NULL)
+  }
+  
+  # There should be one row for each living person
+  # and age should be a distribution.
+  # see explanation above
+  same_agex = data[data$agex == df$agex[1],]
+  age = sample(with(same_agex, 2004 + age - ctime), 
+               size=living, 
+               replace=TRUE)
+  
+  data.frame(
+    city = .all('city'),
+    sex = .all('sex'),
+    agex = .all('agex'),
+    age = age,
+    dose = .all('dose'),
+    ctime = 2004,
+    alive = 1)
+})
+
+# Merge living and dead
+long <- rbind(dead, living)
+
+# Prove that long is the correct size
+nrow(long) == 85498
+sum(data$subjects) == 85498
+  
+# Prove that ages look reasonable
+ggplot(long, aes(ctime, age, color=alive)) + 
+  geom_point(alpha=0.002) + 
+  facet_wrap(~agex)
 
 # Reduce resolution 
 # (as it is there are too many categories for graphing)
 g <- long %.% 
-  mutate(agex = round(agex/20)*20,
+  mutate(agex = floor(agex/20)*20,
          age_string = paste0(agex, '+ years'),
-         lifespan = age)
+         lifespan = age,
+         dose = round(dose * 2)/2)
+```
 
+```{r}
 # Show it off
-ggplot(g, aes(x=lifespan, 
-              color=dose, 
-              group=factor(dose),
-              y=..scaled..)) +
+ggplot(g %.% filter(!alive), 
+       aes(x=lifespan, 
+           color=dose,
+           group=factor(paste0(dose)),
+           y=..scaled..)) +
   geom_density(adjust=2) +
   scale_colour_gradient(
-    guide = guide_legend(title = "Dose (gy)"),
+    guide = guide_legend(title = "Mean Dose (Sv)"),
     trans = "sqrt",
     breaks= c(0,0.5,1.0,1.5),
     limits= c(0,1.5)
@@ -1187,12 +1266,90 @@ ggplot(g, aes(x=lifespan,
     aes(xintercept=agex),
     alpha=0.5
   ) +
-  facet_wrap( ~ age_string + sex)
+  facet_wrap( ~ age_string + sex) +
+  xlim(0, 100)
+```
+#### Figure: LSS lifespan by dose, sex, and age at exposure
+Analogous the the lifespan density plots shown for animals except that this details survivors of the atomic bomb exposures in Hiroshima and Nagasaki.  Lifespan of survivors who died is shown on the x axis in years, the height of each line shows the relative frequency of this lifespan compared to others.  All density curves are scaled so that their maximum value is 1.  Density curves are groups by age at exposure and gender (shown in the facet labels) and by minimum total dose (Sv) designed by line color.  Age of exposure is also designated by a vertical line.
 
-# TODO: Currently this ignores persons who are still alive (mostly in the 0-40 year range at the time of exposure), I should fix the data set so that these people are represented too.
-# TODO: It would be nice to have a survival curve version of this graph.
-# TODO: reduce the number of dose categories, probably < 5 per facet
-# TODO: Tanja wants to see these results seperated by city
+##### Related observations
+- **Artifacts are introduced by those still alive** Most survivors expososed at 0-20 years old and many survivors exposed at 20-40 years old are still alive.  That means that only the 40+ year old survivors represent a complete dataset.
+- **Effect are not as strong as those seen in ORNL data** qualitatively the effects of radiation exposure seem milder than those observed in the ORNL data set.  Thse are no strong signs of an early effect.
+
+
+```{r}
+# Note by multiplying age * alive plus a small amount we ensure
+# that survivors who are still alive always have a higher rank
+# than those that have already died.
+g <- g %.%
+  group_by(agex, dose, sex) %.%
+  arrange(age) %.%
+  mutate(survival=rank(-age * (alive + 0.0001)) / length(age))
+
+ggplot(g %.% filter(!alive), 
+       aes(age, 
+           survival,
+           color=dose,
+           group=factor(dose))) + 
+  geom_path() +
+  facet_wrap(~ age_string + sex) + 
+  scale_colour_gradient(
+    guide = guide_legend(title = "Mean Dose (Sv)"),
+    trans = "sqrt",
+    breaks= c(0,0.5,1.0,1.5),
+    limits= c(0,1.5)
+  ) +
+  geom_vline(
+    aes(xintercept=agex),
+    alpha=0.5
+  )
+```
+#### Figure: LSS survival by dose, sex, and age at exposure
+As before.
+
+##### Observations
+- **Not as extreme as ORNL** This view shows more strongly that the effects seen in the ORNL data used in DDREF analysis were stronger than those seen in the atomic bomb survivors.
+
+```{r}
+g <- g %.%
+  ungroup() %.%
+  group_by(agex, dose, sex) %.%
+  arrange(age) %.%
+  mutate(group_survival=rank(-age * (alive + 0.0001)) / length(age))
+
+# How many animals were alive after X days in each cluster?
+g <- g %.%
+  ungroup() %.%
+  group_by(agex, sex) %.%
+  arrange(age) %.%
+  mutate(cluster_survival=rank(-age * (alive + 0.0001)) / length(age))
+
+ggplot(g, 
+       aes(age, 
+           group_survival - cluster_survival,
+           color=dose,
+           group=factor(dose))) + 
+  geom_path() +
+  facet_wrap(~ age_string + sex) + 
+  scale_colour_gradient(
+    guide = guide_legend(title = "Mean Dose (Sv)"),
+    trans = "sqrt",
+    breaks= c(0,0.5,1.0,1.5),
+    limits= c(0,1.5)
+  ) + 
+  geom_vline(
+    aes(xintercept=agex),
+    alpha=0.5
+  )
+```
+#### Figure: Relative LSS survival
+As with the animal data we the difference between survival of an entire cluster (defined by age of exposure and sex) and a group exposed to a particular dose within that group.
+
+##### Related observations
+- **Effect of radiation on human survival is weak and noisy** At the most extreme points of the graph surival might differ by 0.1 (10%), and it is often positive, indicating that much of the difference observed is noise.  This is similar to the effects seen on animal survival outside of ORNL which show weak and noisy responses.
+
+
+# TODO: Tanja wants to see these results seperated by city - A screen shot where I do that (https://www.dropbox.com/s/iv59vxrsy5mi1bo/Screenshot%202014-04-30%2014.15.06.png)# TODO: I would like to see one survival curve per gender where n is the number of people that were exposed at that age or earlier
 
 ```
 __________________________________________________________________
