@@ -22,6 +22,7 @@ scripts/keys/*
 
 # Images
 *.png
+*.jpg
 
 # Anything temp
 temp*

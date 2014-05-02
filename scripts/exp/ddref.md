@@ -8,7 +8,9 @@ benjamin.haley@gmail.com
 
 
 # Abstract
-TODO(ben)
+TODO(later) write an abstract
+TODO(later) read and spruce up this doc
+
 
 <a name="contents"></a>
 
@@ -1205,7 +1207,7 @@ ggplot(d, aes(lifespan, group_survival - cluster_survival, color = dose, linetyp
     group = factor(paste(dose, dose_rate, fractions)))) + geom_path() + facet_wrap(~cluster, 
     scales = "free_x") + scale_color_continuous(guide = guide_legend(title = "Dose (Gy)"), 
     trans = "sqrt") + geom_vline(aes(xintercept = intended_assignment_age), 
-    alpha = 0.5)
+    alpha = 0.5) + ylim(-0.4, 0.4)
 ```
 
 ![plot of chunk unnamed-chunk-14](Figs/unnamed-chunk-14.png) 
@@ -1392,13 +1394,14 @@ ggplot(long, aes(ctime, age, color = alive)) + geom_point(alpha = 0.002) + facet
 ```r
 
 # Reduce resolution (as it is there are too many categories for graphing)
-g <- long %.% mutate(agex = floor(agex/20) * 20, age_string = paste0(agex, "+ years"), 
-    lifespan = age, dose = round(dose * 2)/2)
+low_res <- long %.% mutate(agex = floor(agex/20) * 20, age_string = paste0(agex, 
+    "+ years"), lifespan = age, dose = round(dose * 2)/2)
 ```
 
 
 
 ```r
+g <- low_res
 # Show it off
 ggplot(g %.% filter(!alive), aes(x = lifespan, color = dose, group = factor(paste0(dose)), 
     y = ..scaled..)) + geom_density(adjust = 2) + scale_colour_gradient(guide = guide_legend(title = "Mean Dose (Sv)"), 
@@ -1421,7 +1424,7 @@ Analogous the the lifespan density plots shown for animals except that this deta
 # Note by multiplying age * alive plus a small amount we ensure that
 # survivors who are still alive always have a higher rank than those that
 # have already died.
-g <- g %.% group_by(agex, dose, sex) %.% arrange(age) %.% mutate(survival = rank(-age * 
+g <- low_res %.% group_by(agex, dose, sex) %.% arrange(age) %.% mutate(survival = rank(-age * 
     (alive + 1e-04))/length(age))
 
 ggplot(g %.% filter(!alive), aes(age, survival, color = dose, group = factor(dose))) + 
@@ -1439,18 +1442,19 @@ As before.
 - **Not as extreme as ORNL** This view shows more strongly that the effects seen in the ORNL data used in DDREF analysis were stronger than those seen in the atomic bomb survivors.
 
 
-```r
-g <- g %.% ungroup() %.% group_by(agex, dose, sex) %.% arrange(age) %.% mutate(group_survival = rank(-age * 
-    (alive + 1e-04))/length(age))
 
-# How many animals were alive after X days in each cluster?
+```r
+g <- low_res %.% ungroup() %.% group_by(agex, dose, sex) %.% arrange(age) %.% 
+    mutate(group_survival = rank(-age * (alive + 1e-04))/length(age))
+
+# How many people were alive after X years in each cluster?
 g <- g %.% ungroup() %.% group_by(agex, sex) %.% arrange(age) %.% mutate(cluster_survival = rank(-age * 
     (alive + 1e-04))/length(age))
 
-ggplot(g, aes(age, group_survival - cluster_survival, color = dose, group = factor(dose))) + 
-    geom_path() + facet_wrap(~age_string + sex) + scale_colour_gradient(guide = guide_legend(title = "Mean Dose (Sv)"), 
+ggplot(g %.% filter(!alive), aes(age, group_survival - cluster_survival, color = dose, 
+    group = factor(dose))) + geom_path() + facet_wrap(~age_string + sex) + scale_colour_gradient(guide = guide_legend(title = "Mean Dose (Sv)"), 
     trans = "sqrt", breaks = c(0, 0.5, 1, 1.5), limits = c(0, 1.5)) + geom_vline(aes(xintercept = agex), 
-    alpha = 0.5)
+    alpha = 0.5) + ylim(-0.4, 0.4)
 ```
 
 ![plot of chunk unnamed-chunk-19](Figs/unnamed-chunk-19.png) 
@@ -1462,10 +1466,78 @@ As with the animal data we the difference between survival of an entire cluster 
 - **Effect of radiation on human survival is weak and noisy** At the most extreme points of the graph surival might differ by 0.1 (10%), and it is often positive, indicating that much of the difference observed is noise.  This is similar to the effects seen on animal survival outside of ORNL which show weak and noisy responses.
 
 
-# TODO: Tanja wants to see these results seperated by city
-# TODO: I would like to see one survival curve per gender where n is the number of people that were exposed at that age or earlier
 
+```r
+
+# TODO(later): It would be reasonable to add animals exposed at different
+# ages to the same cluster, just as I did for the atomic bomb survivors.
+# I only need to be sure that I calculate survival based on the total
+# still alive
+
+# Reduce dose resolution We want less dose categories total, but agex
+# resolution should not be reduced
+g <- long %.% mutate(dose = round(dose * 2)/2)
+
+# Determine survival
+# 
+# Survival should include the number of people alive at a given age and
+# the number of people that are at risk at that same age.  Because some
+# people were irradiated at an older age they should be included in the
+# total at risk only at ages
+# 
+# Note by multiplying age * alive plus a small amount we ensure that
+# survivors who are still alive always have a higher rank than those that
+# have already died.
+
+g <- g %.% group_by(dose, sex) %.% arrange(age) %.% mutate(n_alive = rank(-age * 
+    (alive + 1e-04)), n_at_risk = rep(sum(agex <= age), length(age)), survival = n_alive/n_at_risk)
+
+ggplot(g %.% filter(!alive), aes(age, survival, color = dose, group = factor(dose))) + 
+    geom_path() + facet_wrap(~sex) + scale_colour_gradient(guide = guide_legend(title = "Mean Dose (Sv)"), 
+    trans = "sqrt", breaks = c(0, 0.5, 1, 1.5), limits = c(0, 1.5)) + ylim(0, 
+    1)
 ```
+
+![plot of chunk unnamed-chunk-20](Figs/unnamed-chunk-20.png) 
+
+#### LSS survival by sex
+As before except that all age at first exposures are combined into a single graph.  The total survival is calcualated by the number of people alive at a given age divided by the number of people who were exposed at that same age or younger.
+
+##### Related observations
+**Less noisy** This looks like the stratified graphs from before, but is noticibly less noisy.  There is a reasonably clean relationship between dose and life shortening.
+**Shows the effect of irradiating a population** Unlike the previous graphs, this shows the effects or irradiating an entire population all at once.
+**May mask age specific reactions** The stratified graph left the mild impression that exposure to younger population might be more damaging.  If this is true, then this graph completely masks that effect.
+
+
+
+```r
+# How many people were alive after X years in each group?
+g <- g %.% ungroup() %.% group_by(dose, sex, city) %.% arrange(age) %.% mutate(n_alive = rank(-age * 
+    (alive + 1e-04)), n_at_risk = rep(sum(agex <= age), length(age)), group_survival = n_alive/n_at_risk)
+
+# How many people were alive after X years in each cluster?
+g <- g %.% ungroup() %.% group_by(sex, city) %.% arrange(age) %.% mutate(n_alive = rank(-age * 
+    (alive + 1e-04)), n_at_risk = rep(sum(agex <= age), length(age)), cluster_survival = n_alive/n_at_risk)
+
+ggplot(g %.% filter(!alive), aes(age, group_survival - cluster_survival, color = dose, 
+    linetype = factor(city), group = factor(paste0(dose, city)))) + geom_path() + 
+    facet_wrap(~sex) + scale_colour_gradient(guide = guide_legend(title = "Mean Dose (Sv)"), 
+    trans = "sqrt", breaks = c(0, 0.5, 1, 1.5), limits = c(0, 1.5)) + ylim(-0.4, 
+    0.4)
+```
+
+![plot of chunk unnamed-chunk-21](Figs/unnamed-chunk-21.png) 
+
+#### Relative LSS survival by sex
+As before, but now we show the difference between survival at a given dose and the overall survival of the cohort.  
+
+##### Related observations
+- **Same story, less noise** This graph tells the same story as before, with substantially less noise.  At its maximum survival, ~75 years old, the difference in survival between people irradiated at > 1 Gy might be 10% of the population. This is a sizable difference to be sure, but not even close to what was seen in the ORNL data.
+
+
+
+
+
 __________________________________________________________________
 ^ back to [table of contents](#contents)
 
@@ -1596,7 +1668,7 @@ g <- data[with(data, strain == "RFM" & sex == "F" & rate != 0.4), ]
 show(g)
 ```
 
-![plot of chunk unnamed-chunk-21](Figs/unnamed-chunk-21.png) 
+![plot of chunk unnamed-chunk-24](Figs/unnamed-chunk-24.png) 
 
 ```r
 ggsave_for_ppt("beir_10B3_reproduction.png")
@@ -1651,7 +1723,7 @@ o2
 ```
 
 ```
-## [1] 0.8058
+## [1] 0.8673
 ```
 
 ```r
@@ -1660,7 +1732,7 @@ l - as.numeric(logLik(m))
 ```
 
 ```
-## [1] -2.842e-14
+## [1] 0
 ```
 
 
@@ -1772,7 +1844,7 @@ ggplot(beir_r, aes(o, l)) + geom_path() + # geom_path(data=my_r, color='red') +
 scale_y_continuous(breaks = c(0:5)/5, limits = c(0, 1))
 ```
 
-![plot of chunk unnamed-chunk-24](Figs/unnamed-chunk-24.png) 
+![plot of chunk unnamed-chunk-27](Figs/unnamed-chunk-27.png) 
 
 ```r
 ggsave_for_ppt("beir_10B4_reproduction.png")
@@ -1874,12 +1946,10 @@ aggregate <- ddply(aggregate, .(cluster, sex, cluster), function(df) {
     out
 })
 
-# TODO(ben) This methodology should look similar to the one we used for
-# the meta analysis TODO(ben) change the colors in order to make the theme
-# consistent throughout the presentation.  I recommend black for chronic
-# effects and red for accute.  Use transparency to represent my new
-# results when I over-lay them so that the old results can still be seen
-# (or visa-versa).
+# TODO(later) change the colors in order to make the theme consistent
+# throughout the presentation.  I recommend black for chronic effects and
+# red for accute.  Use transparency to represent my new results when I
+# over-lay them so that the old results can still be seen (or visa-versa).
 
 
 # Show As in 10B3 http://www.nap.edu/openbook.php?record_id=11340&page=257
@@ -1888,7 +1958,7 @@ g <- a
 show(g)
 ```
 
-![plot of chunk unnamed-chunk-25](Figs/unnamed-chunk-25.png) 
+![plot of chunk unnamed-chunk-28](Figs/unnamed-chunk-28.png) 
 
 ```r
 ggsave_for_ppt("inverse_lifespan.png")
@@ -2009,7 +2079,7 @@ g <- a
 show(g)
 ```
 
-![plot of chunk unnamed-chunk-26](Figs/unnamed-chunk-26.png) 
+![plot of chunk unnamed-chunk-29](Figs/unnamed-chunk-29.png) 
 
 ```r
 ggsave_for_ppt("inverse_lifespan_profile.png")
@@ -2108,7 +2178,7 @@ ggplot(data, aes(x, yi)) + geom_point() + geom_errorbar(aes(ymin = yi - vi^0.5,
     color = "red") + geom_path(aes(x, p), color = "black")
 ```
 
-![plot of chunk unnamed-chunk-27](Figs/unnamed-chunk-27.png) 
+![plot of chunk unnamed-chunk-30](Figs/unnamed-chunk-30.png) 
 
 ```r
 ggsave_for_ppt("meta_regression_example.png")
@@ -2234,7 +2304,7 @@ g <- data[with(data, strain == "RFM" & sex == "F" & rate != 0.4), ]
 show(g)
 ```
 
-![plot of chunk unnamed-chunk-28](Figs/unnamed-chunk-28.png) 
+![plot of chunk unnamed-chunk-31](Figs/unnamed-chunk-31.png) 
 
 ```r
 ggsave_for_ppt("beir_10B3_meta_regression.png")
@@ -2391,7 +2461,7 @@ ggplot(beir_r, aes(o, l)) +
     scale_y_continuous(breaks = c(0:5)/5, limits=c(0,1))
 ```
 
-![plot of chunk unnamed-chunk-29](Figs/unnamed-chunk-29.png) 
+![plot of chunk unnamed-chunk-32](Figs/unnamed-chunk-32.png) 
 
 ```r
 ggsave_for_ppt('beir_10B4_meta_reression.png')    
@@ -2606,13 +2676,9 @@ ggplot(g, aes(
     facet_wrap(~ cluster, scales="free_y")  
 ```
 
-![plot of chunk unnamed-chunk-32](Figs/unnamed-chunk-32.png) 
+![plot of chunk unnamed-chunk-35](Figs/unnamed-chunk-35.png) 
 
 ```r
-
-#TODO(ben) clean, document, commit these changes
-#TODO(ben) reorder cluster factor by number of animals
-#TODO(ben) put ggsave in a util function (or just use something better)
 
 
 ggsave_for_ppt('meta_regression.png')
@@ -2762,7 +2828,7 @@ g <- a
 show(g)
 ```
 
-![plot of chunk unnamed-chunk-33](Figs/unnamed-chunk-331.png) 
+![plot of chunk unnamed-chunk-36](Figs/unnamed-chunk-361.png) 
 
 ```r
 ggsave_for_ppt("meta_regression_profile.png")
@@ -2773,7 +2839,7 @@ ggplot(summary, aes(o, l)) + geom_path(aes(o, l_10B4), color = "black") + geom_p
     l_meta), color = "red") + ylim(0, 4)
 ```
 
-![plot of chunk unnamed-chunk-33](Figs/unnamed-chunk-332.png) 
+![plot of chunk unnamed-chunk-36](Figs/unnamed-chunk-362.png) 
 
 ```r
 ggsave_for_ppt("meta_regression_summary_effect.png")

@@ -8,7 +8,9 @@ benjamin.haley@gmail.com
 
 
 # Abstract
-TODO(ben)
+TODO(later) write an abstract
+TODO(later) read and spruce up this doc
+
 
 <a name="contents"></a>
 
@@ -25,24 +27,17 @@ TODO(ben)
   - [Visualize](#visual_concordance) - Show what the data looks like.
   - [Atomic Bomb Survivors](#lss) - Load data from atomic bomb survivors as well.
 - Analysis
-  - [Reproduce BEIR 10B3](#10B3) - Show that we can fit the same model of
-    lifespan vs. dose as oak ridge.
-  - [Reproduce BEIR 10B4](#10B4) - Show that we can reproduce the
-    likelihood profiles from BEIR VII.
-  - [10B3 on all data](#10B3-all-data) - Fit 1/lifespan models on all of the
-    data.
-  - [10B4 on all data](#10B4-all-data) - 1/lifespan models profile likelihoods 
-    on all of the data.
-  - [10B3 with metaregression](#10B3-meta) - Reproduce dose response figure
-    applying the principals of meta-regression
-  - [10B4 with metaregression](#10B4-meta) - Reproduce profile likelihood figure
-    applying the principals of meta-regression.
-  - [10B3 metareression on all data](#10B3-meta-all) Apply meta regression to
-    all of the datasets.
-  - [10B4 metareression on all data](#10B4-meta-all) Apply meta regression to
-    all of the datasets to generate profiles.
+  - [Reproduce BEIR 10B2](#10B2) - Show that we can fit the same model of cancer risk vs. dose as BEIR VII.
+  - [Reproduce BEIR 10B3](#10B3) - Show that we can fit the same model of lifespan vs. dose as BEIR VII.
+  - [Reproduce BEIR 10B4](#10B4) - Show that we can reproduce the likelihood profiles from BEIR VII.
+  - [10B3 on all data](#10B3-all-data) - Fit 1/lifespan models on all of the data.
+  - [10B4 on all data](#10B4-all-data) - 1/lifespan models profile likelihoods on all of the data.
+  - [10B3 with metaregression](#10B3-meta) - Reproduce dose response figure applying the principals of meta-regression
+  - [10B4 with metaregression](#10B4-meta) - Reproduce profile likelihood figure applying the principals of meta-regression.
+  - [10B3 metareression on all data](#10B3-meta-all) Apply meta regression to all of the datasets.
+  - [10B4 metareression on all data](#10B4-meta-all) Apply meta regression to all of the datasets to generate profiles.
 
-_____________________________________________________________________________  
+___________________________________________________________________
 
 
 ```{r global_options, include=FALSE}
@@ -136,9 +131,52 @@ dose and dose rate reduction
    natural break point.
 5. Estimate DDREF at 1 Sv to make it compatible with lss estimates
 
-_____________________________________________________________________________  
+___________________________________________________________________
 ^ back to [table of contents](#contents)
 
+
+
+<a name="loglike"></a>
+
+Log likelihood
+========================================================
+
+I need to know how log likelihood is calculated.  Basically
+it should be proportional to 
+
+  sum((actual - predicted)^2 / variance)
+
+And variance is measured as
+
+  variance = sum((actual - predicted)^2)) / (n - p - 1)
+
+If variance is estimated at zero, this goes to infinity, so
+the overfit regression model has problems.
+
+```{r} 
+
+data <- data.frame(
+    y=1:100,
+    x=rnorm(100, 1:100)
+)
+n <- nrow(data)
+m <- glm(y ~ x, data=data)
+data$p <- predict(m)
+data$e <- data$y - data$p
+o2 = with(data, 
+    sum(e^2) / (n)
+)
+o2
+l <- with(data, 
+    -(n/2) * log(2*pi) +
+    -(n/2) * log(o2) +
+    -(1/(2*o2)) * sum(e^2)
+)
+l - as.numeric(logLik(m))
+```
+
+___________________________________________________________________ 
+^ back to [table of contents](#contents)
 
 
 
@@ -996,7 +1034,8 @@ ggplot(d,
   geom_vline(
     aes(xintercept=intended_assignment_age),
     alpha=0.5
-  )
+  ) + 
+  ylim(-0.4, 0.4)
 ```
 #### Figure: Relative survival plots
 Like the survival plot above, expecept that survival group within the entire cluster is subtracted from survival within a particular group.  The result is a graph which emphasizes the differences between survival.  Groups with positive values (above y=0) are surviving longer than the cluster average, groups with negative values (below y=0) are surviving less time than the cluster average.  In this graph groups with protracted exposures (multiple fractions or dose rates < 0.01 Gy/min)
@@ -1241,7 +1280,7 @@ ggplot(long, aes(ctime, age, color=alive)) +
 
 # Reduce resolution 
 # (as it is there are too many categories for graphing)
-g <- long %.% 
+low_res <- long %.% 
   mutate(agex = floor(agex/20)*20,
          age_string = paste0(agex, '+ years'),
          lifespan = age,
@@ -1249,6 +1288,7 @@ g <- long %.%
 ```
 
 ```{r}
+g <- low_res
 # Show it off
 ggplot(g %.% filter(!alive), 
        aes(x=lifespan, 
@@ -1281,7 +1321,7 @@ Analogous the the lifespan density plots shown for animals except that this deta
 # Note by multiplying age * alive plus a small amount we ensure
 # that survivors who are still alive always have a higher rank
 # than those that have already died.
-g <- g %.%
+g <- low_res %.%
   group_by(agex, dose, sex) %.%
   arrange(age) %.%
   mutate(survival=rank(-age * (alive + 0.0001)) / length(age))
@@ -1310,21 +1350,22 @@ As before.
 ##### Observations
 - **Not as extreme as ORNL** This view shows more strongly that the effects seen in the ORNL data used in DDREF analysis were stronger than those seen in the atomic bomb survivors.
 
+
 ```{r}
-g <- g %.%
+g <- low_res %.%
   ungroup() %.%
   group_by(agex, dose, sex) %.%
   arrange(age) %.%
   mutate(group_survival=rank(-age * (alive + 0.0001)) / length(age))
 
-# How many animals were alive after X days in each cluster?
+# How many people were alive after X years in each cluster?
 g <- g %.%
   ungroup() %.%
   group_by(agex, sex) %.%
   arrange(age) %.%
   mutate(cluster_survival=rank(-age * (alive + 0.0001)) / length(age))
 
-ggplot(g, 
+ggplot(g %.% filter(!alive), 
        aes(age, 
            group_survival - cluster_survival,
            color=dose,
@@ -1340,7 +1381,8 @@ ggplot(g,
   geom_vline(
     aes(xintercept=agex),
     alpha=0.5
-  )
+  ) + 
+  ylim(-0.4, 0.4)
 ```
 #### Figure: Relative LSS survival
 As with the animal data we the difference between survival of an entire cluster (defined by age of exposure and sex) and a group exposed to a particular dose within that group.
@@ -1349,16 +1391,266 @@ As with the animal data we the difference between survival of an entire cluster 
 - **Effect of radiation on human survival is weak and noisy** At the most extreme points of the graph surival might differ by 0.1 (10%), and it is often positive, indicating that much of the difference observed is noise.  This is similar to the effects seen on animal survival outside of ORNL which show weak and noisy responses.
 
 
-# TODO: Tanja wants to see these results seperated by city - A screen shot where I do that (https://www.dropbox.com/s/iv59vxrsy5mi1bo/Screenshot%202014-04-30%2014.15.06.png)# TODO: I would like to see one survival curve per gender where n is the number of people that were exposed at that age or earlier
+```{r}
+
+# TODO(later): It would be reasonable to add animals exposed at different ages to the same cluster, just as I did for the atomic bomb survivors.  I only need to be sure that I calculate survival based on the total still alive
+
+# Reduce dose resolution
+# We want less dose categories total, but agex resolution
+# should not be reduced
+g <- long %.% 
+  mutate(dose = round(dose * 2)/2)
+
+# Determine survival
+# 
+# Survival should include the number of people alive at a given age
+# and the number of people that are at risk at that same age.
+# Because some people were irradiated at an older age they should
+# be included in the total at risk only at ages 
+# 
+# Note by multiplying age * alive plus a small amount we ensure
+# that survivors who are still alive always have a higher rank
+# than those that have already died.
+
+g <- g %.%
+  group_by(dose, sex) %.%
+  arrange(age) %.%
+  mutate(n_alive = rank(-age * (alive + 0.0001)),
+         n_at_risk = rep(sum(agex <= age), length(age)),
+         survival = n_alive / n_at_risk)
+
+ggplot(g %.% filter(!alive), 
+       aes(age, 
+           survival,
+           color=dose,
+           group=factor(dose))) + 
+  geom_path() +
+  facet_wrap(~ sex) + 
+  scale_colour_gradient(
+    guide = guide_legend(title = "Mean Dose (Sv)"),
+    trans = "sqrt",
+    breaks= c(0,0.5,1.0,1.5),
+    limits= c(0,1.5)
+  ) +
+  ylim(0, 1)
+```
+#### LSS survival by sex
+As before except that all age at first exposures are combined into a single graph.  The total survival is calcualated by the number of people alive at a given age divided by the number of people who were exposed at that same age or younger.
+
+##### Related observations
+**Less noisy** This looks like the stratified graphs from before, but is noticibly less noisy.  There is a reasonably clean relationship between dose and life shortening.
+**Shows the effect of irradiating a population** Unlike the previous graphs, this shows the effects or irradiating an entire population all at once.
+**May mask age specific reactions** The stratified graph left the mild impression that exposure to younger population might be more damaging.  If this is true, then this graph completely masks that effect.
+
+
+```{r}
+# How many people were alive after X years in each group?
+g <- g %.%
+  ungroup() %.%
+  group_by(dose, sex, city) %.%
+  arrange(age) %.%
+  mutate(n_alive = rank(-age * (alive + 0.0001)),
+         n_at_risk = rep(sum(agex <= age), length(age)),
+         group_survival = n_alive / n_at_risk)
+
+# How many people were alive after X years in each cluster?
+g <- g %.%
+  ungroup() %.%
+  group_by(sex, city) %.%
+  arrange(age) %.%
+  mutate(n_alive = rank(-age * (alive + 0.0001)),
+       n_at_risk = rep(sum(agex <= age), length(age)),
+       cluster_survival = n_alive / n_at_risk)
+
+ggplot(g %.% filter(!alive), 
+       aes(age,
+           group_survival - cluster_survival, 
+           color=dose,
+           linetype=factor(city),
+           group=factor(paste0(dose, city)))) + 
+  geom_path() +
+  facet_wrap(~ sex) + 
+  scale_colour_gradient(
+    guide = guide_legend(title = "Mean Dose (Sv)"),
+    trans = "sqrt",
+    breaks= c(0,0.5,1.0,1.5),
+    limits= c(0,1.5)
+  ) + 
+  ylim(-0.4, 0.4)
+```
+#### Relative LSS survival by sex
+As before, but now we show the difference between survival at a given dose and the overall survival of the cohort.  
+
+##### Related observations
+- **Same story, less noise** This graph tells the same story as before, with substantially less noise.  At its maximum survival, ~75 years old, the difference in survival between people irradiated at > 1 Gy might be 10% of the population. This is a sizable difference to be sure, but not even close to what was seen in the ORNL data.
+
+```{r echo=FALSE}
+# Tanja wanted me to look at city specific differences
+# I did, but I think we simply do not have sufficient evidence
+# to detect a city specific effect.
+#
+# Here's the graph of relative surivival broken apart by city
+# 
+# http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-30%2015.54.55.png
+#
+# This graph seems to have small city-specific effects, but only in
+# females and they do not rise above the size of the noise in the 
+# data.  For example the effects of 1.5 Gy exposure in males look
+# safer than 1 Gy at ages > 75 years old for no good reason.  This
+# anomolous effect is nearly the size of the apparent differences
+# between cities in females.
+#
+# I suspect that the driving reason is that the data itself is
+# noisy, expecially for city 2.  There are only a few thousand 
+# people exposed to radiation 0.25 Gy or higher and only a few
+# hundred exposed to doses greater than 1.25 Gy.  The result is that
+# we cannot easily detect the subtle effects of radiation exposure.
+#
+# > table0(g$city, g$dose)
+#    
+#         0   0.5     1   1.5
+#   1 50700  5430  1255   326
+#   2 25314  1532   751   190
 
 ```
+
+
 __________________________________________________________________
 ^ back to [table of contents](#contents)
 
 
 
+<a name="10B2"></a>
+
+Reproduce BEIR 10B2
+========================================================
+*Last update: May 2014*
+
+Reproduce Figure 10B2 estimated DDREF using cancer incidence data.
+
+### Their approach
+BEIR VII used total lifetime cancer indicence adjusted for competing risks for a variety of tumor endpoints.  They only included acute exposures and purposefully excluded various cancer endpoints.
+
+"Tables 1 and 2 because those risk estimates were not adjusted for competing causes of death; (2) results for doses greater than 2 Gy; and (3) results on lymphomas, ovarian cancer, reticulum cell carcinoma, and nonmyeloid leukemias, because these are thought to arise via atypical biological mechanisms, as discussed in Chapter 3, or to reflect an ill-defined combination of cancer types. The risks presented here are based on acute exposures only." 
+- [BEIR VII pg 254][BEIR VII pg 254]
+
+Models were fit as in 10B3 by fitting linear quadratic models to mean incidence rates per group with a fixed curvature, o.  Concretely:
+
+  `mean incidence rate ~ a * dose + o * a * dose^2`
+
+TODO: determine how this adjustment for competing risks was performed?
+
+### The data source
+This analysis was based on data presented in [Table 6 of Edwards 1992][Edwards 1992].  That source could not be found, however most of the data from that source was also present in [Tables 3.1-3.8 of Cox 1995][Cox 1995].  This latter paper was used as the data source and the remaining experiments ??? were estimated from Figure 10B2 directly.
+
+Note, Edwards This source was not found, however most of the same information 
+
+[BEIR VII pg 254]: http://www.nap.edu/openbook.php?record_id=11340&page=254
+
+<a name="Edwards 1992"></a> 
+Edwards, A.A. 1992. Low Dose and Low Dose Rate Effects in Laboratory Animals, Technical Memorandum 1(92). Chilton, UK: National Radiological Protection Board.
+
+```{r}
+library(plyr)
+library(dplyr)
+library(ggplot2)
+
+# Data
+setwd('~/janus')
+source('scripts/util.R')
+data <- read.csv('data/edwards_1992.csv', sep='\t') 
+
+normalize_likelihood <- function(l, delta){
+    l <- l - max(l)
+    l <- exp(l)
+    l <- l / sum(l)
+    l <- l / delta
+    
+    l       
+}
+
+# apply selection criteria
+data <- data %.% 
+  filter(protraction == 'Acute',
+         !is.na(risk),
+         dose <= 2.0)
+
+# Fit model to each facet
+data <- ddply(data, .(facet), function(df){
+  model <- lm(risk ~ dose + I(dose^2), df, weights=(1/error^2))
+  df$seperate_prediction <- predict(model)
+  df
+})
+
+# Fit models to all data
+# vary curvature and measure total likelihood of each model
+low = -2
+high = 6
+delta = .1
+o_range = (low/delta):(high/delta) * delta
+fits <- ldply(o_range, function(o){
+  model <- lm(risk ~ factor(facet) * I(dose + o*dose^2),
+              data,
+              weights=(1/error^2))
+  c(o=o, 
+    likelihood=logLik(model))
+})
+
+fits <- fits %.%
+  mutate(likelihood=normalize_likelihood(likelihood, delta))
+
+# Make predictions for most likely model
+o = with(fits, o[which.max(likelihood)])
+model <- lm(risk ~ factor(facet) * I(dose + o*dose^2),
+              data,
+              weights=(1/error^2))
+data$single_prediction <- predict(model)
+
+# Plot a reproduction of 10B2
+ggplot(data, 
+       aes(x=dose, 
+           y=risk,
+           ymin=risk - error*2,
+           ymax=risk + error*2, 32,
+           shape=source)) + 
+  geom_point() + 
+  geom_pointrange(aes(ymin=risk - error*2, ymax=risk)) + 
+  geom_pointrange(aes(ymin=risk, ymax=risk + error*2)) +
+  geom_smooth(aes(x=dose, y=seperate_prediction),
+              method="lm",
+              formula = "y ~ x + I(x^2)",
+              fullrange=TRUE,
+              color='black') +
+  geom_smooth(aes(x=dose, y=single_prediction),
+              method="lm",
+              formula = "y ~ x + I(x^2)",
+              fullrange=TRUE,
+              color='black',
+              linetype='dotted') +
+  facet_wrap(~ facet + cancer + sex + strain + species, 
+             scales='free_y',
+             ncol=3) +
+  xlim(0, 2) + 
+  xlab("Dose (Gy)") +
+  ylab("Risk %")
+
+# save fits for use in 10B4
+write.csv(fits, 'data/10B2_fits.csv')
+```
+#### Figure: 10B2 reproduction
+A direct reproduction of figure 10B2 from the BEIR VII report. 
+
+##### 10B2
+This is the original [10B2 figure][10B2-citation] from the beir VII report [beir-10b2].
+
+![10B2-image]
+
+[10B2-citation]: http://www.nap.edu/openbook.php?record_id=11340&page=258
+[10B2-image]: http://dl.dropbox.com/u/1131693/bloodrop/10B2.jpg
 
 
+##### Observations
+- **We can reproduce BEIR VII** This graph provides visual evidence that we can accurately reproduce best fit lines used for DDREF estimation from cancer data.  These likelihoods will be combined with DDREF estimates from atomic bomb survivors and animal lifespan studies to provide a final estimate of DDREF.  Only the lifespan estimates are to be updated by this work, but these other estimates must be faithfully reproduced so that they can compbine with the modified lifespan estimates to provide a final modified estimate of DDREF.
 
 <a name="10B3"></a>
 
@@ -1491,61 +1783,13 @@ I am capable of reproducing their results.  There are two tricks
   1. They stratified by strain and gender
   2. They weighted by n
 
-Suspiciously they do not include data from table 2, but when I add this in, it does not make a huge difference, so I assume they are just not being careful.
+Strangely, they do not include data from table 2, but when I add this in, it does not make a huge difference, so I assume they are just not being careful.
 
-_____________________________________________________________________________  
+___________________________________________________________________
 ^ back to [table of contents](#contents)
 
 
-
-
-
-
-
-
-<a name="loglike"></a>
-
-Log likelihood
-========================================================
-
-I need to know how log likelihood is calculated.  Basically
-it should be proportional to 
-
-  sum((actual - predicted)^2 / variance)
-
-And variance is measured as
-
-  variance = sum((actual - predicted)^2)) / (n - p - 1)
-
-If variance is estimated at zero, this goes to infinity, so
-the overfit regression model has problems.
-
-```{r} 
-
-data <- data.frame(
-    y=1:100,
-    x=rnorm(100, 1:100)
-)
-n <- nrow(data)
-m <- glm(y ~ x, data=data)
-data$p <- predict(m)
-data$e <- data$y - data$p
-o2 = with(data, 
-    sum(e^2) / (n)
-)
-o2
-l <- with(data, 
-    -(n/2) * log(2*pi) +
-    -(n/2) * log(o2) +
-    -(1/(2*o2)) * sum(e^2)
-)
-l - as.numeric(logLik(m))
-```
-
-_____________________________________________________________________________  
-^ back to [table of contents](#contents)
-
-
+write.csv(fits, 'data/10B2_fits.csv')
 
 
 
@@ -1775,13 +2019,11 @@ aggregate <- ddply(
     }
 )
 
-#TODO(ben) This methodology should look similar to the one we used
-#          for the meta analysis
-#TODO(ben) change the colors in order to make the theme consistent
-#          throughout the presentation.  I recommend black for chronic
-#          effects and red for accute.  Use transparency to represent my
-#          new results when I over-lay them so that the old results can 
-#          still be seen (or visa-versa).
+#TODO(later) change the colors in order to make the theme consistent
+# throughout the presentation.  I recommend black for chronic
+# effects and red for accute.  Use transparency to represent my
+# new results when I over-lay them so that the old results can 
+# still be seen (or visa-versa).
 
 
 # Show
@@ -2532,10 +2774,6 @@ ggplot(g, aes(
         color='red'
     ) + 
     facet_wrap(~ cluster, scales="free_y")  
-
-#TODO(ben) clean, document, commit these changes
-#TODO(ben) reorder cluster factor by number of animals
-#TODO(ben) put ggsave in a util function (or just use something better)
 
 
 ggsave_for_ppt('meta_regression.png')
