@@ -11,7 +11,7 @@
 	# library(ggplot2)
 
 # # Data
-	# setwd('~/janus/scripts')
+	# setwd('~/janus')
 	# data <- read.csv(
 		# 'data/era/big.csv', 
 		# sep='|', 
@@ -208,7 +208,7 @@
 	library(ggplot2)
 
 # Data
-	setwd('~/janus/scripts')
+	setwd('~/janus')
 	data <- read.csv(
 		'data/era/big.csv', 
 		sep='|', 
@@ -528,9 +528,9 @@ c(
 )	
 
 # Save Results
-	setwd('~/janus/scripts')
-	saveRDS(data, '../data/external.rds', ascii = T, compress = F)
-	data <- readRDS('../data/external.rds')
+	setwd('~/janus')
+	saveRDS(data, 'data/external.rds', ascii = T, compress = F)
+	data <- readRDS('data/external.rds')
 
 
 
@@ -567,8 +567,8 @@ c(
 	library(plyr)
 	
 	# Data
-	setwd('~/janus/scripts')
-	data <- readRDS('../data/external.rds')
+	setwd('~/janus')
+	data <- readRDS('data/external.rds')
 	groups <- data$Group.ID
 	file <- data$file
 	
@@ -636,8 +636,8 @@ c(
 	library(plyr)
 	
 	# Data
-	setwd('~/janus/scripts')
-	data <- readRDS('../data/external.rds')
+	setwd('~/janus')
+	data <- readRDS('data/external.rds')
 
 
 	# Define Group Constants
@@ -841,9 +841,9 @@ c(
 	# Write to file
 	# I am reasonbly confident that the treatment data is
 	# correctly widened now, I will write to file.
-	setwd('~/janus/scripts')
-	saveRDS(merged, '../data/external.rds')
-	data <- readRDS('../data/external.rds')
+	setwd('~/janus')
+	saveRDS(merged, 'data/external.rds')
+	data <- readRDS('data/external.rds')
 	
 #
 # Results:
@@ -866,8 +866,8 @@ c(
 # a single word.
 
 	# Data
-	setwd('~/janus/scripts')
-	data <- readRDS('../data/external.rds')
+	setwd('~/janus')
+	data <- readRDS('data/external.rds')
 
 	# to drop
 	to_drop <- c(
@@ -957,7 +957,7 @@ c(
 	names(data) <- new_names
 	data <- data[,new_order]
 
-	saveRDS(data, '../data/external2.rds')
+	saveRDS(data, 'data/external2.rds')
 
 
 
@@ -973,8 +973,8 @@ c(
 	library(plyr)
 
 	# Data
-	setwd('~/janus/scripts')
-	data <- readRDS('../data/external2.rds')
+	setwd('~/janus')
+	data <- readRDS('data/external2.rds')
 
 	# Helpers
 	clean <- function(s) gsub('[^0-9A-Za-z,._ -]', '', s)
@@ -1025,8 +1025,8 @@ c(
 	library(plyr)
 
 	# Data
-	setwd('~/janus/scripts')
-	data <- readRDS('../data/external2.rds')
+	setwd('~/janus')
+	data <- readRDS('data/external2.rds')
 	
 	# Find Uniques
 	result <- ddply(data, .(group.id), function(df){
@@ -1073,8 +1073,8 @@ c(
 	library(plyr)
 
 	# Data
-	setwd('~/janus/scripts')
-	data <- readRDS('../data/external2.rds')
+	setwd('~/janus')
+	data <- readRDS('data/external2.rds')
 	
 	# Find Uniques
 	result <- ddply(data, .(group.id), function(df){
@@ -1105,8 +1105,8 @@ c(
 	# Results
 	id <- did_not_change('id')  			# 8 studies with n=1
 	life <- did_not_change('lifespan')	 	
-	life[!life %in% id]						# 9 studies usually the
-											# same lifespans
+	life[!life %in% id]						    # 9 studies usually the
+                                    # same lifespans
 	
 #
 # Results:
@@ -1131,8 +1131,8 @@ c(
 	library(plyr)
 
 	# Data
-	setwd('~/janus/scripts')
-	data <- readRDS('../data/external2.rds')
+	setwd('~/janus')
+	data <- readRDS('data/external2.rds')
 	
 	# Helpers
 	clean <- function(s) gsub('[^0-9A-Za-z,._ -]', '', s)
@@ -1194,8 +1194,8 @@ c(
 	library(plyr)
 
 	# Data
-	setwd('~/janus/scripts')
-	data <- readRDS('../data/external2.rds')	
+	setwd('~/janus')
+	data <- readRDS('data/external2.rds')	
 	
 	# Group Summary
 	summary <- ddply(data, .(group.id), function(df){
@@ -1235,8 +1235,8 @@ c(
 # A quick sanity check.
 
 	# Data
-	setwd('~/janus/scripts')
-	data <- readRDS('../data/external2.rds')	
+	setwd('~/janus')
+	data <- readRDS('data/external2.rds')	
 	
 	# Group Summary
 	diff <- data$lifespan - data$age.at.treatment.1
@@ -1269,8 +1269,8 @@ c(
 	library(plyr)
 
 	# Data
-	setwd('~/janus/scripts')
-	data <- readRDS('../data/external2.rds')
+	setwd('~/janus')
+	data <- readRDS('data/external2.rds')
 	
 	# Helpers
 	clean <- function(s) gsub('[^0-9A-Za-z,._ -]', '', s)
@@ -1330,8 +1330,8 @@ c(
 	library(plyr)
 
 	# Data
-	setwd('~/janus/scripts')
-	data <- readRDS('../data/external2.rds')
+	setwd('~/janus')
+	data <- readRDS('data/external2.rds')
 	
 	# Columns to add 
 	to_add <- c(
@@ -1501,7 +1501,7 @@ c(
 		df
 	})
 
-	saveRDS(data, '../data/external3.rds')
+	saveRDS(data, 'data/external3.rds')
 
 # Results
 # 
@@ -1521,8 +1521,8 @@ c(
 	library(plyr)
 
 	# Data
-	setwd('~/janus/scripts')
-	data <- readRDS('../data/external3.rds')
+	setwd('~/janus')
+	data <- readRDS('data/external3.rds')
 	
 	# Helpers
 	clean <- function(s) gsub('[^0-9A-Za-z,._ -]', '', s)
@@ -1570,9 +1570,9 @@ c(
 	library(plyr)
 
 	# Data
-	setwd('~/janus/scripts')
-	data <- readRDS('../data/external3.rds')
-	janus <- read.csv('~/Downloads/demographics.csv', skip=1)
+	setwd('~/janus')
+	data <- readRDS('data/external3.rds')
+	janus <- read.csv('data/demographics.csv', skip=1)
 	
 	# Constants
 	era_janus_study_id <- '1003'
@@ -1700,7 +1700,7 @@ c(
 	data <- merge(data, janus, all=T)
 
 	# Save
-	saveRDS(data, '../data/external3.1.rds')
+	saveRDS(data, 'data/external3.1.rds')
 
 	
 # Results
@@ -1721,11 +1721,11 @@ library(plyr)
 library(dplyr)
 
 # Data
-setwd('~/janus/scripts')
-data <- readRDS('../data/external3.1.rds')
-basics <- read.csv('http://s3.amazonaws.com/janus-cloud2/www/dog_tissues/data/basics.csv')
-chronic <- read.csv('http://s3.amazonaws.com/janus-cloud2/www/dog_tissues/data/cobalt_chronic.csv')
-fractionated <- read.csv('http://s3.amazonaws.com/janus-cloud2/www/dog_tissues/data/cobalt_fractionated.csv')
+setwd('~/janus')
+data <- readRDS('data/external3.1.rds')
+basics <- read.csv('data/beagle_basics.csv')
+chronic <- read.csv('data/beagle_cobalt_chronic.csv')
+fractionated <- read.csv('data/beagle_cobalt_fractionated.csv')
 
 # Helper
 recode_factor <- function(x, before, after){
@@ -1842,11 +1842,10 @@ data <- data[!bdata,]
 data <- merge(data, beagle, all=T)
 
 # Save
-saveRDS(data, '../data/external4.rds')
+saveRDS(data, 'data/external4.rds')
 
 # Results
 # Argonne Beagles are merged (fingers crossed)
-
 
 
 ###########################################################
@@ -1883,11 +1882,11 @@ astype <- function(obj, type) {
 } 
 
 # Data
-setwd('~/janus/scripts')
-data <- readRDS('../data/external4.rds')
+setwd('~/janus')
+data <- readRDS('data/external4.rds')
 
 # Precheck
-str(data)    # 127919 x 49
+str(data)    # 120183 x 49 (was 127919 x 49, why smaller?)
 
 not_ascii = "[^0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!\"#$%&\\(\\)\\*\\+,-\\./:;<=>?@[^_`\\{|\\}~ \t\n\r']"
 column_names = names(data)
@@ -1897,9 +1896,9 @@ for(column in column_names) {
 }
 
 # Postcheck
-str(data)    # 127919 x 49
+str(data)    # 120183 x 49 (was 127919 x 49, why smaller?)
 
-saveRDS(data, '../data/external4.rds')
+saveRDS(data, 'data/external4.rds')
 
 
 
@@ -1926,8 +1925,8 @@ saveRDS(data, '../data/external4.rds')
 	library(plyr)
 
 	# Data
-	setwd('~/janus/scripts')
-	data <- readRDS('../data/external4.rds')
+	setwd('~/janus')
+	data <- readRDS('data/external4.rds')
 	
 	
 	# Helpers
@@ -3095,8 +3094,8 @@ saveRDS(data, '../data/external4.rds')
 
 
 	# Save
-	setwd('~/janus/scripts')
-	saveRDS(data, '../data/external4.5.rds')
+	setwd('~/janus')
+	saveRDS(data, 'data/external4.5.rds')
 
 
 # Results
@@ -3121,8 +3120,8 @@ saveRDS(data, '../data/external4.rds')
 	library(plyr)
 
 	# Data
-	setwd('~/janus/scripts')
-	data <- readRDS('../data/external4.5.rds')
+	setwd('~/janus')
+	data <- readRDS('data/external4.5.rds')
 	
 	# Extend Data
 	data$exclude <- FALSE
@@ -3197,7 +3196,7 @@ saveRDS(data, '../data/external4.rds')
 	
 	# Helpers
 	trim <- function (x) gsub("^\\s+|\\s+$", "", x)
-	find_in_file <- function(pattern, file='exp/radiation.R'){
+	find_in_file <- function(pattern, file='scripts/exp/radiation.R'){
 		lines <- trim(readLines(file))
 		cat(paste0(lines[grepl(pattern, lines)], collapse='\n'))
 	}
@@ -3356,8 +3355,8 @@ saveRDS(data, '../data/external4.rds')
 	data[rows,cols] <- study_data[,cols]
 
 	# Save checkpoint
-	setwd('~/janus/scripts')
-	saveRDS(data, '../data/external4.6.rds')
+	setwd('~/janus')
+	saveRDS(data, 'data/external4.6.rds')
 
 	
 	###
@@ -3365,8 +3364,8 @@ saveRDS(data, '../data/external4.rds')
 	study <- '1003-27'
 
 	# Restore from checkpoint
-	setwd('~/janus/scripts')
-	data <- readRDS('../data/external4.6.rds')
+	setwd('~/janus')
+	data <- readRDS('data/external4.6.rds')
 
 	# Read title/basic description
 	# List sources
@@ -3457,8 +3456,8 @@ saveRDS(data, '../data/external4.rds')
 	data[rows,cols] <- study_data[,cols]
 	
 	# Save checkpoint
-	setwd('~/janus/scripts')
-	saveRDS(data, '../data/external4.7.rds')
+	setwd('~/janus')
+	saveRDS(data, 'data/external4.7.rds')
 	
 	# Followup
 	# full clean/save (below)
@@ -3473,8 +3472,8 @@ saveRDS(data, '../data/external4.rds')
 	study <- '1007-2'
 
 	# Restore from checkpoint
-	setwd('~/janus/scripts')
-	data <- readRDS('../data/external4.7.rds')
+	setwd('~/janus')
+	data <- readRDS('data/external4.7.rds')
 
 	# Read title/basic description
 	# List sources
@@ -3549,8 +3548,8 @@ saveRDS(data, '../data/external4.rds')
 	data[rows,cols] <- study_data[,cols]
 	
 	# Save checkpoint
-	setwd('~/janus/scripts')
-	saveRDS(data, '../data/external4.8.rds')
+	setwd('~/janus')
+	saveRDS(data, 'data/external4.8.rds')
 	
 	# Followup
 	# update template (below)
@@ -3563,8 +3562,8 @@ saveRDS(data, '../data/external4.rds')
 	study <- '1007-3'
 
 	# Restore from checkpoint
-	setwd('~/janus/scripts')
-	data <- readRDS('../data/external4.8.rds')
+	setwd('~/janus')
+	data <- readRDS('data/external4.8.rds')
 
 	# Read title/basic description
 	# List sources
@@ -3650,8 +3649,8 @@ saveRDS(data, '../data/external4.rds')
 	data[rows,cols] <- study_data[,cols]
 	
 	# Save checkpoint
-	setwd('~/janus/scripts')
-	saveRDS(data, '../data/external4.9.rds')
+	setwd('~/janus')
+	saveRDS(data, 'data/external4.9.rds')
 	
 	# Followup
 	# update template (below)
@@ -3664,8 +3663,8 @@ saveRDS(data, '../data/external4.rds')
 	study <- '11-1'
 
 	# Restore from checkpoint
-	setwd('~/janus/scripts')
-	data <- readRDS('../data/external4.9.rds')
+	setwd('~/janus')
+	data <- readRDS('data/external4.9.rds')
 
 	# Read title/basic description
 	# List sources
@@ -3782,8 +3781,8 @@ saveRDS(data, '../data/external4.rds')
 	data[rows,cols] <- study_data[,cols]
 	
 	# Save checkpoint
-	setwd('~/janus/scripts')
-	saveRDS(data, '../data/external4.10.rds')
+	setwd('~/janus')
+	saveRDS(data, 'data/external4.10.rds')
 	
 	# Followup
 	# update template (below)
@@ -3795,8 +3794,8 @@ saveRDS(data, '../data/external4.rds')
 	study <- '11-2'
 
 	# Restore from checkpoint
-	setwd('~/janus/scripts')
-	data <- readRDS('../data/external4.10.rds')
+	setwd('~/janus')
+	data <- readRDS('data/external4.10.rds')
 
 	# Read title/basic description
 	# List sources
@@ -4033,8 +4032,8 @@ saveRDS(data, '../data/external4.rds')
 	data[rows,cols] <- study_data[,cols]
 	
 	# Save checkpoint
-	setwd('~/janus/scripts')
-	saveRDS(data, '../data/external4.11.rds')
+	setwd('~/janus')
+	saveRDS(data, 'data/external4.11.rds')
 	
 	# Followup
 	# update template (below)
@@ -4047,8 +4046,8 @@ saveRDS(data, '../data/external4.rds')
 	study <- '3-4'
 
 	# Restore from checkpoint
-	setwd('~/janus/scripts')
-	data <- readRDS('../data/external4.11.rds')
+	setwd('~/janus')
+	data <- readRDS('data/external4.11.rds')
 
 	# Read title/basic description
 	# List sources
@@ -4127,8 +4126,8 @@ saveRDS(data, '../data/external4.rds')
 	data[rows,cols] <- study_data[,cols]
 	
 	# Save checkpoint
-	setwd('~/janus/scripts')
-	saveRDS(data, '../data/external4.12.rds')
+	setwd('~/janus')
+	saveRDS(data, 'data/external4.12.rds')
 	
 	# Followup
 	# update template (below)
@@ -4141,8 +4140,8 @@ saveRDS(data, '../data/external4.rds')
 	study <- '3-5'
 
 	# Restore from checkpoint
-	setwd('~/janus/scripts')
-	data <- readRDS('../data/external4.12.rds')
+	setwd('~/janus')
+	data <- readRDS('data/external4.12.rds')
 
 	# Read title/basic description
 	# List sources
@@ -4226,8 +4225,8 @@ saveRDS(data, '../data/external4.rds')
 	data[rows,cols] <- study_data[,cols]
 	
 	# Save checkpoint
-	setwd('~/janus/scripts')
-	saveRDS(data, '../data/external4.13.rds')
+	setwd('~/janus')
+	saveRDS(data, 'data/external4.13.rds')
 	
 	# Followup
 	# update template (below)
@@ -4240,8 +4239,8 @@ saveRDS(data, '../data/external4.rds')
 	study <- '9-5'
 
 	# Restore from checkpoint
-	setwd('~/janus/scripts')
-	data <- readRDS('../data/external4.13.rds')
+	setwd('~/janus')
+	data <- readRDS('data/external4.13.rds')
 
 	# Read title/basic description
 	# List sources
@@ -4327,8 +4326,8 @@ saveRDS(data, '../data/external4.rds')
 	data[rows,cols] <- study_data[,cols]
 	
 	# Save checkpoint
-	setwd('~/janus/scripts')
-	saveRDS(data, '../data/external4.14.rds')
+	setwd('~/janus')
+	saveRDS(data, 'data/external4.14.rds')
 	
 	# Followup
 	# update template (below)
@@ -4341,8 +4340,8 @@ saveRDS(data, '../data/external4.rds')
 	study <- '9-6'
 
 	# Restore from checkpoint
-	setwd('~/janus/scripts')
-	data <- readRDS('../data/external4.14.rds')
+	setwd('~/janus')
+	data <- readRDS('data/external4.14.rds')
 
 	# Read title/basic description
 	# List sources
@@ -4424,8 +4423,8 @@ saveRDS(data, '../data/external4.rds')
 	data[rows,cols] <- study_data[,cols]
 	
 	# Save checkpoint
-	setwd('~/janus/scripts')
-	saveRDS(data, '../data/external4.15.rds')
+	setwd('~/janus')
+	saveRDS(data, 'data/external4.15.rds')
 	
 	# Followup
 	# update template (below)
@@ -4438,8 +4437,8 @@ saveRDS(data, '../data/external4.rds')
 	study <- '9-7'
 
 	# Restore from checkpoint
-	setwd('~/janus/scripts')
-	data <- readRDS('../data/external4.15.rds')
+	setwd('~/janus')
+	data <- readRDS('data/external4.15.rds')
 
 	# Read title/basic description
 	# List sources
@@ -4529,8 +4528,8 @@ saveRDS(data, '../data/external4.rds')
 	data[rows,cols] <- study_data[,cols]
 	
 	# Save checkpoint
-	setwd('~/janus/scripts')
-	saveRDS(data, '../data/external4.16.rds')
+	setwd('~/janus')
+	saveRDS(data, 'data/external4.16.rds')
 	
 	# Followup
 	# update template (below)
@@ -4543,8 +4542,8 @@ saveRDS(data, '../data/external4.rds')
 	study <- '3-1'
 
 	# Restore from checkpoint
-	setwd('~/janus/scripts')
-	data <- readRDS('../data/external4.16.rds')
+	setwd('~/janus')
+	data <- readRDS('data/external4.16.rds')
 
 	# Read title/basic description
 	# List sources
@@ -4660,8 +4659,8 @@ saveRDS(data, '../data/external4.rds')
 	data[rows,cols] <- study_data[,cols]
 	
 	# Save checkpoint
-	setwd('~/janus/scripts')
-	saveRDS(data, '../data/external4.17.rds')
+	setwd('~/janus')
+	saveRDS(data, 'data/external4.17.rds')
 	
 	# Followup
 	# update template (below)
@@ -4674,8 +4673,8 @@ saveRDS(data, '../data/external4.rds')
 	study <- '3-2'
 
 	# Restore from checkpoint
-	setwd('~/janus/scripts')
-	data <- readRDS('../data/external4.17.rds')
+	setwd('~/janus')
+	data <- readRDS('data/external4.17.rds')
 
 	# Read title/basic description
 	# List sources
@@ -4758,8 +4757,8 @@ saveRDS(data, '../data/external4.rds')
 	data[rows,cols] <- study_data[,cols]
 	
 	# Save checkpoint
-	setwd('~/janus/scripts')
-	saveRDS(data, '../data/external4.18.rds')
+	setwd('~/janus')
+	saveRDS(data, 'data/external4.18.rds')
 	
 	# Followup
 	# update template (below)
@@ -4772,8 +4771,8 @@ saveRDS(data, '../data/external4.rds')
   study <- '1003-26'
 
   # Restore from checkpoint
-  setwd('~/janus/scripts')
-  data <- readRDS('../data/external4.18.rds')
+  setwd('~/janus')
+  data <- readRDS('data/external4.18.rds')
 
   # Read title/basic description
   # List sources
@@ -4853,8 +4852,8 @@ saveRDS(data, '../data/external4.rds')
   data[rows,cols] <- study_data[,cols]
   
   # Save checkpoint
-  setwd('~/janus/scripts')
-  saveRDS(data, '../data/external4.19.rds')
+  setwd('~/janus')
+  saveRDS(data, 'data/external4.19.rds')
   
 
   ###
@@ -4862,8 +4861,8 @@ saveRDS(data, '../data/external4.rds')
   study <- '1003-29'
   
   # Restore from checkpoint
-  setwd('~/janus/scripts')
-  data <- readRDS('../data/external4.19.rds')
+  setwd('~/janus')
+  data <- readRDS('data/external4.19.rds')
   
   # Read title/basic description
   # List sources
@@ -4941,8 +4940,8 @@ saveRDS(data, '../data/external4.rds')
   data[rows,cols] <- study_data[,cols]
   
   # Save checkpoint
-  setwd('~/janus/scripts')
-  saveRDS(data, '../data/external4.20.rds')
+  setwd('~/janus')
+  saveRDS(data, 'data/external4.20.rds')
 
 
   ###
@@ -4950,8 +4949,8 @@ saveRDS(data, '../data/external4.rds')
   study <- '1003-20'
   
   # Restore from checkpoint
-  setwd('~/janus/scripts')
-  data <- readRDS('../data/external4.20.rds')
+  setwd('~/janus')
+  data <- readRDS('data/external4.20.rds')
   
   # Read title/basic description
   # List sources
@@ -5030,8 +5029,8 @@ saveRDS(data, '../data/external4.rds')
   data[rows,cols] <- study_data[,cols]
   
   # Save checkpoint
-  setwd('~/janus/scripts')
-  saveRDS(data, '../data/external4.21.rds')
+  setwd('~/janus')
+  saveRDS(data, 'data/external4.21.rds')
 
 
   ###
@@ -5039,8 +5038,8 @@ saveRDS(data, '../data/external4.rds')
   study <- '1003-xx'
   
   # Restore from checkpoint
-  setwd('~/janus/scripts')
-  data <- readRDS('../data/external4.21.rds')
+  setwd('~/janus')
+  data <- readRDS('data/external4.21.rds')
   
   # Read title/basic description
   # List sources
@@ -5125,8 +5124,8 @@ saveRDS(data, '../data/external4.rds')
   data[rows,cols] <- study_data[,cols]
   
   # Save checkpoint
-  setwd('~/janus/scripts')
-  saveRDS(data, '../data/external4.22.rds')
+  setwd('~/janus')
+  saveRDS(data, 'data/external4.22.rds')
 
 
   ###
@@ -5134,8 +5133,8 @@ saveRDS(data, '../data/external4.rds')
   study <- '1003-22'
   
   # Restore from checkpoint
-  setwd('~/janus/scripts')
-  data <- readRDS('../data/external4.22.rds')
+  setwd('~/janus')
+  data <- readRDS('data/external4.22.rds')
   
   # Read title/basic description
   # List sources
@@ -5219,8 +5218,8 @@ saveRDS(data, '../data/external4.rds')
   data[rows,cols] <- study_data[,cols]
   
   # Save checkpoint
-  setwd('~/janus/scripts')
-  saveRDS(data, '../data/external4.23.rds')
+  setwd('~/janus')
+  saveRDS(data, 'data/external4.23.rds')
 
 
 
@@ -5229,8 +5228,8 @@ saveRDS(data, '../data/external4.rds')
   study <- '1003-24'
   
   # Restore from checkpoint
-  setwd('~/janus/scripts')
-  data <- readRDS('../data/external4.23.rds')
+  setwd('~/janus')
+  data <- readRDS('data/external4.23.rds')
   
   # Read title/basic description
   # List sources
@@ -5316,8 +5315,8 @@ saveRDS(data, '../data/external4.rds')
   data[rows,cols] <- study_data[,cols]
   
   # Save checkpoint
-  setwd('~/janus/scripts')
-  saveRDS(data, '../data/external4.24.rds')
+  setwd('~/janus')
+  saveRDS(data, 'data/external4.24.rds')
 
 
   ###
@@ -5325,8 +5324,8 @@ saveRDS(data, '../data/external4.rds')
   study <- '1003-25'
   
   # Restore from checkpoint
-  setwd('~/janus/scripts')
-  data <- readRDS('../data/external4.24.rds')
+  setwd('~/janus')
+  data <- readRDS('data/external4.24.rds')
   
   # Read title/basic description
   # List sources
@@ -5408,8 +5407,8 @@ saveRDS(data, '../data/external4.rds')
   data[rows,cols] <- study_data[,cols]
   
   # Save checkpoint
-  setwd('~/janus/scripts')
-  saveRDS(data, '../data/external4.25.rds')
+  setwd('~/janus')
+  saveRDS(data, 'data/external4.25.rds')
 
 
   ###
@@ -5417,8 +5416,8 @@ saveRDS(data, '../data/external4.rds')
   study <- '1003-30'
   
   # Restore from checkpoint
-  setwd('~/janus/scripts')
-  data <- readRDS('../data/external4.25.rds')
+  setwd('~/janus')
+  data <- readRDS('data/external4.25.rds')
   
   # Read title/basic description
   # List sources
@@ -5504,8 +5503,8 @@ saveRDS(data, '../data/external4.rds')
   data[rows,cols] <- study_data[,cols]
   
   # Save checkpoint
-  setwd('~/janus/scripts')
-  saveRDS(data, '../data/external4.26.rds')
+  setwd('~/janus')
+  saveRDS(data, 'data/external4.26.rds')
 
 
   ###
@@ -5513,8 +5512,8 @@ saveRDS(data, '../data/external4.rds')
   study <- '1003-28'
   
   # Restore from checkpoint
-  setwd('~/janus/scripts')
-  data <- readRDS('../data/external4.26.rds')
+  setwd('~/janus')
+  data <- readRDS('data/external4.26.rds')
   
   # Read title/basic description
   # List sources
@@ -5599,8 +5598,8 @@ saveRDS(data, '../data/external4.rds')
   data[rows,cols] <- study_data[,cols]
   
   # Save checkpoint
-  setwd('~/janus/scripts')
-  saveRDS(data, '../data/external4.27.rds')
+  setwd('~/janus')
+  saveRDS(data, 'data/external4.27.rds')
 
 
   ###
@@ -5608,8 +5607,8 @@ saveRDS(data, '../data/external4.rds')
   study <- '1003-28'
   
   # Restore from checkpoint
-  setwd('~/janus/scripts')
-  data <- readRDS('../data/external4.26.rds')
+  setwd('~/janus')
+  data <- readRDS('data/external4.26.rds')
   
   # Read title/basic description
   # List sources
@@ -5694,16 +5693,16 @@ saveRDS(data, '../data/external4.rds')
   data[rows,cols] <- study_data[,cols]
   
   # Save checkpoint
-  setwd('~/janus/scripts')
-  saveRDS(data, '../data/external4.27.rds')
+  setwd('~/janus')
+  saveRDS(data, 'data/external4.27.rds')
 
   ###
   # Pick a study
   study <- '9-8'
   
   # Restore from checkpoint
-  setwd('~/janus/scripts')
-  data <- readRDS('../data/external4.27.rds')
+  setwd('~/janus')
+  data <- readRDS('data/external4.27.rds')
   
   # Read title/basic description
   # No references are listed in the Gray book and could not
@@ -5796,8 +5795,8 @@ saveRDS(data, '../data/external4.rds')
   data[rows,cols] <- study_data[,cols]
   
   # Save checkpoint
-  setwd('~/janus/scripts')
-  saveRDS(data, '../data/external4.28.rds')
+  setwd('~/janus')
+  saveRDS(data, 'data/external4.28.rds')
 
 
 
@@ -5808,8 +5807,8 @@ saveRDS(data, '../data/external4.rds')
   # the last steps.  This makes it easy to add new cleanup
   # steps above.
   
-  data <- readRDS('../data/external4.28.rds')
-  saveRDS(data, '../data/external4.study_fixes.rds')
+  data <- readRDS('data/external4.28.rds')
+  saveRDS(data, 'data/external4.study_fixes.rds')
 
 
 	###
@@ -5820,8 +5819,8 @@ saveRDS(data, '../data/external4.rds')
 	# a full fix for them, but a quick fix fits the bill.
 
 	# Restore from checkpoint
-	setwd('~/janus/scripts')
-	data <- readRDS('../data/external4.study_fixes.rds')
+	setwd('~/janus')
+	data <- readRDS('data/external4.study_fixes.rds')
 
 	clusters <- list(
 		# Cluster : Group Ids
@@ -5863,8 +5862,8 @@ saveRDS(data, '../data/external4.rds')
 	
 	
 	# Save checkpoint
-	setwd('~/janus/scripts')
-	saveRDS(data, '../data/external4.stray_fixes.rds')
+	setwd('~/janus')
+	saveRDS(data, 'data/external4.stray_fixes.rds')
 	
 	
 	
@@ -5872,8 +5871,8 @@ saveRDS(data, '../data/external4.rds')
 	# Clean
 	
 	# Restore from checkpoint
-	setwd('~/janus/scripts')
-	data <- readRDS('../data/external4.stray_fixes.rds')
+	setwd('~/janus')
+	data <- readRDS('data/external4.stray_fixes.rds')
 	
 	# constants
 	strains <- data.frame(
@@ -5935,8 +5934,8 @@ saveRDS(data, '../data/external4.rds')
 	}	
 	
 	# Save
-	setwd('~/janus/scripts')
-	saveRDS(data, '../data/external5.rds')
+	setwd('~/janus')
+	saveRDS(data, 'data/external5.rds')
 
 
 # Results

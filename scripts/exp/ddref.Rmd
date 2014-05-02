@@ -6,6 +6,7 @@ benjamin.haley@gmail.com
 
 [public link]: http://rpubs.com/benjaminhaley/ddref
 
+TODO add a link to github repo
 
 # Abstract
 TODO(later) write an abstract
@@ -200,8 +201,8 @@ library(ggplot2)
 library(survival)
 
 # DATA
-setwd('~/janus/scripts')
-d <- readRDS('../data/external5.rds')
+setwd('~/janus')
+d <- readRDS('data/external5.rds')
 
 # HELPERS   
 # Make survival data amenable to ggplot
@@ -493,8 +494,8 @@ count(d_wo_warnings)
 #          6         13         73      18903          0          0 
 
 # Save
-setwd('~/janus/scripts')
-saveRDS(d, '../data/funneled.rds')
+setwd('~/janus')
+saveRDS(d, 'data/funneled.rds')
 ```
 ___________________________________________________________________
 ^ back to [table of contents](#contents)
@@ -517,8 +518,8 @@ library(ggplot2)
 library(survival)
 
 # Data
-setwd('~/janus/scripts')
-d <- readRDS('../data/funneled.rds')
+setwd('~/janus')
+d <- readRDS('data/funneled.rds')
 
 # Helpers
 pluralize <- function(x) {
@@ -595,7 +596,7 @@ library(ggplot2)
 library(survival)
 
 # Data
-setwd('~/janus/scripts')
+setwd('~/janus')
 d <- readRDS('data/ddref.rds')
 
 # Helpers
@@ -615,7 +616,7 @@ group_summary <- function(data){
     summary
 }
 
-find_in_file <- function(pattern, file='exp/radiation.R'){
+find_in_file <- function(pattern, file='scripts/exp/radiation.R'){
 		lines <- readLines(file)
 		lines[grepl(pattern, lines)]
 }
@@ -891,7 +892,7 @@ library(dplyr)
 library(directlabels)
 
 # Data
-setwd('~/janus/scripts')
+setwd('~/janus')
 d <- readRDS('data/ddref.rds')
 ```
 
@@ -1667,7 +1668,7 @@ library(ggplot2)
 library(plyr)
 
 # Data
-setwd('~/janus/scripts')
+setwd('~/janus')
 source('util.R')
 data <- read.csv('data/storer_1979.csv', sep='\t')  
     
@@ -1810,8 +1811,9 @@ library(ggplot2)
 library(plyr)
 
 # Data
-setwd('~/janus/scripts')
-data <- read.csv('data/storer_1979.csv', sep='\t')  
+setwd('~/janus')
+data <- read.csv('data/storer_1979.csv', sep='\t') 
+data_10B2 <- read.csv('data/10B2_fits.csv')
 
 model_10B4 <- function(data, o){    
     glm(
@@ -1922,7 +1924,7 @@ Show graphs like Storer 1979 10-B3 but for all data.
 ```{r}     
 
 # Libraries
-setwd('~/janus/scripts')
+setwd('~/janus')
 source('util.R')
 library(ggplot2)
 library(plyr)
@@ -2068,7 +2070,7 @@ library(ggplot2)
 library(plyr)
 
 # Data
-setwd('~/janus/scripts')
+setwd('~/janus')
 data <- readRDS('data/ddref.rds')
 
 
@@ -2289,7 +2291,7 @@ We will also run a heterogeneity test.
     library(metafor)
     
     # Data
-    setwd('~/janus/scripts')
+    setwd('~/janus')
     data <- read.csv('data/storer_1979.csv', sep='\t')  
     
     # Helpers
@@ -2485,7 +2487,7 @@ library(plyr)
 library(metafor)
 
 # Data
-setwd('~/janus/scripts')
+setwd('~/janus')
 data <- read.csv('data/storer_1979.csv', sep='\t')  
 
 # Helpers
@@ -2627,7 +2629,7 @@ library(plyr)
 library(metafor)
 
 # Data
-setwd('~/janus/scripts')
+setwd('~/janus')
 source('util.R')
 data <- readRDS('data/ddref.rds')
 
@@ -2810,7 +2812,7 @@ library(plyr)
 library(metafor)
 
 # Data
-setwd('~/janus/scripts')
+setwd('~/janus')
 data <- readRDS('data/ddref.rds')
  
 # Helpers
