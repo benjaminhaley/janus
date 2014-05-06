@@ -1,16 +1,15 @@
 [DDREF][public link]
 ========================================================
-Measure ddref, for my thesis.  
+Measure ddref, for my thesis ([code][code link]).  
 benjamin.haley@gmail.com  
-*last update: April 2014*
+*last update: May 2014*
 
 [public link]: http://rpubs.com/benjaminhaley/ddref
+[code link]: https://github.com/benjaminhaley/janus/blob/master/scripts/exp/ddref.Rmd
 
-TODO add a link to github repo
-
-# Abstract
-TODO(later) write an abstract
-TODO(later) read and spruce up this doc
+Abstract
+========================================================
+TODO write abstract
 
 
 <a name="contents"></a>
@@ -18,9 +17,12 @@ TODO(later) read and spruce up this doc
 # Table of contents
 
 - Background 
+  - [Introduction](#introduction) - What are we doing here?
   - [Defining DDREF](#defining_ddref) - What is the equation?
   - [Log Likelihood](#loglike) - How is log likelihood calculated?
-  - [Metaregression](#metaregression) - Show the principals of metaregression.
+  - [Metaregression](#metaregression) - Show the principals of
+  metaregression.
+  - [To log or not?](#log-or-not) - Should data be fit to a linear scale or a log linear scale and should a threshold be used when estimating DDREF?
 - Data
   - [Data Funnel](#data_funnel) - Which data will we analyze?
   - [Data Cleaning](#cleaning) - Damn, data, you look good!
@@ -31,6 +33,7 @@ TODO(later) read and spruce up this doc
   - [Reproduce BEIR 10B2](#10B2) - Show that we can fit the same model of cancer risk vs. dose as BEIR VII.
   - [Reproduce BEIR 10B3](#10B3) - Show that we can fit the same model of lifespan vs. dose as BEIR VII.
   - [Reproduce BEIR 10B4](#10B4) - Show that we can reproduce the likelihood profiles from BEIR VII.
+  - [Reproduce BEIR 10-2](#10-2) - Reproduce dose response for atomic bomb survivors.
   - [10B3 on all data](#10B3-all-data) - Fit 1/lifespan models on all of the data.
   - [10B4 on all data](#10B4-all-data) - 1/lifespan models profile likelihoods on all of the data.
   - [10B3 with metaregression](#10B3-meta) - Reproduce dose response figure applying the principals of meta-regression
@@ -52,6 +55,42 @@ opts_chunk$set(fig.width=10.24,
                warning=FALSE, 
                message=FALSE)
 ```
+
+
+<a name="introduction"></a>
+
+Introduction
+========================================================
+*Last update: May 2013*
+
+Radiation protection standards are based primarily upon observations of atomic bomb survivors supplemented by animal studies ??BEIR VII source??.  The animal studies are used, amoung other things to estimate the effects of protraction, i.e. would the dose delivered by the atomic bombs have induced as many health effects if it were delivered more slowly and spread across a broader population like modern radiation exposures?
+
+It is generally ??linear quadratic citations??, though not unanimously ??disenting citations??, assumed that the dose response to low-LET radiation has a linear-quadratic form.  Concretely:
+
+`risk ~ a * Dose + B * Dose^2`
+
+This formula is based on observations of cellular systems which regularly show a linear quadratic response to radiation.  Specifically, log(cell viability) and gross chromosomal abberations show a linear quadratic response to radiaiton in most cellular systems ??citation??.
+
+Mechanistically this is explained by DNA damage and repair.  A single track of low-LET radiation may lead to inviabilty or 
+
+
+TODO: why does cell viability need a log opperation to be linear quadratic where chromosomal abberations do not?  Is it possible that mortality also needs a log transformation?
+
+
+
+
+Health effects, especially carcinogenesis rates, observed in the atomic bomb survivors are divided by a dose and dose rate effectiveness factor (DDREF) to estimate the health effects that would be observed if the same dose had been protracted.
+
+
+TODO fill in ?? above
+
+
+TODO(later) write an abstract
+TODO(later) read and spruce up this doc
+
+
+
+
 
 <a name="defining_ddref"></a>
 
@@ -1937,8 +1976,197 @@ It could also be that there is some systematic bias between chronic and high dos
 
 More reason for meta-analysis.
 
-_____________________________________________________________________________  
+___________________________________________________________________
 ^ back to [table of contents](#contents)
+
+
+
+
+<a name="10-2"></a>
+
+Reproduce BEIR 10-2
+========================================================
+*Last update: May 2014*
+Reproduce the BEIR estimates of dose reponse for atomic bomb survivors.
+
+```{r} 
+
+# Libraries
+library(ggplot2)
+library(plyr)
+
+# Helper functions
+get_max_map <- function(min_map, max=Inf) {
+  max_map <- c(min_map[2:length(min_map)], max)
+  names(max_map) <- names(min_map)
+  max_map
+}
+get_mean_map <- function(min_map, max=Inf) {
+  mean_map <- (min_map + get_max_map(min_map, max)) / 2
+  mean_map
+}
+normalize_likelihood <- function(l, delta){
+    l <- l - max(l)
+    l <- exp(l)
+    l <- l / sum(l)
+    l <- l / delta
+    
+    l       
+}
+
+# Data
+setwd('~/janus')
+
+# Load data
+setwd('~/janus/')
+data <- read.csv('data/lss14/lss14.csv')
+
+# Define Terms
+sex_map <- c('1'='♂',
+             '2'='♀')
+agecat_min_map <- c('1'=0,
+                    '2'=5,
+                    '3'=10,
+                    '4'=15,
+                    '5'=20,
+                    '6'=25,
+                    '7'=30,
+                    '8'=35,
+                    '9'=40,
+                    '10'=45,
+                    '11'=50,
+                    '12'=55,
+                    '13'=60,
+                    '14'=65,
+                    '15'=70,
+                    '16'=75,
+                    '17'=80,
+                    '18'=85,
+                    '19'=90,
+                    '20'=95,
+                    '21'=100)
+
+agecat_mean_map <- get_mean_map(agecat_min_map, 120)
+dose_min_map <- c('1'=0.000,
+                  '2'=0.005,
+                  '3'=0.020,
+                  '4'=0.040,
+                  '5'=0.060,
+                  '6'=0.080,
+                  '7'=0.100,
+                  '8'=0.125,
+                  '9'=0.150,
+                  '10'=0.175,
+                  '11'=0.200,
+                  '12'=0.250,
+                  '13'=0.300,
+                  '14'=0.500,
+                  '15'=0.750,
+                  '16'=1.000,
+                  '17'=1.250,
+                  '18'=1.500,
+                  '19'=1.750,
+                  '20'=2.000,
+                  '21'=2.500,
+                  '22'=3.000)
+dose_mean_map = get_mean_map(dose_min_map, 4)
+
+threshold = 2.0
+
+
+# Update data
+data <- data %.%
+  mutate(sex = sex_map[sex],
+         agex = agecat_min_map[agexcat],
+         age  = agecat_min_map[agecat],
+         dose = dose_mean_map[dosecat]) %.%
+  filter(dose <= threshold)
+
+model <- glm(solid ~ 
+               city + 
+               sex*I(log(age)) +
+               sex*agex +
+               factor(dose) + 
+               offset(log(pyr)),
+             family='poisson',
+             data = data)
+
+to_predict <- expand.grid(
+  city = unique(data$city),
+  sex = unique(data$sex),
+  agex = 30,
+  age = 60,
+  pyr = 1,
+  dose = unique(data$dose))
+
+to_predict$risk <- exp(predict(model, newdata=to_predict))
+
+aggregate <- to_predict %.%
+  group_by(dose) %.%
+  summarize(risk=mean(risk))
+
+aggregate$err <- with(aggregate, risk / min(risk) - 1)
+
+ggplot(aggregate, aes(dose, err)) + geom_point()
+
+
+# TODO: Note that the sexes in lss behave quite differently, males are responding stronger.
+
+# Constants
+threshold = 1.5001
+
+# Model
+low = -2
+high = 6
+delta = .01
+o_range = (low/delta):(high/delta) * delta
+
+get_likelihoods <- function(o_range, data){
+    r <- ldply(o_range, function(o){
+        m <- model_10B4(data, o)
+        l = logLik(m)
+        
+        data.frame(o, l)
+    })
+    
+    r$l <- normalize_likelihood(r$l, delta)
+    
+    r
+}
+
+```
+
+#### Show
+##### 10-2
+This is the original [10-2 figure][10-2-citation] from the beir VII report [beir-10-4].
+
+![10-2-image]: 
+
+[10-2-citation]: http://www.nap.edu/openbook.php?record_id=11340&page=248
+[10B4-image]: http://dl.dropbox.com/u/1131693/bloodrop/10-2.jpg
+
+
+##### Reproduce 10-2
+This is my reproduction of 10-2 to prove that I am faithfully applying their methodology.
+```{r}
+```
+
+
+#### Results
+
+___________________________________________________________________
+^ back to [table of contents](#contents)
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2995,8 +3223,75 @@ ggsave_for_ppt('meta_regression_summary_effect.png')
 
 We still seem to have biased likelihood estimates, but things are improving a bit...
 
-_____________________________________________________________________________  
+__________________________________________________________________
 ^ back to [table of contents](#contents)
 
 
+
+
+
+<a name="log-or-not"></a>
+
+To log or not to log?
+==========================================================
+It is strange that dose response in cell systems is linear quadratic for chromosomal abberations and log linear quadratic for cell survival.  Concretely:
+
+`chromosomal abberations ~ a * Dose + B * Dose^2`
+
+TODO: add figure pic from thesis
+
+whereas
+
+`log(survival) ~ a * Dose + B * Dose^2`
+
+TODO: add a pic of cell survival
+
+I propose that the dose response is actually always log linear quadratic, but that for rare outcomes the distinction does not matter and a regular linear quadratic response will fit the data quite well.
+
+To prove that this could be true I will develop a little fake survival data set and show that when viability is high, either formula fits the data, whereas when viability is low only the log linear quadratic formula fits the data.
+
+
+
+TODO: ask Gayle or Little about this
+TODO: look in Hall and BEIR, why do they say that ERR has inward curvature?
+
+```{r}
+# Fake data
+n <- 200
+a <- 0.001
+B <- 0.0001
+data <- data.frame(dose=0:n) %.% 
+  mutate(viability = exp(-a*dose - B*dose^2))
+
+# Wrapper function for plotting
+show <- function(data) {
+  ggplot(data, aes(dose, viability)) +
+    geom_point(size=0.5) +
+    geom_smooth(method='lm', 
+                formula='y ~ x + I(x^2)',
+                se=FALSE)
+}
+  
+
+# Log scale
+show(data) + scale_y_log10()
+
+# Normal scale
+show(data)
+
+# Normal scale where viability is high
+show(data %.% filter(viability > 0.70))
+```
+
+**Figures: Linear quadratic model fits**
+In each figure  dose (x axis) is plotted against viability (y axis).  
+Black dots represent hypothetical data points fit to a log linear quadratic model without error.  The blue line represents a linear quadratic fit to the data.  In the first figure, the data set is plotted with viability on a log scale.  The second figure is identical, but viability is plotted on a linear scale.  The third figure is identical to the second, on a linear scale, but the data is truncated to only include outcomes with high viability.
+
+**Results**
+This hypothetical data proves the point, log linear quadratic models and linear quadratic models are nearly indistiguishiable when viablity is high, but only the log linear quadratic model can fit the data well when viablity extends into the low range.
+
+The implication of this finding is that log linear quadratic models is always valid and is necessary if the outcome of interest affects a large percentage of the population (the cutoff is arbitrary, but the author might suggest > 30%).  This further suggests that we need not create a threshold of 1.5 Gy or 2 Gy when assessing DDREF, instead we must fit results to log linear quadratic scales and avoid a cutoff entirely.
+
+__________________________________________________________________
+^ back to [table of contents](#contents)
 
