@@ -43,3 +43,21 @@ normalize_likelihood <- function(log_likelihood, delta){
   
   l       
 }
+
+
+# Get the median value and range of x by likelihood and 
+# confidence intervals
+# *note the current implementation is not perfect, it 
+#       would find an interval of 3-98 instead of 2.5-97.5
+#       this is not a problem provided there are lots of data
+#       points.
+confidence_interval <- function(x, likelihood, p=0.05) {
+  l <- likelihood
+  top <- x[cumsum(l) > sum(l) * (1 - p/2)][1]
+  median <- x[cumsum(l) >= sum(l) * 0.5][1]
+  bottom <- x[cumsum(l) >= sum(l) * p/2][1]
+  
+  print(paste0(median, ' (', bottom, ', ', top, ')'))
+  c(bottom, median, top)
+}
+confidence_interval(1:100, rep(1, 100)) == c(3, 50, 98)

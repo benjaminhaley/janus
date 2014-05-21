@@ -1852,9 +1852,9 @@ from storer 1979 (3575012.pdf).
 # Libraries
 library(ggplot2)
 library(plyr)
+library(dplyr)
 source('scripts/util/util.R') 
 # https://github.com/benjaminhaley/janus/blob/master/scripts/util/util.R
-
 
 # Data
 setwd('~/janus')
@@ -1926,6 +1926,11 @@ my_r <- my_r %.%
          lifespan_likelihood = l,
          mean_likelihood = (tumor_likelihood+lifespan_likelihood)/2) %.%
   select(-l)
+
+
+confidence_interval(beir_r$o + 1, beir_r$mean_likelihood)
+# should be "1.5 (1.0, 4.4)"
+
 
 ```
 
