@@ -1607,8 +1607,8 @@ library(ggplot2)
 
 # Data
 setwd('~/janus')
-source('scripts/util/util.R')
-# TODO(ben) I should link to a copy of util.R in github for reference
+source('scripts/util/util.R') # https://github.com/benjaminhaley/janus/blob/master/scripts/util/util.R
+
 data <- read.csv('data/edwards_1992.csv', sep='\t') 
 
 
@@ -1716,7 +1716,7 @@ library(plyr)
 
 # Data
 setwd('~/janus')
-source('scripts/util/util.R')
+source('scripts/util/util.R') # https://github.com/benjaminhaley/janus/blob/master/scripts/util/util.R
 data <- read.csv('data/storer_1979.csv', sep='\t')  
     
 
@@ -1852,8 +1852,9 @@ from storer 1979 (3575012.pdf).
 # Libraries
 library(ggplot2)
 library(plyr)
-source('scripts/util/util.R')
-# TODO(ben) I should link to a copy of util.R in github for reference
+source('scripts/util/util.R') 
+# https://github.com/benjaminhaley/janus/blob/master/scripts/util/util.R
+
 
 # Data
 setwd('~/janus')
@@ -2132,8 +2133,8 @@ Reproduce the BEIR VII estimates of DDREF likelihood using atomic bomb survivor 
 library(ggplot2)
 library(plyr)
 library(dplyr)
-source('scripts/util/util.R')
-# TODO(ben) I should link to a copy of util.R in github for reference
+source('scripts/util/util.R') # https://github.com/benjaminhaley/janus/blob/master/scripts/util/util.R
+
 
 # Data
 setwd('~/janus')
@@ -2227,7 +2228,7 @@ Show graphs like Storer 1979 10-B3 but for all data.
 
 # Libraries
 setwd('~/janus')
-source('scripts/util/util.R')
+source('scripts/util/util.R') # https://github.com/benjaminhaley/janus/blob/master/scripts/util/util.R
 library(ggplot2)
 library(plyr)
 
@@ -2370,7 +2371,7 @@ Show graphs like Storer 1979 10B4 but for all data.
 # Libraries
 library(ggplot2)
 library(plyr)
-source('scripts/util/util.R')
+source('scripts/util/util.R') # https://github.com/benjaminhaley/janus/blob/master/scripts/util/util.R
 
 # Data
 setwd('~/janus')
@@ -2779,7 +2780,7 @@ will come from storer 1979 (3575012.pdf).
 library(ggplot2)
 library(plyr)
 library(metafor)
-source('scripts/util/util.R')
+source('scripts/util/util.R') # https://github.com/benjaminhaley/janus/blob/master/scripts/util/util.R
 
 # Data
 setwd('~/janus')
@@ -2916,7 +2917,7 @@ library(metafor)
 
 # Data
 setwd('~/janus')
-source('scripts/util/util.R')
+source('scripts/util/util.R') # https://github.com/benjaminhaley/janus/blob/master/scripts/util/util.R
 data <- readRDS('data/ddref.rds')
 
 ```
@@ -3096,7 +3097,7 @@ Show graphs like Storer 1979 10B4 but for all data using the random effects meta
 library(ggplot2)
 library(plyr)
 library(metafor)
-source('scripts/util/util.R')
+source('scripts/util/util.R') # https://github.com/benjaminhaley/janus/blob/master/scripts/util/util.R
 
 # Data
 setwd('~/janus')
@@ -3126,6 +3127,7 @@ model_meta <- function(data, o){
         method="ML"
     )
 }
+
 
 # Define Acute
 chronic <- data$fractions > 1
