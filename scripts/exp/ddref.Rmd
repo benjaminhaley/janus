@@ -1800,6 +1800,9 @@ data$modeled_in_10B3 <- with(data,
 )
 data$in_my_analysis <- data$type == 'A'
 
+# Save for later use
+write.csv(data, 'data/storer_1979_processed.csv')
+
 # prediction matrix
 predictions <- to_predict
 addin <- names(data)[!names(data) %in% names(predictions)]
@@ -1845,14 +1848,20 @@ ggsave_for_ppt('beir_10B3_reproduction.png')
 ```
 
 ### Results
-I am capable of reproducing their results.  There are two tricks
+I am capable of reproducing their results [very well][overlay].  There are a few tricks that were not explicitly stated in BEIR VII.
 
-  1. They stratified by strain and gender
-  2. They weighted by n
+1. They combined treatement groups from tables 1 and 2 if they were 
+   acute and had the same total dose
+2. They only used female RFM mice.
+3. The regression was weighted by 1/sd^2 (or n?)
+4. The regression intercept was [set to the control condition][wo-intercept]
 
 Strangely, they do not include data from table 2, but when I add this in, it does not make a huge difference, so I assume they are just not being careful.
 
-___________________________________________________________________
+[overlay]: http://dl.dropbox.com/u/1131693/bloodrop/10b3_temp_png.png
+[wo-intercept]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot_2014-05-21_16_45_53_png_-_Dropbox.png
+
+________________________________________________________________
 ^ back to [table of contents](#contents)
 
 
