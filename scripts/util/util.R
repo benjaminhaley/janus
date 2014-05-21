@@ -28,3 +28,18 @@ ggsave_for_ppt <- function(...) {
                           height=7.68, 
                           units='in'))
 }
+
+
+# Normalize likelihood
+# Given a set of log likelihood values, l, and a distance between
+# their measures, delta, ensure that the integral of the area
+# under the profile curve will equal delta.
+normalize_likelihood <- function(log_likelihood, delta){
+  l <- log_likelihood
+  l <- l - max(l)
+  l <- exp(l)
+  l <- l / sum(l)
+  l <- l / delta
+  
+  l       
+}

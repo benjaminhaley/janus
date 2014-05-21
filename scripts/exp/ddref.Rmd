@@ -30,10 +30,11 @@ TODO write abstract
   - [Visualize](#visual_concordance) - Show what the data looks like.
   - [Atomic Bomb Survivors](#lss) - Load data from atomic bomb survivors as well.
 - Analysis
+  - [Reproduce BEIR 10-2](#10-2) - Reproduce dose response for atomic bomb survivors. (fail)
+  - [Reproduce BEIR 10-3](#10-3) - Reproduce DDREF likelihood profiles for atomic bomb survivors.
   - [Reproduce BEIR 10B2](#10B2) - Show that we can fit the same model of cancer risk vs. dose as BEIR VII.
   - [Reproduce BEIR 10B3](#10B3) - Show that we can fit the same model of lifespan vs. dose as BEIR VII.
-  - [Reproduce BEIR 10B4](#10B4) - Show that we can reproduce the likelihood profiles from BEIR VII.
-  - [Reproduce BEIR 10-2](#10-2) - Reproduce dose response for atomic bomb survivors.
+  - [Reproduce BEIR 10B4](#10B4) - Show that we can reproduce the likelihood profiles from animal data in BEIR VII.
   - [10B3 on all data](#10B3-all-data) - Fit 1/lifespan models on all of the data.
   - [10B4 on all data](#10B4-all-data) - 1/lifespan models profile likelihoods on all of the data.
   - [10B3 with metaregression](#10B3-meta) - Reproduce dose response figure applying the principals of meta-regression
@@ -1223,7 +1224,7 @@ ctime_min_map <- c('1'=1951,
 
 threshold = 1.5001
 
-# Fix data
+# Spruce up the data
 data <- data %.% 
   # Translate
   # Values into different units
@@ -1231,7 +1232,13 @@ data <- data %.%
          agex = agecat_min_map[agexcat],
          age  = agecat_min_map[agecat],
          dose = dose_mean_map[dosecat],
-         ctime= ctime_min_map[ctime]) %.%
+         ctime= ctime_min_map[ctime])
+
+# Save a copy for future use
+write.csv(data, 'data/lss14/lss14_spruced_up.csv')
+
+# Shorten the data
+data <- data %.% 
   # Thin
   # Only select the colums of interest
   select(city, 
@@ -1601,16 +1608,10 @@ library(ggplot2)
 # Data
 setwd('~/janus')
 source('scripts/util/util.R')
+# TODO(ben) I should link to a copy of util.R in github for reference
 data <- read.csv('data/edwards_1992.csv', sep='\t') 
 
-normalize_likelihood <- function(l, delta){
-    l <- l - max(l)
-    l <- exp(l)
-    l <- l / sum(l)
-    l <- l / delta
-    
-    l       
-}
+
 
 # apply selection criteria
 data <- data %.% 
@@ -1851,6 +1852,8 @@ from storer 1979 (3575012.pdf).
 # Libraries
 library(ggplot2)
 library(plyr)
+source('scripts/util/util.R')
+# TODO(ben) I should link to a copy of util.R in github for reference
 
 # Data
 setwd('~/janus')
@@ -1863,14 +1866,6 @@ model_10B4 <- function(data, o){
         data=data,
         weights=n
     )
-}       
-normalize_likelihood <- function(l, delta){
-    l <- l - max(l)
-    l <- exp(l)
-    l <- l / sum(l)
-    l <- l / delta
-    
-    l       
 }
         
 # Constants
@@ -1984,7 +1979,7 @@ ___________________________________________________________________
 
 <a name="10-2"></a>
 
-Reproduce BEIR 10-2
+Reproduce BEIR 10-2 (fail)
 ========================================================
 *Last update: May 2014*
 Reproduce the BEIR estimates of dose reponse for atomic bomb survivors.
@@ -1994,103 +1989,42 @@ Reproduce the BEIR estimates of dose reponse for atomic bomb survivors.
 # Libraries
 library(ggplot2)
 library(plyr)
-
-# Helper functions
-get_max_map <- function(min_map, max=Inf) {
-  max_map <- c(min_map[2:length(min_map)], max)
-  names(max_map) <- names(min_map)
-  max_map
-}
-get_mean_map <- function(min_map, max=Inf) {
-  mean_map <- (min_map + get_max_map(min_map, max)) / 2
-  mean_map
-}
-normalize_likelihood <- function(l, delta){
-    l <- l - max(l)
-    l <- exp(l)
-    l <- l / sum(l)
-    l <- l / delta
-    
-    l       
-}
+library(dplyr)
 
 # Data
 setwd('~/janus')
+data <- read.csv('data/lss14/lss14_spruced_up.csv')
 
-# Load data
-setwd('~/janus/')
-data <- read.csv('data/lss14/lss14.csv')
-
-# Define Terms
-sex_map <- c('1'='♂',
-             '2'='♀')
-agecat_min_map <- c('1'=0,
-                    '2'=5,
-                    '3'=10,
-                    '4'=15,
-                    '5'=20,
-                    '6'=25,
-                    '7'=30,
-                    '8'=35,
-                    '9'=40,
-                    '10'=45,
-                    '11'=50,
-                    '12'=55,
-                    '13'=60,
-                    '14'=65,
-                    '15'=70,
-                    '16'=75,
-                    '17'=80,
-                    '18'=85,
-                    '19'=90,
-                    '20'=95,
-                    '21'=100)
-
-agecat_mean_map <- get_mean_map(agecat_min_map, 120)
-dose_min_map <- c('1'=0.000,
-                  '2'=0.005,
-                  '3'=0.020,
-                  '4'=0.040,
-                  '5'=0.060,
-                  '6'=0.080,
-                  '7'=0.100,
-                  '8'=0.125,
-                  '9'=0.150,
-                  '10'=0.175,
-                  '11'=0.200,
-                  '12'=0.250,
-                  '13'=0.300,
-                  '14'=0.500,
-                  '15'=0.750,
-                  '16'=1.000,
-                  '17'=1.250,
-                  '18'=1.500,
-                  '19'=1.750,
-                  '20'=2.000,
-                  '21'=2.500,
-                  '22'=3.000)
-dose_mean_map = get_mean_map(dose_min_map, 4)
-
+# Constants
 threshold = 2.0
 
-
-# Update data
+# Filter the data
 data <- data %.%
-  mutate(sex = sex_map[sex],
-         agex = agecat_min_map[agexcat],
-         age  = agecat_min_map[agecat],
-         dose = dose_mean_map[dosecat]) %.%
+  select(city, sex, gd3, ahs, ctime, solid,
+         subjects, agex, age, dose, pyr, death) %.%
   filter(dose <= threshold)
 
-model <- glm(solid ~ 
-               city + 
-               sex*I(log(age)) +
-               sex*agex +
-               factor(dose) + 
-               offset(log(pyr)),
-             family='poisson',
-             data = data)
+# Model
+model <- function(new_terms, threshold=Inf) {
+  formula <- solid ~ city +
+                     sex*I(log(age + 1)) +
+                     sex*I(log(agex + 1)) +
+                     offset(log(pyr)) -
+                     1
+  
+  formula <- update(formula, new_terms)
+  
+  glm(formula,
+      family='poisson',
+      data = data %.% filter(dose <= threshold))
+}
 
+factor_fit <- model(~ . + factor(dose))
+linear_fit <- model(~ . + dose, threshold=1.5)
+curvature_3_fit <- model(~ . + I(dose + 0.3*dose^2), threshold=1.5)
+curvature_7_fit <- model(~ . + I(dose + 0.7*dose^2), threshold=1.5)
+
+# Data points to predict
 to_predict <- expand.grid(
   city = unique(data$city),
   sex = unique(data$sex),
@@ -2099,41 +2033,29 @@ to_predict <- expand.grid(
   pyr = 1,
   dose = unique(data$dose))
 
-to_predict$risk <- exp(predict(model, newdata=to_predict))
+# Make predictions
+err <- function(model, data) {
+  baseline <- data
+  baseline$dose <- min(data$dose)
 
+  risk <- exp(predict(model, newdata=data))
+  control_risk <- exp(predict(model, newdata=baseline))
+  err <- risk / control_risk - 1
+  
+  err
+}
+to_predict$err <- err(factor_fit, to_predict)
+to_predict$linear_err <- err(linear_fit, to_predict)
+to_predict$curvature_3_err <- err(curvature_3_fit, to_predict)
+to_predict$curvature_7_err <- err(curvature_7_fit, to_predict)
+
+# Average by Dose and city
 aggregate <- to_predict %.%
   group_by(dose) %.%
-  summarize(risk=mean(risk))
-
-aggregate$err <- with(aggregate, risk / min(risk) - 1)
-
-ggplot(aggregate, aes(dose, err)) + geom_point()
-
-
-# TODO: Note that the sexes in lss behave quite differently, males are responding stronger.
-
-# Constants
-threshold = 1.5001
-
-# Model
-low = -2
-high = 6
-delta = .01
-o_range = (low/delta):(high/delta) * delta
-
-get_likelihoods <- function(o_range, data){
-    r <- ldply(o_range, function(o){
-        m <- model_10B4(data, o)
-        l = logLik(m)
-        
-        data.frame(o, l)
-    })
-    
-    r$l <- normalize_likelihood(r$l, delta)
-    
-    r
-}
-
+  summarize(err=mean(err),
+            linear_err=mean(linear_err),
+            curvature_3_err=mean(curvature_3_err),
+            curvature_7_err=mean(curvature_7_err))
 ```
 
 #### Show
@@ -2143,16 +2065,51 @@ This is the original [10-2 figure][10-2-citation] from the beir VII report [beir
 ![10-2-image]: 
 
 [10-2-citation]: http://www.nap.edu/openbook.php?record_id=11340&page=248
-[10B4-image]: http://dl.dropbox.com/u/1131693/bloodrop/10-2.jpg
+[10-2-image]: http://dl.dropbox.com/u/1131693/bloodrop/10-2.jpg
 
 
 ##### Reproduce 10-2
-This is my reproduction of 10-2 to prove that I am faithfully applying their methodology.
+This is my attempt to reproduce 10-2 to prove that I am faithfully applying their methodology.
 ```{r}
+# Show data
+ggplot(aggregate, aes(dose, err)) + 
+  geom_point() +
+  geom_smooth(aes(y=linear_err), 
+              method='lm', 
+              formula='y ~ x',
+              se=FALSE) +
+  geom_smooth(aes(y=curvature_3_err), 
+              method='lm', 
+              formula='y ~ I(x^2)',
+              se=FALSE) +
+  geom_smooth(aes(y=curvature_7_err), 
+              method='lm', 
+              formula='y ~ I(x^2)',
+              se=FALSE)
+
+# TODO: If I look at the linear fits here they are not actually linear, because of the poisson x-form of course.  But they are linear at 10-3.  That's strange, it makes me think the fit a linear quadratic model after the fact.
 ```
 
 
 #### Results
+I was unable to reproduce figure 10-2 using original lss data.  As you can see niether the points nor the fits reproduce correspond exactly.
+
+There are several causes for these discrepiancies:
+
+1. **BEIR VII does not specificy exactly what data was used** for this figure.  From the following quote it might be inferred that they used some work-in-progress dataset that is not publically available.
+> "Because the most recent cancer incidence data were not yet available outside of RERF, analyses of these data were conducted under the direction of the committee by RERF investigators who served as agents of the Academy."  
+> ANNEX 12B - pg 296  
+> http://www.nap.edu/openbook.php?record_id=11340&page=296  
+
+2. **BEIR VII does not articulate how data was clustered** they used some grouping of doses that is different than the one avaiable from the lss downloads.  This would probably be a problem that we could solve by hand if we knew what data was being used.
+
+3. **BEIR VII does not specify exactly what models were used** for this fit.  They reference a variety of models in the annexes of chapter 12 and we could probably determine which was used here if we could solve the first two problems.
+
+#### What to do?
+This reproduction is necessary to form a final estimate of DDREF using the same methodology as BEIR VII and therefore to know how much updates to the animal data affected the final result.  It would be re-assuring to reproduce this data from source values, but fine if we can simply get the results as a profile likelihood.  Therefore I will:
+
+1. Contact someone who helped to produce these results and ask them to help me.
+2. Try to reproduce figure 10-3 (the profile likelihood curves that will actually be used) using data reproduced from these graphs rather than original profile likelihood data.
 
 ___________________________________________________________________
 ^ back to [table of contents](#contents)
@@ -2160,6 +2117,92 @@ ___________________________________________________________________
 
 
 
+<a name="10-3"></a>
+
+Reproduce BEIR 10-3 (from a reproduction of 10-2)
+========================================================
+*Last update: May 2014*
+Reproduce the BEIR VII estimates of DDREF likelihood using atomic bomb survivor data.
+
+*Note this data is based on a reproduction of figure 10-2 instead of on original atomic bomb survivor data for the reasons listed in my [attempt to reproduce 10-2][#10-2]
+
+```{r} 
+
+# Libraries
+library(ggplot2)
+library(plyr)
+library(dplyr)
+source('scripts/util/util.R')
+# TODO(ben) I should link to a copy of util.R in github for reference
+
+# Data
+setwd('~/janus')
+data <- read.csv('data/10-2.csv')  # a reproduction of BEIR 10-2
+
+# fix data
+data <- data %.%
+  mutate(sd = sd + 0.00001)
+
+# Show 10-2
+# Prove that we can do the linear and quadratic fits for 10-2
+weighted_fit <- function(...) geom_smooth(
+  ...,
+  method='lm', 
+  aes(weight=1/sd),
+  se=FALSE,
+  color='black')
+
+ggplot(data, aes(dose, err)) +
+  geom_pointrange(aes(ymax=err + 2*sd, ymin=err - 2*sd)) +
+  weighted_fit(formula='y ~ x - 1') +
+  weighted_fit(formula='y ~ I(x + 0.3 * x^2) - 1', 
+               linetype='dotted') +
+  weighted_fit(formula='y ~ I(x + 0.7 * x^2) - 1',
+               linetype='dashed') + 
+  scale_y_continuous(breaks = c(0:3)/2) +
+  scale_x_continuous(breaks = c(0:4)/2) +
+  coord_cartesian(xlim=c(-0.1,2.1), ylim=c(-0.1,1.6))
+```
+#### 10-2 with fit
+These fits to the data are not perfect, but a pretty close reproduction.  Close enough that I have hope that they may have fit things in this way and that we can develop the profile likelihood values by this technique.
+
+If they did, this is strange.  They seem to be fitting a linear quadratic equation to data from a poisson regression which is e^(linear quadratic).  I don't know what to make of this.
+
+```{r}
+# Model
+low = -2
+high = 6
+delta = 0.1  # decrease for higher resolution
+o_range = (low/delta):(high/delta) * delta
+
+# Model
+likelihoods <- ldply(o_range, function(o){
+  model <- glm(err ~ I(dose + o*dose^2),
+               data=data,
+               weights=1/sd^2)
+  c(o=o, l=logLik(model))
+})
+
+# Summarize Effect
+likelihoods$l <- normalize_likelihood(likelihoods$l, delta)
+
+# Show
+ggplot(likelihoods, aes(o, l)) + 
+    geom_path()
+
+```
+
+##### BEIR 10-3
+This is the original [10-3 figure][10-3-citation] from the beir VII report [beir-10-3].
+
+![10-3-image]: 
+
+[10-3-citation]: http://www.nap.edu/openbook.php?record_id=11340&page=249
+[10-3-image]: http://dl.dropbox.com/u/1131693/bloodrop/10-3.jpg
+
+
+___________________________________________________________________
+^ back to [table of contents](#contents)
 
 
 
@@ -2327,6 +2370,7 @@ Show graphs like Storer 1979 10B4 but for all data.
 # Libraries
 library(ggplot2)
 library(plyr)
+source('scripts/util/util.R')
 
 # Data
 setwd('~/janus')
@@ -2341,15 +2385,6 @@ model_10B4 <- function(data, o){
         weights=n
     )
 }       
-normalize_likelihood <- function(l, delta){
-    l <- l - max(l)
-    l <- exp(l)
-    l <- l / sum(l)
-    l <- l / delta
-    
-    l       
-}
-
     
 # Mean Lifespans
 aggregate <- ddply(data, .(cluster, group_id, sex), function(df){
@@ -2744,6 +2779,7 @@ will come from storer 1979 (3575012.pdf).
 library(ggplot2)
 library(plyr)
 library(metafor)
+source('scripts/util/util.R')
 
 # Data
 setwd('~/janus')
@@ -2774,15 +2810,6 @@ model_meta <- function(data, o){
         data = data,
         method='ML'
     )
-}
-
-normalize_likelihood <- function(l, delta){
-    l <- l - max(l)
-    l <- exp(l)
-    l <- l / sum(l)
-    l <- l / delta
-    
-    l       
 }
         
 # Constants
@@ -3069,6 +3096,7 @@ Show graphs like Storer 1979 10B4 but for all data using the random effects meta
 library(ggplot2)
 library(plyr)
 library(metafor)
+source('scripts/util/util.R')
 
 # Data
 setwd('~/janus')
@@ -3083,7 +3111,7 @@ ggsave_for_ppt <- function(...) suppressWarnings(ggsave(...,
 
 model_10B4 <- function(data, o){    
     glm(
-        I(1/age) ~ I(dose + o*dose^2 / (fractions)),
+        I(1/age) ~ cluster * I(dose + o*dose^2 / (fractions)),
         data=data,
         weights=n
     )
@@ -3093,18 +3121,10 @@ model_meta <- function(data, o){
     rma(
         yi, 
         vi, 
-        mods = cbind(curved_dose), 
+        mods = cbind(cluster, curved_dose), 
         data = data,
         method="ML"
     )
-}
-normalize_likelihood <- function(l, delta){
-    l <- l - max(l)
-    l <- exp(l)
-    l <- l / sum(l)
-    l <- l / delta
-    
-    l       
 }
 
 # Define Acute
@@ -3113,7 +3133,7 @@ data$type <- 'A'
 data$type[chronic] <- 'C'
         
 # Mean Lifespans
-aggregate <- ddply(data, .(cluster, group_id, sex), function(df){
+aggregate <- ddply(data, .(cluster, group_id), function(df){
     u <- function(x) paste(unique(x), collapse=' ')
     dont_aggregate <- c('lifespan', 'id', 'X', 'n')
     n <- nrow(df)
@@ -3140,44 +3160,24 @@ for(n in numerics) {
 # Model
 low = -2
 high = 6
-delta = .01   # Reduce to increase resolution
+delta = .1   # Reduce to increase resolution
 o_range = (low/delta):(high/delta) * delta
 
 # Model
-aggregate <- ldply(o_range, function(o){
-    ddply(aggregate, .(cluster, sex), function(df){
-                    
-        # BEIR
-        m <- model_10B4(df, o)
-        df$l_10B4 <- logLik(m)
-        
-        # Random Effects
-        m <- model_meta(df, o)
-        df$l_meta <- logLik(m)
-        
-        df$o <- o
-        df
-    })
+summary <- ldply(o_range, function(o){
+      # BEIR
+      m <- model_10B4(aggregate, o)
+      l_10B4 <- logLik(m)
+      
+      # Random Effects
+      m <- model_meta(aggregate, o)
+      l_meta <- logLik(m)
+      
+      c(l_10B4=l_10B4, l_meta=l_meta, o=o)
 })
-
-# Summarize Effect
-get_summary_effect <- function(o, l){
-    aggregate <- data.frame(o, l)
-    summary <- ddply(aggregate, .(o), function(df){
-        sum(df$l, na.rm=TRUE)
-    })
-    names(summary) <- c('o','l')
-    
-    with(summary, data.frame(o, l))
-}
-
-summary_10B4 <- with(aggregate, get_summary_effect(o, l_10B4))
-summary_meta <- with(aggregate, get_summary_effect(o, l_meta))
-summary <- data.frame(
-    o <- summary_10B4$o,
-    l_10B4 <- normalize_likelihood(summary_10B4$l, delta),
-    l_meta <- normalize_likelihood(summary_meta$l, delta)
-)
+summary <- summary %.% 
+  mutate(l_10B4 = normalize_likelihood(l_10B4, delta),
+         l_meta = normalize_likelihood(l_meta, delta))
 
 # Normalize
 aggregate <- ddply(aggregate, .(cluster, sex), function(df){
@@ -3200,23 +3200,26 @@ show <- function(g){
     ggplot(g, aes(o, l)) + 
         geom_path(aes(o, l_10B4), color='black') +
         geom_path(aes(o, l_meta), color='red') +
-        ylim(0,1) +
-        facet_wrap(~ cluster)
+        facet_wrap(~ cluster) + scale_y_log10()
     ))
 }
 
 g <- a
 show(g)
+
+
 ggsave_for_ppt('meta_regression_profile.png')
 
 summary$l_10B4 <- pmin(4, summary$l_10B4)
 summary$l_meta <- pmin(4, summary$l_meta)
 ggplot(summary, aes(o, l)) + 
-    geom_path(aes(o, l_10B4), color='black') +
-    geom_path(aes(o, l_meta), color='red') +
+    geom_path(aes(o, l_meta))
     ylim(0,4)
 ggsave_for_ppt('meta_regression_summary_effect.png')
-  
+
+
+# TODO: Maybe I would not get absurd profile-likelihood values if I just perfomed a single regression, instead of multiple regressions with bayesian updates.  Concretely I would do 1/age ~ cluster * ...
+
 ```
 
 #### Results
@@ -3291,6 +3294,25 @@ Black dots represent hypothetical data points fit to a log linear quadratic mode
 This hypothetical data proves the point, log linear quadratic models and linear quadratic models are nearly indistiguishiable when viablity is high, but only the log linear quadratic model can fit the data well when viablity extends into the low range.
 
 The implication of this finding is that log linear quadratic models is always valid and is necessary if the outcome of interest affects a large percentage of the population (the cutoff is arbitrary, but the author might suggest > 30%).  This further suggests that we need not create a threshold of 1.5 Gy or 2 Gy when assessing DDREF, instead we must fit results to log linear quadratic scales and avoid a cutoff entirely.
+
+**How could the literature be wrong**
+If we read up in Hall, we find that the proposed cutoff is controversial, Gray proposed the bell shaped dose response in the 1960s to explain leukemia induction in mice which seemed to diminish at high doses.  He proposed that this is because the cells that were damaged and would have lead to cancer had become inviable instead.  Therefore some optimal dose results in maximum cancer induction by damaging many cells without inducing so much damage that they become inviable.
+
+However, subsequent data has not born out this theory in other systems like breast cancer (Brehner and Sachs) in children as St. Jude's treated for leukemia (Neglia 2006).
+
+![][http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-05-07%2012.21.33.png]
+
+**Figures from Hall**
+These figures, copied from Hall's textbook illustrate Gray's proposal and counter evidence from Brehner and Sachs.
+
+**Conclusion** 
+We would do well to use log linear quadratic models and avoid the tacit assumption that there is some threshold dose beyond which cancer rates (or mortality rates) fall.
+
+TODO: Try estimating DDREF without a cutoff
+TODO: See if the hypotherical threshold proposed by BEIR VII actually plays out ([figure 10-1][BEIR 10-1])
+
+
+[BEIR 10-1]: http://www.nap.edu/openbook.php?record_id=11340&page=247#p2000e6f39960247001
 
 __________________________________________________________________
 ^ back to [table of contents](#contents)
