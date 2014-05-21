@@ -1709,6 +1709,11 @@ Reproduce BEIR 10B3
 Reproduce the BEIR estimates on the oak ridge lifespan data
 from storer 1979 (3575012.pdf).
 
+*note*: Apparently BEIR VII grouped together acute exposures from tables 1 and 2 if they had the same total dose ([without grouping][ungrouped], [with grouping][grouped]).
+
+[ungrouped]: http://dl.dropbox.com/u/1131693/bloodrop/10b3_temp_before.png
+[grouped]: http://dl.dropbox.com/u/1131693/bloodrop/10b3_temp_png.png
+
 ```{r}
 # Libraries
 library(ggplot2)
@@ -1716,15 +1721,15 @@ library(plyr)
 
 # Data
 setwd('~/janus')
-source('scripts/util/util.R') # https://github.com/benjaminhaley/janus/blob/master/scripts/util/util.R
+source('scripts/util/util.R') 
 data <- read.csv('data/storer_1979.csv', sep='\t')  
     
 
 model_10B3 <- function(data){
     glm(
-        I(1/age) ~ dose + I(dose^2 / (fractions)),
+        I(1/age - 1/635.2) ~ dose + I(dose^2 / (fractions)) - 1,
         data=data,
-        weights=n
+        weights=1/sd^2
     )
 }   
 show <- function(g){
@@ -1742,12 +1747,8 @@ show <- function(g){
             data=predictions,
             aes(dose, p_10B3),
             color='black'
-        ) # + 
-        # geom_smooth(
-            # data=predictions,
-            # aes(dose, p_my_analysis), 
-            # color='red'
-        # ) 
+        ) +
+       scale_y_continuous(breaks = 0.0002*0:4+0.0016)
     ))
 }
 
@@ -1757,7 +1758,7 @@ threshold = 1.5001
 
 # Prediction Intervals
 to_predict <- expand.grid(
-    fractions = c(1, 1000),
+    fractions = c(1, Inf),
     dose = seq(0, 1.5, 0.1)
 )
 to_predict$type <- 'A'
@@ -1772,29 +1773,47 @@ chronic <- data$rate < 0.1
 data$type <- 'A'
 data$type[chronic] <- 'C'
 
+# Combine acute exposures with the same treatment
+# (see note above for a justification)
+# TODO(ben) do this step in every analysis that uses storer
+data <- ddply(data, .(dose, type, sex, fractions, strain), function(df) {
+  all <- function(x) paste(unique(x), sep=', ', collapse=', ')
+  with(df,data.frame(
+            table=all(table),
+            n=sum(n),
+            dose=dose[1],
+            rate=mean(rate),
+            strain=all(strain),
+            sex=sex[1],
+            age= sum(age * n) / sum(n),
+            sd= (sum(sd^2 * n)/sum(n))^0.5,
+            fractions=fractions[1],
+            type=type[1]
+  ))
+})
+
 # Subset
 data$modeled_in_10B3 <- with(data, 
     dose < threshold &
     strain == 'RFM'  &
-    sex == 'F' &
-    rate != 0.4
+    sex == 'F'
 )
 data$in_my_analysis <- data$type == 'A'
 
 # prediction matrix
 predictions <- to_predict
 addin <- names(data)[!names(data) %in% names(predictions)]
-predictions <- merge(data[1, addin], predictions, all=TRUE)
+predictions <- merge(data[data$modeled_in_10B3,][1, addin], predictions, all=TRUE)
 
 # 10B3 Model
 m <- model_10B3(data[data$modeled_in_10B3,])
-predictions$p_10B3 <- predict(m, newdata=predictions)
+predictions$p_10B3 <- predict(m, newdata=predictions) + 1/635.2
 
 # My Model
 s <- data$modeled_in_10B3 & 
      data$in_my_analysis
 m <- model_10B3(data[s,])
-predictions$p_my_analysis <- predict(m, newdata=predictions)
+predictions$p_my_analysis <- predict(m, newdata=predictions) + 1/635.2
 
 # Merge
 data$p_10B3 <- NA
@@ -1861,13 +1880,6 @@ setwd('~/janus')
 data <- read.csv('data/storer_1979.csv', sep='\t') 
 data_10B2 <- read.csv('data/10B2_fits.csv')
 
-model_10B4 <- function(data, o){    
-    glm(
-        I(1/age) ~ I(dose + o*dose^2 / (fractions)),
-        data=data,
-        weights=n
-    )
-}
         
 # Constants
 threshold = 1.5001
@@ -1885,15 +1897,15 @@ data$type[chronic] <- 'C'
 data$modeled_in_10B4 <- with(data, 
     dose < threshold &
     strain == 'RFM'  &
-    sex == 'F' # &
-    # rate != 0.4
+    sex == 'F' #&
+    #rate != 0.4
 )
 data$in_my_analysis <- data$type == 'A'
 
 # Model
 low = -2
 high = 6
-delta = .01
+delta = 0.1
 o_range = (low/delta):(high/delta) * delta
 
 get_likelihoods <- function(o_range, data){
@@ -1909,8 +1921,62 @@ get_likelihoods <- function(o_range, data){
     r
 }
 
+
+
+model_10B4 <- function(data, o){    
+    glm(
+        I(1/age) ~ I(dose + o*dose^2 / (fractions)),
+        data=data,
+        weights=n
+    )
+}
+
 beir_r <- get_likelihoods(o_range, data[data$modeled_in_10B4,])
+
+
+# ***** WIP ****** >
+data$modeled_in_10B4 <- with(data, 
+    dose < threshold &
+    strain == 'RFM'  &
+    sex == 'F' &
+    rate != 0.4
+)
+model_10B4 <- function(data, o){    
+    glm(
+        I(1/age - 1/635.2) ~ I(dose + o*dose^2 / (fractions)) - 1,
+        data=data
+    )
+}
+
+new_r <- get_likelihoods(o_range, data[data$modeled_in_10B4,])
+
+ggplot(NULL) + 
+  geom_path(aes(beir_r$o, beir_r$l)) +
+  geom_path(aes(new_r$o, new_r$l), color='red') +
+  ylim(0, 1) +
+  
+# Attempt 1: Expand data set
+# Tried to make one row for every mouse and run the regression
+# this did not work.
+# https://www.dropbox.com/s/jk5ie68nzhbgyux/Screenshot%202014-05-21%2012.39.52.png
+# Attempt 2: Fixed effect
+# Fail, though oddly different
+
+# < ***** WIP ******
+
+
+
+
+
+
+
+
 my_r <- get_likelihoods(o_range, data[data$in_my_analysis,])
+
+
+
+
+
 
 
 # Merge likelihoods with data from 10B2
@@ -1930,7 +1996,6 @@ my_r <- my_r %.%
 
 confidence_interval(beir_r$o + 1, beir_r$mean_likelihood)
 # should be "1.5 (1.0, 4.4)"
-
 
 ```
 
@@ -2804,7 +2869,7 @@ model_10B4 <- function(data, o){
         data=data,
         weights=n
     )
-}       
+}
 model_meta <- function(data, o){    
     data$curved_dose <- with(data, 
         dose + o*dose^2 / (fractions)
