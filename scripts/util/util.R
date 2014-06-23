@@ -45,19 +45,54 @@ normalize_likelihood <- function(log_likelihood, delta){
 }
 
 
-# Get the median value and range of x by likelihood and 
-# confidence intervals
-# *note the current implementation is not perfect, it 
-#       would find an interval of 3-98 instead of 2.5-97.5
-#       this is not a problem provided there are lots of data
-#       points.
+# Get a confidence interval from profile likelihood data.
+#
+# The method is simple, but counter-intuitive, so I will take some
+# time to explain how it works and why it makes sense.
+#
+# To find the most probably value for the data we simply find the
+# maximum likelihood and corresponding data... easy.  To find the
+# 95% confidence interval we can subtract 1.96 from the log of this
+# likelihood maximum then find the data points which the most 
+# extreme values for o that have log likelihoods above this value 
+# [1].
+#
+# I know this method works because it produces similar outcomes to
+# BEIR VII, but why does it work?  I originally thought that a value
+# that had a 20x higher likelihood than another was simply 20x more
+# likely to occur and therefore we had to integrate across all
+# likelihood values and then find the area that spans 95% just as
+# you would do with a probability density curve.
+#
+# First it is important to know that likelihood is not the likelihood
+# of the parameter, instead it is the likelihood of observing the
+# data given the parameter [2].
+#
+# Also realize that there is a thing called a likelihood ratio test
+# which compares how likely it is that one model describes a set of
+# data better than another model [3].  The reasoning behind our 
+# confidence interval determination is that we are essentially
+# comparing the most likely model to each other model one at a time
+# and determining which we would reject in a head to head comparison.
+# Then we keep all of the models which have a likelihood higher than
+# rejection.
+#
+# But why this approach?  How can we be confident that our parameter
+# will lie within this range 95% of the time?  I still do not 
+# understand this part of the problem.
+#
+# [1]: http://people.upei.ca/hstryhn/stryhn208.pdf
+# [2]: http://stats.stackexchange.com/questions/31238/what-is-the-reason-that-a-likelihood-function-is-not-a-pdf
+# [3]: https://en.wikipedia.org/wiki/Likelihood-ratio_test
+
 confidence_interval <- function(x, likelihood, p=0.05) {
-  l <- likelihood
-  top <- x[cumsum(l) > sum(l) * (1 - p/2)][1]
-  median <- x[cumsum(l) >= sum(l) * 0.5][1]
-  bottom <- x[cumsum(l) >= sum(l) * p/2][1]
-  
-  print(paste0(median, ' (', bottom, ', ', top, ')'))
-  c(bottom, median, top)
+  most_likely_x <- x[which.max(likelihood)]
+  minimum_acceptable_likelihood <- exp(log(max(likelihood)) - qnorm(1 - p/2))
+  lowest_acceptable_x <- min(x[likelihood > minimum_acceptable_likelihood])
+  highest_acceptable_x <- max(x[likelihood > minimum_acceptable_likelihood])
+    
+  print(paste0(most_likely_x,' (',
+               lowest_acceptable_x,', ',
+               highest_acceptable_x, ')'))
+  c(lowest_acceptable_x, most_likely_x, highest_acceptable_x)
 }
-confidence_interval(1:100, rep(1, 100)) == c(3, 50, 98)

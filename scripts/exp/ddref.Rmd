@@ -576,8 +576,8 @@ d$protracted <-  d$dose > 0 &
                   d$dose_rate < 0.01)
 
 # Observations per cluster
-d = d %.%
-  group_by(cluster) %.%
+d = d %>%
+  group_by(cluster) %>%
   mutate(n_in_cluster=length(cluster))
 
 # Give the clusters pretty names
@@ -675,11 +675,11 @@ for(id in sort(unique(d$cluster_id))) {
   s <- ddply(df, .(group_id), function(df) {
     group_summary(df)
   })
-  s <- s %.% 
+  s <- s %>% 
     mutate(study=sub('^[0-9]*-', '', group_id),
            group=as.numeric(sub('^[0-9]*-', '', study)),
-           study=as.numeric(sub('-[0-9]*$', '', study))) %.%
-    arrange(study, group) %.%
+           study=as.numeric(sub('-[0-9]*$', '', study))) %>%
+    arrange(study, group) %>%
     select(-study, -group)
   print(s, row.names=FALSE)
 }
@@ -972,14 +972,14 @@ Clusters are sepperated by facets and labeled with sex, strain, species, lab, qu
 ```{r}
 n_unique <- function(...) length(unique(paste(...)))
 
-comparable_doses <- d %.%
-  ungroup() %.%
-  group_by(cluster_id, dose) %.%
-  summarize(n_groups=n_unique(fractions, dose_rate)) %.%
+comparable_doses <- d %>%
+  ungroup() %>%
+  group_by(cluster_id, dose) %>%
+  summarize(n_groups=n_unique(fractions, dose_rate)) %>%
   filter(n_groups > 1)
 
-g <- d %.%
-  ungroup() %.%
+g <- d %>%
+  ungroup() %>%
   filter(cluster_id %in% comparable_doses$cluster_id,
          dose %in% c(comparable_doses$dose, 0))
 
@@ -1017,9 +1017,9 @@ The effects of fractionation are decidely ambivilant.  Cluster 4 shows signs of 
 
 
 ```{r}
-d <- d %.%
-  group_by(cluster, dose, dose_rate, fractions) %.%
-  arrange(lifespan) %.%
+d <- d %>%
+  group_by(cluster, dose, dose_rate, fractions) %>%
+  arrange(lifespan) %>%
   mutate(survival=rank(-lifespan) / length(lifespan))
 
 ggplot(d, 
@@ -1047,17 +1047,17 @@ This does not tell us anything new, I've included it because survival plots are 
 
 
 ```{r}
-d <- d %.%
-  ungroup() %.%
-  group_by(cluster, dose, dose_rate, fractions) %.%
-  arrange(lifespan) %.%
+d <- d %>%
+  ungroup() %>%
+  group_by(cluster, dose, dose_rate, fractions) %>%
+  arrange(lifespan) %>%
   mutate(group_survival=rank(-lifespan) / length(lifespan))
 
 # How many animals were alive after X days in each cluster?
-d <- d %.%
-  ungroup() %.%
-  group_by(cluster) %.%
-  arrange(lifespan) %.%
+d <- d %>%
+  ungroup() %>%
+  group_by(cluster) %>%
+  arrange(lifespan) %>%
   mutate(cluster_survival=rank(-lifespan) / length(lifespan))
 
 ggplot(d, 
@@ -1093,7 +1093,7 @@ Like the survival plot above, expecept that survival group within the entire clu
 
 # Show the same graphs with individual treatement groups labeled, this is not a figure for papers or presentations, but is handy for those who want to inspect the data very closely (me).
 
-# g <- ggplot(d %.% filter(cluster_id == 15),
+# g <- ggplot(d %>% filter(cluster_id == 15),
 #        aes(lifespan, 
 #            y = ..scaled..,
 #            color=group_id,
@@ -1225,7 +1225,7 @@ ctime_min_map <- c('1'=1951,
 threshold = 1.5001
 
 # Spruce up the data
-data <- data %.% 
+data <- data %>% 
   # Translate
   # Values into different units
   mutate(sex = sex_map[sex],
@@ -1238,7 +1238,7 @@ data <- data %.%
 write.csv(data, 'data/lss14/lss14_spruced_up.csv')
 
 # Shorten the data
-data <- data %.% 
+data <- data %>% 
   # Thin
   # Only select the colums of interest
   select(city, 
@@ -1248,7 +1248,7 @@ data <- data %.%
          dose, 
          subjects, 
          death,
-         ctime) %.%
+         ctime) %>%
   # Shorten
   # Remove those with a dose above threshold
   filter(dose < threshold)
@@ -1266,8 +1266,8 @@ nrow(dead) == 49879
 # Clean dead
 # Make it truly represent one individual per row by removing
 # aggregated values
-dead <- dead %.%
-  select(-subjects, -death) %.%
+dead <- dead %>%
+  select(-subjects, -death) %>%
   mutate('alive' = 0)
 
 # One row for each person still alive
@@ -1327,7 +1327,7 @@ ggplot(long, aes(ctime, age, color=alive)) +
 
 # Reduce resolution 
 # (as it is there are too many categories for graphing)
-low_res <- long %.% 
+low_res <- long %>% 
   mutate(agex = floor(agex/20)*20,
          age_string = paste0(agex, '+ years'),
          lifespan = age,
@@ -1337,7 +1337,7 @@ low_res <- long %.%
 ```{r}
 g <- low_res
 # Show it off
-ggplot(g %.% filter(!alive), 
+ggplot(g %>% filter(!alive), 
        aes(x=lifespan, 
            color=dose,
            group=factor(paste0(dose)),
@@ -1368,12 +1368,12 @@ Analogous the the lifespan density plots shown for animals except that this deta
 # Note by multiplying age * alive plus a small amount we ensure
 # that survivors who are still alive always have a higher rank
 # than those that have already died.
-g <- low_res %.%
-  group_by(agex, dose, sex) %.%
-  arrange(age) %.%
+g <- low_res %>%
+  group_by(agex, dose, sex) %>%
+  arrange(age) %>%
   mutate(survival=rank(-age * (alive + 0.0001)) / length(age))
 
-ggplot(g %.% filter(!alive), 
+ggplot(g %>% filter(!alive), 
        aes(age, 
            survival,
            color=dose,
@@ -1399,20 +1399,20 @@ As before.
 
 
 ```{r}
-g <- low_res %.%
-  ungroup() %.%
-  group_by(agex, dose, sex) %.%
-  arrange(age) %.%
+g <- low_res %>%
+  ungroup() %>%
+  group_by(agex, dose, sex) %>%
+  arrange(age) %>%
   mutate(group_survival=rank(-age * (alive + 0.0001)) / length(age))
 
 # How many people were alive after X years in each cluster?
-g <- g %.%
-  ungroup() %.%
-  group_by(agex, sex) %.%
-  arrange(age) %.%
+g <- g %>%
+  ungroup() %>%
+  group_by(agex, sex) %>%
+  arrange(age) %>%
   mutate(cluster_survival=rank(-age * (alive + 0.0001)) / length(age))
 
-ggplot(g %.% filter(!alive), 
+ggplot(g %>% filter(!alive), 
        aes(age, 
            group_survival - cluster_survival,
            color=dose,
@@ -1445,7 +1445,7 @@ As with the animal data we the difference between survival of an entire cluster 
 # Reduce dose resolution
 # We want less dose categories total, but agex resolution
 # should not be reduced
-g <- long %.% 
+g <- long %>% 
   mutate(dose = round(dose * 2)/2)
 
 # Determine survival
@@ -1459,14 +1459,14 @@ g <- long %.%
 # that survivors who are still alive always have a higher rank
 # than those that have already died.
 
-g <- g %.%
-  group_by(dose, sex) %.%
-  arrange(age) %.%
+g <- g %>%
+  group_by(dose, sex) %>%
+  arrange(age) %>%
   mutate(n_alive = rank(-age * (alive + 0.0001)),
          n_at_risk = rep(sum(agex <= age), length(age)),
          survival = n_alive / n_at_risk)
 
-ggplot(g %.% filter(!alive), 
+ggplot(g %>% filter(!alive), 
        aes(age, 
            survival,
            color=dose,
@@ -1492,24 +1492,24 @@ As before except that all age at first exposures are combined into a single grap
 
 ```{r}
 # How many people were alive after X years in each group?
-g <- g %.%
-  ungroup() %.%
-  group_by(dose, sex, city) %.%
-  arrange(age) %.%
+g <- g %>%
+  ungroup() %>%
+  group_by(dose, sex, city) %>%
+  arrange(age) %>%
   mutate(n_alive = rank(-age * (alive + 0.0001)),
          n_at_risk = rep(sum(agex <= age), length(age)),
          group_survival = n_alive / n_at_risk)
 
 # How many people were alive after X years in each cluster?
-g <- g %.%
-  ungroup() %.%
-  group_by(sex, city) %.%
-  arrange(age) %.%
+g <- g %>%
+  ungroup() %>%
+  group_by(sex, city) %>%
+  arrange(age) %>%
   mutate(n_alive = rank(-age * (alive + 0.0001)),
        n_at_risk = rep(sum(agex <= age), length(age)),
        cluster_survival = n_alive / n_at_risk)
 
-ggplot(g %.% filter(!alive), 
+ggplot(g %>% filter(!alive), 
        aes(age,
            group_survival - cluster_survival, 
            color=dose,
@@ -1614,7 +1614,7 @@ data <- read.csv('data/edwards_1992.csv', sep='\t')
 
 
 # apply selection criteria
-data <- data %.% 
+data <- data %>% 
   filter(protraction == 'Acute',
          !is.na(risk),
          dose <= 2.0)
@@ -1641,7 +1641,7 @@ fits <- ldply(o_range, function(o){
     likelihood=logLik(model))
 })
 
-fits <- fits %.%
+fits <- fits %>%
   mutate(likelihood=normalize_likelihood(likelihood, delta))
 
 ggplot(fits, aes(o, likelihood)) + geom_path()
@@ -1718,6 +1718,7 @@ from storer 1979 (3575012.pdf).
 # Libraries
 library(ggplot2)
 library(plyr)
+library(dplyr)
 
 # Data
 setwd('~/janus')
@@ -1727,7 +1728,7 @@ data <- read.csv('data/storer_1979.csv', sep='\t')
 
 model_10B3 <- function(data){
     glm(
-        I(1/age - 1/635.2) ~ dose + I(dose^2 / (fractions)) - 1,
+        I(1/age - 1/636.175) ~ dose + I(dose^2 / (fractions)) - 1,
         data=data,
         weights=1/sd^2
     )
@@ -1810,19 +1811,171 @@ predictions <- merge(data[data$modeled_in_10B3,][1, addin], predictions, all=TRU
 
 # 10B3 Model
 m <- model_10B3(data[data$modeled_in_10B3,])
-predictions$p_10B3 <- predict(m, newdata=predictions) + 1/635.2
+predictions$p_10B3 <- predict(m, newdata=predictions) + 1/636.175
 
 # My Model
 s <- data$modeled_in_10B3 & 
      data$in_my_analysis
 m <- model_10B3(data[s,])
-predictions$p_my_analysis <- predict(m, newdata=predictions) + 1/635.2
+predictions$p_my_analysis <- predict(m, newdata=predictions) + 1/636.175
 
 # Merge
 data$p_10B3 <- NA
 data$p_my_analysis <- NA
 
 data <- rbind(predictions, data)
+
+
+
+
+
+
+
+
+# TODO(ben) delete this when you finally give up
+#
+# # data2
+# data2 <- read.csv('data/storer_1979.csv', sep='\t')  
+# data2 <- rbind(data2, data.frame(table=3, 
+#                         n=312, 
+#                         dose=0,
+#                         rate=0.45,
+#                         strain='RFM',
+#                         sex='F',
+#                         age=644.0,
+#                         sd=8.21))
+#  
+# model_10B3 <- function(data){
+#     intercept <- data[data$dose == 0, 'age']
+#     glm(
+#         I(1/age - 1/intercept) ~ dose + I(dose^2 / (fractions)) - 1,
+#         data=data,
+#         weights=1/(n*sd)^2
+#     )
+# }   
+# 
+# # Constants
+# threshold = 1.5001
+# 
+# # Prediction Intervals
+# to_predict <- expand.grid(
+#     fractions = c(1, Inf),
+#     dose = seq(0, 1.5, 0.1)
+# )
+# to_predict$type <- 'A'
+# to_predict$type[to_predict$fractions > 1] <- 'C'
+# 
+# # Clean
+# data2$fractions <- 1
+# data2$fractions[data2$rate < 0.1] <- Inf
+# 
+# # Define Acute
+# chronic <- data2$rate < 0.1
+# data2$type <- 'A'
+# data2$type[chronic] <- 'C'
+# 
+# # Combine acute exposures with the same treatment
+# # (see note above for a justification)
+# # TODO(ben) do this step in every analysis that uses storer
+# data2 <- ddply(data2, .(dose, type, sex, fractions, strain), function(df) {
+#   all <- function(x) paste(unique(x), sep=', ', collapse=', ')
+#   with(df,data.frame(
+#             table=all(table),
+#             n=sum(n),
+#             dose=dose[1],
+#             rate=mean(rate),
+#             strain=all(strain),
+#             sex=sex[1],
+#             age= sum(age * n) / sum(n),
+#             sd= (sum(sd^2 * n)/sum(n))^0.5,
+#             fractions=fractions[1],
+#             type=type[1]
+#   ))
+# })
+# 
+# # Subset
+# data2$modeled_in_10B3 <- with(data2, 
+#     dose < threshold &
+#     strain == 'RFM'  &
+#     sex == 'F'
+# )
+# data2$in_my_analysis <- data2$type == 'A'
+# 
+# # prediction matrix
+# predictions <- to_predict
+# addin <- names(data2)[!names(data2) %in% names(predictions)]
+# predictions <- merge(data2[data2$modeled_in_10B3,][1, addin], predictions, all=TRUE)
+# 
+# # 10B3 Model
+# m <- model_10B3(data2[data2$modeled_in_10B3,])
+# predictions$p_10B3 <- predict(m, newdata=predictions) + 1/data2[2,'age']
+# 
+# # My Model
+# s <- data2$modeled_in_10B3 & 
+#      data2$in_my_analysis
+# m <- model_10B3(data2[s,])
+# predictions$p_my_analysis <- predict(m, newdata=predictions) + 1/data2[2,'age']
+# 
+# # Merge
+# data2$p_10B3 <- NA
+# data2$p_my_analysis <- NA
+# 
+# data2 <- rbind(predictions, data2)
+# 
+# graph(data, data2)
+
+
+
+
+
+
+
+
+graph <- function(data, data2){
+
+  g <- data[with(data, 
+      strain == 'RFM' & 
+      sex == 'F' &
+      rate != 0.4
+  ),]
+  original <- g[is.na(g$p_10B3),] 
+  predictions <- g[!is.na(g$p_10B3),]
+  
+  g2 <- data2[with(data2, 
+      strain == 'RFM' & 
+      sex == 'F' &
+      rate != 0.4
+  ),]
+  original2 <- g2[is.na(g2$p_10B3),] 
+  predictions2 <- g2[!is.na(g2$p_10B3),]
+  
+  ggplot(NULL) +
+    geom_text(data=original, 
+              size=5,
+              aes(dose, 
+                  1/age, 
+                  label=type,
+                  group=type)) + 
+    geom_smooth(data=predictions,
+                aes(dose, p_10B3, group=type),
+                color='black',
+                se=F) +
+    geom_text(data=original2, 
+              size=5,
+              aes(dose, 
+                  1/age, 
+                  label=type,
+                  group=type,
+                  color='red')) + 
+    geom_smooth(data=predictions2,
+                aes(dose, p_10B3, group=type),
+                color='red',
+                se=F) +
+    scale_y_continuous(breaks = 0.0002*0:4+0.0016)
+}
+
+
+
 
 ```
 #### Show
@@ -1844,6 +1997,7 @@ g <- data[with(data,
     rate != 0.4
 ),]
 show(g)
+
 ggsave_for_ppt('beir_10B3_reproduction.png')
 ```
 
@@ -1882,34 +2036,11 @@ library(ggplot2)
 library(plyr)
 library(dplyr)
 source('scripts/util/util.R') 
-# https://github.com/benjaminhaley/janus/blob/master/scripts/util/util.R
 
 # Data
 setwd('~/janus')
-data <- read.csv('data/storer_1979.csv', sep='\t') 
+data <- read.csv('data/storer_1979_processed.csv') 
 data_10B2 <- read.csv('data/10B2_fits.csv')
-
-        
-# Constants
-threshold = 1.5001
-
-# Clean
-data$fractions <- 1
-data$fractions[data$rate < 0.1] <- Inf
-
-# Define Acute
-chronic <- data$rate < 0.1
-data$type <- 'A'
-data$type[chronic] <- 'C'
-
-# Subset
-data$modeled_in_10B4 <- with(data, 
-    dose < threshold &
-    strain == 'RFM'  &
-    sex == 'F' #&
-    #rate != 0.4
-)
-data$in_my_analysis <- data$type == 'A'
 
 # Model
 low = -2
@@ -1930,8 +2061,6 @@ get_likelihoods <- function(o_range, data){
     r
 }
 
-
-
 model_10B4 <- function(data, o){    
     glm(
         I(1/age) ~ I(dose + o*dose^2 / (fractions)),
@@ -1940,29 +2069,33 @@ model_10B4 <- function(data, o){
     )
 }
 
-beir_r <- get_likelihoods(o_range, data[data$modeled_in_10B4,])
+beir_r <- get_likelihoods(o_range, data[data$modeled_in_10B3,])
 
 
 # ***** WIP ****** >
-data$modeled_in_10B4 <- with(data, 
-    dose < threshold &
-    strain == 'RFM'  &
-    sex == 'F' &
-    rate != 0.4
-)
+low = -2
+high = 6
+delta = 0.1
+o_range = (low/delta):(high/delta) * delta
+data <- data %>%
+  group_by(strain, sex) %>%
+  mutate(control_age=age[dose==0])
+
 model_10B4 <- function(data, o){    
     glm(
-        I(1/age - 1/635.2) ~ I(dose + o*dose^2 / (fractions)) - 1,
-        data=data
+      I(1/age - 1/636.175) ~ I(dose + o*dose^2 / (fractions)) - 1,
+      data=data[data$modeled_in_10B3,],
+      weights=1/(sd^2)
     )
 }
 
-new_r <- get_likelihoods(o_range, data[data$modeled_in_10B4,])
+new_r <- get_likelihoods(o_range, data)
 
 ggplot(NULL) + 
   geom_path(aes(beir_r$o, beir_r$l)) +
   geom_path(aes(new_r$o, new_r$l), color='red') +
-  ylim(0, 1) +
+  ylim(0, 1) + 
+  xlim(-2, 6)
   
 # Attempt 1: Expand data set
 # Tried to make one row for every mouse and run the regression
@@ -1976,34 +2109,26 @@ ggplot(NULL) +
 
 
 
-
-
-
-
 my_r <- get_likelihoods(o_range, data[data$in_my_analysis,])
-
-
-
-
-
 
 
 # Merge likelihoods with data from 10B2
 alignment <- match( round(beir_r$o, 5),
                     round(data_10B2$o, 5))
-beir_r <- beir_r %.%
+beir_r <- beir_r %>%
   mutate(tumor_likelihood = data_10B2$likelihood[alignment],
          lifespan_likelihood = l,
-         mean_likelihood = (tumor_likelihood+lifespan_likelihood)/2) %.%
+         mean_likelihood = (tumor_likelihood+lifespan_likelihood)/2) %>%
   select(-l)
-my_r <- my_r %.%
+my_r <- my_r %>%
   mutate(tumor_likelihood = data_10B2$likelihood[alignment],
          lifespan_likelihood = l,
-         mean_likelihood = (tumor_likelihood+lifespan_likelihood)/2) %.%
+         mean_likelihood = (tumor_likelihood+lifespan_likelihood)/2) %>%
   select(-l)
 
 
-confidence_interval(beir_r$o + 1, beir_r$mean_likelihood)
+confidence_interval(beir_r$o + 1, beir_r$mean_likelihood, 0.05)
+# is        "1.4 (1.1, 4.2)"
 # should be "1.5 (1.0, 4.4)"
 
 ```
@@ -2079,9 +2204,9 @@ data <- read.csv('data/lss14/lss14_spruced_up.csv')
 threshold = 2.0
 
 # Filter the data
-data <- data %.%
+data <- data %>%
   select(city, sex, gd3, ahs, ctime, solid,
-         subjects, agex, age, dose, pyr, death) %.%
+         subjects, agex, age, dose, pyr, death) %>%
   filter(dose <= threshold)
 
 # Model
@@ -2096,7 +2221,7 @@ model <- function(new_terms, threshold=Inf) {
   
   glm(formula,
       family='poisson',
-      data = data %.% filter(dose <= threshold))
+      data = data %>% filter(dose <= threshold))
 }
 
 factor_fit <- model(~ . + factor(dose))
@@ -2130,8 +2255,8 @@ to_predict$curvature_3_err <- err(curvature_3_fit, to_predict)
 to_predict$curvature_7_err <- err(curvature_7_fit, to_predict)
 
 # Average by Dose and city
-aggregate <- to_predict %.%
-  group_by(dose) %.%
+aggregate <- to_predict %>%
+  group_by(dose) %>%
   summarize(err=mean(err),
             linear_err=mean(linear_err),
             curvature_3_err=mean(curvature_3_err),
@@ -2220,7 +2345,7 @@ setwd('~/janus')
 data <- read.csv('data/10-2.csv')  # a reproduction of BEIR 10-2
 
 # fix data
-data <- data %.%
+data <- data %>%
   mutate(sd = sd + 0.00001)
 
 # Show 10-2
@@ -3060,7 +3185,7 @@ for(n in numerics) {
 # Model
 m <- model_meta(aggregate)
 c <- coefficients(m)
-aggregate <- aggregate %.%
+aggregate <- aggregate %>%
   mutate(i=c[paste0('cluster', cluster)],
          a=c[paste0('a:cluster', cluster)],
          B=c[paste0('cluster', cluster, ':B')],
@@ -3256,7 +3381,7 @@ summary <- ldply(o_range, function(o){
       
       c(l_10B4=l_10B4, l_meta=l_meta, o=o)
 })
-summary <- summary %.% 
+summary <- summary %>% 
   mutate(l_10B4 = normalize_likelihood(l_10B4, delta),
          l_meta = normalize_likelihood(l_meta, delta))
 
@@ -3344,7 +3469,7 @@ TODO: look in Hall and BEIR, why do they say that ERR has inward curvature?
 n <- 200
 a <- 0.001
 B <- 0.0001
-data <- data.frame(dose=0:n) %.% 
+data <- data.frame(dose=0:n) %>% 
   mutate(viability = exp(-a*dose - B*dose^2))
 
 # Wrapper function for plotting
@@ -3364,7 +3489,7 @@ show(data) + scale_y_log10()
 show(data)
 
 # Normal scale where viability is high
-show(data %.% filter(viability > 0.70))
+show(data %>% filter(viability > 0.70))
 ```
 
 **Figures: Linear quadratic model fits**
