@@ -41,7 +41,8 @@ TODO write abstract
   - [10B4 with metaregression](#10B4-meta) - Reproduce profile likelihood figure applying the principals of meta-regression.
   - [10B3 metareression on all data](#10B3-meta-all) Apply meta regression to all of the datasets.
   - [10B4 metareression on all data](#10B4-meta-all) Apply meta regression to all of the datasets to generate profiles.
-
+- Supplemental
+  - [10B4 with only acute data](#10B4-with-only-acute-data) reproduce lifespan analysis using only the acute data which is available as individual level data.
 ___________________________________________________________________
 
 
@@ -49,6 +50,7 @@ ___________________________________________________________________
 # Global knitr configuration options
 # This will supress warnings and make graphs a nice size.
 
+library(knitr)
 opts_chunk$set(fig.width=10.24, 
                fig.height=7.68, 
                fig.path='Figs/',
@@ -234,19 +236,13 @@ Create a data set that might be used for DDREF analysis and
 make a description of this data.
 
 ```{r}
-# LIBRARIES
-library(plyr)
-library(dplyr)
-library(ggplot2)
-library(survival)
+
+# Common functions
+setwd('~/janus')
+source('scripts/util/util.R') # http://goo.gl/VYzkAs
 
 # DATA
-setwd('~/janus')
 d <- readRDS('data/external5.rds')
-
-# HELPERS   
-# Make survival data amenable to ggplot
-table0 <- function(...) table(..., useNA='ifany')
 
 # Report for funnel graph
 count <- function(data){
@@ -551,23 +547,14 @@ Clean
 DDREF data has been filtered.  Now its time to prettify it.
 
 ```{r}
-# Libraries
-library(plyr)
-library(dplyr)
-library(ggplot2)
-library(survival)
+
+# Common functions
+setwd('~/janus')
+source('scripts/util/util.R') # http://goo.gl/VYzkAs
 
 # Data
 setwd('~/janus')
 d <- readRDS('data/funneled.rds')
-
-# Helpers
-pluralize <- function(x) {
-  c(Mouse='Mice',
-    Rat='Rats',
-    Dog='Dogs',
-    Peromyscus='Peromyscus')[x]
-}
 
 # Is acute?
 d$acute <- d$fractions == 1 | d$dose == 0
@@ -629,11 +616,9 @@ Give a detailed description of the dataset for those that want to make a close i
 
 ```{r}
 
-# Libraries
-library(plyr)
-library(dplyr)
-library(ggplot2)
-library(survival)
+# Common
+setwd('~/janus')
+source('scripts/util/util.R') # http://goo.gl/VYzkAs
 
 # Data
 setwd('~/janus')
@@ -656,7 +641,7 @@ group_summary <- function(data){
     summary
 }
 
-find_in_file <- function(pattern, file='scripts/exp/radiation.R'){
+find_in_file <- function(pattern, file='~/janus/scripts/exp/radiation.R'){
 		lines <- readLines(file)
 		lines[grepl(pattern, lines)]
 }
@@ -924,12 +909,10 @@ Now that the data is reasonably clean, show what it looks
 like.
 
 ```{r}
-# Libraries
-library(plyr)
-library(ggplot2)
-library(survival)
-library(dplyr)
-library(directlabels)
+
+# Common
+setwd('~/janus')
+source('scripts/util/util.R') # http://goo.gl/VYzkAs
 
 # Data
 setwd('~/janus')
@@ -1141,9 +1124,9 @@ Minami-ku Hiroshima, 732-0815 JAPAN
 
 ```{r}
 
-# Libraries
-library(dplyr)
-library(plyr)
+# Common
+setwd('~/janus')
+source('scripts/util/util.R') # http://goo.gl/VYzkAs
 
 # Helper functions
 get_max_map <- function(min_map, max=Inf) {
@@ -1601,16 +1584,12 @@ Edwards, A.A. 1992. Low Dose and Low Dose Rate Effects in Laboratory Animals, Te
 
 # TODO: 10B2 needs to also use meta regression as in 10B4 to see how that influences the effect
 
-library(plyr)
-library(dplyr)
-library(ggplot2)
+# Common
+setwd('~/janus')
+source('scripts/util/util.R') # http://goo.gl/VYzkAs
 
 # Data
-setwd('~/janus')
-source('scripts/util/util.R') # https://github.com/benjaminhaley/janus/blob/master/scripts/util/util.R
-
 data <- read.csv('data/edwards_1992.csv', sep='\t') 
-
 
 
 # apply selection criteria
@@ -1715,14 +1694,12 @@ from storer 1979 (3575012.pdf).
 [grouped]: http://dl.dropbox.com/u/1131693/bloodrop/10b3_temp_png.png
 
 ```{r}
-# Libraries
-library(ggplot2)
-library(plyr)
-library(dplyr)
+
+# Common
+setwd('~/janus')
+source('scripts/util/util.R') # http://goo.gl/VYzkAs
 
 # Data
-setwd('~/janus')
-source('scripts/util/util.R') 
 data <- read.csv('data/storer_1979.csv', sep='\t')  
     
 
@@ -2025,20 +2002,23 @@ ________________________________________________________________
 
 Reproduce BEIR 10B4
 ========================================================
-*Last update: May 2014*
+*Last update: June 2014*
 Reproduce the BEIR estimates on the oak ridge lifespan data
-from storer 1979 (3575012.pdf).
+from storer 1979 (3575012.pdf) and combine these with the 
+oak ridge tumor estimates developed in the 
+[10B2 reproduction][#10B2] to reproduce 10B4.
+
+Verify that confidence intervals are the same as those seen
+in table 10-2.
 
 ```{r} 
+# TODO(ben) make sure the reproduction is perfect, instead of almost perfect   
 
-# Libraries
-library(ggplot2)
-library(plyr)
-library(dplyr)
-source('scripts/util/util.R') 
+# Common
+setwd('~/janus')
+source('scripts/util/util.R') # http://goo.gl/VYzkAs
 
 # Data
-setwd('~/janus')
 data <- read.csv('data/storer_1979_processed.csv') 
 data_10B2 <- read.csv('data/10B2_fits.csv')
 
@@ -2071,66 +2051,14 @@ model_10B4 <- function(data, o){
 
 beir_r <- get_likelihoods(o_range, data[data$modeled_in_10B3,])
 
-
-# ***** WIP ****** >
-low = -2
-high = 6
-delta = 0.1
-o_range = (low/delta):(high/delta) * delta
-data <- data %>%
-  group_by(strain, sex) %>%
-  mutate(control_age=age[dose==0])
-
-model_10B4 <- function(data, o){    
-    glm(
-      I(1/age - 1/636.175) ~ I(dose + o*dose^2 / (fractions)) - 1,
-      data=data[data$modeled_in_10B3,],
-      weights=1/(sd^2)
-    )
-}
-
-new_r <- get_likelihoods(o_range, data)
-
-ggplot(NULL) + 
-  geom_path(aes(beir_r$o, beir_r$l)) +
-  geom_path(aes(new_r$o, new_r$l), color='red') +
-  ylim(0, 1) + 
-  xlim(-2, 6)
-  
-# Attempt 1: Expand data set
-# Tried to make one row for every mouse and run the regression
-# this did not work.
-# https://www.dropbox.com/s/jk5ie68nzhbgyux/Screenshot%202014-05-21%2012.39.52.png
-# Attempt 2: Fixed effect
-# Fail, though oddly different
-
-# < ***** WIP ******
-
-
-
-
-my_r <- get_likelihoods(o_range, data[data$in_my_analysis,])
-
-
 # Merge likelihoods with data from 10B2
 alignment <- match( round(beir_r$o, 5),
                     round(data_10B2$o, 5))
 beir_r <- beir_r %>%
-  mutate(tumor_likelihood = data_10B2$likelihood[alignment],
-         lifespan_likelihood = l,
-         mean_likelihood = (tumor_likelihood+lifespan_likelihood)/2) %>%
+  mutate(tumor = data_10B2$likelihood[alignment],
+         lifespan = l,
+         mean = (tumor + lifespan)/2) %>%
   select(-l)
-my_r <- my_r %>%
-  mutate(tumor_likelihood = data_10B2$likelihood[alignment],
-         lifespan_likelihood = l,
-         mean_likelihood = (tumor_likelihood+lifespan_likelihood)/2) %>%
-  select(-l)
-
-
-confidence_interval(beir_r$o + 1, beir_r$mean_likelihood, 0.05)
-# is        "1.4 (1.1, 4.2)"
-# should be "1.5 (1.0, 4.4)"
-
 ```
 
 #### Show
@@ -2146,35 +2074,139 @@ This is the original [10B4 figure][10B4-citation] from the beir VII report [beir
 ##### Reproduce 10B4
 This is my reproduction of 10B4 to prove that I am faithfully applying their methodology.
 ```{r}
-ggplot(beir_r, aes(o)) + 
-    geom_path(aes(y=lifespan_likelihood), linetype='dashed') + 
-    geom_path(aes(y=tumor_likelihood), linetype='dotted') + 
-    geom_path(aes(y=mean_likelihood)) + 
-    scale_y_continuous(breaks = c(0:5)/5, limits=c(0,1.2))
+g <- melt(beir_r, 
+          id.vars='o', 
+          value.name='likelihood', 
+          variable.name='source')
+ggplot(g, aes(o, likelihood, linetype=source)) + 
+  geom_path() +
+  scale_linetype_manual(values=c('dotted', 'dashed', 'solid')) +
+  scale_y_continuous(breaks = c(0:5)/5, limits=c(0,1.2))
 ```
 
-##### Updated 10B4
-What would the profile likelihood be if the new estimates were
-used instead?
+##### Table 10-2
+This is the original [10-2 table][table-10-2-citation] from the beir VII report [beir-10b4].
+
+![table-10-2-image]
+
+[table-10-2-citation]: http://www.nap.edu/openbook.php?record_id=11340&page=250
+[table-10-2-image]: http://dl.dropbox.com/u/1131693/bloodrop/table%2010-2.png
+
+##### Reproduce Table 10-2 row 1
+Reproduce confidence intervals from my re-production, to prove that
+I am faithfully determining confidence intervals and to butress visual proof with numeric evidence.
+
+Note, my confidence interfal should match the first row and last column, the 95% confidence interval from radiobiology data.
+
 ```{r}
-ggplot(beir_r, aes(o)) + 
-    geom_path(aes(y=mean_likelihood)) + 
-    geom_path(data=my_r,
-              aes(y=mean_likelihood),
-              color='red') +
-    scale_y_continuous(breaks = c(0:5)/5, limits=c(0,1.2))
+# is        "1.4 (1.1, 4.2)"
+# should be "1.5 (1.0, 4.4)"  
+confidence_interval(beir_r$o + 1, beir_r$mean, 0.05)
 ```
 
 
 #### Results
 
-I was able to reproduce figure 10B4 near perfectly.  Importantly it becomes nearly straight if we only include the acute exposures.
+I was able to reproduce figure 10B4 and the confidence intervals nearly perfectly.  The slight disparity that is observed could be due to outstanding methodological issues or small differences in the data.  For example, perhaps the original researchers applied rounding that I did not, or perhaps my estiamtes of the points on their graphs were different.
 
-It could be that the shoulder is very narrow, though this would be surprising given what we know about tissue level effects.
+In any case, the estimate has changed a trivial amount from the original.  Making it perfect is a job for later.
 
-It could also be that there is some systematic bias between chronic and high dose experiments.  For instance the high dose rate was even higher than the experimenters thought that it was.
+___________________________________________________________________
+^ back to [table of contents](#contents)
 
-More reason for meta-analysis.
+
+
+
+<a name="10B4-with-only-acute-data"></a>
+
+Supplemental: Reproduce lifespan analysis using only acute data
+========================================================
+*Last update: June 2014*
+Individual level data from oak ridge is only available from acute exposures.  How does the profile likelihood change if only this data is used?
+
+This is a simple adaptation of the techniques used to [reproduce 10B4][#10B4].
+
+```{r} 
+# TODO(ben) make sure the reproduction is perfect, instead of almost perfect   
+
+# Common
+setwd('~/janus')
+source('scripts/util/util.R') # http://goo.gl/VYzkAs
+
+# Data
+data <- read.csv('data/storer_1979_processed.csv') 
+data_10B2 <- read.csv('data/10B2_fits.csv')
+
+# Model
+low = -2
+high = 6
+delta = 0.1
+o_range = (low/delta):(high/delta) * delta
+
+get_likelihoods <- function(o_range, data){
+    r <- ldply(o_range, function(o){
+        m <- model_10B4(data, o)
+        l = logLik(m)
+        
+        data.frame(o, l)
+    })
+    
+    r$l <- normalize_likelihood(r$l, delta)
+    
+    r
+}
+
+model_10B4 <- function(data, o){    
+    glm(
+        I(1/age) ~ I(dose + o*dose^2 / (fractions)),
+        data=data,
+        weights=n
+    )
+}
+
+beir_r <- get_likelihoods(o_range, data %>% filter(in_my_analysis))
+
+# Merge likelihoods with data from 10B2
+alignment <- match( round(beir_r$o, 5),
+                    round(data_10B2$o, 5))
+beir_r <- beir_r %>%
+  mutate(tumor = data_10B2$likelihood[alignment],
+         lifespan = l,
+         mean = (tumor + lifespan)/2) %>%
+  select(-l)
+```
+
+#### Show
+
+##### 10B4 with acute lifespan data
+Here is 10B4 if only acute data is used.
+
+```{r}
+g <- melt(beir_r, 
+          id.vars='o', 
+          value.name='likelihood', 
+          variable.name='source')
+ggplot(g, aes(o, likelihood, linetype=source, color=source)) + 
+  geom_path() +
+  scale_linetype_manual(values=c('dotted', 'dashed', 'solid')) +
+  scale_color_manual(values=c('black', 'red', 'black')) +
+  scale_y_continuous(breaks = c(0:5)/5, limits=c(0,1.2))
+```
+
+
+##### Confidence intervals with acute only
+Here's how the confidence intervals of the mean come out when only acute data is used.
+
+```{r}
+# was       "1.4 (1.1, 4.2)"
+# is        "1.4 (1, 3.2)"  
+confidence_interval(beir_r$o + 1, beir_r$mean, 0.05)
+```
+
+
+#### Results
+
+If we only include acute results we see that the profile likelihood changes dramatically, giving a lower but flatter estimate.  The mean confidence interval changes mildly the 50% point goes down marginally and the upper bound goes down substantially.
 
 ___________________________________________________________________
 ^ back to [table of contents](#contents)
@@ -2191,13 +2223,11 @@ Reproduce the BEIR estimates of dose reponse for atomic bomb survivors.
 
 ```{r} 
 
-# Libraries
-library(ggplot2)
-library(plyr)
-library(dplyr)
+# Common
+setwd('~/janus')
+source('scripts/util/util.R') # http://goo.gl/VYzkAs
 
 # Data
-setwd('~/janus')
 data <- read.csv('data/lss14/lss14_spruced_up.csv')
 
 # Constants
@@ -2333,15 +2363,11 @@ Reproduce the BEIR VII estimates of DDREF likelihood using atomic bomb survivor 
 
 ```{r} 
 
-# Libraries
-library(ggplot2)
-library(plyr)
-library(dplyr)
-source('scripts/util/util.R') # https://github.com/benjaminhaley/janus/blob/master/scripts/util/util.R
-
+# Common
+setwd('~/janus')
+source('scripts/util/util.R') # http://goo.gl/VYzkAs
 
 # Data
-setwd('~/janus')
 data <- read.csv('data/10-2.csv')  # a reproduction of BEIR 10-2
 
 # fix data
@@ -2430,11 +2456,9 @@ Show graphs like Storer 1979 10-B3 but for all data.
 
 ```{r}     
 
-# Libraries
+# Common
 setwd('~/janus')
-source('scripts/util/util.R') # https://github.com/benjaminhaley/janus/blob/master/scripts/util/util.R
-library(ggplot2)
-library(plyr)
+source('scripts/util/util.R') # http://goo.gl/VYzkAs
 
 # Data
 data <- readRDS('data/ddref.rds')  
@@ -2554,7 +2578,7 @@ It is no wonder that radiobiology is full of debate!
 
 At this point we should be a bit skeptical of organizing the data in this, the BEIR VII manner.  While that approach seemed reasonable given the ORNL data that they worked with, it clearly does not generalize well.  This may be because the underlying statitical approach is flawed, or simply that these graphs a very robust way of displaying the effect.  In any case we question the 'intuitive appeal' of graph 10B3.  While it seemed quite difinitive in isolation, the effect is lost when we try to repeat it on new datasets.
 
-_____________________________________________________________________________  
+________________________________________________________________________ 
 ^ back to [table of contents](#contents)
 
 
@@ -2572,13 +2596,11 @@ Show graphs like Storer 1979 10B4 but for all data.
 
 ```{r}     
 
-# Libraries
-library(ggplot2)
-library(plyr)
-source('scripts/util/util.R') # https://github.com/benjaminhaley/janus/blob/master/scripts/util/util.R
+# Common
+setwd('~/janus')
+source('scripts/util/util.R') # http://goo.gl/VYzkAs
 
 # Data
-setwd('~/janus')
 data <- readRDS('data/ddref.rds')
 
 
@@ -2668,7 +2690,7 @@ ggsave_for_ppt('inverse_lifespan_profile.png')
 #### Results
 Looks bad, we are way too confident!
 
-_____________________________________________________________________________  
+________________________________________________________________________ 
 ^ back to [table of contents](#contents)
 
 
@@ -2686,18 +2708,10 @@ Meta Regression Figure
 A figure that shows off the principal of meta-regression.
 
 ```{r}
-    # Libraries
-    library(ggplot2)
-    library(plyr)
-    library(metafor)
-    
-    # Helpers
-    ggsave_for_ppt <- function(...) suppressWarnings(ggsave(..., 
-                                    dpi=100, 
-                                    width=10.24, 
-                                    height=7.68, 
-                                    units='in'))
 
+    # Common
+    setwd('~/janus')
+    source('scripts/util/util.R') # http://goo.gl/VYzkAs
     
     # Fake data
     set.seed(1)
@@ -2711,7 +2725,7 @@ A figure that shows off the principal of meta-regression.
         x = x
     )
     
-    # An outlider
+    # An outlier
     data$yi[3] <- 0
     data$vi[3] <- .01
     
@@ -2736,15 +2750,7 @@ A figure that shows off the principal of meta-regression.
         -(1/2) * log(2*pi)
     ))
     logLik(m) 
-    l
-    
-    
-    df <- 3
-    Q <- with(data, 
-        sum(yi^2/vi)
-    )
-    tau2 = (Q - df) / C
-    
+    l  
     
     # Show
     ggplot(data, aes(x, yi)) + 
@@ -2761,7 +2767,7 @@ A figure that shows off the principal of meta-regression.
     ggsave_for_ppt('meta_regression_example.png')
 ```
 
-_____________________________________________________________________________  
+________________________________________________________________________ 
 ^ back to [table of contents](#contents)
 
 
@@ -2784,22 +2790,14 @@ We will also run a heterogeneity test.
 
 ```{r}
 
-    # Libraries
-    library(ggplot2)
-    library(plyr)
-    library(metafor)
+    # Common
+    setwd('~/janus')
+    source('scripts/util/util.R') # http://goo.gl/VYzkAs
     
     # Data
-    setwd('~/janus')
     data <- read.csv('data/storer_1979.csv', sep='\t')  
     
     # Helpers
-    ggsave_for_ppt <- function(...) suppressWarnings(ggsave(..., 
-                                    dpi=100, 
-                                    width=10.24, 
-                                    height=7.68, 
-                                    units='in'))
-
     model_10B3 <- function(data){
         glm(
             I(1/age) ~ dose + I(dose^2 / (fractions)),
@@ -2947,7 +2945,7 @@ Viechtbauer W (2005). Bias and Eciency of Meta-Analytic Variance
 
 Estimators in the Random-Eects Model." Journal of Educational  and Behavioral Statistics, 30(3), 261-293.
 
-_____________________________________________________________________________  
+________________________________________________________________________ 
 ^ back to [table of contents](#contents)
 
 
@@ -2980,23 +2978,14 @@ will come from storer 1979 (3575012.pdf).
 
 ```{r}
 
-# Libraries
-library(ggplot2)
-library(plyr)
-library(metafor)
-source('scripts/util/util.R') # https://github.com/benjaminhaley/janus/blob/master/scripts/util/util.R
+# Common
+setwd('~/janus')
+source('scripts/util/util.R') # http://goo.gl/VYzkAs
 
 # Data
-setwd('~/janus')
 data <- read.csv('data/storer_1979.csv', sep='\t')  
 
 # Helpers
-ggsave_for_ppt <- function(...) suppressWarnings(ggsave(..., 
-                                dpi=100, 
-                                width=10.24, 
-                                height=7.68, 
-                                units='in'))
-
 model_10B4 <- function(data, o){    
     glm(
         I(1/age) ~ I(dose + o*dose^2 / (fractions)),
@@ -3093,7 +3082,7 @@ it was.
 
 More reason for meta-analysis.
 
-_____________________________________________________________________________  
+________________________________________________________________________ 
 ^ back to [table of contents](#contents)
 
 
@@ -3114,14 +3103,11 @@ Show graphs like Storer 1979 10B3 but for all data using random effects meta-reg
 
 ```{r}
 
-# Libraries
-library(ggplot2)
-library(plyr)
-library(metafor)
+# Common
+setwd('~/janus')
+source('scripts/util/util.R') # http://goo.gl/VYzkAs
 
 # Data
-setwd('~/janus')
-source('scripts/util/util.R') # https://github.com/benjaminhaley/janus/blob/master/scripts/util/util.R
 data <- readRDS('data/ddref.rds')
 
 ```
@@ -3277,7 +3263,7 @@ ggsave_for_ppt('meta_regression.png')
 
 Curves don't change that radically, though standard errors often change rather dramatically!
 
-_____________________________________________________________________________  
+________________________________________________________________________ 
 ^ back to [table of contents](#contents)
 
 
@@ -3297,23 +3283,14 @@ Show graphs like Storer 1979 10B4 but for all data using the random effects meta
 
 ```{r}
 
-# Libraries
-library(ggplot2)
-library(plyr)
-library(metafor)
-source('scripts/util/util.R') # https://github.com/benjaminhaley/janus/blob/master/scripts/util/util.R
+# Common
+setwd('~/janus')
+source('scripts/util/util.R') # http://goo.gl/VYzkAs
 
 # Data
-setwd('~/janus')
 data <- readRDS('data/ddref.rds')
  
 # Helpers
-ggsave_for_ppt <- function(...) suppressWarnings(ggsave(..., 
-                                dpi=100, 
-                                width=10.24, 
-                                height=7.68, 
-                                units='in'))
-
 model_10B4 <- function(data, o){    
     glm(
         I(1/age) ~ cluster * I(dose + o*dose^2 / (fractions)),

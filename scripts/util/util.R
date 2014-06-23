@@ -2,11 +2,20 @@
 #
 # Utility functions
 #
-# General functions without dependencies that will be used in a variety of
-# scripts.
+# General functions and libraries that will be used in a variety of code.
 #
 # Last update:
-# March 2014
+# June 2014
+
+# LIBRARIES
+library(plyr)
+library(dplyr)
+library(ggplot2)
+library(survival)
+library(directlabels)
+library(metafor)
+library(reshape2)
+
 
 # table0
 # Just like table, but show's NA's by default
@@ -96,3 +105,21 @@ confidence_interval <- function(x, likelihood, p=0.05) {
                highest_acceptable_x, ')'))
   c(lowest_acceptable_x, most_likely_x, highest_acceptable_x)
 }
+
+
+# Pluralize
+# pluralize('Mouse') == 'Mice'
+pluralize <- function(x) {
+  c(Mouse='Mice',
+    Rat='Rats',
+    Dog='Dogs',
+    Peromyscus='Peromyscus')[x]
+}
+
+# Save for ppt
+# A size and resolution that fits well in a powerpoint presentation
+ggsave_for_ppt <- function(...) suppressWarnings(ggsave(..., 
+                                                        dpi=100, 
+                                                        width=10.24, 
+                                                        height=7.68, 
+                                                        units='in'))
