@@ -2,7 +2,7 @@
 ========================================================
 Measure ddref, for my thesis ([code][code link]).  
 benjamin.haley@gmail.com  
-*last update: May 2014*
+*last update: June 2014*
 
 [public link]: http://rpubs.com/benjaminhaley/ddref
 [code link]: https://github.com/benjaminhaley/janus/blob/master/scripts/exp/ddref.Rmd
@@ -14,22 +14,25 @@ TODO write abstract
 
 <a name="contents"></a>
 
-# Table of contents
+Table of contents
+========================================================
 
-- Background 
+**Background**
   - [Introduction](#introduction) - What are we doing here?
   - [Defining DDREF](#defining_ddref) - What is the equation?
   - [Log Likelihood](#loglike) - How is log likelihood calculated?
   - [Metaregression](#metaregression) - Show the principals of
   metaregression.
   - [To log or not?](#log-or-not) - Should data be fit to a linear scale or a log linear scale and should a threshold be used when estimating DDREF?
-- Data
+  
+**Data**
   - [Data Funnel](#data_funnel) - Which data will we analyze?
   - [Data Cleaning](#cleaning) - Damn, data, you look good!
   - [Concordance](#concordance) - Tables describing the data in detail.
   - [Visualize](#visual_concordance) - Show what the data looks like.
   - [Atomic Bomb Survivors](#lss) - Load data from atomic bomb survivors as well.
-- Analysis
+  
+**Analysis**
   - [Reproduce BEIR 10-2](#10-2) - Reproduce dose response for atomic bomb survivors. (fail)
   - [Reproduce BEIR 10-3](#10-3) - Reproduce DDREF likelihood profiles for atomic bomb survivors.
   - [Reproduce BEIR 10B2](#10B2) - Show that we can fit the same model of cancer risk vs. dose as BEIR VII.
@@ -41,10 +44,11 @@ TODO write abstract
   - [10B4 with metaregression](#10B4-meta) - Reproduce profile likelihood figure applying the principals of meta-regression.
   - [10B3 metareression on all data](#10B3-meta-all) Apply meta regression to all of the datasets.
   - [10B4 metareression on all data](#10B4-meta-all) Apply meta regression to all of the datasets to generate profiles.
-- Supplemental
-  - [10B4 with only acute data](#10B4-with-only-acute-data) reproduce lifespan analysis using only the acute data which is available as individual level data.
-___________________________________________________________________
 
+**Supplemental**
+  - [10B4 with only acute data](#10B4-with-only-acute-data) reproduce lifespan analysis using only the acute data which is available as individual level data.
+  
+___________________________________________________________________
 
 ```{r global_options, include=FALSE}
 # Global knitr configuration options
@@ -174,10 +178,9 @@ dose and dose rate reduction
    natural break point.
 5. Estimate DDREF at 1 Sv to make it compatible with lss estimates
 
-___________________________________________________________________
 ^ back to [table of contents](#contents)
 
-
+___________________________________________________________________
 
 <a name="loglike"></a>
 
@@ -218,12 +221,9 @@ l <- with(data,
 l - as.numeric(logLik(m))
 ```
 
-___________________________________________________________________ 
 ^ back to [table of contents](#contents)
 
-
-
-
+___________________________________________________________________ 
 
 <a name="data_funnel"></a>
 
@@ -533,12 +533,10 @@ count(d_wo_warnings)
 setwd('~/janus')
 saveRDS(d, 'data/funneled.rds')
 ```
-___________________________________________________________________
+
 ^ back to [table of contents](#contents)
 
-
-
-
+___________________________________________________________________
 
 <a name="cleaning"></a>
 
@@ -889,15 +887,9 @@ More detail in ([Ullrich 1979][Ullrich 1979])
 <a name="gerber_1996"></a>
 Gerber, Watson, Sugahara, Okada. International Radiobiology Archives of Long-Term Animal Studies I. Descriptions of Participating Institutions and Studies. 1996. [link](http://www.ustur.wsu.edu/nra/pdf/ira.pdf)
 
-
-
-____________________________________________________________________
 ^ back to [table of contents](#contents)
 
-
-
-
-
+____________________________________________________________________
 
 <a name="visual_concordance"></a>
 
@@ -943,6 +935,7 @@ ggplot(d,
   ) +
   expand_limits(x = -4)
 ```
+
 #### Figure: Lifespan by dose and cluster
 Density plots show the frequency, y-axis, of a given lifespan (in days), x-axis.  Sepperate density curves are shown for each distinct dose and dose rate.  The total dose delivered is labeled by color as shown in the figure legend.  The mean age at first exposure is denoted by a gray vertical line on each graph.
 
@@ -987,6 +980,7 @@ ggplot(g,
   ) +
   expand_limits(x = -4)
 ```
+
 #### Figure: Directly comparable protracted exposures
 Similar to the figure above, except that the data has been limited to those cases were there are two groups in the same cluster with the same dose, but differences in dose rate or number of fractions.  Doses that were delivered more slowly are labeled as protracted (dashed line).  Facets of the graph are defined by cluster and total dose delivered.  Controls are included for comparison.
 
@@ -1022,6 +1016,7 @@ ggplot(d,
   ) +
   expand_limits(x = -4)
 ```
+
 #### Figure: Survival plots
 As before, but presented as traditional survival plots instead.  The y axis represents the fraction of animals alive a at a given time.  Other elements are organizeds as before.
 
@@ -1061,6 +1056,7 @@ ggplot(d,
   ) + 
   ylim(-0.4, 0.4)
 ```
+
 #### Figure: Relative survival plots
 Like the survival plot above, expecept that survival group within the entire cluster is subtracted from survival within a particular group.  The result is a graph which emphasizes the differences between survival.  Groups with positive values (above y=0) are surviving longer than the cluster average, groups with negative values (below y=0) are surviving less time than the cluster average.  In this graph groups with protracted exposures (multiple fractions or dose rates < 0.01 Gy/min)
 
@@ -1097,11 +1093,10 @@ Like the survival plot above, expecept that survival group within the entire clu
 # 
 # direct.label(g, list("top.bumptwice", cex=0.6))
 ```
-__________________________________________________________________
+
 ^ back to [table of contents](#contents)
 
-
-
+__________________________________________________________________
 
 <a name="lss"></a>
 
@@ -1111,14 +1106,14 @@ Atomic bomb survivor data
 
 For comparison, let's load data from the atomic bomb survivors, [lss14][lss], and see how lifespan changes as a function of dose in these populations using similar visualizations.
 
-Acknowledgement:
-This report makes use of data obtained from the Radiation Effects Research Foundation (RERF), Hiroshima and Nagasaki, Japan. RERF is a private, non-profit foundation funded by the Japanese Ministry of Health, Labour and Welfare and the U.S. Department of Energy, the latter through the National Academy of Sciences.The conclusions in this report are those of the authors and do not necessarily reflect the scientific judgment of RERF or its funding agencies.
-Please send a copy of any reprints that make use of these data to:
-Archives Unit, Library and Archives Section
-Department of Information Technology
-Radiation Effects Research Foundation
-5-2 Hijiyama Park
-Minami-ku Hiroshima, 732-0815 JAPAN
+*Acknowledgement: This report makes use of data obtained from the Radiation Effects Research Foundation (RERF), Hiroshima and Nagasaki, Japan. RERF is a private, non-profit foundation funded by the Japanese Ministry of Health, Labour and Welfare and the U.S. Department of Energy, the latter through the National Academy of Sciences.The conclusions in this report are those of the authors and do not necessarily reflect the scientific judgment of RERF or its funding agencies.*
+
+*Please send a copy of any reprints that make use of these data to:*
+*Archives Unit, Library and Archives Section*  
+*Department of Information Technology*  
+*Radiation Effects Research Foundation*  
+*5-2 Hijiyama Park*  
+*Minami-ku Hiroshima, 732-0815 JAPAN*  
 
 [lss]: http://rerf.jp/library/dl_e/lss14_document.pdf
 
@@ -1339,6 +1334,7 @@ ggplot(g %>% filter(!alive),
   facet_wrap( ~ age_string + sex) +
   xlim(0, 100)
 ```
+
 #### Figure: LSS lifespan by dose, sex, and age at exposure
 Analogous the the lifespan density plots shown for animals except that this details survivors of the atomic bomb exposures in Hiroshima and Nagasaki.  Lifespan of survivors who died is shown on the x axis in years, the height of each line shows the relative frequency of this lifespan compared to others.  All density curves are scaled so that their maximum value is 1.  Density curves are groups by age at exposure and gender (shown in the facet labels) and by minimum total dose (Sv) designed by line color.  Age of exposure is also designated by a vertical line.
 
@@ -1374,6 +1370,7 @@ ggplot(g %>% filter(!alive),
     alpha=0.5
   )
 ```
+
 #### Figure: LSS survival by dose, sex, and age at exposure
 As before.
 
@@ -1414,6 +1411,7 @@ ggplot(g %>% filter(!alive),
   ) + 
   ylim(-0.4, 0.4)
 ```
+
 #### Figure: Relative LSS survival
 As with the animal data we the difference between survival of an entire cluster (defined by age of exposure and sex) and a group exposed to a particular dose within that group.
 
@@ -1464,6 +1462,7 @@ ggplot(g %>% filter(!alive),
   ) +
   ylim(0, 1)
 ```
+
 #### LSS survival by sex
 As before except that all age at first exposures are combined into a single graph.  The total survival is calcualated by the number of people alive at a given age divided by the number of people who were exposed at that same age or younger.
 
@@ -1508,6 +1507,7 @@ ggplot(g %>% filter(!alive),
   ) + 
   ylim(-0.4, 0.4)
 ```
+
 #### Relative LSS survival by sex
 As before, but now we show the difference between survival at a given dose and the overall survival of the cohort.  
 
@@ -1544,11 +1544,9 @@ As before, but now we show the difference between survival at a given dose and t
 
 ```
 
-
-__________________________________________________________________
 ^ back to [table of contents](#contents)
 
-
+__________________________________________________________________
 
 <a name="10B2"></a>
 
@@ -1664,6 +1662,7 @@ ggplot(data,
 # save fits for use in 10B4
 write.csv(fits, 'data/10B2_fits.csv')
 ```
+
 #### Figure: 10B2 reproduction
 A direct reproduction of figure 10B2 from the BEIR VII report. 
 
@@ -1955,6 +1954,7 @@ graph <- function(data, data2){
 
 
 ```
+
 #### Show
 ##### 10B3
 This is the original [10B3 figure][10B3-citation] from the beir VII report [beir-10b3].
@@ -1992,11 +1992,9 @@ Strangely, they do not include data from table 2, but when I add this in, it doe
 [overlay]: http://dl.dropbox.com/u/1131693/bloodrop/10b3_temp_png.png
 [wo-intercept]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot_2014-05-21_16_45_53_png_-_Dropbox.png
 
-________________________________________________________________
 ^ back to [table of contents](#contents)
 
-
-
+________________________________________________________________
 
 <a name="10B4"></a>
 
@@ -2111,11 +2109,9 @@ I was able to reproduce figure 10B4 and the confidence intervals nearly perfectl
 
 In any case, the estimate has changed a trivial amount from the original.  Making it perfect is a job for later.
 
-___________________________________________________________________
 ^ back to [table of contents](#contents)
 
-
-
+___________________________________________________________________
 
 <a name="10B4-with-only-acute-data"></a>
 
@@ -2208,11 +2204,9 @@ confidence_interval(beir_r$o + 1, beir_r$mean, 0.05)
 
 If we only include acute results we see that the profile likelihood changes dramatically, giving a lower but flatter estimate.  The mean confidence interval changes mildly the 50% point goes down marginally and the upper bound goes down substantially.
 
-___________________________________________________________________
 ^ back to [table of contents](#contents)
 
-
-
+___________________________________________________________________
 
 <a name="10-2"></a>
 
@@ -2346,11 +2340,9 @@ This reproduction is necessary to form a final estimate of DDREF using the same 
 1. Contact someone who helped to produce these results and ask them to help me.
 2. Try to reproduce figure 10-3 (the profile likelihood curves that will actually be used) using data reproduced from these graphs rather than original profile likelihood data.
 
-___________________________________________________________________
 ^ back to [table of contents](#contents)
 
-
-
+___________________________________________________________________
 
 <a name="10-3"></a>
 
@@ -2394,6 +2386,7 @@ ggplot(data, aes(dose, err)) +
   scale_x_continuous(breaks = c(0:4)/2) +
   coord_cartesian(xlim=c(-0.1,2.1), ylim=c(-0.1,1.6))
 ```
+
 #### 10-2 with fit
 These fits to the data are not perfect, but a pretty close reproduction.  Close enough that I have hope that they may have fit things in this way and that we can develop the profile likelihood values by this technique.
 
@@ -2431,20 +2424,9 @@ This is the original [10-3 figure][10-3-citation] from the beir VII report [beir
 [10-3-citation]: http://www.nap.edu/openbook.php?record_id=11340&page=249
 [10-3-image]: http://dl.dropbox.com/u/1131693/bloodrop/10-3.jpg
 
-
-___________________________________________________________________
 ^ back to [table of contents](#contents)
 
-
-
-
-
-
-
-
-
-
-
+___________________________________________________________________
 
 <a name="10B3-all-data"></a>
 
@@ -2578,13 +2560,9 @@ It is no wonder that radiobiology is full of debate!
 
 At this point we should be a bit skeptical of organizing the data in this, the BEIR VII manner.  While that approach seemed reasonable given the ORNL data that they worked with, it clearly does not generalize well.  This may be because the underlying statitical approach is flawed, or simply that these graphs a very robust way of displaying the effect.  In any case we question the 'intuitive appeal' of graph 10B3.  While it seemed quite difinitive in isolation, the effect is lost when we try to repeat it on new datasets.
 
-________________________________________________________________________ 
 ^ back to [table of contents](#contents)
 
-
-
-
-
+________________________________________________________________________ 
 
 <a name="10B4-all-data"></a>
 
@@ -2690,14 +2668,9 @@ ggsave_for_ppt('inverse_lifespan_profile.png')
 #### Results
 Looks bad, we are way too confident!
 
-________________________________________________________________________ 
 ^ back to [table of contents](#contents)
 
-
-
-
-
-
+________________________________________________________________________ 
 
 <a name="metaregression"></a>
 
@@ -2767,16 +2740,10 @@ A figure that shows off the principal of meta-regression.
     ggsave_for_ppt('meta_regression_example.png')
 ```
 
-________________________________________________________________________ 
+
 ^ back to [table of contents](#contents)
 
-
-
-
-
-
-
-
+________________________________________________________________________ 
 
 <a name="10B3-meta"></a>
 
@@ -2945,15 +2912,10 @@ Viechtbauer W (2005). Bias and Eciency of Meta-Analytic Variance
 
 Estimators in the Random-Eects Model." Journal of Educational  and Behavioral Statistics, 30(3), 261-293.
 
-________________________________________________________________________ 
+
 ^ back to [table of contents](#contents)
 
-
-
-
-
-
-
+________________________________________________________________________ 
 
 <a name="10B4-meta"></a>
 
@@ -3082,16 +3044,10 @@ it was.
 
 More reason for meta-analysis.
 
-________________________________________________________________________ 
+
 ^ back to [table of contents](#contents)
 
-
-
-
-
-
-
-
+________________________________________________________________________ 
 
 <a name="10B3-meta-all"></a>
 
@@ -3103,6 +3059,8 @@ Show graphs like Storer 1979 10B3 but for all data using random effects meta-reg
 
 ```{r}
 
+# TODO(ben) Why is this section failing?
+
 # Common
 setwd('~/janus')
 source('scripts/util/util.R') # http://goo.gl/VYzkAs
@@ -3111,6 +3069,7 @@ source('scripts/util/util.R') # http://goo.gl/VYzkAs
 data <- readRDS('data/ddref.rds')
 
 ```
+
 #### Modeling functions
 Specify modeling functions.  
 
@@ -3137,125 +3096,125 @@ model_meta <- function(data){
     yi, 
     vi, 
     mods = ~ a*cluster + B*cluster -a -B -1, 
-    data = data,
+    data = head(data, 6),
     method="ML"
   )
 }
 
         
-# Mean Lifespans
-aggregate <- ddply(data, .(cluster, group_id, sex), function(df){
-    u <- function(x) paste(unique(x), collapse=' ')
-    dont_aggregate <- c('lifespan', 'id', 'X', 'n')
-    n <- nrow(df)
-    data.frame(
-        llply(df[,!names(df) %in% dont_aggregate], u),
-        age=mean(df$lifespan),
-        sd=sd(df$lifespan)/n^0.5,
-        n=nrow(df)
-    )   
-})
-
-# Prepare for Meta
-aggregate$yi <- with(aggregate, 1/age)
-aggregate$vi <- with(aggregate, (1/age - 1/(age + sd))^2)   
-
-# Restore Sanity
-numerics <- names(data)[laply(data, is.numeric)]
-for(n in numerics) {
-    if(n %in% names(aggregate)){
-        aggregate[,n] <- as.numeric(as.character(aggregate[,n]))
-    }
-}
-
-# Model
-m <- model_meta(aggregate)
-c <- coefficients(m)
-aggregate <- aggregate %>%
-  mutate(i=c[paste0('cluster', cluster)],
-         a=c[paste0('a:cluster', cluster)],
-         B=c[paste0('cluster', cluster, ':B')],
-         tau2=m$tau2)
-aggregate$p_my_analysis <- predict(m)$pred
-aggregate$p_10B3 <- predict(model_10B3(aggregate))
-
-# Project
-# Add projections across the entire range (0-1.5 Gy) for
-# acute and protracted exposures.  This will create nicer
-# graphs.
-doses = seq(from=0, to=1.5, by=.1)
-coefficients = unique(aggregate[,c('i', 'a', 'B', 'cluster')])
-projections = ddply(coefficients, .(cluster), function(df){
-  acute <- with(df, cbind(data.frame(
-    dose = doses,
-    type = 'A',
-    fractions = 1,
-    p_my_analysis = i + a * doses + B * doses^2
-  ), df))
-  
-  chronic <- with(df, cbind(data.frame(
-    dose = doses,
-    type = 'C',
-    fractions = 1000,
-    p_my_analysis = i + a * doses
-  ), df))
-  
-  rbind(acute, chronic)
-})
-projections$p_10B3 <- predict(model_10B3(aggregate),
-                              newdata=projections)
-
-# Show
-g <- aggregate
-f <- function(x) round(x, 2)
-g$cluster <- with(g, paste0(
-    cluster, '\n',
-    #'a=', f(a), 
-    #' B=', f(B), 
-    ' ddref =', f((a + B) / a)
-))
-projections$cluster <- projections$cluster
-projections$cluster <- with(projections, paste0(
-    cluster, '\n',
-    #'a=', f(a), 
-    #' B=', f(B), 
-    ' ddref =', f((a + B) / a)
-))
-
-ggplot(g, aes(
-    dose, 
-    1/age, 
-    label=type,
-    group=type)) + 
-    geom_errorbar(aes(
-        ymin=1/age + (vi + tau2)^0.5, 
-        ymax=1/age - (vi + tau2)^0.5
-        ), alpha=0.5, width=.05, color='red') +
-    geom_errorbar(aes(
-        ymin=1/age + vi^0.5, 
-        ymax=1/age - vi^0.5
-    ), alpha=0.5, width=.1) +
-    geom_text(size=4) + 
-    geom_smooth(
-        data = projections,
-        aes(dose, p_10B3), 
-        method='lm', 
-        formula='y ~ x + I(x^2)',
-        se=FALSE,
-        color='black'
-    ) + 
-    geom_smooth(
-        data = projections,
-        aes(dose, p_my_analysis), 
-        method='lm', 
-        formula='y ~ x + I(x^2)',
-        se=FALSE,
-        color='red'
-    ) + 
-    facet_wrap(~ cluster, scales="free_y")  
-
-
-ggsave_for_ppt('meta_regression.png')
+# # Mean Lifespans
+# aggregate <- ddply(data, .(cluster, group_id, sex), function(df){
+#     u <- function(x) paste(unique(x), collapse=' ')
+#     dont_aggregate <- c('lifespan', 'id', 'X', 'n')
+#     n <- nrow(df)
+#     data.frame(
+#         llply(df[,!names(df) %in% dont_aggregate], u),
+#         age=mean(df$lifespan),
+#         sd=sd(df$lifespan)/n^0.5,
+#         n=nrow(df)
+#     )   
+# })
+# 
+# # Prepare for Meta
+# aggregate$yi <- with(aggregate, 1/age)
+# aggregate$vi <- with(aggregate, (1/age - 1/(age + sd))^2)   
+# 
+# # Restore Sanity
+# numerics <- names(data)[laply(data, is.numeric)]
+# for(n in numerics) {
+#     if(n %in% names(aggregate)){
+#         aggregate[,n] <- as.numeric(as.character(aggregate[,n]))
+#     }
+# }
+# 
+# # Model
+# m <- model_meta(aggregate)
+# c <- coefficients(m)
+# aggregate <- aggregate %>%
+#   mutate(i=c[paste0('cluster', cluster)],
+#          a=c[paste0('a:cluster', cluster)],
+#          B=c[paste0('cluster', cluster, ':B')],
+#          tau2=m$tau2)
+# aggregate$p_my_analysis <- predict(m)$pred
+# aggregate$p_10B3 <- predict(model_10B3(aggregate))
+# 
+# # Project
+# # Add projections across the entire range (0-1.5 Gy) for
+# # acute and protracted exposures.  This will create nicer
+# # graphs.
+# doses = seq(from=0, to=1.5, by=.1)
+# coefficients = unique(aggregate[,c('i', 'a', 'B', 'cluster')])
+# projections = ddply(coefficients, .(cluster), function(df){
+#   acute <- with(df, cbind(data.frame(
+#     dose = doses,
+#     type = 'A',
+#     fractions = 1,
+#     p_my_analysis = i + a * doses + B * doses^2
+#   ), df))
+#   
+#   chronic <- with(df, cbind(data.frame(
+#     dose = doses,
+#     type = 'C',
+#     fractions = 1000,
+#     p_my_analysis = i + a * doses
+#   ), df))
+#   
+#   rbind(acute, chronic)
+# })
+# projections$p_10B3 <- predict(model_10B3(aggregate),
+#                               newdata=projections)
+# 
+# # Show
+# g <- aggregate
+# f <- function(x) round(x, 2)
+# g$cluster <- with(g, paste0(
+#     cluster, '\n',
+#     #'a=', f(a), 
+#     #' B=', f(B), 
+#     ' ddref =', f((a + B) / a)
+# ))
+# projections$cluster <- projections$cluster
+# projections$cluster <- with(projections, paste0(
+#     cluster, '\n',
+#     #'a=', f(a), 
+#     #' B=', f(B), 
+#     ' ddref =', f((a + B) / a)
+# ))
+# 
+# ggplot(g, aes(
+#     dose, 
+#     1/age, 
+#     label=type,
+#     group=type)) + 
+#     geom_errorbar(aes(
+#         ymin=1/age + (vi + tau2)^0.5, 
+#         ymax=1/age - (vi + tau2)^0.5
+#         ), alpha=0.5, width=.05, color='red') +
+#     geom_errorbar(aes(
+#         ymin=1/age + vi^0.5, 
+#         ymax=1/age - vi^0.5
+#     ), alpha=0.5, width=.1) +
+#     geom_text(size=4) + 
+#     geom_smooth(
+#         data = projections,
+#         aes(dose, p_10B3), 
+#         method='lm', 
+#         formula='y ~ x + I(x^2)',
+#         se=FALSE,
+#         color='black'
+#     ) + 
+#     geom_smooth(
+#         data = projections,
+#         aes(dose, p_my_analysis), 
+#         method='lm', 
+#         formula='y ~ x + I(x^2)',
+#         se=FALSE,
+#         color='red'
+#     ) + 
+#     facet_wrap(~ cluster, scales="free_y")  
+# 
+# 
+# ggsave_for_ppt('meta_regression.png')
 
 ```
 
@@ -3263,15 +3222,9 @@ ggsave_for_ppt('meta_regression.png')
 
 Curves don't change that radically, though standard errors often change rather dramatically!
 
-________________________________________________________________________ 
 ^ back to [table of contents](#contents)
 
-
-
-
-
-
-
+________________________________________________________________________ 
 
 <a name="10B4-meta-all"></a>
 
@@ -3283,125 +3236,127 @@ Show graphs like Storer 1979 10B4 but for all data using the random effects meta
 
 ```{r}
 
-# Common
-setwd('~/janus')
-source('scripts/util/util.R') # http://goo.gl/VYzkAs
+# TODO(ben) why isn't this working?
 
-# Data
-data <- readRDS('data/ddref.rds')
- 
-# Helpers
-model_10B4 <- function(data, o){    
-    glm(
-        I(1/age) ~ cluster * I(dose + o*dose^2 / (fractions)),
-        data=data,
-        weights=n
-    )
-}   
-model_meta <- function(data, o){    
-    data$curved_dose <- with(data, dose + o*dose^2 / (fractions))
-    rma(
-        yi, 
-        vi, 
-        mods = cbind(cluster, curved_dose), 
-        data = data,
-        method="ML"
-    )
-}
-
-
-# Define Acute
-chronic <- data$fractions > 1
-data$type <- 'A'
-data$type[chronic] <- 'C'
-        
-# Mean Lifespans
-aggregate <- ddply(data, .(cluster, group_id), function(df){
-    u <- function(x) paste(unique(x), collapse=' ')
-    dont_aggregate <- c('lifespan', 'id', 'X', 'n')
-    n <- nrow(df)
-    data.frame(
-        llply(df[,!names(df) %in% dont_aggregate], u),
-        age=mean(df$lifespan),
-        sd=sd(df$lifespan)/n^0.5,
-        n=nrow(df)
-    )   
-})
-
-# Prepare for Meta
-aggregate$yi <- with(aggregate, 1/age)
-aggregate$vi <- with(aggregate, (1/age - 1/(age + sd))^2)   
-
-# Restore Sanity
-numerics <- names(data)[laply(data, is.numeric)]
-for(n in numerics) {
-    if(n %in% names(aggregate)){
-        aggregate[,n] <- as.numeric(as.character(aggregate[,n]))
-    }
-}
-
-# Model
-low = -2
-high = 6
-delta = .1   # Reduce to increase resolution
-o_range = (low/delta):(high/delta) * delta
-
-# Model
-summary <- ldply(o_range, function(o){
-      # BEIR
-      m <- model_10B4(aggregate, o)
-      l_10B4 <- logLik(m)
-      
-      # Random Effects
-      m <- model_meta(aggregate, o)
-      l_meta <- logLik(m)
-      
-      c(l_10B4=l_10B4, l_meta=l_meta, o=o)
-})
-summary <- summary %>% 
-  mutate(l_10B4 = normalize_likelihood(l_10B4, delta),
-         l_meta = normalize_likelihood(l_meta, delta))
-
-# Normalize
-aggregate <- ddply(aggregate, .(cluster, sex), function(df){
-    df$l_10B4 <- normalize_likelihood(df$l_10B4, delta)
-    df$l_meta <- normalize_likelihood(df$l_meta, delta)
-    df
-})
-
-
-# Show
-# As in 10B4
-# http://www.nap.edu/openbook.php?record_id=11340&page=257
-a <- aggregate
-
-show <- function(g){
-    g$cluster <- as.factor(as.character(g$cluster))
-    g$l_10B4 <- pmin(g$l_10B4, 1)
-    g$l_meta <- pmin(g$l_meta, 1)
-    suppressWarnings(print(
-    ggplot(g, aes(o, l)) + 
-        geom_path(aes(o, l_10B4), color='black') +
-        geom_path(aes(o, l_meta), color='red') +
-        facet_wrap(~ cluster) + scale_y_log10()
-    ))
-}
-
-g <- a
-show(g)
-
-
-ggsave_for_ppt('meta_regression_profile.png')
-
-summary$l_10B4 <- pmin(4, summary$l_10B4)
-summary$l_meta <- pmin(4, summary$l_meta)
-ggplot(summary, aes(o, l)) + 
-    geom_path(aes(o, l_meta))
-    ylim(0,4)
-ggsave_for_ppt('meta_regression_summary_effect.png')
-
-
-# TODO: Maybe I would not get absurd profile-likelihood values if I just perfomed a single regression, instead of multiple regressions with bayesian updates.  Concretely I would do 1/age ~ cluster * ...
+# # Common
+# setwd('~/janus')
+# source('scripts/util/util.R') # http://goo.gl/VYzkAs
+# 
+# # Data
+# data <- readRDS('data/ddref.rds')
+#  
+# # Helpers
+# model_10B4 <- function(data, o){    
+#     glm(
+#         I(1/age) ~ cluster * I(dose + o*dose^2 / (fractions)),
+#         data=data,
+#         weights=n
+#     )
+# }   
+# model_meta <- function(data, o){    
+#     data$curved_dose <- with(data, dose + o*dose^2 / (fractions))
+#     rma(
+#         yi, 
+#         vi, 
+#         mods = cbind(cluster, curved_dose), 
+#         data = data,
+#         method="ML"
+#     )
+# }
+# 
+# 
+# # Define Acute
+# chronic <- data$fractions > 1
+# data$type <- 'A'
+# data$type[chronic] <- 'C'
+#         
+# # Mean Lifespans
+# aggregate <- ddply(data, .(cluster, group_id), function(df){
+#     u <- function(x) paste(unique(x), collapse=' ')
+#     dont_aggregate <- c('lifespan', 'id', 'X', 'n')
+#     n <- nrow(df)
+#     data.frame(
+#         llply(df[,!names(df) %in% dont_aggregate], u),
+#         age=mean(df$lifespan),
+#         sd=sd(df$lifespan)/n^0.5,
+#         n=nrow(df)
+#     )   
+# })
+# 
+# # Prepare for Meta
+# aggregate$yi <- with(aggregate, 1/age)
+# aggregate$vi <- with(aggregate, (1/age - 1/(age + sd))^2)   
+# 
+# # Restore Sanity
+# numerics <- names(data)[laply(data, is.numeric)]
+# for(n in numerics) {
+#     if(n %in% names(aggregate)){
+#         aggregate[,n] <- as.numeric(as.character(aggregate[,n]))
+#     }
+# }
+# 
+# # Model
+# low = -2
+# high = 6
+# delta = .1   # Reduce to increase resolution
+# o_range = (low/delta):(high/delta) * delta
+# 
+# # Model
+# summary <- ldply(o_range, function(o){
+#       # BEIR
+#       m <- model_10B4(aggregate, o)
+#       l_10B4 <- logLik(m)
+#       
+#       # Random Effects
+#       m <- model_meta(aggregate, o)
+#       l_meta <- logLik(m)
+#       
+#       c(l_10B4=l_10B4, l_meta=l_meta, o=o)
+# })
+# summary <- summary %>% 
+#   mutate(l_10B4 = normalize_likelihood(l_10B4, delta),
+#          l_meta = normalize_likelihood(l_meta, delta))
+# 
+# # Normalize
+# aggregate <- ddply(aggregate, .(cluster, sex), function(df){
+#     df$l_10B4 <- normalize_likelihood(df$l_10B4, delta)
+#     df$l_meta <- normalize_likelihood(df$l_meta, delta)
+#     df
+# })
+# 
+# 
+# # Show
+# # As in 10B4
+# # http://www.nap.edu/openbook.php?record_id=11340&page=257
+# a <- aggregate
+# 
+# show <- function(g){
+#     g$cluster <- as.factor(as.character(g$cluster))
+#     g$l_10B4 <- pmin(g$l_10B4, 1)
+#     g$l_meta <- pmin(g$l_meta, 1)
+#     suppressWarnings(print(
+#     ggplot(g, aes(o, l)) + 
+#         geom_path(aes(o, l_10B4), color='black') +
+#         geom_path(aes(o, l_meta), color='red') +
+#         facet_wrap(~ cluster) + scale_y_log10()
+#     ))
+# }
+# 
+# g <- a
+# show(g)
+# 
+# 
+# ggsave_for_ppt('meta_regression_profile.png')
+# 
+# summary$l_10B4 <- pmin(4, summary$l_10B4)
+# summary$l_meta <- pmin(4, summary$l_meta)
+# ggplot(summary, aes(o, l)) + 
+#     geom_path(aes(o, l_meta))
+#     ylim(0,4)
+# ggsave_for_ppt('meta_regression_summary_effect.png')
+# 
+# 
+# # TODO: Maybe I would not get absurd profile-likelihood values if I just perfomed a single regression, instead of multiple regressions with bayesian updates.  Concretely I would do 1/age ~ cluster * ...
 
 ```
 
@@ -3409,12 +3364,9 @@ ggsave_for_ppt('meta_regression_summary_effect.png')
 
 We still seem to have biased likelihood estimates, but things are improving a bit...
 
-__________________________________________________________________
 ^ back to [table of contents](#contents)
 
-
-
-
+__________________________________________________________________
 
 <a name="log-or-not"></a>
 
@@ -3497,6 +3449,7 @@ TODO: See if the hypotherical threshold proposed by BEIR VII actually plays out 
 
 [BEIR 10-1]: http://www.nap.edu/openbook.php?record_id=11340&page=247#p2000e6f39960247001
 
-__________________________________________________________________
+
 ^ back to [table of contents](#contents)
 
+__________________________________________________________________

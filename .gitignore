@@ -27,3 +27,6 @@ scripts/keys/*
 # Anything temp
 temp*
 scripts/temp*
+
+# Markdown Generated
+ddref.knit.md
