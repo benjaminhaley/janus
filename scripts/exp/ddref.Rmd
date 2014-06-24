@@ -599,7 +599,7 @@ d$cluster = sort_by_n(d$cluster)
 
 # Save Data for later use
 saveRDS(d, 'data/ddref.rds')
-write.csv(d,file='data/ddref.csv')
+write.csv0(d,file='data/ddref.csv')
 
 ```
 
@@ -669,7 +669,7 @@ for(id in sort(unique(d$cluster_id))) {
            study=as.numeric(sub('-[0-9]*$', '', study))) %>%
     arrange(study, group) %>%
     select(-study, -group)
-  print(s, row.names=FALSE)
+  print(s)
 }
 ```
 
@@ -1218,7 +1218,7 @@ data <- data %>%
          ctime= ctime_min_map[ctime])
 
 # Save a copy for future use
-write.csv(data, 'data/lss14/lss14_spruced_up.csv')
+write.csv0(data, 'data/lss14/lss14_spruced_up.csv')
 
 # Shorten the data
 data <- data %>% 
@@ -1665,7 +1665,7 @@ ggplot(data,
   ylab("Risk %")
 
 # save fits for use in 10B4
-write.csv(fits, 'data/10B2_fits.csv')
+write.csv0(fits, 'data/10B2_fits.csv')
 ```
 
 #### Figure: 10B2 reproduction
@@ -1753,7 +1753,7 @@ data = data %>%
 
 # Save for later use
 # TODO: re-enable
-write.csv(data, 'data/storer_1979_processed.csv')
+write.csv0(data, 'data/storer_1979_processed.csv')
 
 # Fake data to predict across
 # This allows us to fit two lines across a limited
@@ -1804,8 +1804,10 @@ I am capable of reproducing their results [very well][overlay].  There are a few
 3. The regression intercept was [set to the control condition][wo-intercept]
 4. The regression is weighted by 1/sd^2
 
-*Trivial Methodological Issue*
-Strangely, they do not include data from table 2, but when I add this in, it does not make a huge difference, so I assume they are just not being careful.
+*Data not represented*  
+This figure does not include male mice or BALB/c females from [Storer 1979][storer 1979].  Its not clear if these are excluded from the profile likelihood generation as well, or not.
+
+In any case they fit the inclusion criteria, and should have been addressed.
 
 [overlay]: http://dl.dropbox.com/u/1131693/bloodrop/10b3_temp_png.png
 [wo-intercept]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot_2014-05-21_16_45_53_png_-_Dropbox.png
@@ -1829,6 +1831,7 @@ in table 10-2.
 
 ```{r} 
 # TODO(ben) make sure the reproduction is perfect, instead of almost perfect   
+# TODO(ben) check if they included BALB/c females or RFM mice
 
 # Common
 setwd('~/janus')
@@ -1839,24 +1842,6 @@ data <- read.csv('data/storer_1979_processed.csv')
 data_10B2 <- read.csv('data/10B2_fits.csv')
 
 # Model
-low = -2
-high = 6
-delta = 0.01
-o_range = (low/delta):(high/delta) * delta
-
-get_likelihoods <- function(o_range, data){
-    r <- ldply(o_range, function(o){
-        m <- model_10B4(data, o)
-        l = logLik(m)
-        
-        data.frame(o, l)
-    })
-    
-    r$l <- normalize_likelihood(r$l, delta)
-    
-    r
-}
-
 model_10B4 <- function(data, o){    
     glm(
         I(1/age) ~ I(dose + o*dose^2 / (fractions)),
@@ -1865,20 +1850,22 @@ model_10B4 <- function(data, o){
     )
 }
 
-beir_r <- get_likelihoods(o_range, data[data$modeled_in_10B3,])
+beir_r <- get_likelihoods(data %>% filter(modeled_in_10B3), model_10B4)
 
 # Merge likelihoods with data from 10B2
-alignment <- match( round(beir_r$o, 5),
-                    round(data_10B2$o, 5))
+data <- merge(
+  beir_r %>% mutate(o=round(o, 2)), 
+  data_10B2 %>% mutate(o=round(o, 2)))
 
-beir_r <- beir_r %>%
-  mutate(tumor = data_10B2$likelihood[alignment],
+# Clean data and calcualte the mean likelihood
+data = data %>%
+  mutate(tumor = likelihood,
          lifespan = l,
          mean = (tumor + lifespan)/2) %>%
-  select(-l)
+  select(-l, -likelihood)
 
 # save for later
-write.csv(beir_r, file='data/10B4.csv', row.names=FALSE)
+write.csv0(beir_r, file='data/10B4.csv')
 ```
 
 #### Show
@@ -1894,7 +1881,7 @@ This is the original [10B4 figure][10B4-citation] from the beir VII report [beir
 ##### Reproduce 10B4
 This is my reproduction of 10B4 to prove that I am faithfully applying their methodology.
 ```{r}
-g <- melt(beir_r, 
+g <- melt(data, 
           id.vars='o', 
           value.name='likelihood', 
           variable.name='source')
@@ -1919,15 +1906,15 @@ I am faithfully determining confidence intervals and to butress visual proof wit
 Note, my confidence interfal should match the first row and last column, the 95% confidence interval from radiobiology data.
 
 ```{r}
-# is        "0.4 (0.1, 3.2)"
+# is        "0.4 (0.1, 3.5)"
 # should be "0.5 (0.1, 3.2)"  
-confidence_interval(beir_r$o, beir_r$mean, 0.05)
+confidence_interval(data$o, data$mean, 0.05)
 ```
 
 
 #### Results
 
-I was able to reproduce figure 10B4 and the confidence intervals nearly perfectly.  The slight disparity that is observed could be due to outstanding methodological issues or small differences in the data.  For example, perhaps the original researchers applied rounding that I did not, or perhaps my estiamtes of the points on their graphs were different.
+I was able to reproduce figure 10B4 and the confidence intervals very well.  The slight disparity that is observed could be due to outstanding methodological issues or small differences in the data.  For example, perhaps the original researchers applied rounding that I did not, or perhaps my estiamtes of the points on their graphs were different.
 
 In any case, the estimate has changed a trivial amount from the original.  Making it perfect is a job for later.
 
@@ -2242,7 +2229,7 @@ likelihoods$l <- normalize_likelihood(likelihoods$l, delta)
 
 # save for later
 setwd('~/janus')
-write.csv(likelihoods, file='data/10-3-lss.csv', row.names=FALSE)
+write.csv0(likelihoods, file='data/10-3-lss.csv')
 ```
 
 ```{r}

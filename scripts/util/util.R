@@ -132,3 +132,24 @@ list_unique <- function(x) paste(sort(unique(x)), sep=', ', collapse=', ')
 # Convert x to a chraracter because these are required for vector keys
 # convert(c(T), c('TRUE'='cool', 'FALSE'='not cool')) == 'cool'
 convert <- function(x, map) map[as.character(x)]
+
+# Get the likelihood of a range of o values
+get_likelihoods <- function(data, 
+                            modeling_function, 
+                            o_range = seq(-2, 6, by=0.01),
+                            likelihood_function=logLik){
+  r <- ldply(o_range, function(o){
+    m <- model_10B4(data, o)
+    l = logLik(m)
+    
+    data.frame(o, l)
+  })
+  
+  r$l <- normalize_likelihood(r$l, delta)
+  
+  r
+}
+
+# Write csv with good defaults
+write.csv0 <- function(...) write.csv(..., row.names=FALSE)
+
