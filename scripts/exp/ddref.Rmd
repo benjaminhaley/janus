@@ -18,6 +18,7 @@ Table of contents
 ========================================================
 
 **Background**
+
   - [Introduction](#introduction) - What are we doing here?
   - [Defining DDREF](#defining_ddref) - What is the equation?
   - [Log Likelihood](#loglike) - How is log likelihood calculated?
@@ -26,6 +27,7 @@ Table of contents
   - [To log or not?](#log-or-not) - Should data be fit to a linear scale or a log linear scale and should a threshold be used when estimating DDREF?
   
 **Data**
+
   - [Data Funnel](#data_funnel) - Which data will we analyze?
   - [Data Cleaning](#cleaning) - Damn, data, you look good!
   - [Concordance](#concordance) - Tables describing the data in detail.
@@ -33,8 +35,10 @@ Table of contents
   - [Atomic Bomb Survivors](#lss) - Load data from atomic bomb survivors as well.
   
 **Analysis**
+
   - [Reproduce BEIR 10-2](#10-2) - Reproduce dose response for atomic bomb survivors. (fail)
-  - [Reproduce BEIR 10-3](#10-3) - Reproduce DDREF likelihood profiles for atomic bomb survivors.
+  - [Reproduce BEIR 10-3](#10-3) - Reproduce profile likelihood curves that combine animal data with outcomes from atomic bomb survivors.
+  - [Reproduce BEIR 10-3 lss curve](#10-3-lss) - Reproduce DDREF likelihood profiles for atomic bomb survivors.
   - [Reproduce BEIR 10B2](#10B2) - Show that we can fit the same model of cancer risk vs. dose as BEIR VII.
   - [Reproduce BEIR 10B3](#10B3) - Show that we can fit the same model of lifespan vs. dose as BEIR VII.
   - [Reproduce BEIR 10B4](#10B4) - Show that we can reproduce the likelihood profiles from animal data in BEIR VII.
@@ -46,6 +50,7 @@ Table of contents
   - [10B4 metareression on all data](#10B4-meta-all) Apply meta regression to all of the datasets to generate profiles.
 
 **Supplemental**
+
   - [10B4 with only acute data](#10B4-with-only-acute-data) reproduce lifespan analysis using only the acute data which is available as individual level data.
   
 ___________________________________________________________________
@@ -982,7 +987,7 @@ ggplot(g,
 ```
 
 #### Figure: Directly comparable protracted exposures
-Similar to the figure above, except that the data has been limited to those cases were there are two groups in the same cluster with the same dose, but differences in dose rate or number of fractions.  Doses that were delivered more slowly are labeled as protracted (dashed line).  Facets of the graph are defined by cluster and total dose delivered.  Controls are included for comparison.
+Similar to the figure above, except that the data has been limited to those cases were there are two groups in the same cluster with the same dose, but differences in dose rate or number of fractions.  Doses that were delivered more slowly are labeled as protracted (dotdash line).  Facets of the graph are defined by cluster and total dose delivered.  Controls are included for comparison.
 
 ##### Additional details
 In cluster 4, doses were broken into 10 or 8 fractions seperrated by three hours or 1 day respectively.  In cluster 6 doses were broken into 10 fractions sepperated by one day.  Notably both of these experiments were conducted at the same laboratory (SCK/CEN) using the same irradiator (a CS-137 source).  
@@ -2023,7 +2028,7 @@ data_10B2 <- read.csv('data/10B2_fits.csv')
 # Model
 low = -2
 high = 6
-delta = 0.1
+delta = 0.01
 o_range = (low/delta):(high/delta) * delta
 
 get_likelihoods <- function(o_range, data){
@@ -2052,11 +2057,15 @@ beir_r <- get_likelihoods(o_range, data[data$modeled_in_10B3,])
 # Merge likelihoods with data from 10B2
 alignment <- match( round(beir_r$o, 5),
                     round(data_10B2$o, 5))
+
 beir_r <- beir_r %>%
   mutate(tumor = data_10B2$likelihood[alignment],
          lifespan = l,
          mean = (tumor + lifespan)/2) %>%
   select(-l)
+
+# save for later
+write.csv(beir_r, file='data/10B4.csv', row.names=FALSE)
 ```
 
 #### Show
@@ -2078,7 +2087,7 @@ g <- melt(beir_r,
           variable.name='source')
 ggplot(g, aes(o, likelihood, linetype=source)) + 
   geom_path() +
-  scale_linetype_manual(values=c('dotted', 'dashed', 'solid')) +
+  scale_linetype_manual(values=c('dotted', 'dotdash', 'solid')) +
   scale_y_continuous(breaks = c(0:5)/5, limits=c(0,1.2))
 ```
 
@@ -2097,9 +2106,9 @@ I am faithfully determining confidence intervals and to butress visual proof wit
 Note, my confidence interfal should match the first row and last column, the 95% confidence interval from radiobiology data.
 
 ```{r}
-# is        "1.4 (1.1, 4.2)"
-# should be "1.5 (1.0, 4.4)"  
-confidence_interval(beir_r$o + 1, beir_r$mean, 0.05)
+# is        "0.4 (0.1, 3.2)"
+# should be "0.5 (0.1, 3.2)"  
+confidence_interval(beir_r$o, beir_r$mean, 0.05)
 ```
 
 
@@ -2184,7 +2193,7 @@ g <- melt(beir_r,
           variable.name='source')
 ggplot(g, aes(o, likelihood, linetype=source, color=source)) + 
   geom_path() +
-  scale_linetype_manual(values=c('dotted', 'dashed', 'solid')) +
+  scale_linetype_manual(values=c('dotted', 'dotdash', 'solid')) +
   scale_color_manual(values=c('black', 'red', 'black')) +
   scale_y_continuous(breaks = c(0:5)/5, limits=c(0,1.2))
 ```
@@ -2344,14 +2353,14 @@ This reproduction is necessary to form a final estimate of DDREF using the same 
 
 ___________________________________________________________________
 
-<a name="10-3"></a>
+<a name="10-3-lss"></a>
 
-Reproduce BEIR 10-3 (from a reproduction of 10-2)
+Reproduce BEIR 10-3 lss curve (from a reproduction of 10-2)
 ========================================================
 *Last update: May 2014*
 Reproduce the BEIR VII estimates of DDREF likelihood using atomic bomb survivor data.
 
-*Note this data is based on a reproduction of figure 10-2 instead of on original atomic bomb survivor data for the reasons listed in my [attempt to reproduce 10-2][#10-2]
+*Note this data is based on a reproduction of figure 10-2 instead of on original atomic bomb survivor data for the reasons listed in my [attempt to reproduce 10-2](#10-2)
 
 ```{r} 
 
@@ -2362,35 +2371,36 @@ source('scripts/util/util.R') # http://goo.gl/VYzkAs
 # Data
 data <- read.csv('data/10-2.csv')  # a reproduction of BEIR 10-2
 
-# fix data
-data <- data %>%
-  mutate(sd = sd + 0.00001)
-
 # Show 10-2
 # Prove that we can do the linear and quadratic fits for 10-2
-weighted_fit <- function(...) geom_smooth(
+fit <- function(...) geom_smooth(
   ...,
   method='lm', 
-  aes(weight=1/sd),
   se=FALSE,
-  color='black')
+  color='black',
+  fullrange=TRUE)
 
-ggplot(data, aes(dose, err)) +
-  geom_pointrange(aes(ymax=err + 2*sd, ymin=err - 2*sd)) +
-  weighted_fit(formula='y ~ x - 1') +
-  weighted_fit(formula='y ~ I(x + 0.3 * x^2) - 1', 
+ggplot(data %>% filter(dose < 1.5), aes(dose, err)) +
+  fit(formula='y ~ x - 1') +
+  fit(formula='y ~ I(x + 0.3 * x^2) - 1', 
                linetype='dotted') +
-  weighted_fit(formula='y ~ I(x + 0.7 * x^2) - 1',
-               linetype='dashed') + 
+  fit(formula='y ~ I(x + 0.7 * x^2) - 1',
+               linetype='dotdash') + 
   scale_y_continuous(breaks = c(0:3)/2) +
   scale_x_continuous(breaks = c(0:4)/2) +
+  geom_pointrange(data=data, 
+                  aes(ymax=err + 2*sd, ymin=err - 2*sd)) +
   coord_cartesian(xlim=c(-0.1,2.1), ylim=c(-0.1,1.6))
 ```
 
-#### 10-2 with fit
-These fits to the data are not perfect, but a pretty close reproduction.  Close enough that I have hope that they may have fit things in this way and that we can develop the profile likelihood values by this technique.
+#### Reproduction of Figure 10-2
+We managed a nearly perfect reproduction of 10-2 from the reconstituted data which shows that our formulas are correct.  
 
-If they did, this is strange.  They seem to be fitting a linear quadratic equation to data from a poisson regression which is e^(linear quadratic).  I don't know what to make of this.
+*Methodological error*
+It is strange that the authors chose to determine DDREF on linear quadratic fits to excess relative risk, rather than fitting seperate models on the poisson regressions that were used to excess relative risk in the first place.  I will try to correct that oddity in my subsequent work.
+
+*Trivial statistical error*
+Erroneously, these fits are from unweighted regression where each point counts equally.  They should have been performed such that data points with more people in them (lower doses) recieve a higher weight.  Fortunately this error is not repeated for the profile likelihood analysis and so it does not affect the overall analysis, only this graph.
 
 ```{r}
 # Model
@@ -2399,10 +2409,17 @@ high = 6
 delta = 0.1  # decrease for higher resolution
 o_range = (low/delta):(high/delta) * delta
 
+# Data
+data_to_model <- data %>% 
+  # < 1.5 Sv of exposure
+  filter(dose < 1.5) %>%
+  # Prevent sd from ever equalling 0 (to allow 1/sd to work)
+  mutate(sd = sd + 0.00001)
+
 # Model
 likelihoods <- ldply(o_range, function(o){
-  model <- glm(err ~ I(dose + o*dose^2),
-               data=data,
+  model <- glm(err ~ I(dose + o*dose^2) - 1,
+               data=data_to_model,
                weights=1/sd^2)
   c(o=o, l=logLik(model))
 })
@@ -2410,23 +2427,154 @@ likelihoods <- ldply(o_range, function(o){
 # Summarize Effect
 likelihoods$l <- normalize_likelihood(likelihoods$l, delta)
 
+# save for later
+write.csv(likelihoods, file='data/10-3-lss.csv', row.names=FALSE)
+```
+
+```{r}
 # Show
 ggplot(likelihoods, aes(o, l)) + 
-    geom_path()
-
+  geom_path(linetype='dotdash') + 
+  scale_y_continuous(breaks = c(0, 0.5, 1.0, 1.5), limits=c(0,1.5))
 ```
+
+#### BEIR 10-3 reproduction of lss analysis
+We are able to form a 'reasonable' reproduction of the atomic bomb survivor curve from 10-3.  It's peak does not rise quite as high as the original firgure.  This may be because of errors when re-constructing the data used in this figure, or because of unknown differences in methodology.  In any case, the difference is small and difficult to resolve because the original data and full methodology is un-available.
+
+
+![10-3-image]: 
 
 ##### BEIR 10-3
 This is the original [10-3 figure][10-3-citation] from the beir VII report [beir-10-3].
 
-![10-3-image]: 
-
 [10-3-citation]: http://www.nap.edu/openbook.php?record_id=11340&page=249
 [10-3-image]: http://dl.dropbox.com/u/1131693/bloodrop/10-3.jpg
+
+
+# is        "0.3 (-0.1, 1.6)"
+# should be "0.3 (-0.1, 1.5)"  
+confidence_interval(likelihoods$o, likelihoods$l, 0.05)
+```
+
+##### Table 10-2
+This is the original [10-2 table][table-10-2-citation] from the beir VII report [beir-10b4].
+
+![table-10-2-image]
+
+[table-10-2-citation]: http://www.nap.edu/openbook.php?record_id=11340&page=250
+[table-10-2-image]: http://dl.dropbox.com/u/1131693/bloodrop/table%2010-2.png
+
+##### Reproduce Table 10-2 row 2
+Reproduce confidence intervals from my lss profile likelihood curve reproductions, to provide quantitiave evidence that I am faithfully applying the same methodology.
+
+```{r}
+# is        "0.3 ( 0.0, 1.6)"
+# should be "0.3 (-0.1, 1.5)"  
+confidence_interval(likelihoods$o, likelihoods$l, 0.05)
+```
+
+These values are very close to the original.  Good reason to move forward.
 
 ^ back to [table of contents](#contents)
 
 ___________________________________________________________________
+
+<a name="10-3"></a>
+
+Reproduce BEIR 10-3 from reproductions of BEIR 10B4 and 10-2
+========================================================
+*Last update: June 2014*
+Reproduce the BEIR VII estimates of DDREF likelihood that combines data from atomic bomb survivors and animal data.
+
+```{r} 
+# Common
+setwd('~/janus')
+source('scripts/util/util.R') # http://goo.gl/VYzkAs
+
+# Data
+data_lss <- read.csv('data/10-3-lss.csv')
+data_animal <- read.csv('data/10B4.csv')
+
+
+# Merge likelihoods from 10-3 and 10B4
+alignment <- match(round(data_lss$o, 5),
+                   round(data_animal$o, 5))
+
+# Determine profile resolutions
+# (this is needed to normalize the profile likelihood curves for
+#  graphing)
+delta = data_lss$o[1] - data_lss$o[2]
+
+data <- data_lss %>%
+  mutate(l2 = data_animal$mean[alignment],
+         'Radiobiological Prior' = l2,
+         'LSS likelihood' = l,
+         'Combined posterior' = -normalize_likelihood(
+           log(l) + log(l2), 
+           delta)
+         ) %>%
+  select(-l, -l2)
+
+```
+
+```{r}
+g <- melt(data, 
+          id.vars='o', 
+          value.name='likelihood', 
+          variable.name='source')
+ggplot(g, aes(o, likelihood, linetype=source)) + 
+  geom_path() +
+  scale_linetype_manual(values=c('dotted', 'dotdash', 'solid')) +
+  scale_y_continuous(breaks = c(0, 0.5, 1, 1.5), limits=c(0,1.5))
+```
+
+#### BEIR 10-3 reproduction
+Pretty good reproduction.  The lss curve is slightly lower than would be expected, this issue is [discussed in the section where that reproduction was made](#10-3-lss).
+
+![10-3-image]: 
+
+##### BEIR 10-3
+This is the original [10-3 figure][10-3-citation] from the beir VII report [beir-10-3].
+
+[10-3-citation]: http://www.nap.edu/openbook.php?record_id=11340&page=249
+[10-3-image]: http://dl.dropbox.com/u/1131693/bloodrop/10-3.jpg
+
+
+##### Table 10-2
+This is the original [10-2 table][table-10-2-citation] from the beir VII report [beir-10b4].
+
+![table-10-2-image]
+
+[table-10-2-citation]: http://www.nap.edu/openbook.php?record_id=11340&page=250
+[table-10-2-image]: http://dl.dropbox.com/u/1131693/bloodrop/table%2010-2.png
+
+##### Reproduce Table 10-2
+Reproduce confidence intervals from my profile likelihood curve reproductions, to provide quantitiave evidence that I am faithfully applying (nearly) the same methodology.
+
+```{r}
+# is        "0.3 ( 0.0, 1.6)"
+# should be "0.3 (-0.1, 1.5)"  
+o = data$o
+
+# should be "0.5 ( 0.1, 3.2)"
+# is        "0.4 ( 0.1, 3.2)"
+confidence_interval(o, data[['Radiobiological Prior']], 0.05)
+
+# should be "0.3 (-0.1, 1.5)"
+# is        "0.3 (-0.1, 1.6)"
+confidence_interval(o, data[['LSS likelihood']], 0.05)
+
+# should be "0.5 ( 0.1, 1.2)"
+# is        "0.4 ( 0.1, 1.2)"
+confidence_interval(o, data[['Combined posterior']], 0.05)
+```
+
+Nearly identical, only some very small (trivial) differences.  Time to move forward.
+
+^ back to [table of contents](#contents)
+
+___________________________________________________________________
+
 
 <a name="10B3-all-data"></a>
 
