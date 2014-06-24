@@ -145,6 +145,7 @@ get_likelihoods <- function(data,
     data.frame(o, l)
   })
   
+  delta = o_range[2] - o_range[1]
   r$l <- normalize_likelihood(r$l, delta)
   
   r
