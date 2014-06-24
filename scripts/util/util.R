@@ -123,3 +123,12 @@ ggsave_for_ppt <- function(...) suppressWarnings(ggsave(...,
                                                         width=10.24, 
                                                         height=7.68, 
                                                         units='in'))
+
+# Combine all unique values of x into a comma seperated list
+# list_unique(c(2, 1, 1) == '1, 2'
+list_unique <- function(x) paste(sort(unique(x)), sep=', ', collapse=', ')
+
+# Lookup a value in mapping
+# Convert x to a chraracter because these are required for vector keys
+# convert(c(T), c('TRUE'='cool', 'FALSE'='not cool')) == 'cool'
+convert <- function(x, map) map[as.character(x)]

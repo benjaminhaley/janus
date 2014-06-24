@@ -1683,6 +1683,8 @@ This is the original [10B2 figure][10B2-citation] from the beir VII report [beir
 ##### Observations
 - **We can reproduce BEIR VII** This graph provides visual evidence that we can accurately reproduce best fit lines used for DDREF estimation from cancer data.  These likelihoods will be combined with DDREF estimates from atomic bomb survivors and animal lifespan studies to provide a final estimate of DDREF.  Only the lifespan estimates are to be updated by this work, but these other estimates must be faithfully reproduced so that they can compbine with the modified lifespan estimates to provide a final modified estimate of DDREF.
 
+__________________________________________________________________
+
 <a name="10B3"></a>
 
 Reproduce BEIR 10B3
@@ -1698,6 +1700,8 @@ from storer 1979 (3575012.pdf).
 [grouped]: http://dl.dropbox.com/u/1131693/bloodrop/10b3_temp_png.png
 
 ```{r}
+# TODO: factor out commented code which shows how these esimates
+#       change when only acute data is employed
 
 # Common
 setwd('~/janus')
@@ -1706,257 +1710,62 @@ source('scripts/util/util.R') # http://goo.gl/VYzkAs
 # Data
 data <- read.csv('data/storer_1979.csv', sep='\t')  
     
-
+# Helperts
 model_10B3 <- function(data){
     glm(
         I(1/age - 1/636.175) ~ dose + I(dose^2 / (fractions)) - 1,
         data=data,
         weights=1/sd^2
     )
-}   
-show <- function(g){
-    original <- g[is.na(g$p_10B3),] 
-    predictions <- g[!is.na(g$p_10B3),]
-    suppressWarnings(print(
-    ggplot(original, aes(
-        dose, 
-        1/age, 
-        label=type,
-        group=type
-    )) +
-        geom_text(size=5) + 
-        geom_smooth(
-            data=predictions,
-            aes(dose, p_10B3),
-            color='black'
-        ) +
-       scale_y_continuous(breaks = 0.0002*0:4+0.0016)
-    ))
 }
 
-    
 # Constants
-threshold = 1.5001
+threshold_dose_to_model = 1.5001
+strain_to_model = 'RFM'
+sex_to_model = 'F'
+type_in_my_analysis = 'A'
+chronic_threshold_for_dose_rate = 0.1
+rate_to_fraction = c('6.9e-05'=Inf, '0.4'=1, '0.45'=1)
+chronic_to_letter = c('TRUE'='C', 'FALSE'='A')
 
-# Prediction Intervals
+# Clean
+# Here we will:
+#   1. Define fractions, chronic, and type
+#   2. Combine acute exposures with the same treatment
+#      (see note above for a justification)
+#   3. Define which data is modeled
+data = data %>%
+  mutate(fractions = convert(rate, rate_to_fraction),
+         chronic = rate < chronic_threshold_for_dose_rate,
+         type = convert(chronic, chronic_to_letter)) %>%
+  group_by(dose, type, sex, fractions, strain) %>%
+  summarise(table=list_unique(table),
+            total_n=sum(n),
+            rate=mean(rate),
+            age= sum(age * n) / total_n,
+            sd= (sum(sd^2 * n) / total_n)^0.5) %>%
+  mutate(modeled_in_10B3 = dose < threshold_dose_to_model & 
+                           strain == strain_to_model & 
+                           sex == sex_to_model,
+         in_my_analysis = type == type_in_my_analysis,
+         n = total_n) %>%
+  select(-total_n)
+
+# Save for later use
+# TODO: re-enable
+write.csv(data, 'data/storer_1979_processed.csv')
+
+# Fake data to predict across
+# This allows us to fit two lines across a limited
+# data range for graphing
 to_predict <- expand.grid(
     fractions = c(1, Inf),
     dose = seq(0, 1.5, 0.1)
 )
 to_predict$type <- 'A'
 to_predict$type[to_predict$fractions > 1] <- 'C'
-
-# Clean
-data$fractions <- 1
-data$fractions[data$rate < 0.1] <- Inf
-
-# Define Acute
-chronic <- data$rate < 0.1
-data$type <- 'A'
-data$type[chronic] <- 'C'
-
-# Combine acute exposures with the same treatment
-# (see note above for a justification)
-# TODO(ben) do this step in every analysis that uses storer
-data <- ddply(data, .(dose, type, sex, fractions, strain), function(df) {
-  all <- function(x) paste(unique(x), sep=', ', collapse=', ')
-  with(df,data.frame(
-            table=all(table),
-            n=sum(n),
-            dose=dose[1],
-            rate=mean(rate),
-            strain=all(strain),
-            sex=sex[1],
-            age= sum(age * n) / sum(n),
-            sd= (sum(sd^2 * n)/sum(n))^0.5,
-            fractions=fractions[1],
-            type=type[1]
-  ))
-})
-
-# Subset
-data$modeled_in_10B3 <- with(data, 
-    dose < threshold &
-    strain == 'RFM'  &
-    sex == 'F'
-)
-data$in_my_analysis <- data$type == 'A'
-
-# Save for later use
-write.csv(data, 'data/storer_1979_processed.csv')
-
-# prediction matrix
-predictions <- to_predict
-addin <- names(data)[!names(data) %in% names(predictions)]
-predictions <- merge(data[data$modeled_in_10B3,][1, addin], predictions, all=TRUE)
-
-# 10B3 Model
 m <- model_10B3(data[data$modeled_in_10B3,])
-predictions$p_10B3 <- predict(m, newdata=predictions) + 1/636.175
-
-# My Model
-s <- data$modeled_in_10B3 & 
-     data$in_my_analysis
-m <- model_10B3(data[s,])
-predictions$p_my_analysis <- predict(m, newdata=predictions) + 1/636.175
-
-# Merge
-data$p_10B3 <- NA
-data$p_my_analysis <- NA
-
-data <- rbind(predictions, data)
-
-
-
-
-
-
-
-
-# TODO(ben) delete this when you finally give up
-#
-# # data2
-# data2 <- read.csv('data/storer_1979.csv', sep='\t')  
-# data2 <- rbind(data2, data.frame(table=3, 
-#                         n=312, 
-#                         dose=0,
-#                         rate=0.45,
-#                         strain='RFM',
-#                         sex='F',
-#                         age=644.0,
-#                         sd=8.21))
-#  
-# model_10B3 <- function(data){
-#     intercept <- data[data$dose == 0, 'age']
-#     glm(
-#         I(1/age - 1/intercept) ~ dose + I(dose^2 / (fractions)) - 1,
-#         data=data,
-#         weights=1/(n*sd)^2
-#     )
-# }   
-# 
-# # Constants
-# threshold = 1.5001
-# 
-# # Prediction Intervals
-# to_predict <- expand.grid(
-#     fractions = c(1, Inf),
-#     dose = seq(0, 1.5, 0.1)
-# )
-# to_predict$type <- 'A'
-# to_predict$type[to_predict$fractions > 1] <- 'C'
-# 
-# # Clean
-# data2$fractions <- 1
-# data2$fractions[data2$rate < 0.1] <- Inf
-# 
-# # Define Acute
-# chronic <- data2$rate < 0.1
-# data2$type <- 'A'
-# data2$type[chronic] <- 'C'
-# 
-# # Combine acute exposures with the same treatment
-# # (see note above for a justification)
-# # TODO(ben) do this step in every analysis that uses storer
-# data2 <- ddply(data2, .(dose, type, sex, fractions, strain), function(df) {
-#   all <- function(x) paste(unique(x), sep=', ', collapse=', ')
-#   with(df,data.frame(
-#             table=all(table),
-#             n=sum(n),
-#             dose=dose[1],
-#             rate=mean(rate),
-#             strain=all(strain),
-#             sex=sex[1],
-#             age= sum(age * n) / sum(n),
-#             sd= (sum(sd^2 * n)/sum(n))^0.5,
-#             fractions=fractions[1],
-#             type=type[1]
-#   ))
-# })
-# 
-# # Subset
-# data2$modeled_in_10B3 <- with(data2, 
-#     dose < threshold &
-#     strain == 'RFM'  &
-#     sex == 'F'
-# )
-# data2$in_my_analysis <- data2$type == 'A'
-# 
-# # prediction matrix
-# predictions <- to_predict
-# addin <- names(data2)[!names(data2) %in% names(predictions)]
-# predictions <- merge(data2[data2$modeled_in_10B3,][1, addin], predictions, all=TRUE)
-# 
-# # 10B3 Model
-# m <- model_10B3(data2[data2$modeled_in_10B3,])
-# predictions$p_10B3 <- predict(m, newdata=predictions) + 1/data2[2,'age']
-# 
-# # My Model
-# s <- data2$modeled_in_10B3 & 
-#      data2$in_my_analysis
-# m <- model_10B3(data2[s,])
-# predictions$p_my_analysis <- predict(m, newdata=predictions) + 1/data2[2,'age']
-# 
-# # Merge
-# data2$p_10B3 <- NA
-# data2$p_my_analysis <- NA
-# 
-# data2 <- rbind(predictions, data2)
-# 
-# graph(data, data2)
-
-
-
-
-
-
-
-
-graph <- function(data, data2){
-
-  g <- data[with(data, 
-      strain == 'RFM' & 
-      sex == 'F' &
-      rate != 0.4
-  ),]
-  original <- g[is.na(g$p_10B3),] 
-  predictions <- g[!is.na(g$p_10B3),]
-  
-  g2 <- data2[with(data2, 
-      strain == 'RFM' & 
-      sex == 'F' &
-      rate != 0.4
-  ),]
-  original2 <- g2[is.na(g2$p_10B3),] 
-  predictions2 <- g2[!is.na(g2$p_10B3),]
-  
-  ggplot(NULL) +
-    geom_text(data=original, 
-              size=5,
-              aes(dose, 
-                  1/age, 
-                  label=type,
-                  group=type)) + 
-    geom_smooth(data=predictions,
-                aes(dose, p_10B3, group=type),
-                color='black',
-                se=F) +
-    geom_text(data=original2, 
-              size=5,
-              aes(dose, 
-                  1/age, 
-                  label=type,
-                  group=type,
-                  color='red')) + 
-    geom_smooth(data=predictions2,
-                aes(dose, p_10B3, group=type),
-                color='red',
-                se=F) +
-    scale_y_continuous(breaks = 0.0002*0:4+0.0016)
-}
-
-
-
+to_predict$p <- predict(m, newdata=to_predict) + 1/636.175
 
 ```
 
@@ -1978,7 +1787,10 @@ g <- data[with(data,
     sex == 'F' &
     rate != 0.4
 ),]
-show(g)
+ggplot(g, aes(dose, 1/age)) +
+  geom_text(size=5, aes(label=type, group=type)) + 
+  geom_path(data=to_predict, aes(dose, p, group=type)) +
+  scale_y_continuous(breaks = 0.0002*0:4+0.0016)
 
 ggsave_for_ppt('beir_10B3_reproduction.png')
 ```
@@ -1989,9 +1801,10 @@ I am capable of reproducing their results [very well][overlay].  There are a few
 1. They combined treatement groups from tables 1 and 2 if they were 
    acute and had the same total dose
 2. They only used female RFM mice.
-3. The regression was weighted by 1/sd^2 (or n?)
-4. The regression intercept was [set to the control condition][wo-intercept]
+3. The regression intercept was [set to the control condition][wo-intercept]
+4. The regression is weighted by 1/sd^2
 
+*Trivial Methodological Issue*
 Strangely, they do not include data from table 2, but when I add this in, it does not make a huge difference, so I assume they are just not being careful.
 
 [overlay]: http://dl.dropbox.com/u/1131693/bloodrop/10b3_temp_png.png
@@ -2048,7 +1861,7 @@ model_10B4 <- function(data, o){
     glm(
         I(1/age) ~ I(dose + o*dose^2 / (fractions)),
         data=data,
-        weights=n
+        weights=1/sd^2
     )
 }
 
@@ -2428,6 +2241,7 @@ likelihoods <- ldply(o_range, function(o){
 likelihoods$l <- normalize_likelihood(likelihoods$l, delta)
 
 # save for later
+setwd('~/janus')
 write.csv(likelihoods, file='data/10-3-lss.csv', row.names=FALSE)
 ```
 
