@@ -139,7 +139,7 @@ get_likelihoods <- function(data,
                             o_range = seq(-2, 6, by=0.01),
                             likelihood_function=logLik){
   r <- ldply(o_range, function(o){
-    m <- model_10B4(data, o)
+    m <- modeling_function(data, o)
     l = logLik(m)
     
     data.frame(o, l)

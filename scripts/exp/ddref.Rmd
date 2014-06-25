@@ -2177,12 +2177,6 @@ It is strange that the authors chose to determine DDREF on linear quadratic fits
 Erroneously, these fits are from unweighted regression where each point counts equally.  They should have been performed such that data points with more people in them (lower doses) recieve a higher weight.  Fortunately this error is not repeated for the profile likelihood analysis and so it does not affect the overall analysis, only this graph.
 
 ```{r}
-# Model
-low = -2
-high = 6
-delta = 0.1  # decrease for higher resolution
-o_range = (low/delta):(high/delta) * delta
-
 # Data
 data_to_model <- data %>% 
   # < 1.5 Sv of exposure
@@ -2191,15 +2185,10 @@ data_to_model <- data %>%
   mutate(sd = sd + 0.00001)
 
 # Model
-likelihoods <- ldply(o_range, function(o){
-  model <- glm(err ~ I(dose + o*dose^2) - 1,
-               data=data_to_model,
-               weights=1/sd^2)
-  c(o=o, l=logLik(model))
-})
-
-# Summarize Effect
-likelihoods$l <- normalize_likelihood(likelihoods$l, delta)
+modeler <- function(data, o) glm(err ~ I(dose + o*dose^2) - 1,
+                                 data=data,
+                                 weights=1/sd^2)
+likelihoods <- get_likelihoods(data_to_model, modeler)
 
 # save for later
 setwd('~/janus')
@@ -2225,12 +2214,6 @@ This is the original [10-3 figure][10-3-citation] from the beir VII report [beir
 [10-3-citation]: http://www.nap.edu/openbook.php?record_id=11340&page=249
 [10-3-image]: http://dl.dropbox.com/u/1131693/bloodrop/10-3.jpg
 
-
-# is        "0.3 (-0.1, 1.6)"
-# should be "0.3 (-0.1, 1.5)"  
-confidence_interval(likelihoods$o, likelihoods$l, 0.05)
-```
-
 ##### Table 10-2
 This is the original [10-2 table][table-10-2-citation] from the beir VII report [beir-10b4].
 
@@ -2243,7 +2226,7 @@ This is the original [10-2 table][table-10-2-citation] from the beir VII report 
 Reproduce confidence intervals from my lss profile likelihood curve reproductions, to provide quantitiave evidence that I am faithfully applying the same methodology.
 
 ```{r}
-# is        "0.3 ( 0.0, 1.6)"
+# is        "0.3 (-0.2, 1.7)"
 # should be "0.3 (-0.1, 1.5)"  
 confidence_interval(likelihoods$o, likelihoods$l, 0.05)
 ```
@@ -2261,7 +2244,7 @@ Reproduce BEIR 10-3 from reproductions of BEIR 10B4 and 10-2
 *Last update: June 2014*
 Reproduce the BEIR VII estimates of DDREF likelihood that combines data from atomic bomb survivors and animal data.
 
-```{r} 
+```{r}
 # Common
 setwd('~/janus')
 source('scripts/util/util.R') # http://goo.gl/VYzkAs
