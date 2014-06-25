@@ -2021,16 +2021,17 @@ source('scripts/util/util.R') # http://goo.gl/VYzkAs
 data <- read.csv('data/lss14/lss14_spruced_up.csv')
 
 # Constants
-threshold = 2.0
+graphable_threshold = 2.0
+modelable_threshold = 1.5
 
 # Filter the data
 data <- data %>%
   select(city, sex, gd3, ahs, ctime, solid,
          subjects, agex, age, dose, pyr, death) %>%
-  filter(dose <= threshold)
+  filter(dose <= graphable_threshold)
 
 # Model
-model <- function(new_terms, threshold=Inf) {
+model <- function(new_terms) {
   formula <- solid ~ city +
                      sex*I(log(age + 1)) +
                      sex*I(log(agex + 1)) +
@@ -2041,13 +2042,10 @@ model <- function(new_terms, threshold=Inf) {
   
   glm(formula,
       family='poisson',
-      data = data %>% filter(dose <= threshold))
+      data = data)
 }
 
 factor_fit <- model(~ . + factor(dose))
-linear_fit <- model(~ . + dose, threshold=1.5)
-curvature_3_fit <- model(~ . + I(dose + 0.3*dose^2), threshold=1.5)
-curvature_7_fit <- model(~ . + I(dose + 0.7*dose^2), threshold=1.5)
 
 # Data points to predict
 to_predict <- expand.grid(
@@ -2070,17 +2068,11 @@ err <- function(model, data) {
   err
 }
 to_predict$err <- err(factor_fit, to_predict)
-to_predict$linear_err <- err(linear_fit, to_predict)
-to_predict$curvature_3_err <- err(curvature_3_fit, to_predict)
-to_predict$curvature_7_err <- err(curvature_7_fit, to_predict)
 
 # Average by Dose and city
 aggregate <- to_predict %>%
   group_by(dose) %>%
-  summarize(err=mean(err),
-            linear_err=mean(linear_err),
-            curvature_3_err=mean(curvature_3_err),
-            curvature_7_err=mean(curvature_7_err))
+  summarize(err=mean(err))
 ```
 
 #### Show
@@ -2097,27 +2089,23 @@ This is the original [10-2 figure][10-2-citation] from the beir VII report [beir
 This is my attempt to reproduce 10-2 to prove that I am faithfully applying their methodology.
 ```{r}
 # Show data
-ggplot(aggregate, aes(dose, err)) + 
-  geom_point() +
-  geom_smooth(aes(y=linear_err), 
-              method='lm', 
-              formula='y ~ x',
-              se=FALSE) +
-  geom_smooth(aes(y=curvature_3_err), 
-              method='lm', 
-              formula='y ~ I(x^2)',
-              se=FALSE) +
-  geom_smooth(aes(y=curvature_7_err), 
-              method='lm', 
-              formula='y ~ I(x^2)',
-              se=FALSE)
+lm_smooth <- function(...) geom_smooth(method='lm',
+                                       se=FALSE,
+                                       color='black',
+                                       fullrange=TRUE,
+                                       ...)
 
-# TODO: If I look at the linear fits here they are not actually linear, because of the poisson x-form of course.  But they are linear at 10-3.  That's strange, it makes me think the fit a linear quadratic model after the fact.
+ggplot(data=aggregate %.% filter(dose <= modelable_threshold),
+       aes(dose, err)) + 
+  lm_smooth(formula='y ~ x - 1') +
+  lm_smooth(formula='y ~ I(x + 0.3*x^2) - 1') +
+  lm_smooth(formula='y ~ I(x + 0.7*x^2) - 1') +
+  geom_point(data=aggregate, aes(dose, err))
 ```
 
 
 #### Results
-I was unable to reproduce figure 10-2 using original lss data.  As you can see niether the points nor the fits reproduce correspond exactly.
+I was unable to reproduce figure 10-2 using original lss data.  As you can see, the data points found in the original are not the same that I find.
 
 There are several causes for these discrepiancies:
 
@@ -2133,8 +2121,7 @@ There are several causes for these discrepiancies:
 #### What to do?
 This reproduction is necessary to form a final estimate of DDREF using the same methodology as BEIR VII and therefore to know how much updates to the animal data affected the final result.  It would be re-assuring to reproduce this data from source values, but fine if we can simply get the results as a profile likelihood.  Therefore I will:
 
-1. Contact someone who helped to produce these results and ask them to help me.
-2. Try to reproduce figure 10-3 (the profile likelihood curves that will actually be used) using data reproduced from these graphs rather than original profile likelihood data.
+*Try to reproduce figure 10-3 (the profile likelihood curves that will actually be used) using data reproduced from these graphs rather than original profile likelihood data.*
 
 ^ back to [table of contents](#contents)
 
