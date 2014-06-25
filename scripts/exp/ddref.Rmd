@@ -1719,6 +1719,7 @@ model_10B3 <- function(data){
     )
 }
 
+@here
 # Constants
 threshold_dose_to_model = 1.5001
 strain_to_model = 'RFM'
@@ -2339,7 +2340,6 @@ Nearly identical, only some very small (trivial?) differences.  Time to move for
 
 ___________________________________________________________________
 
-
 <a name="10B3-all-data"></a>
 
 1/lifespan on all data
@@ -2360,30 +2360,10 @@ data <- readRDS('data/ddref.rds')
 # Helpers
 model_10B3 <- function(data){
     glm(
-        I(1/age) ~ dose + I(dose^2 / (fractions)),
+        I(1/age - 1/control_age) ~ dose + I(dose^2 / (fractions)) - 1,
         data=data,
-        weights=n
+        weights=1/sd^2
     )
-}
-show <- function(g){
-    f <- function(x) round(x, 2)
-    suppressWarnings(print(
-    ggplot(g[is.na(g$p),], aes(
-            dose, 
-            1/age, 
-            label=type,
-            group=type
-        )) + 
-        geom_text(size=4) + 
-        geom_smooth(
-            data=g[!is.na(g$p),],
-            aes(dose, p, color=type), 
-            method='lm', 
-            formula='y ~ x + I(x^2)',
-            se=FALSE
-        ) +
-        facet_wrap(~ cluster, scales='free_y')
-    ))
 }
 
 # Prediction Intervals
@@ -2394,71 +2374,61 @@ to_predict <- expand.grid(
 to_predict$type <- 'A'
 to_predict$type[to_predict$fractions > 1] <- 'C'
 
-
 # Mean Lifespans
-aggregate <- ddply(data, .(cluster, group_id, sex), function(df){
-    u <- function(x) paste(unique(x), collapse=' ')
-    dont_aggregate <- c('lifespan', 'id', 'X', 'n')
-    data.frame(
-        llply(df[,!names(df) %in% dont_aggregate], u),
-        age=mean(df$lifespan),
-        age_sd=sd(df$lifespan),
-        n=nrow(df)
-    )   
-})
+aggregate = data %>%
+  group_by(cluster, group_id) %>%
+  summarize(age=mean(lifespan),
+            sd=sd(lifespan),
+            n=length(lifespan),
+            dose=only(dose),
+            fractions=only(fractions),
+            type=only(type))
 
-# Restore Sanity
-numerics <- names(data)[laply(data, is.numeric)]
-for(n in numerics) {
-    if(n %in% names(aggregate)){
-        aggregate[,n] <- as.numeric(as.character(aggregate[,n]))
-    }
-}
+# Determine control ages
+# This is so we can fix the curve to always fit the control
+# as BEIR VII did
+control_ages <- aggregate %>% 
+  group_by(cluster) %>%
+  summarize(control_age=mean(age[dose == min(dose)]))
+aggregate <- merge(aggregate, control_ages)
 
 # Model
-m <- c('cluster', 'sex', 'cluster')
-df <- aggregate[
-    aggregate$cluster == aggregate$cluster[1] &
-    aggregate$sex == aggregate$sex[1] &
-    aggregate$cluster == aggregate$cluster[1]
-,]
-aggregate <- ddply(
-    aggregate, 
-    .(cluster, sex, cluster), 
-    function(df){
-        # Extract Coefficients
-        m <- model_10B3(df)
-        c <- m$coefficients
-        df$a <- c['dose']
-        df$B <- c['I(dose^2/(fractions))']
-        
-        # Extract Predictions
-        predictions <- to_predict
-        addin <- names(df)[!names(df) %in% names(predictions)]
-        predictions <- merge(df[1, addin], predictions, all=TRUE)
-        predictions$p <- predict(m, newdata=predictions)
-        
-        # merge
-        df$p <- NA
-        out <- rbind(df, predictions)
-        
-        out
-    }
-)
+predictions <- ddply(aggregate, .(cluster), function(df){
+  m <- model_10B3(df)
+  to_predict$p <- predict(m, newdata=to_predict)
+  to_predict$cluster <- only(df$cluster)
+  to_predict
+})
+predictions <- merge(predictions, control_ages)
 
-#TODO(later) change the colors in order to make the theme consistent
-# throughout the presentation.  I recommend black for chronic
-# effects and red for accute.  Use transparency to represent my
-# new results when I over-lay them so that the old results can 
-# still be seen (or visa-versa).
-
+@here
 
 # Show
 # As in 10B3
 # http://www.nap.edu/openbook.php?record_id=11340&page=257
-a <- aggregate
-g <- a
-show(g)
+ggplot(aggregate, aes(dose, 
+                      1/age, 
+                      label=type,
+                      group=type)) + 
+  geom_smooth(
+      data=predictions,
+      aes(dose, p + 1/control_age, linetype=type), 
+      method='lm', 
+      formula='y ~ x + I(x^2)',
+      se=FALSE,
+      color='black'
+  ) +
+  geom_text(size=4) + 
+  facet_wrap(~ cluster, scales='free_y')
+
+# TODO add this
+geom_smooth(
+    data=g[!is.na(g$p),],
+    aes(dose, p, color=type), 
+    method='lm', 
+    formula='y ~ x + I(x^2)',
+    se=FALSE
+) +
 ggsave_for_ppt('inverse_lifespan.png')
 ```
 

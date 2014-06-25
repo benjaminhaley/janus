@@ -154,3 +154,14 @@ get_likelihoods <- function(data,
 # Write csv with good defaults
 write.csv0 <- function(...) write.csv(..., row.names=FALSE)
 
+
+# only
+# Retrieve the one unique value of x,
+# raise an error if x has more than one value
+only <- function(x) { 
+  u <- unique(x)
+  n <- length(u)
+  if(n > 1) stop("More than one value")
+  u
+}
+
