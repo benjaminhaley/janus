@@ -1865,7 +1865,7 @@ data = data %>%
   select(-l, -likelihood)
 
 # save for later
-write.csv0(beir_r, file='data/10B4.csv')
+write.csv0(data, file='data/10B4.csv')
 ```
 
 #### Show
@@ -2253,25 +2253,33 @@ source('scripts/util/util.R') # http://goo.gl/VYzkAs
 data_lss <- read.csv('data/10-3-lss.csv')
 data_animal <- read.csv('data/10B4.csv')
 
+# Rename likelihood columns
+# so we can distiguish between sources
+data_lss <- data_lss %>% 
+  mutate(LSS_likelihood = l) %>%
+  select(o, LSS_likelihood)
+
+data_animal <- data_animal %>%
+  mutate(Radiobiological_prior = mean) %>%
+  select(o, Radiobiological_prior)
 
 # Merge likelihoods from 10-3 and 10B4
-alignment <- match(round(data_lss$o, 5),
-                   round(data_animal$o, 5))
+data <- merge(
+  data_lss %>% mutate(o=round(o, 2)), 
+  data_animal %>% mutate(o=round(o, 2)))
 
 # Determine profile resolutions
 # (this is needed to normalize the profile likelihood curves for
 #  graphing)
-delta = data_lss$o[1] - data_lss$o[2]
+delta = data_lss$o[2] - data_lss$o[1]
 
-data <- data_lss %>%
-  mutate(l2 = data_animal$mean[alignment],
-         'Radiobiological Prior' = l2,
-         'LSS likelihood' = l,
-         'Combined posterior' = -normalize_likelihood(
-           log(l) + log(l2), 
+# Find the posterior distribution
+# (by baysian update)
+data <- data %>%
+  mutate(Combined_posterior = normalize_likelihood(
+           log(Radiobiological_prior) + log(LSS_likelihood), 
            delta)
-         ) %>%
-  select(-l, -l2)
+         )
 
 ```
 
@@ -2310,24 +2318,22 @@ This is the original [10-2 table][table-10-2-citation] from the beir VII report 
 Reproduce confidence intervals from my profile likelihood curve reproductions, to provide quantitiave evidence that I am faithfully applying (nearly) the same methodology.
 
 ```{r}
-# is        "0.3 ( 0.0, 1.6)"
-# should be "0.3 (-0.1, 1.5)"  
 o = data$o
 
 # should be "0.5 ( 0.1, 3.2)"
-# is        "0.4 ( 0.1, 3.2)"
-confidence_interval(o, data[['Radiobiological Prior']], 0.05)
+# is        "0.4 ( 0.1, 3.5)"
+confidence_interval(o, data[['Radiobiological_prior']], 0.05)
 
 # should be "0.3 (-0.1, 1.5)"
-# is        "0.3 (-0.1, 1.6)"
-confidence_interval(o, data[['LSS likelihood']], 0.05)
+# is        "0.3 (-0.2, 1.7)"
+confidence_interval(o, data[['LSS_likelihood']], 0.05)
 
 # should be "0.5 ( 0.1, 1.2)"
 # is        "0.4 ( 0.1, 1.2)"
-confidence_interval(o, data[['Combined posterior']], 0.05)
+confidence_interval(o, data[['Combined_posterior']], 0.05)
 ```
 
-Nearly identical, only some very small (trivial) differences.  Time to move forward.
+Nearly identical, only some very small (trivial?) differences.  Time to move forward.
 
 ^ back to [table of contents](#contents)
 
