@@ -618,7 +618,7 @@ Visualize
 Now that the data is reasonably clean, show what it looks
 like.
 
-```{r}
+```{r, cache=F}
 # Common
 setwd('~/janus')
 source('scripts/util/util.R') # http://goo.gl/VYzkAs

@@ -1,5 +1,7 @@
-#Anything in the data folder
+# A few intermediate results that can always be re-generated
 scripts/results/*
+data/ddref.csv
+data/ddref.rds
 
 # Cached data
 cache/*
