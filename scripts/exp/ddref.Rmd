@@ -2148,149 +2148,75 @@ BEIR fits oak ridge data as if they are points, but actually each point represen
 
 We will also run a heterogeneity test.
 
-@next
-
 ```{r}
+# Common
+setwd('~/janus')
+source('scripts/util/util.R') # http://goo.gl/VYzkAs
 
-    # Common
-    setwd('~/janus')
-    source('scripts/util/util.R') # http://goo.gl/VYzkAs
+# Save for later use
+data <- read.csv('data/storer_1979_processed.csv')
 
-    # Data
-    data <- read.csv('data/storer_1979.csv', sep='\t')
+# Helpers
+model_10B3 <- function(data){
+  glm(
+    I(1/age - 1/control_age) ~ dose + I(dose^2 / (fractions)) - 1,
+    data=data,
+    weights=1/sd^2
+  )
+}
+model_meta <- function(data){
+  rma(
+    yi,
+    vi,
+    mods = ~ dose + I(dose^2 / (fractions)) - 1,
+    data = data,
+    method='ML'
+  )
+}
+predict_meta <- function(m, newdata){
+    newdata$a <- newdata$dose
+    newdata$B <- with(newdata, dose^2 / (fractions))
+    predict(m, newmods=with(newdata, cbind(a, B)))$pred
+}
 
-    # Helpers
-    model_10B3 <- function(data){
-        glm(
-            I(1/age) ~ dose + I(dose^2 / (fractions)),
-            data=data,
-            weights=n
-        )
-    }
-    model_meta <- function(data){
-        data$a <- data$dose
-        data$B <- with(data, dose^2 / (fractions))
-        rma(
-            yi,
-            vi,
-            mods = cbind(a, B),
-            data = data,
-            method='ML'
-        )
-    }
-    predict_meta <- function(m, newdata){
-        newdata$a <- newdata$dose
-        newdata$B <- with(newdata, dose^2 / (fractions))
-        predict(m, newmods=with(newdata, cbind(a, B)))$pred
-    }
-    show <- function(g){
-        original <- g[is.na(g$p_10B3),]
-        predictions <- g[!is.na(g$p_10B3),]
+# Prepare for Meta
+data$yi <- with(data, 1/age - 1/control_age)
+data$vi <- with(data, (1/age - 1/(age + sd))^2)
 
-        suppressWarnings(print(
-        ggplot(original, aes(
-            dose,
-            1/age,
-            label=type,
-            group=type
-        )) +
-            geom_errorbar(aes(
-                ymin=1/age + (vi + tau2)^0.5,
-                ymax=1/age - (vi + tau2)^0.5
-                ), alpha=0.5, width=.05, color='red') +
-            geom_errorbar(aes(
-                ymin=1/age + vi^0.5,
-                ymax=1/age - vi^0.5
-            ), alpha=0.5, width=.1) +
-            geom_text(size=4) +
-            geom_line(
-                data=predictions,
-                aes(dose, p_10B3)
-            ) +
-            geom_line(
-                data=predictions,
-                aes(dose, p_my_analysis),
-                color='red'
-            ) +
-            annotate(
-                "text",
-                x=1,
-                y=0.0024,
-                label=paste(
-                    "p heterogeneity < ",
-                    format(p_heterogeneity, scientific=TRUE, digits=1)
-                )
-            )
-        ))
-    }
+# Fake data to predict across
+# This allows us to fit two lines across a limited
+# data range for graphing
+to_predict <- expand.grid(
+    fractions = c(1, Inf),
+    dose = seq(0, 1.5, 0.1)
+)
+to_predict$type <- 'A'
+to_predict$type[to_predict$fractions > 1] <- 'C'
 
-    # Constants
-    threshold = 1.5001
 
-    # Prediction Intervals
-    to_predict <- expand.grid(
-        fractions = c(1, 1000),
-        dose = seq(0, 1.5, 0.1)
-    )
-    to_predict$type <- 'A'
-    to_predict$type[to_predict$fractions > 1] <- 'C'
+m <- model_10B3(data %>% filter(modeled_in_10B3))
+to_predict$p <- predict(m, newdata=to_predict) + 1/636.175
 
-    # Clean
-    data$fractions <- 1
-    data$fractions[data$rate < 0.1] <- Inf
+m <- model_meta(data %>% filter(modeled_in_10B3))
+to_predict$p_meta <- predict_meta(m, newdata=to_predict) + 1/636.175
+data$tau2 <- m$tau2
 
-    # Define Acute
-    chronic <- data$rate < 0.1
-    data$type <- 'A'
-    data$type[chronic] <- 'C'
-
-    # Subset
-    data$modeled_in_10B3 <- with(data,
-        dose < threshold &
-        strain == 'RFM'  &
-        sex == 'F' &
-        rate != 0.4
-    )
-    data$in_my_analysis <- data$type == 'A'
-
-    # Prepare for Meta
-    data$yi <- with(data, 1/age)
-    data$vi <- with(data, (1/age - 1/(age + sd))^2)
-
-    # Predictions
-    predictions <- to_predict
-    addin <- names(data)[!names(data) %in% names(predictions)]
-    predictions <- merge(data[1, addin], predictions, all=TRUE)
-
-    # 10B3 Model
-    s <- data$modeled_in_10B3
-    m <- model_10B3(data[s,])
-    predictions$p_10B3 <- predict(m, newdata=predictions)
-
-    # Meta Model
-    s <- data$modeled_in_10B3
-    m <- model_meta(data[s,])
-    predictions$p_my_analysis <- predict_meta(m, newdata=predictions)
-    data$tau2 <- m$tau2
-    p_heterogeneity <- m$QEp
-
-    # Merge
-    data$p_my_analysis <- NA
-    data$p_10B3 <- NA
-    predictions$tau2 <- NA
-    data <- rbind(data, predictions)
-
-    # Show
-    # Reproduce 10B3
-    # http://www.nap.edu/openbook.php?record_id=11340&page=257
-    g <- data[with(data,
-        strain == 'RFM' &
-        sex == 'F' &
-        rate != 0.4
-    ),]
-    show(g)
-    ggsave_for_ppt('beir_10B3_meta_regression.png')
-
+g <- data[with(data,
+    strain == 'RFM' &
+    sex == 'F' &
+    rate != 0.4
+),]
+ggplot(g, aes(dose, 1/age)) +
+  geom_text(size=5, aes(label=type, group=type)) +
+  geom_path(data=to_predict, aes(dose, p, group=type)) +
+  geom_path(data=to_predict, aes(dose, p_meta, group=type), color='red') +
+  scale_y_continuous(breaks = 0.0002*0:4+0.0016) + 
+  geom_errorbar(aes(ymin=1/age + (vi + tau2)^0.5,
+                    ymax=1/age - (vi + tau2)^0.5), 
+                alpha=0.5, width=.05, color='red') +
+  geom_errorbar(aes(ymin=1/age + (vi)^0.5,
+                    ymax=1/age - (vi)^0.5), 
+                alpha=0.5, width=.15)
 ```
 
 #### Results
