@@ -618,8 +618,7 @@ Visualize
 Now that the data is reasonably clean, show what it looks
 like.
 
-```{r}
-
+```{r, cache=F}
 # Common
 setwd('~/janus')
 source('scripts/util/util.R') # http://goo.gl/VYzkAs
@@ -631,7 +630,7 @@ d <- readRDS('data/ddref.rds')
 
 
 
-```{r}
+```{r, cache=F}
 # TODO(later): figure out what is the cause of early effects in ORNL data based on the pathology codes released with that dataset.
 
 ggplot(d,
@@ -663,7 +662,7 @@ Clusters are sepperated by facets and labeled with sex, strain, species, lab, qu
 - **Different clusters show very different responses to the same total dose.**  For example, compare Female RFM/UN Mice from ORNL (1) to Female C57Bl/6Bd mice from the same institution (10).  The only difference between these experiments is the strain of mice used.  The former show a strong response to gamma rays, the latter a weak response or no response.  These differences could reflect strain-specific differences in radiosensitivity or methodological errors in the way that the studies were conducted.
 - **The cluster used to estimate DDREF shows a particularly strong and early response**.  RFM/Un mice from ORNL were used as the acute condition in the estimate of DDREF from BEIR VII (chronic exposure is not shown here because individual level data is not available).  Notably, this is the strongest radiation response seen in any cluster, including other similar ones from ORNL.  Moreover, the response is bimodal, with an early effect that is not seen in other clusters.  This suggests that the acute effects are being over-estmimated in BEIR VII and that DDREF should be closer to one.
 
-```{r}
+```{r, cache=F}
 n_unique <- function(...) length(unique(paste(...)))
 
 comparable_doses <- d %>%
@@ -1975,7 +1974,7 @@ ___________________________________________________________________
 
 1/lifespan on all data
 ========================================================
-*Last update: June 2013*
+*Last update: July 2014*
   
 Show graphs like Storer 1979 10-B3 but for all data.
 

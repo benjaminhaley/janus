@@ -31,4 +31,4 @@ scripts/temp*
 # Markdown Generated
 ddref.knit.md
 scripts/exp/ddref_cache/*
-ddref.html
+scripts/exp/ddref.html
