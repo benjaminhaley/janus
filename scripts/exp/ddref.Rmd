@@ -2264,83 +2264,36 @@ the graphs and in the likelihood analysis.  As before the data
 will come from storer 1979 (3575012.pdf).
 
 ```{r}
-
 # Common
 setwd('~/janus')
 source('scripts/util/util.R') # http://goo.gl/VYzkAs
 
 # Data
-data <- read.csv('data/storer_1979.csv', sep='\t')
+data <- read.csv('data/storer_1979_processed.csv')
 
 # Helpers
 model_10B4 <- function(data, o){
-    glm(
-        I(1/age) ~ I(dose + o*dose^2 / (fractions)),
-        data=data,
-        weights=n
-    )
+  glm(
+    I(1/age) ~ I(dose + o*dose^2 / (fractions)),
+    data=data,
+    weights=1/sd^2
+  )
 }
 model_meta <- function(data, o){
-    data$curved_dose <- with(data,
-        dose + o*dose^2 / (fractions)
-    )
-    rma(
-        1/age,
-        (1/age - 1/(age + sd))^2,
-        mods = cbind(curved_dose),
-        data = data,
-        method='ML'
-    )
+  data$curved_dose <- with(data,
+    dose + o*dose^2 / (fractions)
+  )
+  rma(
+    1/age,
+    (1/age - 1/(age + sd))^2,
+    mods = cbind(curved_dose),
+    data = data,
+    method='ML'
+  )
 }
 
-# Constants
-threshold = 1.5001
-
-# Clean
-data$fractions <- 1
-data$fractions[data$rate < 0.1] <- Inf
-
-# Define Acute
-chronic <- data$rate < 0.1
-data$type <- 'A'
-data$type[chronic] <- 'C'
-
-# Subset
-data$modeled_in_10B4 <- with(data,
-    dose < threshold &
-    strain == 'RFM'  &
-    sex == 'F' # &
-    # rate != 0.4
-)
-data$in_my_analysis <- data$type == 'A'
-
-# Model
-low = -2
-high = 6
-delta = .01   # Reduce to increase resolution
-o_range = (low/delta):(high/delta) * delta
-
-get_likelihoods <- function(
-    o_range,
-    modeling_function=model_10B4,
-    d=data[data$modeled_in_10B4,]
-){
-    r <- ldply(o_range, function(o){
-        m <- modeling_function(d, o)
-        l = logLik(m)
-
-        data.frame(o, l)
-    })
-
-    r$l <- normalize_likelihood(r$l, delta)
-
-    r
-}
-
-
-beir_r <- get_likelihoods(o_range)
-my_r <- get_likelihoods(o_range, model_meta)
-
+beir_r <- get_likelihoods(data %>% filter(modeled_in_10B3), model_10B4)
+my_r <- get_likelihoods(data %>% filter(modeled_in_10B3), model_meta)
 
 # Reproduce 10B4
 # http://www.nap.edu/openbook.php?record_id=11340&page=258
@@ -2348,27 +2301,10 @@ ggplot(beir_r, aes(o, l)) +
     geom_path() +
     geom_path(data=my_r, color='red') +
     scale_y_continuous(breaks = c(0:5)/5, limits=c(0,1))
-ggsave_for_ppt('beir_10B4_meta_reression.png')
-
 ```
 
 #### Results
-
-I was able to reproduce figure 10B4 near perfectly.  Importantly
-it becomes nearly straight if we only include the acute
-exposures.
-
-It could be that the shoulder is very narrow, though this
-would be surprising given what we know about tissue level
-effects.
-
-It could also be that there is some systematic bias between
-chronic and high dose experiments.  For instance the high
-dose rate was even higher than the experimenters thought that
-it was.
-
-More reason for meta-analysis.
-
+Unsurprisingly, uncertainty growth larger when a meta-analyisis is applied.
 
 ^ back to [table of contents](#contents)
 
@@ -2379,7 +2315,6 @@ ________________________________________________________________________
 Meta-regression on all data
 ========================================================
 *Last update: June 2013*
-
 
 Show graphs like Storer 1979 10B3 but for all data using random effects meta-regression.
 
