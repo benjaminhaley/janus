@@ -2142,7 +2142,7 @@ ________________________________________________________________________
 
 Meta Regression of BEIR 10B3
 ========================================================
-*Last update: June 2013*
+*Last update: July 2014*
 
 BEIR fits oak ridge data as if they are points, but actually each point represents many samples and we know the standard deviation of this estimate.  Therefore [metaregression](#metaregression) is a more appropriate form of analysis.  Here we show the fit by meta-regression.
 
@@ -2247,7 +2247,6 @@ ________________________________________________________________________
 Meta Regression of BEIR 10B4
 ========================================================
 *Last update: June 2013*
-
 
 BEIR VII estimates are based on ordinary linary regresssion
 of mean lifespans per group ignoring the fact that these means
