@@ -2116,15 +2116,12 @@ likelihoods <- rbind(likelihoods, summary_effect)
 # http://www.nap.edu/openbook.php?record_id=11340&page=257
 ggplot(likelihoods, aes(o, l)) +
     geom_path() +
-    ylim(0,1) +
+    coord_cartesian(ylim=c(0,1)) +
     facet_wrap(~ cluster)
-
-# TODO fix out of bound results
-# TODO show aggregate
 ```
 
 #### Results
-Looks bad, we are way too confident!
+Looks bad, clearly, we are over-confident!
 
 ^ back to [table of contents](#contents)
 
