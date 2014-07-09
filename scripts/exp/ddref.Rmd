@@ -2054,13 +2054,15 @@ ggplot(aggregate, aes(dose,
 
 #### Results
 
-This data is far from well behaved!
+The fits are from well behaved!
 
 Chronic effects may appear better or worse than projected acute effects.  Sometimes hormesis like respsonses appear.  Its not obvious from this graph because the y-axis is stretched to fit the data, but the magnitude of the effect is changing wildly too.
 
 It is no wonder that radiobiology is full of debate!
 
 At this point we should be a bit skeptical of organizing the data in this, the BEIR VII manner.  While that approach seemed reasonable given the ORNL data that they worked with, it clearly does not generalize well.  This may be because the underlying statitical approach is flawed, or simply that these graphs a very robust way of displaying the effect.  In any case we question the 'intuitive appeal' of graph 10B3.  While it seemed quite difinitive in isolation, the effect is lost when we try to repeat it on new datasets.
+
+However, we see some glimmers of hope.  While we can't trust these fits outright, in those cases where both chronic and acute exposures are available, the chronic exposure is regularly less damaging, albeit with some wild variation in magnitude.  This suggests that we would do well to be more inclusive in our data aquisition, to include higher doses in our analysis.
 
 ^ back to [table of contents](#contents)
 
