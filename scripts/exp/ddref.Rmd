@@ -1408,8 +1408,7 @@ __________________________________________________________________
 
 Reproduce BEIR 10B3
 ========================================================
-*Last update: June 2013*
-
+*Last update: July 2013*
 
 Reproduce the BEIR estimates on the oak ridge lifespan data
 from storer 1979 (3575012.pdf).
@@ -1420,9 +1419,6 @@ from storer 1979 (3575012.pdf).
 [grouped]: http://dl.dropbox.com/u/1131693/bloodrop/10b3_temp_png.png
 
 ```{r}
-# TODO: factor out commented code which shows how these esimates
-#       change when only acute data is employed
-
 # Common
 setwd('~/janus')
 source('scripts/util/util.R') # http://goo.gl/VYzkAs
@@ -1430,13 +1426,13 @@ source('scripts/util/util.R') # http://goo.gl/VYzkAs
 # Data
 data <- read.csv('data/storer_1979.csv', sep='\t')
 
-# Helperts
+# Helpers
 model_10B3 <- function(data){
-    glm(
-        I(1/age - 1/636.175) ~ dose + I(dose^2 / (fractions)) - 1,
-        data=data,
-        weights=1/sd^2
-    )
+  glm(
+    I(1/age - 1/control_age) ~ dose + I(dose^2 / (fractions)) - 1,
+    data=data,
+    weights=1/sd^2
+  )
 }
 
 # Constants
@@ -1469,7 +1465,10 @@ data = data %>%
                            sex == sex_to_model,
          in_my_analysis = type == type_in_my_analysis,
          n = total_n) %>%
-  select(-total_n)
+  select(-total_n) %>%
+  ungroup() %>%
+  group_by(sex, strain) %>%
+  mutate(control_age = age[dose == 0])
 
 # Save for later use
 # TODO: re-enable
@@ -1511,8 +1510,6 @@ ggplot(g, aes(dose, 1/age)) +
   geom_text(size=5, aes(label=type, group=type)) +
   geom_path(data=to_predict, aes(dose, p, group=type)) +
   scale_y_continuous(breaks = 0.0002*0:4+0.0016)
-
-ggsave_for_ppt('beir_10B3_reproduction.png')
 ```
 
 ### Results
@@ -2147,10 +2144,11 @@ Meta Regression of BEIR 10B3
 ========================================================
 *Last update: June 2013*
 
-
 BEIR fits oak ridge data as if they are points, but actually each point represents many samples and we know the standard deviation of this estimate.  Therefore [metaregression](#metaregression) is a more appropriate form of analysis.  Here we show the fit by meta-regression.
 
 We will also run a heterogeneity test.
+
+@next
 
 ```{r}
 
