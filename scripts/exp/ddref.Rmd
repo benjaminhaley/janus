@@ -4,6 +4,7 @@ Measure ddref, for my thesis ([code][code link]).
 benjamin.haley@gmail.com
 *last update: June 2014*
 
+
 [public link]: http://rpubs.com/benjaminhaley/ddref
 [code link]: https://github.com/benjaminhaley/janus/blob/master/scripts/exp/ddref.Rmd
 
@@ -76,6 +77,7 @@ Introduction
 ========================================================
 *Last update: May 2013*
 
+
 Radiation protection standards are based primarily upon observations of atomic bomb survivors supplemented by animal studies ??BEIR VII source??.  The animal studies are used, amoung other things to estimate the effects of protraction, i.e. would the dose delivered by the atomic bombs have induced as many health effects if it were delivered more slowly and spread across a broader population like modern radiation exposures?
 
 It is generally ??linear quadratic citations??, though not unanimously ??disenting citations??, assumed that the dose response to low-LET radiation has a linear-quadratic form.  Concretely:
@@ -110,6 +112,7 @@ TODO(later) read and spruce up this doc
 Defining DDREF
 ========================================================
 *Last update: April 2013*
+
 
 ##### What is DDREF?
 DDREF is defined ambiguosly.  It can be derived from acute
@@ -236,6 +239,7 @@ ___________________________________________________________________
 DATA: Data Funnel
 ========================================================
 *Last update: April 2013*
+
 
 ### Introduction:
 Create a data set that might be used for DDREF analysis and
@@ -615,6 +619,7 @@ Visualize
 ========================================================
 *Last Update: April 2014*
 
+
 Now that the data is reasonably clean, show what it looks
 like.
 
@@ -820,6 +825,7 @@ __________________________________________________________________
 Atomic bomb survivor data
 ========================================================
 *Last update: April 2014*
+
 
 For comparison, let's load data from the atomic bomb survivors, [lss14][lss], and see how lifespan changes as a function of dose in these populations using similar visualizations.
 
@@ -1271,6 +1277,7 @@ Reproduce BEIR 10B2
 ========================================================
 *Last update: May 2014*
 
+
 Reproduce Figure 10B2 estimated DDREF using cancer incidence data.
 
 ### Their approach
@@ -1403,6 +1410,7 @@ Reproduce BEIR 10B3
 ========================================================
 *Last update: June 2013*
 
+
 Reproduce the BEIR estimates on the oak ridge lifespan data
 from storer 1979 (3575012.pdf).
 
@@ -1533,10 +1541,11 @@ ________________________________________________________________
 Reproduce BEIR 10B4
 ========================================================
 *Last update: June 2014*
+
 Reproduce the BEIR estimates on the oak ridge lifespan data
 from storer 1979 (3575012.pdf) and combine these with the
 oak ridge tumor estimates developed in the
-[10B2 reproduction][#10B2] to reproduce 10B4.
+[10B2 reproduction](#10B2) to reproduce 10B4.
 
 Verify that confidence intervals are the same as those seen
 in table 10-2.
@@ -1639,6 +1648,7 @@ ___________________________________________________________________
 Reproduce BEIR 10-2 (fail)
 ========================================================
 *Last update: May 2014*
+
 Reproduce the BEIR estimates of dose reponse for atomic bomb survivors.
 
 ```{r}
@@ -1763,6 +1773,7 @@ ___________________________________________________________________
 Reproduce BEIR 10-3 lss curve (from a reproduction of 10-2)
 ========================================================
 *Last update: May 2014*
+
 Reproduce the BEIR VII estimates of DDREF likelihood using atomic bomb survivor data.
 
 *Note this data is based on a reproduction of figure 10-2 instead of on original atomic bomb survivor data for the reasons listed in my [attempt to reproduce 10-2](#10-2)
@@ -1873,6 +1884,7 @@ ___________________________________________________________________
 Reproduce BEIR 10-3 from reproductions of BEIR 10B4 and 10-2
 ========================================================
 *Last update: June 2014*
+
 Reproduce the BEIR VII estimates of DDREF likelihood that combines data from atomic bomb survivors and animal data.
 
 ```{r}
@@ -1976,6 +1988,7 @@ ___________________________________________________________________
 ========================================================
 *Last update: July 2014*
 
+
 Show graphs like Storer 1979 10-B3 but for all data.
 
 ```{r}
@@ -2074,6 +2087,7 @@ ________________________________________________________________________
 ========================================================
 *Last update: June 2013*
 
+
 Show graphs like Storer 1979 10B4 but for all data.
 
 ```{r}
@@ -2133,7 +2147,8 @@ Meta Regression of BEIR 10B3
 ========================================================
 *Last update: June 2013*
 
-BEIR fits oak ridge data as if they are points, but actually each point represents many samples and we know the standard deviation of this estimate.  Therefore [metaregression][#metaregression] is a more appropriate form of analysis.  Here we show the fit by meta-regression.
+
+BEIR fits oak ridge data as if they are points, but actually each point represents many samples and we know the standard deviation of this estimate.  Therefore [metaregression](#metaregression) is a more appropriate form of analysis.  Here we show the fit by meta-regression.
 
 We will also run a heterogeneity test.
 
@@ -2305,6 +2320,7 @@ Meta Regression of BEIR 10B4
 ========================================================
 *Last update: June 2013*
 
+
 BEIR VII estimates are based on ordinary linary regresssion
 of mean lifespans per group ignoring the fact that these means
 have a standard error.
@@ -2436,6 +2452,7 @@ ________________________________________________________________________
 Meta-regression on all data
 ========================================================
 *Last update: June 2013*
+
 
 Show graphs like Storer 1979 10B3 but for all data using random effects meta-regression.
 
@@ -2613,6 +2630,7 @@ ________________________________________________________________________
 Meta Regression profiles on all data
 ========================================================
 *Last update: June 2013*
+
 
 Show graphs like Storer 1979 10B4 but for all data using the random effects meta regression.
 
@@ -2843,6 +2861,7 @@ __________________________________________________________________
 Concordance
 ========================================================
 *Last update: April 2013*
+
 
 Give a detailed description of the dataset for those that want to make a close inspection.
 
@@ -3131,9 +3150,10 @@ ____________________________________________________________________
 Supplemental: Reproduce lifespan analysis using only acute data
 ========================================================
 *Last update: June 2014*
+
 Individual level data from oak ridge is only available from acute exposures.  How does the profile likelihood change if only this data is used?
 
-This is a simple adaptation of the techniques used to [reproduce 10B4][#10B4].
+This is a simple adaptation of the techniques used to [reproduce 10B4](#10B4).
 
 ```{r}
 # Common
@@ -3215,6 +3235,7 @@ ___________________________________________________________________
 Meta Regression Figure
 ========================================================
 *Last update: July 2014*
+
 
 A figure that shows off the principal of meta-regression.
 
