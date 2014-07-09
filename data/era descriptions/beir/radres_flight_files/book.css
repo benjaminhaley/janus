@@ -1,0 +1,577 @@
+/***** Review Trip *****/
+.segmentsubheader { font-weight: normal; overflow: hidden; padding: 4px; text-align: right; }
+.segmentsubheaderOverlap{padding:4px;font-weight:normal;text-align:right; border:1px solid;}
+.segmentsubheader .location{float:left;}
+.segmentsubheader .traveler{float:left; font-weight:bold;}
+.segmentsubheader .infoBox {border-left:1px solid;border-right:1px solid;border-top:1px solid;}
+.segmentsubheader .infoBoxBottom {border-left:1px solid;border-right:1px solid;border-bottom:1px solid;text-align: left;}
+.segmentsubheaderOverlap .location{float:left;}
+.segmentsubheader .arrival {font-weight:normal; padding-left:5px;}
+.segmentsubheaderOverlap .overlapMessage{text-align:left;}
+.segmenttime{font-weight:bold;vertical-align:top;}
+.segmenttime .to{font-weight:normal;}
+.segmenttime .hoursOverlap{}
+.segmenttime .infoBox {border:1px solid;}
+.segmenttime .arrival {font-weight:normal;}
+.segmenttime div.overlap{font-weight:normal; margin-left:25px;}
+.hotelrates{text-align:right;}
+.hotelrates .roomrate{float:left;}
+.holdtripcell{vertical-align:top;}
+table.hotdata{border-collapse:collapse;}
+table.hotdata .hotopt{border-left:1px solid;border-bottom:1px solid;text-align:center;vertical-align:middle;width:20%;padding:4px;}
+table.infoTable table {border:0px;}
+table.infoTable td.label {font-weight:bold; padding-right:1em; text-align:right; vertical-align:top; width:50%;}
+/***** End of Review Trip *****/
+
+/***** Itinerary Details *****/
+table.fareTable {margin-bottom:2em;}
+table.fareTable.fareTableAir {width:100%;}
+table.fareTable td.amount {width:1%; white-space:nowrap;}
+table.fareTable td.section {width:1em;}
+table.fareTable td {border:none; padding:0px 2px 0px 2px; vertical-align:top; text-align:right;}
+table.fareTableCar {margin-bottom: 0em;}
+table.fareTableCar td {border:none; padding:0px 2px 0px 2px; vertical-align:top; text-align: right; white-space:nowrap}
+table.itineraryTable {border:none; margin:0 0 1em 0; width:100%;}
+table.itineraryTable td {vertical-align:top; white-space:nowrap;}
+table.itineraryTable tr.itineraryDetails td {padding:4px 6px 8px 2px;}
+table.itineraryTable td.lastColumn {width:25%;}
+table.itineraryTable td.wrap, table.dateDetails td.wrap {white-space: normal;}
+table.itineraryTable img.pref {margin: 0.5em 0;}
+.ratePer {float:left; margin-left:0.5em;}
+.extraRates {text-align:left; margin-left:0.5em;}
+table.itineraryTable td.firstColumn {width:330px;}
+tr.itineraryDetails table.dateDetails td {padding: 0; vertical-align: top;}
+table.costDetails {float: left;}
+table.costDetails td {text-align: right;}
+table.dateDetails th {white-space: nowrap;}
+table.carDataTable {border-collapse: collapse;}
+.carDataTable td, .carDataTable th {padding: 0; vertical-align: top; font-weight: normal; text-align: left;}
+.trainlinecancel_box {background:#FFFFCC; border:#FF0000 1px solid; padding:4px;}
+.trainlinecancel_msg {color:#FF0000;}
+/***** End Itinerary Details *****/
+
+/***** Purchase Info *****/
+.stepcontent div.billingdata{float:left;padding: 4px 8px 4px 0px;}
+.stepcontent div.billingdatanewline{clear:left;padding: 4px 8px 4px 0px;}
+.dataalignright{text-align:right;}
+.dataalignrightbold{text-align:right;font-weight:bold;}
+.dataalignleft{text-align:left;}
+table.travelerInfo td{padding:0 2em 0 1em; vertical-align: top;}
+table.travelerInfo th{padding:0.75em 2em 0 1em; text-align:left; vertical-align: top;}
+table.travelerInfo td.travelerTitle {background-color:#dbe7f7; border:none; color:#2b5e9f; font-weight:bold; margin-left:1em; padding:0.5em 1em;}
+table.travelerInfo .ondAirExtra {font-weight:bold; padding-top:0.75em;}
+.hr { clear:both; }
+.costCenterDisplay{display: block;}
+.costCenterNoDisplay{display: none;}
+.costCenterNegative{color:red;}
+.costCenterDescription{float:left; padding-left: 10px;}
+.costCenterCharge{float:left; padding-left: 10px;}
+.costCenterCharge.codeSplitAmount{margin-top:-2px;}
+.costCenterNoCodeSplit{display:none;}
+.costCenterChargeNumber{text-align: right;}
+.costCenterSplitValueLabel{padding-left:35px;}
+.costCenterSplitSymbolLabel{float:left;width:30px;text-align:right;padding-right:5px;}
+.costCenterSplitAmount{float:left;}
+.costCenterSection .radioSection label {font-weight:bold;}
+.costCenterSection .newLabel {font-weight:bold;}
+.costCenterSection .inlinePopUpLink {font-weight:bold;}
+
+#totalCostCenterSection {clear:both}
+#totalCostCenterSectionContainer #totalCostCenterLine{float:left;clear:both}
+#totalCostCenterLine {float: left; width: 305px; padding-left: 10px;}
+#totalCostCenterLine #totalCostCenterLineFiller{float: left; border-top-style:solid; width: 80px;}
+#totalCostCenterSectionContainer #totalCostCenterSection{padding-top: 3px;}
+#totalCostCenterSection #totalCostCenterTitle{float: left; padding-left:10px; padding-bottom:3px;}
+#totalCostCenterSection #totalCostCenterValue{float: left; text-align: right;width:315px;}
+/***** End of Purchase Info *****/
+
+/***** Travel Policy *****/
+.policy{clear:left;padding: 4px 8px 4px 0;}
+.outofpolicyimg img {vertical-align:bottom;}
+#workspace .messages_box { width: 98%; }
+/***** End of Travel Policy *****/
+
+/***** Passenger Info *****/
+.travelerBar {margin-left: -8px; margin-top:10px;}
+.personalinfodata{float:left; padding: 6px 8px 8px 12px;}
+.personalinfoname{float:left; padding: 6px 4px 8px 0px;}
+.personalinfonewline{clear:both;float:left;padding: 6px 8px 8px 12px;}
+.windowForcedMessageShadow {background-color:#E6EEF5; position:relative; left:3px; top:3px; margin:1em 0 0 0;}
+.windowForcedMessage {background-color:#DEE8F2; border:1px solid #AABCCE; padding:8px; position:relative; left:-3px; top:-3px;}
+
+div.tabcontainer ul {list-style-image:none; list-style-position:outside; list-style-type:none; padding:0pt;}
+div.tabcontainer ul li{float:left; padding:4px 12px 8px;}
+div.tabcontainer {clear:both;}
+.airExtras {background-color:#ecf1f7; border:1px solid #b4cadf; margin-top:1.5em;}
+.airExtras .travelerTitle {color:#2b5e9f; font-weight:bold; margin:0.75em 0 0 2em;}
+.airExtras .multiPaxHeader {padding:0.75em 0 0 0;}
+.airExtras .ancillaryOptionsFirstColumn {float:left; margin:0.5em 0 0.5em 1.5em; width:45%;}
+.airExtras .ancillaryOptionsSecondColumn {float:left; margin:0.5em 0 0.5em 0; width:45%;}
+.airExtras .qtyItemHide {display:none;}
+.airExtras .qtyItemShow {display:inline;}
+.airExtras a.airExtrasCostLink {text-decoration:underline;}
+.airExtras table tr td.ancillaryOptionCheckbox {vertical-align:top; width:1%;}
+.airExtras table tr td.ancillaryOptionLabelText {padding-bottom:2px; vertical-align:bottom; width:49%;}
+.airExtrasCostCalculation table.airExtrasCostTable {margin:0 1.1em; width:95%;}
+.airExtrasCostCalculation table.airExtrasCostTable tr.totalCost td {background-color:#fffee2; border-top:1px solid #d4cc9f; font-size:1.2em; font-weight:bold; padding-top:0.2em;}
+.airExtrasCostCalculation table.airExtrasCostTable tr.totalCost td.amount {padding-right:0.8em;}
+.airExtrasCostCalculation table.airExtrasCostTable td {padding:0 1em 0.3em 0; text-align:right; vertical-align:top;}
+.airExtrasCostCalculation table.airExtrasCostTable td.amount {margin-left:1em; width:20%;}
+.ondAirExtrasCap {background-color:#bdd5ef; border-bottom:1px solid #b4cadf; margin:0; overflow:hidden; padding:0.5em 0.75em;}
+.ondAirExtrasFlightInfo {color:#003b63; float:left; font-size:1.4em;}
+.ondAirExtrasOndInfo {color:#333; float:right; padding-top:0.25em;}
+.discountCodeInput {display:none;}
+#workarea .airExtras .hr {background-color:#a5c5da; border-top-color:#fff; margin: 0 2em;}
+#workarea .airExtras .hr hr {border-top-color:#a5c5da; height:2px;}
+.travelerSeatSelection {border-top:1px solid #b4cadf; clear:both; margin:1em 2em; padding-top:1em;}
+.travelerSeatSelection.firstTraveler {border-top:none; padding-top:0;}
+.travelerSeatSelection p {margin-top:0.3em;}
+.seatinginfonewline{clear:both;padding: 6px 8px 8px 12px;}
+.seatinginfolabel {padding: 5px 0px 5px 0px;}
+.seatSelectionForFlight {float:left; margin-left:1em; padding:1em 0;}
+.seatSelectionForFlight div {margin:0.3em 0 0 0;}
+.viewSeatsLink a {font-weight:bold;}
+.seatSelectionHelp {background-color:#dbe7f7; border:1px solid #b4cadf; margin:0 2em; padding:1em 2em;}
+.seatSelectionHelp .headerText {font-weight:bold;}
+#workarea .airExtras .hr.seatSelectionHr {background-color:#b4cadf; border-top:none;}
+#workarea .airExtras .hr.seatSelectionHr hr {border-top:none; height:1px;}
+.viewMoreInformationLink {float:right; margin-top:-1.3em;}
+.airExtraMoreInformation {background-color:#ebebeb; border:1px solid #d9d9d9; height:400px; overflow:auto; padding:1em; width:725px;}
+.airExtraMoreInformation hr {color:#d2d2d2; height:1px;}
+.airExtraMoreInformation .airExtraTitle {background-position:0 -6300px; border:1px solid #022038; color:#fff; font-weight:bold; margin:0.5em 0; padding:0.5em 1em;}
+.airExtraMoreInformation .bullet {background-position:-140px -248px; height:5px; margin:0 0.5em; width:5px;}
+.airExtraMoreInformation .lineItem {padding:0.25em 1em 0.25em 0.5em;}
+
+/***** End of Passenger Info *****/
+
+/***** Upgrades *****/
+#upgradeseat {border-top:0px; margin-top:0em;}
+#upgradeseatbordered {border-top:1px solid; margin-top:0.5em;}
+
+#upgradestatus {margin-bottom:2em; padding:0 0.7em 0.4em 0.7em;}
+#upgradestatus h3{margin-bottom:.1em;padding-top:8px;}
+#upgradestatus table{margin:7px;width:325px;float:right;}
+#upgradestatus table td, #upgradestatus table th{text-align:center;border-right:1px solid;padding:0.2em 0.4em 0.2em 0.4em;}
+
+#upgradestatus table tr.upgradeTableHdr{font-weight:bold;}
+#upgradestatus p{padding-top:8px;margin-bottom:12px;}
+#upgradestatus .alignright{text-align:right;}
+
+#upgradestatus table td.flightInfo{border-right:1px solid;border-bottom:1px solid;white-space:nowrap;}
+#upgradestatus table td.reqUpCheck{border-right:1px solid;border-bottom:1px solid;}
+#upgradestatus table td.canelCheck{border-right:1px solid;border-bottom:1px solid;}
+#upgradestatus table td.reqStatus{border-bottom:1px solid;white-space:nowrap;}
+/***** End Upgrades *****/
+
+/***** Update Seats *****/
+#modifyseat h3 {padding-bottom:0px;}
+#modifyseat .modifySeatText{padding-top:4px; float:left;}
+#modifyseat .modifySeatButton{padding-bottom:0.5em; float:right; text-align: center; padding-right:2em;}
+/***** End Update Seats *****/
+
+/***** LogLookup *******/
+#logLookupSection {padding:5px 20px 40px 10px; margin-top:2em;margin-bottom:2em;}
+#logLookupSection h3{font-weight:bold; padding-bottom:5px; font-size:12px}
+#logLookupSection p{float:left; width:76%;}
+#logLookupSection .logLookuptButton{width:17%; float:right;margin-top:1px}
+/***** End of logLookup ***/
+
+
+/***** PrintTicket *******/
+#railTicketDeliveryInformationSection {padding:5px 20px 40px 10px; margin-top:2em;margin-bottom:2em; background:none repeat scroll 0 0 #EEF7FF; border: 1px solid #A6C6E7; color:#333333;}
+#railTicketDeliveryInformationSection h3{font-weight:bold; padding-bottom:5px; font-size:12px}
+#railTicketDeliveryInformationSection p{float:left; width:76%;}
+#railTicketDeliveryInformationSection .printTicketButton {width:17%; float:right;margin-top:1px}
+#railTicketDeliveryInformationSection .printTicketButtonDisabled {width:17%; float:right;margin-top:1px; background-color:#F0F0F0;color:#999999; border-color:#999999;cursor:auto;}
+/***** End of logLookup ***/
+
+/***** My Trips *****/
+.tripslist {margin-bottom:1em;}
+.tripslist th, .tripslist td, .tripslist caption {border-right:1px solid; border-bottom:1px solid; border-left-style: none; border-top-style: none; padding: 5px 0 5px 5px;}
+.tripslist th, .tripslist caption {font-weight:bold; text-align:left;}
+.tripslist th.select {text-align:center;}
+
+#tripshold .holdData{border-style: none; width:100%;}
+#tripsactive .activeData{border-style: none; width:100%;}
+#tripspast .pastData{border-style: none; width:100%;}
+#tripscancelled .cancelledData{border-style: none; width:100%;}
+#tripshold .systemHoldMsg {font-weight:bold; color:red; }
+.tripoptions {margin: 0 8px 20px 0px; padding: 4px 0 4px 8px;border:1px solid;}
+.tripoptions .displaydropdown {float:left; width: 30%;}
+.cancellationPenaltyMessage { font-weight: bold; }
+.cancellationPenaltyCurrency { color: #ff0000; font-weight: bold; }
+.cancellationPenaltyCurrency.multipleCurrency { display: inline-block; vertical-align: middle; }
+/***** End of My Trips *****/
+
+/***** Add to Trip *****/
+.addtripcontent {padding: 8px 4px 20px 8px; }
+/***** End of Add to Trip *****/
+
+/***** OTE Cost Breakdown *****/
+.otebreakdown .header{font-weight:bold;padding:6px 12px 2px 4px;border:1px solid;}
+.otebreakdown table {border-left:1px solid; border-right:1px solid;}
+.otebreakdown table td {text-align:right; padding:0px 2px 0px 2px; vertical-align:top; white-space:nowrap;}
+.otebreakdown table td.amount {width:1%;}
+.otebreakdown table td.section, .otebreakdown table td.operator {width:1em;}
+.otebreakdown tr.newairfare td {padding-top: 8px;}
+.otebreakdown tr.plusfare td {padding-bottom: 4px;}
+.otebreakdown tr.totalBox td {border-bottom:1px solid; border-top:1px solid; padding:2px 0px 2px 0px;}                        
+.otebreakdown .hrbook {border-top:1px solid;height:1px;margin:.50em 0;}
+.otebreakdown .hrbook hr{display:none;}
+.otebreakdown .footerpadding{padding:0 48px 18px 8px;}
+/***** End of OTE Cost Breakdown *****/
+
+/***** Terms and Conditions *****/
+#termsAndConditions {border: 1px solid; margin-top:12px; padding: 12px;}
+#termsAndConditions p, #termsAndConditions div, #termsAndConditions ul, #termsAndConditions ol {margin-bottom: 1em;}
+#termsAndConditions li {margin-left: 2em;}
+#termsAndConditions .terms_standout {font-weight:bold;text-align:center}
+#userAcceptanceSection h4 { color: #000; font-size: 1.2em; }
+#userAcceptanceSection .fieldSectionContainer { padding-top: 10px; }
+
+/***** End of Terms and Conditions *****/
+
+.hrprint {display:none;} 
+
+/***** Trip Downloads *****/
+.tripdownloads .sabreheading {padding-top: 8px; font-weight: bold;}
+.tripdownloads .viewitinerary {padding-top: 8px;}
+.tripdownloads .viewitinerary img {float:left;}
+.tripdownloads .viewitinerary p {margin-left: 30px;}
+.tripdownloads a {vertical-align: top;}
+/***** End of Trip Downloads *****/
+
+
+/***** Email Itinerary *****/
+.emailItineraryBox {padding:5px 20px 10px 10px; margin-top:10px;height:50px}
+.emailItineraryBox .emailItineraryBoxText {float:left}
+.emailItineraryBox .emailItineraryBoxTitle {font-weight:bold; padding-bottom:5px; font-size:12px}
+.emailItineraryBox .emailItineraryBoxButton {float:right;margin-top:15px}
+.emailItineraryBox .btn_email {font-weight:bold; font-size:12px;padding:2px 6px 2px 6px}
+
+/***** End of Email Itinerary *****/
+
+/***** TripCase *****/
+.tripCaseBox {height:88px !important}
+.tripCaseBox .tripCaseBoxText {float:left}
+.tripCaseBox .tripCaseBoxTitle {font-weight:bold; padding:3px 0px 5px 0px; font-size:12px}
+.tripCaseBox .tripCaseBoxContent { padding:5px 5px 9px 0px;}
+.tripCaseBox .tripCaseButton {float:right;}
+.tripCaseBox .verticalBar {border-left:1px #333399 solid; width:1%; height:100%; margin:0px 1px;}
+.tripCaseBox .middleBox { padding:0px 0px 0px 10px;}
+.tripCaseBox .rightBox {width:31%; padding-top:7px;}
+.tripCaseBox .leftBox {width:63%;}
+.tripCaseBox #tripCaseConfirmation { padding:20px 0px 0px 22px !important}
+.tripCaseBox .recordLocator {font-weight:bold}
+.tripCaseBox .syncAdvice {padding:8px 3px; font-weight:bold;}
+.tripCaseBox .syncAdvice .floatLeft {width:10% !important}
+.tripCaseBox .syncAdvice .floatRight {width:84% !important}
+.tripCaseBox .blankSpace { padding-top:30px; }
+.tripCaseBox .rightSection { width:35%; }
+
+/***** End of TripCase *****/
+
+
+/***** Share Itinerary *****/
+.shareItinerary {padding-top: 8px; clear:left;}
+.shareItinerary .socialNetworksLinks {padding-top: 4px;}
+.socialNetworksLinks a {text-decoration:none};
+/***** End of Share Itinerary *****/
+
+
+/***** Air Modification Details *****/
+#airmod {margin-bottom:1em;}
+#airmod .airmodheader {padding: 0.4em;}
+#airmod .airmodbody {border-left: 1px solid; border-right:1px solid; padding-top:7px;padding-bottom:3px;}
+#airmod .airmodtotal {border: 1px solid;padding:2px 0px 2px 0px; font-weight:bold;}
+#airmod table {width:100%;text-align:right}
+#airmod table td.spacer {width:10px;}
+#airmod table td.price {width:85px;}
+#airmod table td.symbol {width:7px;}
+#airmod .airmodmessage {border: 1px solid; margin:0px 7px 7px 7px; background-color:#FFFFCE;}
+#airmod .airmodmessage .content_message {margin:8px 8px 8px 37px;}
+#airmod .airmodmessage img.msg_img {float:left; margin:6px 0px 8px 8px;}
+/***** End of Air Modification Details *****/
+
+.bookingdata{float:left;padding: 4px 8px 4px 0px;}
+.bookingdatanewline{clear:both;float:left;padding: 4px 8px 4px 0px;}
+
+.personalinfofqnum{clear:both;float:left;padding: 4px 2px 0px 12px;}
+.personalinfofqnumspace{clear:both;float:left;padding: 2px 2px 8px 12px;}
+
+#workarea .hrbook {border-top:1px solid;height:1px;margin:.50em 0;}
+#workarea .hrbook hr{display:none;}
+
+#workarea .hrbooktop {border-top:1px solid;height:10px;}
+#workarea .hrbooktop hr{display:none;}
+
+#workarea .travelercontent{margin:0;padding:0 0 4px 8px;}
+#workarea .travelercontentseatingpreferences{margin:0;padding:0 0 4px 8px;background-color: #D7E4F4;}
+#workarea .travelercontentseatingpreferences .personalinfonewline{float:none;}
+
+.limousine {padding:0 0 8px 22px;}               
+#workarea .limousine ul{list-style:none;}
+#workarea .limousine ul li{float:left;padding:4px 12px 8px 0;}
+
+div.itinDetailsBar {margin-bottom: 0px;}
+div.itinDetailsBar .triptype{font-size: 0.9em; font-weight:normal;}
+
+.policy{padding:0 0 2px 0;}
+
+#siteadminmsg { padding: 0 0 10px 5px; }
+
+.segmentsubheaderwaitlist {padding:4px; font-weight:normal;text-align:right; border:1px solid;}
+.segmentsubheaderwaitlist .infoBoxBottom {text-align: left;}
+.segmentsubheaderwaitlist .location{float:left;}
+.segmentsubheaderwaitlist .overlapMessage{text-align:left;}
+.acceptwaitlisttxt {text-align: left;}
+
+.travelFusionError {color:#908A58;}
+
+.message_box_yellow_blue {text-align:left; padding: 5px; border:1px solid;  background-color: rgb(255,255,217);color: rgb(0,51,102);font-weight: bolder; font-size: 11px; line-height: 15px;  text-decoration: underline; white-space: pre;}
+.message_box_yellow_gray {border:1px solid; padding:5px; text-align:left; background-color: rgb(255,255,217);font-weight: bolder; font-size: 11px; color: rgb(90,90,90);}
+.segmentWarningMessageBox { background-color: rgb(255,255,217); border: 1px solid; color: rgb(255,0,0); display: block; font-size: 11px; padding: 5px; text-align: left; }
+.message_box_padding {padding-top: 5px;}
+
+#emailItineraryModalDialog #restMdBody {font-size:11px;}
+#emailItineraryModalDialog .sectionTitle {font-size:12px; width:400px}
+#emailItineraryModalDialog .sectionInfo {padding:10px 10px 10px 10px}
+#emailItineraryModalDialog .emailSection {padding:15px 15px 15px 15px}
+#emailItineraryModalDialog .emailInput {width:230px}
+#emailItineraryModalDialog .messageInput {width:410px;height:80px}
+#emailItineraryModalDialog .sectionBorder {margin-left:5px; margin-right:5px;border-bottom:1px solid #CCCCCC; display:block}
+#emailItineraryModalDialog .btn_sendEmail {align:center;font-weight:bold;font-size:12px;}
+#emailItineraryModalDialog #buttons {margin-top:20px;}
+#emailItineraryModalDialog #confirmationButtons {padding-top:10px;}
+#emailItineraryModalDialog .dialogContent {padding:5px 0px 20px 0px;}
+#emailItineraryModalDialog .emailInfo {padding-top:5px}
+#emailItineraryModalDialog #requiredFields {padding-left:10px}
+#emailItineraryModalDialog .clear {clear:both}
+#emailItineraryModalDialog .left {float:left}
+#emailItineraryModalDialog #emailInfoSection {width:415px}
+#emailItineraryModalDialog #useSenderEmailSection {width:180px}
+#emailItineraryModalDialog #useSenderEmailCheckbox {padding-right:5px; padding-left:10px}
+#emailItineraryModalDialog #useSenderEmailLabel {width:140px}
+#emailItineraryModalDialog h3 {font-size:12px; font-weight:bold; padding:0px; margin:0px}
+#emailItineraryModalDialog h4 {font-size:12px; padding:0px; margin:0px}
+#emailItineraryModalDialog #content {height:370px; width: 455px;overflow-y:scroll;overflow-x:hidden}
+#emailItineraryModalDialog .notMandatory {display:none}
+#emailItineraryModalDialog #separationLine {padding-top:5px}
+#emailItineraryModalDialog #emailAnother {margin-left:5px}
+#emailItineraryModalDialog .messages_box img.msg_img {position:static}
+#emailItineraryModalDialog .disabled label {color: #CCCCCC}
+
+/**
+*  Trip Case styles.
+*/
+#tripcaseMdBody {font-size:11px;}
+#tripcaseMdBody #content {height:110px; padding:0px 10px 20px 15px;}
+#tripcaseMdBody .dialogContent { padding-top: 1px; }
+#tripcaseMdBody .tripCaseText { padding:12px 5px 3px 5px }
+#tripcaseMdBody .tripCaseInputBox { padding:0px 5px 12px 5px }
+#tripcaseMdBody .tripCaseInput { width:220px }
+#tripcaseMdBody .sectionBorder { padding:3px 0px 3px 0px; border-bottom:1px solid #CCCCCC; display:block}
+#tripcaseMdBody .tripCaseDialogButton { padding:13px 0px 3px 0px; }
+#tripcaseMdBody .btn_sendEmail { align:center;font-weight:bold;font-size:12px;}
+#tripcaseMdBody img.msg_img {float:left; padding:2px 0px 17px 0px;}
+#tripcaseMdBody div.msg_img {float:left; padding:6px 0px 17px 8px;}
+#tripcaseMdBody .emailErrorContent { padding-left:35px; }
+#tripcaseMdBody .requiredErrorContent { padding-left:35px;}
+#tripcaseMdBody .mainErrorBox {padding-bottom:10px; }
+#tripcaseMdBody .errorBox { width:97%; margin-bottom:5px;}#tripcaseMdBody .errorSmallText { padding-left:5px; }
+#tripcaseMdBody .errorText { padding:0px 12px 10px 5px; }
+#tripcaseMdBody .errorTitleText {font-weight:bold; padding:8px 0px 5px 5px; }
+#tripcaseMdBody h3 {font-size:11px; font-weight:bold; padding:0px; margin:0px}
+#tripcaseMdBody h4 { padding:2px 0px 5px 0px;}
+#tripcaseMdBody .messages_box {margin-bottom:5px !important; padding:5px !important}
+#tripcaseMdBody .required {color: #c00}
+
+/***** Checkout *****/
+/*GT-20823*/
+.recapBar { border-collapse:collapse; border-spacing:0; color:#000000; height:34px; margin-bottom:10px; width:100%; }
+.recapBar { 
+  /* background-color: #e4e4e4; - interferes with IE9 filter */ 
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#e4e4e4), to(#b3b3b3)); 
+  background-image: -webkit-linear-gradient(top, #e4e4e4, #b3b3b3); 
+  background-image: -moz-linear-gradient(top, #e4e4e4, #b3b3b3); 
+  background-image: -ms-linear-gradient(top, #e4e4e4, #b3b3b3); 
+  background-image: -o-linear-gradient(top, #e4e4e4, #b3b3b3); 
+  background-image: linear-gradient(top, #e4e4e4, #b3b3b3); 
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorStr='#e4e4e4', EndColorStr='#b3b3b3');
+} 
+.recapBar .number { font-size:14px; font-weight:bold; text-align:center; width:34px; color:#fff;}
+.recapBar .number { 
+  background-color: #777777; 
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#777777), to(#333333)); 
+  background-image: -webkit-linear-gradient(top, #777777, #333333); 
+  background-image: -moz-linear-gradient(top, #777777, #333333); 
+  background-image: -ms-linear-gradient(top, #777777, #333333); 
+  background-image: -o-linear-gradient(top, #777777, #333333); 
+  background-image: linear-gradient(top, #777777, #333333); 
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorStr='#777777', EndColorStr='#333333'); 
+}
+.recapBar td {vertical-align:middle;}
+.recapBar a {color:#000000; cursor:pointer; text-decoration:underline;}
+.recapBar .title {padding-right:8px; width:180px;}
+#workarea.checkout h2.recap {color:#373737; cursor:pointer; font-size:14px; font-weight:bold; text-decoration:underline;}
+
+.recapBar .tri {font-size:11px; font-weight:bold; padding:0 4px 0 10px; width:12px;}
+.recapBar .separator { border:0; width:1px;}
+.recapBar .separator div {border-right:1px solid #aaa; height:20px;}
+.recapBar .details {padding-left:8px;}
+.recapBar .options {padding-right:15px;}
+.recapBar .tripOptions {float:right;}
+.recapBar .tripOptions .separator {margin:0 0 0 0.5em; border:0px none; color:#828282;}
+.recapBar span.addToTrip {background-position:-141px -261px; display:inline-block; height:15px; margin:0 0.5em; vertical-align:text-top; width:15px;}
+.recapBar .saveAsTemplateIcon {display:inline-block; width:15px; height:15px; background-position:-140px -288px; margin:0 0.5em; vertical-align:text-top;}
+.checkoutSection {clear:both; margin:0 10px 10px; overflow:hidden; display:none;}
+.checkoutSection h3.travelerBar {background-color:#ccc; clear:both; margin-bottom:1em; padding:8px 10px;}
+.checkoutSection h4 {font-weight:bold; margin-bottom:0.5em;}
+.checkoutSection p.message {margin-bottom:0.5em;}
+.checkoutSection .travelerSection .fieldSectionContainer {margin-top:1.4em;}
+.checkoutSection .travelerSection .fieldSectionContainer.emergencyContact {margin-top:0.1em;}
+.checkoutSection .fieldSectionContainer {margin-bottom:0.5em; overflow:hidden;}
+.checkoutSection .fieldContainer.discount {display:none; float:left; margin-top: 5px; margin-left:180px;}
+.checkoutSection input.errorStyle {border:1px solid #996633;}
+.checkoutSection .fieldContainer .deliveryTypeCallOutText {display:none;margin-top: 3px; padding:3px; background-color:#E7E7E7; border:1px solid #CCCCCC; max-width:350px;}
+.checkoutSection .fieldContainer .deliveryOptionCaret {background-position:-80px -487px; height:8px; margin:0 0 -4px 4em; position:relative; width:13px; z-index:4;}
+.checkoutSection  .errorCaret {background-position:-110px -487px; height:8px; margin:0 0 -4px 4em; position:relative; width:13px; z-index:5;}
+.checkoutSection .errorCallOutText {margin-top: 3px; padding:3px; background-color:#FFFF99; border:1px solid #CC0000;float:left;min-width:300px;}
+.checkoutSection .errorShell {clear:left;margin-left:10px;}
+.checkoutSection .errorCaretShell {margin-left:40px;}
+.checkoutSection .fieldContainer {float:left; margin-right:0.5em;}
+.checkoutSection .fieldContainer label {display:block; margin-bottom:2px;}
+.checkoutSection .phoneContainer {margin-left:10px;}
+.checkoutSection .emergencyContactPhone {margin-left:15px;}
+.checkoutSection .phoneDash {margin-top:1.5em;}
+.checkoutSection .travelerSection {margin-bottom:1em; overflow:hidden;}
+.travelerInfoMainSection {float:left; width:55%; overflow:hidden;}
+.travelerInfoFrequentTravelerSection {float:left; width:45%; overflow:hidden;}
+.travelerParameterSection {float:left; width:45%; overflow:hidden;}
+.checkoutSection .deliverySection {margin-bottom:1em; overflow:hidden;}
+.deliveryMainSection {float:left; width:55%; overflow:hidden;}
+.deliveryAddressSection {float:left; width:45%; overflow:hidden;}
+.checkoutSection .hotelFrequentTravelerSelect {width: 200px;}
+.checkoutSection .repeatedHotelBrand {display: none;}
+.checkoutSection .creditCardSection {border-top:1px solid #ccc; clear:left; margin-bottom:1em; padding-top:1em; overflow:hidden;}
+.checkoutSection .billingSection .creditCardSection:first-child {border:0; padding:0;}
+.checkoutSection .billingMessage {padding-top:10px; padding-bottom:10px;}
+.checkoutSection .creditCardMessage {margin-bottom:0.5em;}
+.checkoutSection .multiCreditCard {display:none;}
+.checkoutSection .multiCreditCard.selected {display:block;}
+.checkoutSection td {vertical-align:top;}
+.checkoutSection .creditCardForm.left {width:452px;}
+.checkoutSection .creditCardForm {float:left;overflow:hidden;}
+.checkoutSection .creditCardType {width:452px;float:left;}
+.checkoutSection .addressReminder {display:none;margin-top:20px;float:left;}
+.checkoutSection td.info {padding-right:5em;}
+.checkoutSection .cid {clear:left;}
+.checkoutSection .cidFieldContainerSection {display:none;}
+.checkoutSection .creditCardContainer {clear:both;}
+.checkoutSection .creditCardContainer .info p {min-height:1.2em;}
+.expanded {display: block;}
+.checkout .recapLinks {text-align:right;font-size:13px;margin-bottom:10px;}
+.checkout .recapLinks span {cursor:pointer;text-decoration:underline;}
+.cidHelp {cursor:pointer;text-decoration:underline;}
+.checkout .messagesSection {font-size:1.1em;margin-bottom:10px;margin-left:10px;}
+.checkout .messagesSection div {margin-bottom:10px;}
+.checkout .holdWarningSection {margin-bottom:10px;}
+#ccNumOnFile.masked {display:none;}
+.externalLink {cursor:pointer;text-decoration:underline;}
+.checkoutSection .costBreakdown .tripcost .tripheader {display:none !important;}
+.checkoutSection .costBreakdown .tripcost table {border:none;border-collapse:separate;}
+.checkoutSection .costBreakdown .tripcost table tbody tr.totalBox td {border:none; padding:5px 2px 5px 2px;font-size:13px;border-spacing:10px;}
+.checkoutSection .costBreakdown .tripcost table tbody tr td.section {text-align:right;padding-right:2px;width:.5%;}
+.checkoutSection .costBreakdown .tripcost table tbody tr.tripTotalSeparator td {height:15px;}
+.checkoutSection .costBreakdown {padding-bottom: 10px;border-bottom:1px solid #ccc;}
+.checkoutSection .costBreakdown .tripcost .fareDetailsSection {float:right; margin-right:2px;}
+.checkoutSection .costBreakdown .tripcost .fareDetailsSection .fareDetailsLink {cursor:pointer;text-decoration:underline;}
+.checkoutSection .costBreakdown .tripcost .estimatedDisclaimer {float:left;}
+.checkoutSection table.fareTableCar {float:right;}
+.checkoutSection table.fareTable {float:right;}
+.checkoutSection .railCostBreakdown {width:100%;}
+.fareDetailsLink {cursor:pointer;text-decoration:underline;}
+.airExtrasCostLink {cursor:pointer;text-decoration:underline;}
+.addToTripAccessPoints {display:none;}
+.addToTripBtnArea {border-top:1px solid #ccc; clear:left; margin-bottom:1em; margin-top:2em; padding-top:1.5em; overflow:hidden; text-align:center;}
+.saveAsTemplateBody {padding:1em;}
+.saveAsTemplateName {width:230px; margin-bottom:1em;}
+.saveAsTemplateGlobalIndicator {margin:0 0.3em 0 0; vertical-align:top;}
+.saveAsTemplateBtnArea {border-top:1px solid #ccc; margin:1em 0 1em 0; padding-top:1.5em; clear:left; overflow:hidden; text-align:center;}
+.checkoutSection #upgradestatus {clear:both; background:#eeebe5;}
+.checkoutSection .itinDetailsBar {clear:both !important; background:#fff !important;}
+.checkoutSection .segmentsubheader {clear:both}
+.checkoutSection .hotelrates {clear:both}
+.checkoutSection .hrbook {clear:both}
+.checkoutSection .qtyItem {display:none;}
+.checkoutSection .qtyItem.selected {display:block;float:left;}
+.checkoutSection .ancillaryListContainer {clear:both;border-top:1px solid #ccc;}
+.checkoutSection .airExtrasOption {clear:both;}
+.checkoutSection .airExtrasOption label {vertical-align:center;}
+.checkoutSection .airExtrasFieldContainer {float:left;width:15em;}
+.checkoutSection .airExtrasOptionInstructions {clear:both;margin-left:2.1em;}
+.checkoutSection .ancillaryListContainer:first-child {border:0;}
+.checkoutSection .ancillaryOptionsColumn {padding:10px 0px;float:left;width:400px;}
+.checkoutSection .travelerTitle {font-weight:bold;padding-top:10px;}
+.checkoutSection .disabledInputsContainer {display:none;}
+.checkoutSection .passportInformation {float:left;}
+.checkoutSection .termsAndConditionsSection {margin-bottom: 10px;}
+.checkoutSection .travelPolicySection .missingElements select {width:360px;}
+.checkoutSection .travelPolicySection .missingElementsSection {padding-top:10px}
+.checkoutSection .travelPolicySection .missingElements {float:left;width:55%;}
+.checkoutSection .travelPolicySection .leftColumn {float:left; align: left}
+.checkoutSection .travelPolicySection .rightColumn {float:left; padding-left:10px}
+.checkoutSection .travelPolicySection .personalInformation {float:left;width:55%;}
+.checkoutSection .travelPolicySection .purposeOfTrip {float:right;width:45%;}
+.checkoutSection .travelPolicySection .field {padding-top:5px}
+.checkoutSection .travelPolicySection .labelField {width:370px}
+.checkoutSection .travelPolicySection .secondSection {padding-top:20px}
+.checkoutSection .travelPolicySection .section {clear:both}
+.checkoutSection .travelPolicySection .personalInformationSection {padding-top:10px;}
+.checkout .holdTripMessageBox {margin-top:10px;background-color: #dee8f2; border:1px solid #aabcce;}
+.checkout .holdTripMessageBox .endHoldTripMessage {clear:both}
+.checkout .holdTripMessage {font-size:1.1em; margin:5px 10px 5px 10px;}
+.checkout .holdTripMessage span {font-weight:bold}
+.checkout #startOver {padding-left:10px;vertical-align:middle}
+.checkout .btn_area span {padding-left:5px}
+.checkout .holdTripMessage .diamond {float:left;}
+.checkout .holdTripMessage .message {float:right;width:98.5%;padding-bottom:5px}
+.checkout .btn_area {position:relative}
+.checkout .buttons {display:inline;position:relative}
+.checkout .startOver {display:inline;position:absolute;top:25%}
+#workspace.checkoutWorkspace .messages_box {width:100% !important;}
+
+.checkoutSection .railSeatingOptions .trainDescription {padding:1em;}
+.checkoutSection .railSeatingOptions .fieldSectionContainer {padding: 1em;}
+.checkoutSection .railSeatingOptions .fieldSectionContainer .fieldContainer label {display:inline;margin-right:.5em;}
+.checkoutSection .railSeatingOptions .trainForm {clear: both;}
+.checkoutSection .railSeatingOptions .tab {display: none;}
+.checkoutSection .railSeatingOptions .tab.active {display: block;}
+.checkoutSection .railSeatingOptions .proximityHelp {margin-left:.1em; cursor:pointer;}
+.checkoutSection .inlinePopup .popupText {border-top: solid 1px #ccc;margin-top:.4em;padding-top:.4em}
+
+.checkoutSection .railSeatingOptions .collapsibleSectionHeader {cursor:pointer;margin-top:1em;}
+.checkoutSection .railSeatingOptions .collapsibleSectionHeader .collapsibleSectionTitle {text-decoration:underline;color:blue;margin-left:.5em;}
+.checkoutSection .railSeatingOptions.sncb .fieldSectionContainer .fieldContainer {margin-right:1.5em;}
+.checkoutSection .railSeatingOptions.sncb .sectionTitle {margin-bottom:1em;}
+.checkoutSection .railSeatingOptions.sncb #windowForcedMessage {display:none;}
+.checkoutSection .railSeatingOptions.sncb #windowForcedMessage.selected {display:block;}
+.checkoutSection .railSeatingOptions.sncb .borderedBox{border-color:#ccc !important; background:#eaeaea !important;}
+
+.railConnectSeatingOptions { background-color: #eaeaea; margin: 1em 0 1.5em 0; padding: 1.2em;}
+.railConnectSeatingOptions .fieldContainer { margin-right: 4em; }
+.railConnectSeatingOptions .fieldContainer label { display: inline; }
+.railConnectSeatingOptions .segmentData { color: #000; padding-bottom: 1.2em; }
+/***** End Checkout *****/
+/***** GT Express Checkout *****/
+.selectedCarrierLabel {margin-bottom:-1.3em;color:#999999;}
+.travellingOnText{font-weight:bold;color:#999999;}
+.ftnSeperator{border-bottom: dotted 2px;width: 70%;margin-top:-0.1em;}
+.loyaltyPartners{font-weight:bold;width:150px;}
+.checkoutSection .travelerSection .fieldSectionContainer.loyaltyPartnersSection{margin-top:-0.1em;}
+.checkoutSection .travelerSection .discountCodeContainer h4 { color: #000; font-weight: bold; padding-bottom: 0.5em; }
+.checkoutSection .travelerSection .discountCodeContainer label { display: block; padding-bottom: 0.2em; }
+.checkoutSection .demand-main-form .fieldSectionContainer {margin-top:1.4em;}
+.checkoutSection .demand-main-form fieldset {margin-left:-3px;}
+#content a.popIn.bolderText{font-weight:bolder;}
+/***** End Of GT Express Checkout *****/

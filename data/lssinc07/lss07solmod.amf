@@ -1,0 +1,128 @@
+names city, sex, un4gy, distcat, agxcat, agecat, dcat, time, subjects, 
+      upyr, pyr, gdist, agex, age, year, solid, oralca, lip, tongue, 
+      saliv, mouth, pharynx, digestca, esoph, stomach, smallint, colon, 
+      rectum, liver, gallbldr, pancr, othdig, respca, nasal, larynx, 
+      lung, othres, thymus, skinbone, bone, connect, nmskin, skbasal, 
+      sksquam, bowens, breast, femgenca, uterus, utrnos, cervix, corpus, 
+      ovary, othfem, malgenca, prost, testis, othmale, urinca, bladder, 
+      kidney, renal, othurin, cnsca, thyroid, othsol, msother, 
+      adeno, squam, othepi, sarcoma, othnonepi, histnos, 
+      cola02w10, cola02g, cola02n, mara02w10, mara02g, mara02n, 
+      braa02w10, brea02w10, liva02w10, liva02g, liva02n, luna02w10, 
+      ovaa02w10, pana02w10, skea02w10, skia02w10, stoa02w10, 
+      tesa02w10, thya02w10, blaa02w10, utea02w10, trunc02, adjust02
+@
+
+! Remove unknown dose records
+
+tran if cola02w10 < 0 then delete endif @
+SKIP 1 @
+
+INPUT lssinc07.csv @
+
+! set up categorical variables
+leve city sex un4gy distcat agxcat agecat dcat time @
+
+! define dose and age at exposure  categories for case summary tables
+categ cola02w10 < 0.005 0.1 0.2 0.5 1 2 > as tbdcat @
+categ cola02w10 < 0.005 0.5 1 > as d4cat @
+
+categ agex < 10 20 30 40 50 > as agxdec @
+
+
+! define variables used in fitting models
+
+tran msex = 2*sex - 3 ;
+     lage70 = log(age/70) ; lage70sq = lage70^2 ;
+     lage70qsp = lage70sq*(age > 70) ; 
+     lage50sp = log(age/50)*(age >= 50) ;
+     e30 = (agex - 30)/10 ; e30sq = e30^2 ;
+     py10k = pyr/10000 ; 
+     hidose = cola02w10 > 2 ;
+     lodose = 1 - hidose ;
+@
+
+! Expected dose squared if 35% random dose errors
+tran
+     cola02wsq = 1.12*cola02w10^2 ;
+@
+
+! Define additional variables of interest
+tran
+     distal = distcat == 2 ;
+	 nic = distcat == 3 ; 
+	 hiro = city == 1 ; naga = city == 2 ;
+     tsx25 = (age - agex - 25) ;
+@
+
+
+! Solid cancer ERR model
+
+cases solid @
+pyr py10k @
+excess @
+
+line 1 cola02w10=0 cola02wsq=0 @
+logl 1 e30=0 lage70=0 @
+pline 1 %con=1 msex=0 @
+
+fit sex:4 naga nic*hiro nic*naga 
+    sex*lage70:4 sex*lage70sq sex*lage70qsp 
+    sex*e30 sex*e30sq - %con @
+null @
+para 16 free @
+fit @lrt
+
+para 18-19 free 21 free @
+fit @
+
+
+sum subjects pyr solid %bk %ex@
+sum subjects pyr solid %bk %ex; by tbdcat @
+
+
+bound 16 leve 90@
+bound 18 @
+bound 19 @
+bound 21 @
+
+! Gender-specific dose response slopes
+line 1 sex*cola02w10 @
+pline 1 @
+fit @
+bound 16 @
+bound 17 @
+
+! L-Q dose response
+
+
+line 1 cola02w10 lodose*cola02wsq=0 hidose*cola02w10 @
+pline 1 %con=1 msex @
+
+fit @
+null @
+para 17 free @
+fit @
+lrt
+para 16=1 @
+logl 1 +%con @
+fit @
+bound 17 @
+
+
+
+! Solid cancer EAR model
+
+add @
+
+
+line 1 cola02w10 cola02wsq=0 @
+logl 1 e30 lage70 @
+pline 1 %con=1 msex @
+
+fit @
+
+bound 16 leve 90@
+bound 18 @
+bound 19 @
+bound 21 @

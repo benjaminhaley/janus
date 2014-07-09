@@ -1,0 +1,783 @@
+names city, sex, un4gy, distcat, agxcat, agecat, dcat, time, subjects, 
+      upyr, pyr, gdist, agex, age, year, solid, oralca, lip, tongue, 
+      saliv, mouth, pharynx, digestca, esoph, stomach, smallint, colon, 
+      rectum, liver, gallbldr, pancr, othdig, respca, nasal, larynx, 
+      lung, othres, thymus, skinbone, bone, connect, nmskin, skbasal, 
+      sksquam, bowens, breast, femgenca, uterus, utrnos, cervix, corpus, 
+      ovary, othfem, malgenca, prost, testis, othmale, urinca, bladder, 
+      kidney, renal, othurin, cnsca, thyroid, othsol, msother, 
+      adeno, squam, othepi, sarcoma, othnonepi, histnos, 
+      cola02w10, cola02g, cola02n, mara02w10, mara02g, mara02n, 
+      braa02w10, brea02w10, liva02w10, liva02g, liva02n, luna02w10, 
+      ovaa02w10, pana02w10, skea02w10, skia02w10, stoa02w10, 
+      tesa02w10, thya02w10, blaa02w10, utea02w10, trunc02, adjust02
+@
+
+! Remove unknown dose records
+
+tran if cola02w10 < 0 then delete endif @
+SKIP 1 @
+
+INPUT lssinc07.csv @
+
+Input from lssinc07.csv
+
+       26807 records read       25570 records used
+                                 1237 records rejected
+
+97 variables defined  At least 500 additional variables can be created.
+
+
+! set up categorical variables
+leve city sex un4gy distcat agxcat agecat dcat time @
+
+! define dose and age at exposure  categories for case summary tables
+city has 2 levels from 1 to 2
+sex has 2 levels from 1 to 2
+un4gy has 2 levels from 0 to 1
+distcat has 3 levels from 1 to 3
+agxcat has 15 levels from 1 to 15
+agecat has 16 levels from 3 to 18
+dcat has 22 levels from 2 to 23
+time has 10 levels from 1 to 10
+
+categ cola02w10 < 0.005 0.1 0.2 0.5 1 2 > as tbdcat @
+tbdcat has 7 levels from 1 to 7
+categ cola02w10 < 0.005 0.5 1 > as d4cat @
+d4cat has 4 levels from 1 to 4
+
+categ agex < 10 20 30 40 50 > as agxdec @
+agxdec has 6 levels from 1 to 6
+
+
+! define variables used in fitting models
+
+tran msex = 2*sex - 3 ;
+     lage70 = log(age/70) ; lage70sq = lage70^2 ;
+     lage70qsp = lage70sq*(age > 70) ; 
+     lage50sp = log(age/50)*(age >= 50) ;
+     e30 = (agex - 30)/10 ; e30sq = e30^2 ;
+     py10k = pyr/10000 ; 
+     hidose = cola02w10 > 2 ;
+     lodose = 1 - hidose ;
+@
+
+! Expected dose squared if 35% random dose errors
+tran
+     cola02wsq = 1.12*cola02w10^2 ;
+@
+
+! Define additional variables of interest
+tran
+     distal = distcat == 2 ;
+	 nic = distcat == 3 ; 
+	 hiro = city == 1 ; naga = city == 2 ;
+     tsx25 = (age - agex - 25) ;
+@
+
+
+! Solid cancer ERR model
+
+cases solid @
+pyr py10k @
+excess @
+ *** WARNING: Fit model again to compute statistics
+
+line 1 cola02w10=0 cola02wsq=0 @
+logl 1 e30=0 lage70=0 @
+pline 1 %con=1 msex=0 @
+
+fit sex:4 naga nic*hiro nic*naga 
+    sex*lage70:4 sex*lage70sq sex*lage70qsp 
+    sex*e30 sex*e30sq - %con @
+
+          Iter  Step      Deviance
+
+             0     0    25630.834
+             1     1    18706.711
+             2     0    15702.194
+             3     0    15167.087
+             4     0    15161.500
+             5     0    15161.499
+             6     0    15161.499
+
+Piece-wise exponential regression
+Product additive excess model { T0 * ( 1 + T1 + T2 + ...) }
+
+    solid is used for cases
+    py10k is used for person years
+
+
+                            Parameter Summary Table
+
+ # Name                            Estimate     Std.Err.  Test Stat.  P value
+-- ----------------------------   ----------   ---------  ----------  --------
+Log-linear term 0
+ 1 sex_1....................          5.391     0.01932        279    < 0.001
+ 2 sex_2....................          4.613     0.01701      271.2    < 0.001
+ 3 naga.....................       -0.05558     0.01938     -2.868    0.00413
+ 4 nic * hiro...............        -0.1409     0.02047     -6.884    < 0.001
+ 5 nic * naga...............        -0.1007      0.0384     -2.621    0.00876
+ 6 sex_1 * lage70...........          5.820      0.1726      33.72    < 0.001
+ 7 sex_2 * lage70...........          3.580       0.126      28.42    < 0.001
+ 8 sex_1 * lage70sq.........         0.1485      0.2825     0.5258      > 0.5
+ 9 sex_2 * lage70sq.........         0.2979      0.1707      1.746     0.0808
+10 sex_1 * lage70qsp........         -13.39       1.419     -9.436    < 0.001
+11 sex_2 * lage70qsp........         -3.681       1.038     -3.547    < 0.001
+12 sex_1 * e30..............        -0.1775     0.01031     -17.22    < 0.001
+13 sex_2 * e30..............       -0.08537    0.009995     -8.542    < 0.001
+14 sex_1 * e30sq............       0.006535     0.00461      1.418      0.156
+15 sex_2 * e30sq............       0.005558    0.004265      1.303      0.193
+
+Linear term 1
+16 cola02w10................          0.000       Fixed       20.02    < 0.001
+17 cola02wsq................          0.000       Fixed       18.48    < 0.001
+
+Log-linear term 1
+18 e30......................          0.000     Aliased
+19 lage70...................          0.000     Aliased
+
+Linear product term 1
+20 %CON.....................          1.000     Aliased
+21 msex.....................          0.000     Aliased
+
+            Records used        25570
+
+                Deviance    15161.499
+            Pearson Chi2    100989.75      Degrees of freedom   25555
+
+
+null @
+para 16 free @
+fit @
+          Iter  Step      Deviance
+
+             0     0    15161.499
+             1     0    14839.581
+             2     0    14839.021
+             3     0    14839.021
+
+Piece-wise exponential regression
+Product additive excess model { T0 * ( 1 + T1 + T2 + ...) }
+
+    solid is used for cases
+    py10k is used for person years
+
+
+                            Parameter Summary Table
+
+ # Name                            Estimate     Std.Err.  Test Stat.  P value
+-- ----------------------------   ----------   ---------  ----------  --------
+Log-linear term 0
+ 1 sex_1....................          5.313     0.02003      265.2    < 0.001
+ 2 sex_2....................          4.543     0.01765      257.4    < 0.001
+ 3 naga.....................       -0.04376      0.0194     -2.256     0.0241
+ 4 nic * hiro...............       -0.06981     0.02103      -3.32    < 0.001
+ 5 nic * naga...............       -0.03998     0.03861     -1.035        0.3
+ 6 sex_1 * lage70...........          5.839      0.1725      33.84    < 0.001
+ 7 sex_2 * lage70...........          3.599       0.126      28.57    < 0.001
+ 8 sex_1 * lage70sq.........         0.1671      0.2824     0.5916      > 0.5
+ 9 sex_2 * lage70sq.........         0.3130      0.1706      1.834     0.0666
+10 sex_1 * lage70qsp........         -13.36       1.418     -9.417    < 0.001
+11 sex_2 * lage70qsp........         -3.655       1.037     -3.523    < 0.001
+12 sex_1 * e30..............        -0.1788     0.01031     -17.34    < 0.001
+13 sex_2 * e30..............       -0.08444        0.01     -8.443    < 0.001
+14 sex_1 * e30sq............       0.008200    0.004609      1.779     0.0752
+15 sex_2 * e30sq............       0.006384    0.004269      1.495      0.135
+
+Linear term 1
+16 cola02w10................         0.6151     0.04301       14.3    < 0.001
+17 cola02wsq................          0.000       Fixed       1.092      0.275
+
+Log-linear term 1
+18 e30......................          0.000       Fixed      -7.065    < 0.001
+19 lage70...................          0.000       Fixed      -9.323    < 0.001
+
+Linear product term 1
+20 %CON.....................          1.000     Aliased
+21 msex.....................          0.000       Fixed        4.69    < 0.001
+
+            Records used        25570
+
+                Deviance    14839.021
+            Pearson Chi2    58724.417      Degrees of freedom   25554
+
+
+lrt
+
+             LR statistic       322.5      Degrees of freedom      1
+                  P value     < 0.001
+
+
+para 18-19 free 21 free @
+fit @
+
+          Iter  Step      Deviance
+
+             0     0    14839.021
+             1     0    14791.672
+             2     0    14739.459
+             3     0    14735.982
+             4     0    14735.954
+             5     0    14735.954
+
+Piece-wise exponential regression
+Product additive excess model { T0 * ( 1 + T1 + T2 + ...) }
+
+    solid is used for cases
+    py10k is used for person years
+
+
+                            Parameter Summary Table
+
+ # Name                            Estimate     Std.Err.  Test Stat.  P value
+-- ----------------------------   ----------   ---------  ----------  --------
+Log-linear term 0
+ 1 sex_1....................          5.338     0.02008      265.8    < 0.001
+ 2 sex_2....................          4.547     0.01802      252.3    < 0.001
+ 3 naga.....................       -0.04657      0.0194     -2.401     0.0163
+ 4 nic * hiro...............       -0.07414     0.02099     -3.532    < 0.001
+ 5 nic * naga...............       -0.03794     0.03863    -0.9821      0.326
+ 6 sex_1 * lage70...........          5.875      0.1728      33.99    < 0.001
+ 7 sex_2 * lage70...........          3.652      0.1265      28.86    < 0.001
+ 8 sex_1 * lage70sq.........        0.04283      0.2847     0.1504      > 0.5
+ 9 sex_2 * lage70sq.........         0.1152       0.181     0.6364      > 0.5
+10 sex_1 * lage70qsp........         -13.34       1.419     -9.406    < 0.001
+11 sex_2 * lage70qsp........         -3.551       1.041     -3.412    < 0.001
+12 sex_1 * e30..............        -0.1721     0.01059     -16.26    < 0.001
+13 sex_2 * e30..............       -0.07426     0.01071     -6.936    < 0.001
+14 sex_1 * e30sq............       0.007165    0.004633      1.546      0.122
+15 sex_2 * e30sq............       0.004649    0.004356      1.067      0.286
+
+Linear term 1
+16 cola02w10................         0.4666     0.04413      10.57    < 0.001
+17 cola02wsq................          0.000       Fixed       0.866      0.386
+
+Log-linear term 1
+18 e30......................        -0.1849      0.0636     -2.908    0.00364
+19 lage70...................         -1.621      0.3058       -5.3    < 0.001
+
+Linear product term 1
+20 %CON.....................          1.000     Aliased
+21 msex.....................         0.2465     0.06762      3.646    < 0.001
+
+            Records used        25570
+
+                Deviance    14735.954
+            Pearson Chi2    43595.007      Degrees of freedom   25551
+
+
+
+
+sum subjects pyr solid %bk %ex@
+
+           Summary for subjects
+
+                Sum         Count      Minimum      Maximum
+             105427         25570            0          763
+
+           Summary for pyr
+
+                Sum         Count      Minimum      Maximum
+        2.76473e+06         25570   0.00054000       3636.6
+
+           Summary for solid
+
+                Sum         Count      Minimum      Maximum
+              17448         25570            0           46
+
+           Summary for %BK
+
+                Sum         Count      Minimum      Maximum
+            16596.1         25570   2.3323e-07       30.467
+
+           Summary for %EX
+
+                Sum         Count      Minimum      Maximum
+            851.890         25570            0       1.0815
+
+sum subjects pyr solid %bk %ex; by tbdcat @
+
+           Summary for subjects
+
+tbdcat           Sum         Count      Minimum      Maximum
+    1         60792          3853            0          763
+    2         27789          5973            0          394
+    3          5527          4208            0           82
+    4          5935          3390            0           90
+    5          3173          2227            0           62
+    6          1647          3454            0           29
+    7           564          2465            0           26
+
+           Summary for pyr
+
+tbdcat           Sum         Count      Minimum      Maximum
+    1   1.59894e+06          3853    0.0025900       3636.6
+    2       729604.          5973    0.0019900       2008.7
+    3       145925.          4208    0.0025900       314.26
+    4       153886.          3390   0.00054000       472.96
+    5       81250.9          2227    0.0068900       301.48
+    6       41412.9          3454   0.00066000       89.033
+    7       13711.9          2465   0.00059000       100.37
+
+           Summary for solid
+
+tbdcat           Sum         Count      Minimum      Maximum
+    1          9597          3853            0           46
+    2          4406          5973            0           19
+    3           968          4208            0            7
+    4          1144          3390            0            6
+    5           688          2227            0            6
+    6           460          3454            0            5
+    7           185          2465            0            3
+
+           Summary for %BK
+
+tbdcat           Sum         Count      Minimum      Maximum
+    1       9537.09          3853   4.9002e-05       30.467
+    2       4373.95          5973   1.5220e-06       12.920
+    3       909.889          4208   4.1428e-06       3.2908
+    4       963.022          3390   2.3323e-07       3.4247
+    5       493.194          2227   6.6962e-07       2.1807
+    6       247.766          3454   9.2927e-07       1.0681
+    7       71.1912          2465   5.0235e-07      0.78133
+
+           Summary for %EX
+
+tbdcat           Sum         Count      Minimum      Maximum
+    1       3.11937          3853            0     0.014974
+    2       80.4778          5973   3.4804e-07      0.28504
+    3       75.2558          4208   1.4490e-06      0.21231
+    4       179.340          3390   6.7798e-08      0.90440
+    5       206.085          2227   1.0455e-06      0.99164
+    6       196.263          3454   4.5505e-06      0.55676
+    7       111.349          2465   6.3376e-06       1.0815
+
+
+
+bound 16 leve 90@
+
+      Profile likelihood bounds for parameter 16 (cola02w10)
+
+                  MLE     0.4666
+
+                 95% lower bound      0.3958
+                 95% upper bound      0.5413
+
+bound 18 @
+
+      Profile likelihood bounds for parameter 18 (e30)
+
+                  MLE    -0.1849    exp(MLE)     0.8312
+
+                 95% lower bound     -0.2956
+                       exp(bound)     0.7441
+                 95% upper bound    -0.07888
+                       exp(bound)     0.9242
+
+bound 19 @
+
+      Profile likelihood bounds for parameter 19 (lage70)
+
+                  MLE     -1.621    exp(MLE)     0.1977
+
+                 95% lower bound      -2.109
+                       exp(bound)     0.1213
+                 95% upper bound      -1.123
+                       exp(bound)     0.3254
+
+bound 21 @
+
+      Profile likelihood bounds for parameter 21 (msex)
+
+                  MLE     0.2465
+
+                 95% lower bound      0.1372
+                 95% upper bound      0.3554
+
+
+! Gender-specific dose response slopes
+line 1 sex*cola02w10 @
+pline 1 @
+fit @
+
+          Iter  Step      Deviance
+
+             0     0    15243.982
+             1     0    14739.813
+             2     0    14735.972
+             3     0    14735.954
+             4     0    14735.954
+
+Piece-wise exponential regression
+Product additive excess model { T0 * ( 1 + T1 + T2 + ...) }
+
+    solid is used for cases
+    py10k is used for person years
+
+
+                            Parameter Summary Table
+
+ # Name                            Estimate     Std.Err.  Test Stat.  P value
+-- ----------------------------   ----------   ---------  ----------  --------
+Log-linear term 0
+ 1 sex_1....................          5.338     0.02008      265.8    < 0.001
+ 2 sex_2....................          4.547     0.01802      252.3    < 0.001
+ 3 naga.....................       -0.04658      0.0194     -2.401     0.0163
+ 4 nic * hiro...............       -0.07415     0.02099     -3.532    < 0.001
+ 5 nic * naga...............       -0.03794     0.03863    -0.9822      0.326
+ 6 sex_1 * lage70...........          5.875      0.1728      33.99    < 0.001
+ 7 sex_2 * lage70...........          3.652      0.1265      28.86    < 0.001
+ 8 sex_1 * lage70sq.........        0.04284      0.2847     0.1505      > 0.5
+ 9 sex_2 * lage70sq.........         0.1152       0.181     0.6365      > 0.5
+10 sex_1 * lage70qsp........         -13.34       1.419     -9.406    < 0.001
+11 sex_2 * lage70qsp........         -3.551       1.041     -3.412    < 0.001
+12 sex_1 * e30..............        -0.1721     0.01059     -16.26    < 0.001
+13 sex_2 * e30..............       -0.07426     0.01071     -6.936    < 0.001
+14 sex_1 * e30sq............       0.007165    0.004633      1.546      0.122
+15 sex_2 * e30sq............       0.004648    0.004356      1.067      0.286
+
+Linear term 1
+16 sex_1 * cola02w10........         0.3516     0.04704      7.475    < 0.001
+17 sex_2 * cola02w10........         0.5817     0.06195      9.389    < 0.001
+
+Log-linear term 1
+18 e30......................        -0.1850      0.0636     -2.909    0.00363
+19 lage70...................         -1.621      0.3058       -5.3    < 0.001
+
+            Records used        25570
+
+                Deviance    14735.954
+            Pearson Chi2    43595.872      Degrees of freedom   25551
+
+
+bound 16 @
+
+      Profile likelihood bounds for parameter 16 (sex_1 * cola02w10)
+
+                  MLE     0.3516
+
+                 95% lower bound      0.2794
+                 95% upper bound      0.4311
+
+bound 17 @
+
+      Profile likelihood bounds for parameter 17 (sex_2 * cola02w10)
+
+                  MLE     0.5817
+
+                 95% lower bound       0.483
+                 95% upper bound      0.6883
+
+
+! L-Q dose response
+
+
+line 1 cola02w10 lodose*cola02wsq=0 hidose*cola02w10 @
+pline 1 %con=1 msex @
+
+fit @
+
+          Iter  Step      Deviance
+
+             0     0    15243.978
+             1     0    14751.755
+             2     0    14735.989
+             3     0    14735.861
+             4     0    14735.861
+             5     0    14735.861
+
+Piece-wise exponential regression
+Product additive excess model { T0 * ( 1 + T1 + T2 + ...) }
+
+    solid is used for cases
+    py10k is used for person years
+
+
+                            Parameter Summary Table
+
+ # Name                            Estimate     Std.Err.  Test Stat.  P value
+-- ----------------------------   ----------   ---------  ----------  --------
+Log-linear term 0
+ 1 sex_1....................          5.338     0.02011      265.4    < 0.001
+ 2 sex_2....................          4.548     0.01806      251.8    < 0.001
+ 3 naga.....................       -0.04665      0.0194     -2.405     0.0162
+ 4 nic * hiro...............       -0.07454     0.02103     -3.544    < 0.001
+ 5 nic * naga...............       -0.03828     0.03865    -0.9906      0.322
+ 6 sex_1 * lage70...........          5.874      0.1728      33.99    < 0.001
+ 7 sex_2 * lage70...........          3.652      0.1265      28.86    < 0.001
+ 8 sex_1 * lage70sq.........        0.04366      0.2847     0.1533      > 0.5
+ 9 sex_2 * lage70sq.........         0.1157       0.181     0.6393      > 0.5
+10 sex_1 * lage70qsp........         -13.35       1.419     -9.407    < 0.001
+11 sex_2 * lage70qsp........         -3.552       1.041     -3.412    < 0.001
+12 sex_1 * e30..............        -0.1722     0.01058     -16.27    < 0.001
+13 sex_2 * e30..............       -0.07428      0.0107     -6.941    < 0.001
+14 sex_1 * e30sq............       0.007165    0.004633      1.547      0.122
+15 sex_2 * e30sq............       0.004641    0.004355      1.066      0.287
+
+Linear term 1
+16 cola02w10................         0.4612     0.04722      9.768    < 0.001
+17 lodose * cola02wsq.......          0.000       Fixed       1.598       0.11
+18 hidose * cola02w10.......        0.01955     0.06451     0.3031      > 0.5
+
+Log-linear term 1
+19 e30......................        -0.1851     0.06368     -2.907    0.00365
+20 lage70...................         -1.620       0.306     -5.293    < 0.001
+
+Linear product term 1
+21 %CON.....................          1.000     Aliased
+22 msex.....................         0.2480      0.0678      3.658    < 0.001
+
+            Records used        25570
+
+                Deviance    14735.861
+            Pearson Chi2    43453.591      Degrees of freedom   25550
+
+
+null @
+para 17 free @
+fit @
+
+          Iter  Step      Deviance
+
+             0     0    14735.861
+             1     0    14733.232
+             2     0    14733.197
+             3     0    14733.196
+             4     0    14733.195
+
+Piece-wise exponential regression
+Product additive excess model { T0 * ( 1 + T1 + T2 + ...) }
+
+    solid is used for cases
+    py10k is used for person years
+
+
+                            Parameter Summary Table
+
+ # Name                            Estimate     Std.Err.  Test Stat.  P value
+-- ----------------------------   ----------   ---------  ----------  --------
+Log-linear term 0
+ 1 sex_1....................          5.343     0.02019      264.6    < 0.001
+ 2 sex_2....................          4.554     0.01826      249.5    < 0.001
+ 3 naga.....................       -0.04960     0.01947     -2.548     0.0108
+ 4 nic * hiro...............       -0.08018     0.02123     -3.776    < 0.001
+ 5 nic * naga...............       -0.04110     0.03867     -1.063      0.288
+ 6 sex_1 * lage70...........          5.871      0.1728      33.98    < 0.001
+ 7 sex_2 * lage70...........          3.646      0.1265      28.82    < 0.001
+ 8 sex_1 * lage70sq.........        0.04851      0.2846     0.1704      > 0.5
+ 9 sex_2 * lage70sq.........         0.1225      0.1804     0.6792      0.497
+10 sex_1 * lage70qsp........         -13.35       1.419     -9.411    < 0.001
+11 sex_2 * lage70qsp........         -3.559       1.041     -3.419    < 0.001
+12 sex_1 * e30..............        -0.1723     0.01055     -16.32    < 0.001
+13 sex_2 * e30..............       -0.07446     0.01062      -7.01    < 0.001
+14 sex_1 * e30sq............       0.007167    0.004632      1.547      0.122
+15 sex_2 * e30sq............       0.004623     0.00435      1.063      0.288
+
+Linear term 1
+16 cola02w10................         0.3436     0.07885      4.358    < 0.001
+17 lodose * cola02wsq.......        0.09758     0.05838      1.671     0.0946
+18 hidose * cola02w10.......         0.1264     0.08912      1.418      0.156
+
+Log-linear term 1
+19 e30......................        -0.1977     0.06434     -3.072    0.00213
+20 lage70...................         -1.618      0.3057     -5.293    < 0.001
+
+Linear product term 1
+21 %CON.....................          1.000     Aliased
+22 msex.....................         0.2486     0.06779      3.668    < 0.001
+
+            Records used        25570
+
+                Deviance    14733.195
+            Pearson Chi2    43173.748      Degrees of freedom   25549
+
+
+lrt
+
+             LR statistic       2.665      Degrees of freedom      1
+                  P value       0.103
+
+para 16=1 @
+logl 1 +%con @
+fit @
+
+          Iter  Step      Deviance
+
+             0     0    15155.895
+             1     0    14765.424
+             2     0    14733.704
+             3     0    14733.201
+             4     0    14733.196
+             5     0    14733.195
+             6     0    14733.195
+
+Piece-wise exponential regression
+Product additive excess model { T0 * ( 1 + T1 + T2 + ...) }
+
+    solid is used for cases
+    py10k is used for person years
+
+
+                            Parameter Summary Table
+
+ # Name                            Estimate     Std.Err.  Test Stat.  P value
+-- ----------------------------   ----------   ---------  ----------  --------
+Log-linear term 0
+ 1 sex_1....................          5.343     0.02019      264.6    < 0.001
+ 2 sex_2....................          4.554     0.01826      249.5    < 0.001
+ 3 naga.....................       -0.04960     0.01947     -2.548     0.0108
+ 4 nic * hiro...............       -0.08019     0.02123     -3.776    < 0.001
+ 5 nic * naga...............       -0.04110     0.03867     -1.063      0.288
+ 6 sex_1 * lage70...........          5.871      0.1728      33.98    < 0.001
+ 7 sex_2 * lage70...........          3.646      0.1265      28.82    < 0.001
+ 8 sex_1 * lage70sq.........        0.04851      0.2846     0.1704      > 0.5
+ 9 sex_2 * lage70sq.........         0.1225      0.1804     0.6792      0.497
+10 sex_1 * lage70qsp........         -13.35       1.419     -9.411    < 0.001
+11 sex_2 * lage70qsp........         -3.559       1.041     -3.419    < 0.001
+12 sex_1 * e30..............        -0.1723     0.01055     -16.32    < 0.001
+13 sex_2 * e30..............       -0.07446     0.01062      -7.01    < 0.001
+14 sex_1 * e30sq............       0.007167    0.004632      1.547      0.122
+15 sex_2 * e30sq............       0.004623     0.00435      1.063      0.288
+
+Linear term 1
+16 cola02w10................          1.000     Aliased
+17 lodose * cola02wsq.......         0.2841      0.2257      1.259      0.208
+18 hidose * cola02w10.......         0.3679       0.325      1.132      0.258
+
+Log-linear term 1
+19 %CON.....................         -1.068      0.2295     -4.655    < 0.001
+20 e30......................        -0.1977     0.06434     -3.073    0.00212
+21 lage70...................         -1.618      0.3057     -5.293    < 0.001
+
+Linear product term 1
+22 %CON.....................          1.000     Aliased
+23 msex.....................         0.2486     0.06779      3.667    < 0.001
+
+            Records used        25570
+
+                Deviance    14733.195
+            Pearson Chi2    43173.779      Degrees of freedom   25549
+
+
+bound 17 @
+
+      Profile likelihood bounds for parameter 17 (lodose * cola02wsq)
+
+                  MLE     0.2841
+
+                 95% lower bound    -0.00158
+                 95% upper bound      0.8657
+
+
+
+
+! Solid cancer EAR model
+
+add @
+
+
+line 1 cola02w10 cola02wsq=0 @
+logl 1 e30 lage70 @
+pline 1 %con=1 msex @
+
+fit @
+
+          Iter  Step      Deviance
+
+             0     0    15232.746
+             1     0    14868.447
+             2     0    14757.953
+             3     0    14741.646
+             4     0    14739.949
+             5     0    14739.933
+             6     0    14739.933
+             7     0    14739.933
+
+Piece-wise exponential regression
+Additive model { T0 + T1 + T2 + ... }
+
+    solid is used for cases
+    py10k is used for person years
+
+
+                            Parameter Summary Table
+
+ # Name                            Estimate     Std.Err.  Test Stat.  P value
+-- ----------------------------   ----------   ---------  ----------  --------
+Log-linear term 0
+ 1 sex_1....................          5.346     0.02014      265.5    < 0.001
+ 2 sex_2....................          4.545     0.01842      246.7    < 0.001
+ 3 naga.....................       -0.04565     0.02039     -2.239     0.0252
+ 4 nic * hiro...............       -0.07679     0.02105     -3.648    < 0.001
+ 5 nic * naga...............       -0.04255     0.03886     -1.095      0.274
+ 6 sex_1 * lage70...........          5.713      0.1865      30.64    < 0.001
+ 7 sex_2 * lage70...........          3.671      0.1368      26.84    < 0.001
+ 8 sex_1 * lage70sq.........        -0.4936      0.3428      -1.44       0.15
+ 9 sex_2 * lage70sq.........         0.2283      0.1959      1.165      0.244
+10 sex_1 * lage70qsp........         -12.10       1.511     -8.008    < 0.001
+11 sex_2 * lage70qsp........         -3.818         1.1     -3.472    < 0.001
+12 sex_1 * e30..............        -0.1735     0.01072     -16.18    < 0.001
+13 sex_2 * e30..............       -0.07293     0.01098     -6.643    < 0.001
+14 sex_1 * e30sq............       0.007826    0.004752      1.647     0.0996
+15 sex_2 * e30sq............       0.003865    0.004536      0.852      0.394
+
+Linear term 1
+16 cola02w10................          51.63       4.982      10.36    < 0.001
+17 cola02wsq................          0.000       Fixed       1.164      0.244
+
+Log-linear term 1
+18 e30......................        -0.2805     0.06215     -4.514    < 0.001
+19 lage70...................          2.406      0.2731      8.809    < 0.001
+
+Linear product term 1
+20 %CON.....................          1.000     Aliased
+21 msex.....................         0.1622     0.06988      2.321     0.0203
+
+            Records used        25570
+
+                Deviance    14739.933
+            Pearson Chi2    39853.774      Degrees of freedom   25551
+
+
+
+bound 16 leve 90@
+
+      Profile likelihood bounds for parameter 16 (cola02w10)
+
+                  MLE      51.63
+
+                 95% lower bound       43.37
+                 95% upper bound       60.41
+
+bound 18 @
+
+      Profile likelihood bounds for parameter 18 (e30)
+
+                  MLE    -0.2805    exp(MLE)     0.7554
+
+                 95% lower bound     -0.3906
+                       exp(bound)     0.6767
+                 95% upper bound     -0.1742
+                       exp(bound)     0.8401
+
+bound 19 @
+
+      Profile likelihood bounds for parameter 19 (lage70)
+
+                  MLE      2.406    exp(MLE)      11.09
+
+                 95% lower bound       1.959
+                       exp(bound)      7.092
+                 95% upper bound       2.867
+                       exp(bound)      17.58
+
+bound 21 @
+
+      Profile likelihood bounds for parameter 21 (msex)
+
+                  MLE     0.1622
+
+                 95% lower bound     0.04631
+                 95% upper bound      0.2837
+

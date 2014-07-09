@@ -1,0 +1,1737 @@
+names city, sex, un4gy, distcat, agxcat, agecat, dcat, time, subjects, 
+      upyr, pyr, gdist, agex, age, year, solid, oralca, lip, tongue, 
+      saliv, mouth, pharynx, digestca, esoph, stomach, smallint, colon, 
+      rectum, liver, gallbldr, pancr, othdig, respca, nasal, larynx, 
+      lung, othres, thymus, skinbone, bone, connect, nmskin, skbasal, 
+      sksquam, bowens, breast, femgenca, uterus, utrnos, cervix, corpus, 
+      ovary, othfem, malgenca, prost, testis, othmale, urinca, bladder, 
+      kidney, renal, othurin, cnsca, thyroid, othsol, msother, 
+      adeno, squam, othepi, sarcoma, othnonepi, histnos, 
+      cola02w10, cola02g, cola02n, mara02w10, mara02g, mara02n, 
+      braa02w10, brea02w10, liva02w10, liva02g, liva02n, luna02w10, 
+      ovaa02w10, pana02w10, skea02w10, skia02w10, stoa02w10, 
+      tesa02w10, thya02w10, blaa02w10, utea02w10, trunc02, adjust02
+@
+
+! Remove unknown dose records
+
+tran if cola02w10 < 0 then delete endif @
+SKIP 1 @
+
+INPUT lssinc07.csv @
+
+Input from lssinc07.csv
+
+       26807 records read       25570 records used
+                                 1237 records rejected
+
+97 variables defined  At least 500 additional variables can be created.
+
+
+! set up categorical variables
+leve city sex un4gy distcat agxcat agecat dcat time @
+
+! define dose and age at exposure  categories for case summary tables
+city has 2 levels from 1 to 2
+sex has 2 levels from 1 to 2
+un4gy has 2 levels from 0 to 1
+distcat has 3 levels from 1 to 3
+agxcat has 15 levels from 1 to 15
+agecat has 16 levels from 3 to 18
+dcat has 22 levels from 2 to 23
+time has 10 levels from 1 to 10
+
+categ cola02w10 < 0.005 0.1 0.2 0.5 1 2 > as tbdcat @
+tbdcat has 7 levels from 1 to 7
+categ cola02w10 < 0.005 0.5 1 > as d4cat @
+d4cat has 4 levels from 1 to 4
+
+categ agex < 10 20 30 40 50 > as agxdec @
+agxdec has 6 levels from 1 to 6
+
+
+! define variables used in fitting models
+
+tran msex = 2*sex - 3 ;
+     lage70 = log(age/70) ; lage70sq = lage70^2 ;
+     lage70qsp = lage70sq*(age > 70) ; 
+     lage50sp = log(age/50)*(age >= 50) ;
+     e30 = (agex - 30)/10 ; e30sq = e30^2 ;
+     py10k = pyr/10000 ; 
+     hidose = cola02w10 > 2 ;
+     lodose = 1 - hidose ;
+@
+
+! Define additional variables of interest
+tran
+     distal = distcat == 2 ;
+	 nic = distcat == 3 ; 
+	 hiro = city == 1 ; naga = city == 2 ;
+     tsx25 = (age - agex - 25) ;
+@
+
+
+cases solid @
+pyr py10k @
+excess @
+ *** WARNING: Fit model again to compute statistics
+rrisk @
+line 1 cola02w10 @
+
+logl 1 e30 lage70 @
+pline 1 %con=1 msex @
+
+fit sex:4 naga nic*hiro nic*naga 
+    sex*lage70:4 sex*lage70sq sex*lage70qsp 
+    sex*e30 sex*e30sq - %con 
+@
+
+          Iter  Step      Deviance
+
+             0     0    25630.834
+             1     1    18438.147
+             2     1    16361.563
+             3     0    14821.111
+             4     0    14736.139
+             5     0    14735.954
+             6     0    14735.954
+
+Piece-wise exponential regression
+Product additive excess model { T0 * ( 1 + T1 + T2 +...) }
+
+    solid is used for cases
+    py10k is used for person years
+
+
+                            Parameter Summary Table
+
+ # Name                            Estimate     Std.Err.  Test Stat.  P value
+-- ----------------------------   ----------   ---------  ----------  --------
+Log-linear term 0
+ 1 sex_1....................          5.338     0.02008      265.8    < 0.001
+ 2 sex_2....................          4.547     0.01802      252.3    < 0.001
+ 3 naga.....................       -0.04658      0.0194     -2.401     0.0163
+ 4 nic * hiro...............       -0.07415     0.02099     -3.532    < 0.001
+ 5 nic * naga...............       -0.03794     0.03863    -0.9822      0.326
+ 6 sex_1 * lage70...........          5.875      0.1728      33.99    < 0.001
+ 7 sex_2 * lage70...........          3.652      0.1265      28.86    < 0.001
+ 8 sex_1 * lage70sq.........        0.04283      0.2847     0.1504      > 0.5
+ 9 sex_2 * lage70sq.........         0.1152       0.181     0.6364      > 0.5
+10 sex_1 * lage70qsp........         -13.34       1.419     -9.406    < 0.001
+11 sex_2 * lage70qsp........         -3.551       1.041     -3.412    < 0.001
+12 sex_1 * e30..............        -0.1721     0.01059     -16.26    < 0.001
+13 sex_2 * e30..............       -0.07425     0.01071     -6.936    < 0.001
+14 sex_1 * e30sq............       0.007164    0.004633      1.546      0.122
+15 sex_2 * e30sq............       0.004648    0.004356      1.067      0.286
+
+Linear term 1
+16 cola02w10................         0.4666     0.04413      10.57    < 0.001
+
+Log-linear term 1
+17 e30......................        -0.1850      0.0636     -2.909    0.00363
+18 lage70...................         -1.621      0.3058       -5.3    < 0.001
+
+Linear product term 1
+19 %CON.....................          1.000     Aliased
+20 msex.....................         0.2465     0.06763      3.645    < 0.001
+
+            Records used        25570
+
+                Deviance    14735.954
+            Pearson Chi2    43595.689      Degrees of freedom   25551
+
+
+
+add @
+fit @
+
+          Iter  Step      Deviance
+
+             0     0    15145.255
+             1     2    15131.949
+             2     2    15116.260
+             3     1    15097.700
+             4     1    14855.850
+             5     0    14772.650
+             6     0    14746.607
+             7     0    14739.995
+             8     0    14739.933
+             9     0    14739.933
+
+Piece-wise exponential regression
+Additive model { T0 + T1 + T2 +... }
+
+    solid is used for cases
+    py10k is used for person years
+
+
+                            Parameter Summary Table
+
+ # Name                            Estimate     Std.Err.  Test Stat.  P value
+-- ----------------------------   ----------   ---------  ----------  --------
+Log-linear term 0
+ 1 sex_1....................          5.346     0.02014      265.5    < 0.001
+ 2 sex_2....................          4.545     0.01842      246.7    < 0.001
+ 3 naga.....................       -0.04565     0.02039     -2.239     0.0252
+ 4 nic * hiro...............       -0.07679     0.02105     -3.648    < 0.001
+ 5 nic * naga...............       -0.04255     0.03886     -1.095      0.274
+ 6 sex_1 * lage70...........          5.713      0.1865      30.64    < 0.001
+ 7 sex_2 * lage70...........          3.671      0.1368      26.84    < 0.001
+ 8 sex_1 * lage70sq.........        -0.4934      0.3428     -1.439       0.15
+ 9 sex_2 * lage70sq.........         0.2283      0.1959      1.165      0.244
+10 sex_1 * lage70qsp........         -12.10       1.511     -8.009    < 0.001
+11 sex_2 * lage70qsp........         -3.818         1.1     -3.472    < 0.001
+12 sex_1 * e30..............        -0.1735     0.01072     -16.18    < 0.001
+13 sex_2 * e30..............       -0.07292     0.01098     -6.643    < 0.001
+14 sex_1 * e30sq............       0.007825    0.004752      1.647     0.0996
+15 sex_2 * e30sq............       0.003865    0.004536      0.852      0.394
+
+Linear term 1
+16 cola02w10................          51.63       4.982      10.36    < 0.001
+
+Log-linear term 1
+17 e30......................        -0.2806     0.06215     -4.514    < 0.001
+18 lage70...................          2.406      0.2731       8.81    < 0.001
+
+Linear product term 1
+19 %CON.....................          1.000     Aliased
+20 msex.....................         0.1622     0.06988      2.321     0.0203
+
+            Records used        25570
+
+                Deviance    14739.933
+            Pearson Chi2    39853.809      Degrees of freedom   25551
+
+
+
+
+
+! Cancers of the Oral Cavity (constant ERR only)
+cases oralca @
+rrisk @
+line 1 skia02w10 @
+para 17-18=0 20=0 @
+fit @
+
+          Iter  Step      Deviance
+
+             0     0    32306.379
+             1     0    12028.374
+             2     0     4894.774
+             3     0     2561.383
+             4     0     1922.880
+             5     0     1805.719
+             6     0     1796.237
+             7     0     1796.089
+             8     0     1796.089
+
+Piece-wise exponential regression
+Product additive excess model { T0 * ( 1 + T1 + T2 +...) }
+
+   oralca is used for cases
+    py10k is used for person years
+
+
+                            Parameter Summary Table
+
+ # Name                            Estimate     Std.Err.  Test Stat.  P value
+-- ----------------------------   ----------   ---------  ----------  --------
+Log-linear term 0
+ 1 sex_1....................          1.298      0.1543       8.41    < 0.001
+ 2 sex_2....................       -0.03990      0.1691     -0.236      > 0.5
+ 3 naga.....................       -0.06132      0.1526    -0.4019      > 0.5
+ 4 nic * hiro...............        -0.2491       0.178       -1.4      0.162
+ 5 nic * naga...............         0.2703      0.2653      1.019      0.308
+ 6 sex_1 * lage70...........          4.548       1.113      4.086    < 0.001
+ 7 sex_2 * lage70...........          1.451       1.125       1.29      0.197
+ 8 sex_1 * lage70sq.........        -0.1114       1.452   -0.07673      > 0.5
+ 9 sex_2 * lage70sq.........         -1.209       1.478    -0.8182      0.413
+10 sex_1 * lage70qsp........         -21.08       11.76     -1.793     0.0729
+11 sex_2 * lage70qsp........          4.968       10.02     0.4959      > 0.5
+12 sex_1 * e30..............        -0.2397     0.06856     -3.496    < 0.001
+13 sex_2 * e30..............       -0.06622     0.08932    -0.7414      0.458
+14 sex_1 * e30sq............        0.04259     0.03159      1.348      0.178
+15 sex_2 * e30sq............      0.0002359     0.03933   0.005998      > 0.5
+
+Linear term 1
+16 skia02w10................         0.4079       0.204      1.999     0.0456
+
+Log-linear term 1
+17 e30......................          0.000       Fixed      -1.971     0.0487
+18 lage70...................          0.000       Fixed      -2.999    0.00271
+
+Linear product term 1
+19 %CON.....................          1.000     Aliased
+20 msex.....................          0.000       Fixed       1.315      0.189
+
+            Records used        25570
+
+                Deviance     1796.089
+            Pearson Chi2     24336.49      Degrees of freedom   25554
+
+
+
+! Cancer of the esophagus(constant ERR only)
+rrisk @
+cases esoph @
+line 1 stoa02w10 @
+fit @
+
+          Iter  Step      Deviance
+
+             0     0     2049.399
+             1     1     1930.373
+             2     0     1844.782
+             3     0     1827.990
+             4     0     1826.576
+             5     0     1826.515
+             6     0     1826.514
+             7     0     1826.514
+
+Piece-wise exponential regression
+Product additive excess model { T0 * ( 1 + T1 + T2 +...) }
+
+    esoph is used for cases
+    py10k is used for person years
+
+
+                            Parameter Summary Table
+
+ # Name                            Estimate     Std.Err.  Test Stat.  P value
+-- ----------------------------   ----------   ---------  ----------  --------
+Log-linear term 0
+ 1 sex_1....................          1.884      0.1156       16.3    < 0.001
+ 2 sex_2....................        -0.5021      0.1843     -2.725    0.00643
+ 3 naga.....................        0.02122       0.136     0.1561      > 0.5
+ 4 nic * hiro...............        0.08125      0.1415     0.5741      > 0.5
+ 5 nic * naga...............        -0.5647      0.3241     -1.742     0.0814
+ 6 sex_1 * lage70...........          3.848       1.201      3.205    0.00135
+ 7 sex_2 * lage70...........          4.260       1.928       2.21     0.0271
+ 8 sex_1 * lage70sq.........         -9.207       3.323      -2.77     0.0056
+ 9 sex_2 * lage70sq.........         -1.969       4.197    -0.4692      > 0.5
+10 sex_1 * lage70qsp........         -8.835       10.57    -0.8361      0.403
+11 sex_2 * lage70qsp........          4.147       13.17     0.3149      > 0.5
+12 sex_1 * e30..............        -0.1329     0.05299     -2.508     0.0121
+13 sex_2 * e30..............       -0.06455       0.128    -0.5043      > 0.5
+14 sex_1 * e30sq............        0.08639      0.0228       3.79    < 0.001
+15 sex_2 * e30sq............        0.04990     0.04618       1.08       0.28
+
+Linear term 1
+16 stoa02w10................         0.5220      0.2742      1.904     0.0569
+
+Log-linear term 1
+17 e30......................          0.000       Fixed     -0.2908      > 0.5
+18 lage70...................          0.000       Fixed     -0.7503      0.453
+
+Linear product term 1
+19 %CON.....................          1.000     Aliased
+20 msex.....................          0.000       Fixed      0.6504      > 0.5
+
+            Records used        25570
+
+                Deviance     1826.514
+            Pearson Chi2     25523.78      Degrees of freedom   25554
+
+
+
+! Stomach cancer (ERR and EAR models)
+cases stomach @
+
+! ERR model
+rrisk @
+line 1 stoa02w10 @
+para 17-18 free 20 free @
+fit @
+
+          Iter  Step      Deviance
+
+             0     0    27847.424
+             1     3    27409.046
+             2     4    27396.320
+             3     4    27383.597
+             4     4    27370.876
+             5     4    27358.156
+             6     4    27345.437
+             7     4    27332.721
+             8     3    26814.223
+             9     3    26447.287
+            10     2    21331.199
+            11     1     9731.208
+            12     0     9059.880
+            13     0     8961.504
+            14     0     8945.397
+            15     0     8943.610
+            16     0     8943.586
+            17     0     8943.586
+
+Piece-wise exponential regression
+Product additive excess model { T0 * ( 1 + T1 + T2 +...) }
+
+  stomach is used for cases
+    py10k is used for person years
+
+
+                            Parameter Summary Table
+
+ # Name                            Estimate     Std.Err.  Test Stat.  P value
+-- ----------------------------   ----------   ---------  ----------  --------
+Log-linear term 0
+ 1 sex_1....................          4.150     0.03728      111.3    < 0.001
+ 2 sex_2....................          3.041     0.03751       81.1    < 0.001
+ 3 naga.....................        -0.1556     0.03871      -4.02    < 0.001
+ 4 nic * hiro...............       -0.05393     0.03924     -1.374      0.169
+ 5 nic * naga...............       0.009240     0.07586     0.1218      > 0.5
+ 6 sex_1 * lage70...........          4.062      0.2921      13.91    < 0.001
+ 7 sex_2 * lage70...........          3.322      0.2656      12.51    < 0.001
+ 8 sex_1 * lage70sq.........        -0.7530      0.4753     -1.584      0.113
+ 9 sex_2 * lage70sq.........         0.3720      0.3826     0.9723      0.331
+10 sex_1 * lage70qsp........         -12.71        2.58     -4.925    < 0.001
+11 sex_2 * lage70qsp........         -7.289       2.167     -3.364    < 0.001
+12 sex_1 * e30..............        0.04538     0.01871      2.425     0.0153
+13 sex_2 * e30..............         0.1483     0.02392      6.199    < 0.001
+14 sex_1 * e30sq............       -0.01525    0.008169     -1.867     0.0619
+15 sex_2 * e30sq............      -0.002621    0.009054    -0.2895      > 0.5
+
+Linear term 1
+16 stoa02w10................         0.3364     0.08035      4.187    < 0.001
+
+Log-linear term 1
+17 e30......................        -0.1395      0.1631    -0.8551      0.392
+18 lage70...................         -1.488      0.8004     -1.859     0.0631
+
+Linear product term 1
+19 %CON.....................          1.000     Aliased
+20 msex.....................         0.3919      0.1627      2.409      0.016
+
+            Records used        25570
+
+                Deviance     8943.586
+            Pearson Chi2     50775.95      Degrees of freedom   25551
+
+
+
+! EAR model
+add @
+fit @
+
+          Iter  Step      Deviance
+
+             0     0     8985.689
+             1     1     8975.547
+             2     1     8965.951
+             3     0     8951.680
+             4     1     8945.848
+             5     0     8941.871
+             6     0     8940.980
+             7     0     8940.959
+             8     0     8940.958
+             9     0     8940.957
+
+Piece-wise exponential regression
+Additive model { T0 + T1 + T2 +... }
+
+  stomach is used for cases
+    py10k is used for person years
+
+
+                            Parameter Summary Table
+
+ # Name                            Estimate     Std.Err.  Test Stat.  P value
+-- ----------------------------   ----------   ---------  ----------  --------
+Log-linear term 0
+ 1 sex_1....................          4.158      0.0374      111.2    < 0.001
+ 2 sex_2....................          3.043     0.03793      80.24    < 0.001
+ 3 naga.....................        -0.1669     0.04018     -4.153    < 0.001
+ 4 nic * hiro...............       -0.05692     0.03928     -1.449      0.147
+ 5 nic * naga...............        0.01691     0.07633     0.2215      > 0.5
+ 6 sex_1 * lage70...........          4.044       0.304      13.31    < 0.001
+ 7 sex_2 * lage70...........          3.355      0.2812      11.93    < 0.001
+ 8 sex_1 * lage70sq.........        -0.8750      0.5186     -1.687     0.0915
+ 9 sex_2 * lage70sq.........         0.4873      0.4026      1.211      0.226
+10 sex_1 * lage70qsp........         -12.78       2.677     -4.775    < 0.001
+11 sex_2 * lage70qsp........         -7.608       2.259     -3.368    < 0.001
+12 sex_1 * e30..............        0.04381     0.01892      2.316     0.0206
+13 sex_2 * e30..............         0.1498      0.0244      6.138    < 0.001
+14 sex_1 * e30sq............       -0.01525     0.00833     -1.831     0.0671
+15 sex_2 * e30sq............      -0.003387    0.009365    -0.3617      > 0.5
+
+Linear term 1
+16 stoa02w10................          9.520       2.339      4.071    < 0.001
+
+Log-linear term 1
+17 e30......................       -0.01617      0.1556    -0.1039      > 0.5
+18 lage70...................          1.931      0.7318      2.639    0.00833
+
+Linear product term 1
+19 %CON.....................          1.000     Aliased
+20 msex.....................        0.02266      0.1854     0.1222      > 0.5
+
+            Records used        25570
+
+                Deviance     8940.957
+            Pearson Chi2     48102.97      Degrees of freedom   25551
+
+
+
+! Colon cancer (ERR and EAR models)
+cases colon @
+
+! ERR model
+rrisk @
+line 1 cola02w10 @
+fit @
+
+          Iter  Step      Deviance
+
+             0     0     8383.089
+             1     0     5443.659
+             2     1     5162.877
+             3     0     4638.240
+             4     0     4564.922
+             5     0     4561.241
+             6     0     4561.163
+             7     0     4561.157
+             8     0     4561.157
+             9     0     4561.157
+
+Piece-wise exponential regression
+Product additive excess model { T0 * ( 1 + T1 + T2 +...) }
+
+    colon is used for cases
+    py10k is used for person years
+
+
+                            Parameter Summary Table
+
+ # Name                            Estimate     Std.Err.  Test Stat.  P value
+-- ----------------------------   ----------   ---------  ----------  --------
+Log-linear term 0
+ 1 sex_1....................          2.924     0.06922      42.24    < 0.001
+ 2 sex_2....................          2.282     0.05752      39.67    < 0.001
+ 3 naga.....................       -0.02711     0.06498    -0.4172      > 0.5
+ 4 nic * hiro...............       -0.06722     0.07125    -0.9434      0.345
+ 5 nic * naga...............       -0.05983      0.1288    -0.4644      > 0.5
+ 6 sex_1 * lage70...........          7.754      0.7434      10.43    < 0.001
+ 7 sex_2 * lage70...........          8.781      0.5689      15.44    < 0.001
+ 8 sex_1 * lage70sq.........         -3.008       1.642     -1.832     0.0669
+ 9 sex_2 * lage70sq.........          1.799       1.058      1.701      0.089
+10 sex_1 * lage70qsp........         -2.051       5.633    -0.3641      > 0.5
+11 sex_2 * lage70qsp........         -12.75       4.008     -3.181    0.00147
+12 sex_1 * e30..............        -0.7160      0.0429     -16.69    < 0.001
+13 sex_2 * e30..............        -0.5855     0.03897     -15.02    < 0.001
+14 sex_1 * e30sq............     -0.0008955     0.01945   -0.04604      > 0.5
+15 sex_2 * e30sq............        0.03057     0.01724      1.774     0.0761
+
+Linear term 1
+16 cola02w10................         0.5317      0.1573       3.38    < 0.001
+
+Log-linear term 1
+17 e30......................        0.01168       0.209    0.05589      > 0.5
+18 lage70...................         -2.662       1.396     -1.907     0.0565
+
+Linear product term 1
+19 %CON.....................          1.000     Aliased
+20 msex.....................        -0.3545      0.2204     -1.608      0.108
+
+            Records used        25570
+
+                Deviance     4561.157
+            Pearson Chi2     47724.06      Degrees of freedom   25551
+
+
+
+! EAR model
+add @
+fit @
+
+          Iter  Step      Deviance
+
+             0     0     4648.350
+             1     0     4603.985
+             2     0     4585.600
+             3     0     4574.458
+             4     0     4566.824
+             5     0     4565.462
+             6     0     4565.293
+             7     0     4565.263
+             8     0     4565.257
+             9     0     4565.256
+            10     0     4565.256
+            11     0     4565.256
+
+Piece-wise exponential regression
+Additive model { T0 + T1 + T2 +... }
+
+    colon is used for cases
+    py10k is used for person years
+
+
+                            Parameter Summary Table
+
+ # Name                            Estimate     Std.Err.  Test Stat.  P value
+-- ----------------------------   ----------   ---------  ----------  --------
+Log-linear term 0
+ 1 sex_1....................          2.919     0.07082      41.22    < 0.001
+ 2 sex_2....................          2.284     0.05821      39.23    < 0.001
+ 3 naga.....................       -0.01976     0.06851    -0.2885      > 0.5
+ 4 nic * hiro...............       -0.06746     0.07157    -0.9425      0.346
+ 5 nic * naga...............       -0.06692      0.1296    -0.5162      > 0.5
+ 6 sex_1 * lage70...........          7.749      0.7932      9.769    < 0.001
+ 7 sex_2 * lage70...........          8.790      0.5949      14.77    < 0.001
+ 8 sex_1 * lage70sq.........         -2.476       1.769       -1.4      0.162
+ 9 sex_2 * lage70sq.........          1.969       1.107      1.779     0.0752
+10 sex_1 * lage70qsp........         -2.751       5.992    -0.4592      > 0.5
+11 sex_2 * lage70qsp........         -13.17       4.157     -3.167    0.00154
+12 sex_1 * e30..............        -0.7090     0.04374     -16.21    < 0.001
+13 sex_2 * e30..............        -0.5806     0.03971     -14.62    < 0.001
+14 sex_1 * e30sq............      -0.003255     0.02062    -0.1579      > 0.5
+15 sex_2 * e30sq............        0.03055     0.01763      1.733     0.0831
+
+Linear term 1
+16 cola02w10................          7.952       2.151      3.697    < 0.001
+
+Log-linear term 1
+17 e30......................        -0.8160      0.2217     -3.681    < 0.001
+18 lage70...................          6.963       1.398      4.981    < 0.001
+
+Linear product term 1
+19 %CON.....................          1.000     Aliased
+20 msex.....................        -0.6237      0.1608     -3.877    < 0.001
+
+            Records used        25570
+
+                Deviance     4565.256
+            Pearson Chi2     46518.11      Degrees of freedom   25551
+
+
+
+! Cancer of the rectum (constant ERR only)
+cases rectum @
+rrisk @
+line 1 blaa02w10 @
+para 17-18=0 20=0 @
+fit @
+
+          Iter  Step      Deviance
+
+             0     0     3862.577
+             1     0     3477.743
+             2     0     3445.473
+             3     0     3444.956
+             4     0     3444.955
+             5     0     3444.955
+
+Piece-wise exponential regression
+Product additive excess model { T0 * ( 1 + T1 + T2 +...) }
+
+   rectum is used for cases
+    py10k is used for person years
+
+
+                            Parameter Summary Table
+
+ # Name                            Estimate     Std.Err.  Test Stat.  P value
+-- ----------------------------   ----------   ---------  ----------  --------
+Log-linear term 0
+ 1 sex_1....................          2.428     0.08669      28.01    < 0.001
+ 2 sex_2....................          1.660     0.07826      21.21    < 0.001
+ 3 naga.....................       0.002735      0.0866    0.03158      > 0.5
+ 4 nic * hiro...............        -0.1380     0.09617     -1.435      0.151
+ 5 nic * naga...............        -0.1889      0.1768     -1.068      0.285
+ 6 sex_1 * lage70...........          7.603      0.8278      9.184    < 0.001
+ 7 sex_2 * lage70...........          6.684      0.6999      9.549    < 0.001
+ 8 sex_1 * lage70sq.........         0.6437       1.377     0.4674      > 0.5
+ 9 sex_2 * lage70sq.........          1.403       1.103      1.271      0.204
+10 sex_1 * lage70qsp........         -21.22       6.882     -3.083    0.00205
+11 sex_2 * lage70qsp........         -17.18       5.637     -3.048    0.00231
+12 sex_1 * e30..............        -0.4237     0.04569     -9.272    < 0.001
+13 sex_2 * e30..............        -0.3547     0.04878     -7.273    < 0.001
+14 sex_1 * e30sq............        0.05757      0.0203      2.836    0.00456
+15 sex_2 * e30sq............        0.03148     0.02175      1.447      0.148
+
+Linear term 1
+16 blaa02w10................         0.1830      0.1524      1.201       0.23
+
+Log-linear term 1
+17 e30......................          0.000       Fixed     -0.3151      > 0.5
+18 lage70...................          0.000       Fixed      0.8859      0.376
+
+Linear product term 1
+19 %CON.....................          1.000     Aliased
+20 msex.....................          0.000       Fixed       1.111      0.267
+
+            Records used        25570
+
+                Deviance     3444.955
+            Pearson Chi2     23428.34      Degrees of freedom   25554
+
+
+
+
+! Liver cancer (ERR and EAR models)
+cases liver @
+
+! ERR model
+rrisk @
+line 1 liva02w10  @
+para 17-18 free 20 free @
+fit @
+
+          Iter  Step      Deviance
+
+             0     0     5444.923
+             1     0     5408.457
+             2     0     4856.946
+             3     0     4796.948
+             4     0     4795.214
+             5     0     4795.209
+             6     0     4795.209
+
+Piece-wise exponential regression
+Product additive excess model { T0 * ( 1 + T1 + T2 +...) }
+
+    liver is used for cases
+    py10k is used for person years
+
+
+                            Parameter Summary Table
+
+ # Name                            Estimate     Std.Err.  Test Stat.  P value
+-- ----------------------------   ----------   ---------  ----------  --------
+Log-linear term 0
+ 1 sex_1....................          3.137     0.06511      48.18    < 0.001
+ 2 sex_2....................          2.077     0.06458      32.16    < 0.001
+ 3 naga.....................       -0.02534     0.06556    -0.3866      > 0.5
+ 4 nic * hiro...............        -0.1208     0.07255     -1.665     0.0959
+ 5 nic * naga...............        0.04765      0.1221     0.3903      > 0.5
+ 6 sex_1 * lage70...........          3.244      0.6034      5.376    < 0.001
+ 7 sex_2 * lage70...........          5.906      0.7319      8.069    < 0.001
+ 8 sex_1 * lage70sq.........         -6.371       1.277     -4.991    < 0.001
+ 9 sex_2 * lage70sq.........         -3.290       1.958      -1.68     0.0929
+10 sex_1 * lage70qsp........          4.193       5.332     0.7863      0.432
+11 sex_2 * lage70qsp........         -4.970       5.685    -0.8742      0.382
+12 sex_1 * e30..............        -0.3999     0.03256     -12.28    < 0.001
+13 sex_2 * e30..............        -0.3048     0.04382     -6.955    < 0.001
+14 sex_1 * e30sq............       -0.01652     0.01567     -1.054      0.292
+15 sex_2 * e30sq............       -0.01101     0.02027    -0.5433      > 0.5
+
+Linear term 1
+16 liva02w10................         0.3034       0.132      2.299     0.0215
+
+Log-linear term 1
+17 e30......................      -0.006380      0.2678   -0.02383      > 0.5
+18 lage70...................         -2.419       1.922     -1.259      0.208
+
+Linear product term 1
+19 %CON.....................          1.000     Aliased
+20 msex.....................       -0.04237      0.3357    -0.1262      > 0.5
+
+            Records used        25570
+
+                Deviance     4795.209
+            Pearson Chi2     56210.29      Degrees of freedom   25551
+
+
+
+! EAR model
+add @
+fit @
+
+          Iter  Step      Deviance
+
+             0     0     4834.080
+             1     0     4811.629
+             2     0     4802.478
+             3     0     4799.111
+             4     0     4798.168
+             5     0     4797.842
+             6     0     4797.624
+             7     0     4797.501
+             8     0     4797.442
+             9     0     4797.417
+            10     0     4797.407
+            11     0     4797.403
+            12     0     4797.402
+            13     0     4797.402
+            14     0     4797.401
+
+Piece-wise exponential regression
+Additive model { T0 + T1 + T2 +... }
+
+    liver is used for cases
+    py10k is used for person years
+
+
+                            Parameter Summary Table
+
+ # Name                            Estimate     Std.Err.  Test Stat.  P value
+-- ----------------------------   ----------   ---------  ----------  --------
+Log-linear term 0
+ 1 sex_1....................          3.149     0.06558      48.01    < 0.001
+ 2 sex_2....................          2.089     0.06503      32.13    < 0.001
+ 3 naga.....................       -0.02802     0.06798    -0.4121      > 0.5
+ 4 nic * hiro...............        -0.1263     0.07269     -1.738     0.0823
+ 5 nic * naga...............        0.04242      0.1227     0.3457      > 0.5
+ 6 sex_1 * lage70...........          3.258       0.627      5.196    < 0.001
+ 7 sex_2 * lage70...........          5.240      0.8002      6.549    < 0.001
+ 8 sex_1 * lage70sq.........         -6.250       1.342     -4.656    < 0.001
+ 9 sex_2 * lage70sq.........         -6.040       2.488     -2.428     0.0152
+10 sex_1 * lage70qsp........          3.913       5.554     0.7046      0.481
+11 sex_2 * lage70qsp........         0.5792       6.356    0.09113      > 0.5
+12 sex_1 * e30..............        -0.4066     0.03271     -12.43    < 0.001
+13 sex_2 * e30..............        -0.3041     0.04508     -6.746    < 0.001
+14 sex_1 * e30sq............       -0.01882      0.0162     -1.162      0.245
+15 sex_2 * e30sq............       -0.01361     0.02116    -0.6435      > 0.5
+
+Linear term 1
+16 liva02w10................          4.231       1.659       2.55     0.0108
+
+Log-linear term 1
+17 e30......................        -0.2546      0.2676    -0.9515      0.341
+18 lage70...................          3.683       1.386      2.657    0.00789
+
+Linear product term 1
+19 %CON.....................          1.000     Aliased
+20 msex.....................        -0.4784      0.2329     -2.054       0.04
+
+            Records used        25570
+
+                Deviance     4797.401
+            Pearson Chi2     59607.85      Degrees of freedom   25551
+
+
+
+
+! Gallbladder cancer (constant ERR only)
+cases gallbldr@
+rrisk @
+line 1 pana02w10  @
+para 17-18=0 20=0 @
+fit @
+
+          Iter  Step      Deviance
+
+             0     0     3567.912
+             1     0     2738.049
+             2     0     2556.072
+             3     0     2532.114
+             4     0     2530.950
+             5     0     2530.942
+             6     0     2530.942
+
+Piece-wise exponential regression
+Product additive excess model { T0 * ( 1 + T1 + T2 +...) }
+
+ gallbldr is used for cases
+    py10k is used for person years
+
+
+                            Parameter Summary Table
+
+ # Name                            Estimate     Std.Err.  Test Stat.  P value
+-- ----------------------------   ----------   ---------  ----------  --------
+Log-linear term 0
+ 1 sex_1....................          1.414      0.1292      10.95    < 0.001
+ 2 sex_2....................          1.323     0.08848      14.95    < 0.001
+ 3 naga.....................         0.4485      0.1018      4.407    < 0.001
+ 4 nic * hiro...............        0.02872      0.1197     0.2398      > 0.5
+ 5 nic * naga...............       -0.02575      0.1882    -0.1368      > 0.5
+ 6 sex_1 * lage70...........          5.586       1.414      3.951    < 0.001
+ 7 sex_2 * lage70...........          6.369      0.8017      7.944    < 0.001
+ 8 sex_1 * lage70sq.........         -4.365       3.595     -1.214      0.225
+ 9 sex_2 * lage70sq.........          1.278       1.656     0.7718       0.44
+10 sex_1 * lage70qsp........         -8.035        11.4    -0.7049      0.481
+11 sex_2 * lage70qsp........         -7.763       5.635     -1.378      0.168
+12 sex_1 * e30..............        -0.1612     0.07065     -2.282     0.0225
+13 sex_2 * e30..............      -0.001159     0.06187   -0.01874      > 0.5
+14 sex_1 * e30sq............        0.02901     0.03083      0.941      0.347
+15 sex_2 * e30sq............       -0.04922     0.02574     -1.913     0.0558
+
+Linear term 1
+16 pana02w10................       -0.06367      0.1698     -0.375      > 0.5
+
+Log-linear term 1
+17 e30......................          0.000       Fixed      -1.134      0.257
+18 lage70...................          0.000       Fixed     0.02105      > 0.5
+
+Linear product term 1
+19 %CON.....................          1.000     Aliased
+20 msex.....................          0.000       Fixed      0.1742      > 0.5
+
+            Records used        25570
+
+                Deviance     2530.942
+            Pearson Chi2     24401.36      Degrees of freedom   25554
+
+
+
+! Pancreatic cancer (constant ERR only)
+cases pancr @
+rrisk @
+line 1 pana02w10 @
+para 17-18=0 20=0 @
+fit @
+
+          Iter  Step      Deviance
+
+             0     0     2565.474
+             1     0     2505.060
+             2     0     2502.608
+             3     0     2502.601
+             4     0     2502.601
+
+Piece-wise exponential regression
+Product additive excess model { T0 * ( 1 + T1 + T2 +...) }
+
+    pancr is used for cases
+    py10k is used for person years
+
+
+                            Parameter Summary Table
+
+ # Name                            Estimate     Std.Err.  Test Stat.  P value
+-- ----------------------------   ----------   ---------  ----------  --------
+Log-linear term 0
+ 1 sex_1....................          1.805      0.1176      15.34    < 0.001
+ 2 sex_2....................          1.243     0.09445      13.16    < 0.001
+ 3 naga.....................       -0.06906      0.1155    -0.5981      > 0.5
+ 4 nic * hiro...............        -0.1214      0.1223    -0.9932      0.321
+ 5 nic * naga...............         0.1824      0.2118     0.8614      0.389
+ 6 sex_1 * lage70...........          4.661       1.227      3.799    < 0.001
+ 7 sex_2 * lage70...........          7.354      0.8751      8.403    < 0.001
+ 8 sex_1 * lage70sq.........         -4.887       3.207     -1.524      0.128
+ 9 sex_2 * lage70sq.........          2.593       1.538      1.686     0.0918
+10 sex_1 * lage70qsp........         -6.605       10.18    -0.6487      > 0.5
+11 sex_2 * lage70qsp........         -15.22       6.147     -2.475     0.0133
+12 sex_1 * e30..............       -0.04431      0.0637    -0.6956      0.487
+13 sex_2 * e30..............       -0.04449     0.07019    -0.6339      > 0.5
+14 sex_1 * e30sq............      -0.003206     0.02833    -0.1132      > 0.5
+15 sex_2 * e30sq............       -0.03364       0.029      -1.16      0.246
+
+Linear term 1
+16 pana02w10................         0.2600      0.2192      1.186      0.236
+
+Log-linear term 1
+17 e30......................          0.000       Fixed       -1.49      0.136
+18 lage70...................          0.000       Fixed      -1.081       0.28
+
+Linear product term 1
+19 %CON.....................          1.000     Aliased
+20 msex.....................          0.000       Fixed       1.075      0.282
+
+            Records used        25570
+
+                Deviance     2502.601
+            Pearson Chi2     47452.14      Degrees of freedom   25554
+
+
+
+
+! Lung cancer (ERR and EAR models)
+cases lung @
+! ERR
+rrisk @
+line 1 luna02w10 @
+para 17-18 free 20 free @
+fit @
+
+          Iter  Step      Deviance
+
+             0     0     7524.610
+             1     1     5837.774
+             2     1     5558.351
+             3     0     5342.225
+             4     0     5326.705
+             5     0     5326.642
+             6     0     5326.642
+
+Piece-wise exponential regression
+Product additive excess model { T0 * ( 1 + T1 + T2 +...) }
+
+     lung is used for cases
+    py10k is used for person years
+
+
+                            Parameter Summary Table
+
+ # Name                            Estimate     Std.Err.  Test Stat.  P value
+-- ----------------------------   ----------   ---------  ----------  --------
+Log-linear term 0
+ 1 sex_1....................          3.399     0.05536       61.4    < 0.001
+ 2 sex_2....................          2.000     0.06246      32.03    < 0.001
+ 3 naga.....................         0.1109     0.06018      1.843     0.0653
+ 4 nic * hiro...............       -0.02533     0.06692    -0.3785      > 0.5
+ 5 nic * naga...............       0.007271      0.1139    0.06385      > 0.5
+ 6 sex_1 * lage70...........          6.606      0.5745       11.5    < 0.001
+ 7 sex_2 * lage70...........          6.280      0.6198      10.13    < 0.001
+ 8 sex_1 * lage70sq.........         -2.542       1.519     -1.673     0.0943
+ 9 sex_2 * lage70sq.........        -0.3517       1.385    -0.2539      > 0.5
+10 sex_1 * lage70qsp........         -11.43       4.597     -2.485     0.0129
+11 sex_2 * lage70qsp........         -7.191       4.424     -1.626      0.104
+12 sex_1 * e30..............        -0.1182     0.03145      -3.76    < 0.001
+13 sex_2 * e30..............        -0.1353     0.04545     -2.978     0.0029
+14 sex_1 * e30sq............       -0.03358     0.01416     -2.371     0.0177
+15 sex_2 * e30sq............      -0.009822     0.01745    -0.5629      > 0.5
+
+Linear term 1
+16 luna02w10................         0.8090      0.1617      5.001    < 0.001
+
+Log-linear term 1
+17 e30......................         0.1771      0.1514       1.17      0.242
+18 lage70...................         -1.916       1.133     -1.692     0.0907
+
+Linear product term 1
+19 %CON.....................          1.000     Aliased
+20 msex.....................         0.6573      0.1236      5.317    < 0.001
+
+            Records used        25570
+
+                Deviance     5326.642
+            Pearson Chi2     30936.75      Degrees of freedom   25551
+
+
+
+! EAR
+add @
+fit @
+
+          Iter  Step      Deviance
+
+             0     0     5409.289
+             1     0     5358.879
+             2     0     5334.834
+             3     0     5329.666
+             4     0     5329.506
+             5     0     5329.502
+             6     0     5329.502
+             7     0     5329.502
+
+Piece-wise exponential regression
+Additive model { T0 + T1 + T2 +... }
+
+     lung is used for cases
+    py10k is used for person years
+
+
+                            Parameter Summary Table
+
+ # Name                            Estimate     Std.Err.  Test Stat.  P value
+-- ----------------------------   ----------   ---------  ----------  --------
+Log-linear term 0
+ 1 sex_1....................          3.405     0.05583      60.99    < 0.001
+ 2 sex_2....................          1.998     0.06452      30.97    < 0.001
+ 3 naga.....................         0.1223     0.06385      1.916     0.0554
+ 4 nic * hiro...............       -0.02615     0.06731    -0.3885      > 0.5
+ 5 nic * naga...............      -0.005008      0.1146   -0.04372      > 0.5
+ 6 sex_1 * lage70...........          6.549      0.5978      10.95    < 0.001
+ 7 sex_2 * lage70...........          6.253       0.686      9.115    < 0.001
+ 8 sex_1 * lage70sq.........         -2.803        1.65     -1.698     0.0894
+ 9 sex_2 * lage70sq.........        -0.1571       1.601   -0.09816      > 0.5
+10 sex_1 * lage70qsp........         -10.92       4.815     -2.267     0.0234
+11 sex_2 * lage70qsp........         -7.209       4.946     -1.458      0.145
+12 sex_1 * e30..............        -0.1159     0.03209      -3.61    < 0.001
+13 sex_2 * e30..............        -0.1290     0.04706     -2.742    0.00611
+14 sex_1 * e30sq............       -0.03564     0.01463     -2.436     0.0149
+15 sex_2 * e30sq............       -0.01303      0.0193    -0.6751        0.5
+
+Linear term 1
+16 luna02w10................          7.550       1.677      4.502    < 0.001
+
+Log-linear term 1
+17 e30......................        0.01109      0.1413    0.07847      > 0.5
+18 lage70...................          4.257      0.9382      4.537    < 0.001
+
+Linear product term 1
+19 %CON.....................          1.000     Aliased
+20 msex.....................         0.2102       0.212     0.9912      0.322
+
+            Records used        25570
+
+                Deviance     5329.502
+            Pearson Chi2      30259.6      Degrees of freedom   25551
+
+
+
+! Renal cell tumors (constant ERR only)
+cases kidney @
+rrisk @
+line 1 blaa02w10  @
+para 17-18=0 20=0 @
+fit @
+
+          Iter  Step      Deviance
+
+             0     0     3435.865
+             1     0     1776.474
+             2     0     1306.432
+             3     0     1214.037
+             4     0     1205.429
+             5     0     1205.186
+             6     0     1205.185
+             7     0     1205.185
+
+Piece-wise exponential regression
+Product additive excess model { T0 * ( 1 + T1 + T2 +...) }
+
+   kidney is used for cases
+    py10k is used for person years
+
+
+                            Parameter Summary Table
+
+ # Name                            Estimate     Std.Err.  Test Stat.  P value
+-- ----------------------------   ----------   ---------  ----------  --------
+Log-linear term 0
+ 1 sex_1....................          1.086      0.1841      5.902    < 0.001
+ 2 sex_2....................        -0.1582      0.1886    -0.8389      0.402
+ 3 naga.....................        -0.1604      0.2021    -0.7937      0.427
+ 4 nic * hiro...............        -0.2070      0.2154    -0.9611      0.337
+ 5 nic * naga...............       -0.05322      0.3961    -0.1344      > 0.5
+ 6 sex_1 * lage70...........          8.413       1.702      4.942    < 0.001
+ 7 sex_2 * lage70...........          3.581       1.664      2.152     0.0314
+ 8 sex_1 * lage70sq.........          2.274       2.643     0.8606      0.389
+ 9 sex_2 * lage70sq.........         -1.775       2.939    -0.6039      > 0.5
+10 sex_1 * lage70qsp........         -44.96       16.24     -2.769    0.00562
+11 sex_2 * lage70qsp........         -1.891       13.46    -0.1405      > 0.5
+12 sex_1 * e30..............        -0.2123     0.09776     -2.172     0.0299
+13 sex_2 * e30..............        -0.2292      0.1084     -2.116     0.0344
+14 sex_1 * e30sq............        0.04634     0.04368      1.061      0.289
+15 sex_2 * e30sq............        0.03724      0.0468     0.7957      0.426
+
+Linear term 1
+16 blaa02w10................         0.1499       0.331     0.4529      > 0.5
+
+Log-linear term 1
+17 e30......................          0.000       Fixed      -2.652    0.00801
+18 lage70...................          0.000       Fixed      -4.555    < 0.001
+
+Linear product term 1
+19 %CON.....................          1.000     Aliased
+20 msex.....................          0.000       Fixed       1.817     0.0692
+
+            Records used        25570
+
+                Deviance     1205.185
+            Pearson Chi2     39333.61      Degrees of freedom   25554
+
+
+
+! Bladder cancer (ERR and EAR models)
+cases bladder @
+
+! ERR
+rrisk @
+line 1 blaa02w10 @
+para 17-18 free 20 free @
+fit @
+
+          Iter  Step      Deviance
+
+             0     0     2920.136
+             1     1     2545.097
+             2     1     2477.215
+             3     0     2421.334
+             4     0     2418.088
+             5     0     2418.063
+             6     0     2418.062
+             7     0     2418.062
+
+Piece-wise exponential regression
+Product additive excess model { T0 * ( 1 + T1 + T2 +...) }
+
+  bladder is used for cases
+    py10k is used for person years
+
+
+                            Parameter Summary Table
+
+ # Name                            Estimate     Std.Err.  Test Stat.  P value
+-- ----------------------------   ----------   ---------  ----------  --------
+Log-linear term 0
+ 1 sex_1....................          2.048      0.1036      19.76    < 0.001
+ 2 sex_2....................         0.4725      0.1317      3.587    < 0.001
+ 3 naga.....................       -0.04614       0.121    -0.3812      > 0.5
+ 4 nic * hiro...............         0.1287      0.1229      1.048      0.295
+ 5 nic * naga...............        -0.2290      0.2592    -0.8833      0.377
+ 6 sex_1 * lage70...........          8.358      0.9555      8.747    < 0.001
+ 7 sex_2 * lage70...........          8.459       1.169      7.235    < 0.001
+ 8 sex_1 * lage70sq.........          1.715       1.598      1.073      0.283
+ 9 sex_2 * lage70sq.........          3.946       1.401      2.817    0.00484
+10 sex_1 * lage70qsp........         -18.42       6.971     -2.642    0.00825
+11 sex_2 * lage70qsp........         -26.00       8.056     -3.228    0.00125
+12 sex_1 * e30..............        -0.3249      0.0568      -5.72    < 0.001
+13 sex_2 * e30..............        -0.1028     0.09838     -1.044      0.296
+14 sex_1 * e30sq............        0.04895     0.02296      2.132      0.033
+15 sex_2 * e30sq............        0.02050     0.03629     0.5649      > 0.5
+
+Linear term 1
+16 blaa02w10................          1.235      0.4131      2.991    0.00278
+
+Log-linear term 1
+17 e30......................       -0.04311      0.2744    -0.1571      > 0.5
+18 lage70...................         0.3597       2.284     0.1575      > 0.5
+
+Linear product term 1
+19 %CON.....................          1.000     Aliased
+20 msex.....................         0.5044      0.2354      2.142     0.0322
+
+            Records used        25570
+
+                Deviance     2418.062
+            Pearson Chi2     43098.02      Degrees of freedom   25551
+
+
+
+! EAR 
+add @
+fit @
+
+          Iter  Step      Deviance
+
+             0     0     2444.900
+             1     0     2429.225
+             2     0     2421.737
+             3     0     2420.675
+             4     0     2420.637
+             5     0     2420.633
+             6     0     2420.633
+             7     0     2420.632
+
+Piece-wise exponential regression
+Additive model { T0 + T1 + T2 +... }
+
+  bladder is used for cases
+    py10k is used for person years
+
+
+                            Parameter Summary Table
+
+ # Name                            Estimate     Std.Err.  Test Stat.  P value
+-- ----------------------------   ----------   ---------  ----------  --------
+Log-linear term 0
+ 1 sex_1....................          2.053      0.1051      19.53    < 0.001
+ 2 sex_2....................         0.4894      0.1351      3.624    < 0.001
+ 3 naga.....................       -0.05523      0.1302    -0.4243      > 0.5
+ 4 nic * hiro...............         0.1193      0.1234     0.9675      0.333
+ 5 nic * naga...............        -0.2293      0.2614    -0.8772       0.38
+ 6 sex_1 * lage70...........          8.450      0.9945      8.496    < 0.001
+ 7 sex_2 * lage70...........          8.439       1.243      6.787    < 0.001
+ 8 sex_1 * lage70sq.........          1.777       1.659      1.071      0.284
+ 9 sex_2 * lage70sq.........          4.020       1.425      2.822    0.00478
+10 sex_1 * lage70qsp........         -18.38       7.237      -2.54     0.0111
+11 sex_2 * lage70qsp........         -26.94       8.891      -3.03    0.00244
+12 sex_1 * e30..............        -0.3303     0.05845     -5.651    < 0.001
+13 sex_2 * e30..............        -0.1014      0.1035    -0.9791      0.328
+14 sex_1 * e30sq............        0.05079     0.02382      2.132      0.033
+15 sex_2 * e30sq............        0.02137     0.03963     0.5393      > 0.5
+
+Linear term 1
+16 blaa02w10................          3.229       1.161      2.781    0.00541
+
+Log-linear term 1
+17 e30......................        -0.2133      0.2803    -0.7609      0.447
+18 lage70...................          6.348       2.087      3.041    0.00236
+
+Linear product term 1
+19 %CON.....................          1.000     Aliased
+20 msex.....................        -0.2052      0.3003    -0.6831      0.495
+
+            Records used        25570
+
+                Deviance     2420.632
+            Pearson Chi2     43306.14      Degrees of freedom   25551
+
+
+
+
+! CNS tumors (constant ERR only)
+cases cnsca @
+rrisk @
+line 1 braa02w10 @
+para 17-18=0 20=0 @
+fit @
+
+          Iter  Step      Deviance
+
+             0     0     2280.898
+             1     1     2091.661
+             2     0     1898.413
+             3     0     1857.006
+             4     0     1853.975
+             5     0     1853.942
+             6     0     1853.942
+
+Piece-wise exponential regression
+Product additive excess model { T0 * ( 1 + T1 + T2 +...) }
+
+    cnsca is used for cases
+    py10k is used for person years
+
+
+                            Parameter Summary Table
+
+ # Name                            Estimate     Std.Err.  Test Stat.  P value
+-- ----------------------------   ----------   ---------  ----------  --------
+Log-linear term 0
+ 1 sex_1....................         0.3190      0.2043      1.561      0.118
+ 2 sex_2....................         0.6138      0.1313      4.675    < 0.001
+ 3 naga.....................        -0.2231      0.1496     -1.491      0.136
+ 4 nic * hiro...............        -0.6373      0.1954     -3.261    0.00111
+ 5 nic * naga...............        -0.4845      0.3778     -1.283        0.2
+ 6 sex_1 * lage70...........          3.661       1.204      3.041    0.00236
+ 7 sex_2 * lage70...........          3.203       0.916      3.496    < 0.001
+ 8 sex_1 * lage70sq.........         0.9203       1.033     0.8909      0.373
+ 9 sex_2 * lage70sq.........        -0.2900       1.147    -0.2529      > 0.5
+10 sex_1 * lage70qsp........          1.034       10.72    0.09637      > 0.5
+11 sex_2 * lage70qsp........         -13.09       8.721     -1.501      0.133
+12 sex_1 * e30..............        -0.2701     0.09322     -2.897    0.00376
+13 sex_2 * e30..............        -0.1591     0.06556     -2.427     0.0152
+14 sex_1 * e30sq............         0.1020     0.03654      2.792    0.00523
+15 sex_2 * e30sq............        0.09293     0.02662      3.491    < 0.001
+
+Linear term 1
+16 braa02w10................         0.6192      0.2806      2.207     0.0273
+
+Log-linear term 1
+17 e30......................          0.000       Fixed      -1.662     0.0965
+18 lage70...................          0.000       Fixed      -2.755    0.00587
+
+Linear product term 1
+19 %CON.....................          1.000     Aliased
+20 msex.....................          0.000       Fixed      -2.387      0.017
+
+            Records used        25570
+
+                Deviance     1853.942
+            Pearson Chi2     26840.85      Degrees of freedom   25554
+
+
+
+! Other sites (ERR and EAR models)
+cases msother @
+! ERR
+rrisk @
+line 1 cola02w10 @
+para 17-18 free 20 free @
+fit @
+
+          Iter  Step      Deviance
+
+             0     0     5092.035
+             1     1     4025.414
+             2     0     3915.430
+             3     0     3858.022
+             4     0     3852.605
+             5     0     3852.139
+             6     0     3852.131
+             7     0     3852.131
+
+Piece-wise exponential regression
+Product additive excess model { T0 * ( 1 + T1 + T2 +...) }
+
+  msother is used for cases
+    py10k is used for person years
+
+
+                            Parameter Summary Table
+
+ # Name                            Estimate     Std.Err.  Test Stat.  P value
+-- ----------------------------   ----------   ---------  ----------  --------
+Log-linear term 0
+ 1 sex_1....................          2.146     0.09424      22.77    < 0.001
+ 2 sex_2....................          1.441     0.08511      16.93    < 0.001
+ 3 naga.....................         0.1801     0.08387      2.148     0.0317
+ 4 nic * hiro...............       -0.08642     0.09978     -0.866      0.386
+ 5 nic * naga...............        -0.3513      0.1888     -1.861     0.0628
+ 6 sex_1 * lage70...........          4.559      0.6307      7.229    < 0.001
+ 7 sex_2 * lage70...........          4.862      0.6191      7.853    < 0.001
+ 8 sex_1 * lage70sq.........          1.030      0.7565      1.361      0.173
+ 9 sex_2 * lage70sq.........          1.387      0.8841      1.568      0.117
+10 sex_1 * lage70qsp........         -7.544       5.215     -1.446      0.148
+11 sex_2 * lage70qsp........         -11.82       4.942     -2.393     0.0167
+12 sex_1 * e30..............        0.02184     0.04872     0.4483      > 0.5
+13 sex_2 * e30..............        0.07316     0.05628        1.3      0.194
+14 sex_1 * e30sq............       -0.01855     0.02008    -0.9237      0.356
+15 sex_2 * e30sq............       -0.02897     0.02251     -1.287      0.198
+
+Linear term 1
+16 cola02w10................         0.9120      0.2556      3.567    < 0.001
+
+Log-linear term 1
+17 e30......................        -0.3021      0.2106     -1.434      0.152
+18 lage70...................        -0.7693       1.056    -0.7282      0.466
+
+Linear product term 1
+19 %CON.....................          1.000     Aliased
+20 msex.....................         0.1799      0.2146     0.8381      0.402
+
+            Records used        25570
+
+                Deviance     3852.131
+            Pearson Chi2     26974.77      Degrees of freedom   25551
+
+
+
+! EAR
+add @
+fit @
+
+          Iter  Step      Deviance
+
+             0     0     3882.867
+             1     0     3861.711
+             2     0     3854.935
+             3     0     3852.898
+             4     0     3852.768
+             5     0     3852.764
+             6     0     3852.764
+
+Piece-wise exponential regression
+Additive model { T0 + T1 + T2 +... }
+
+  msother is used for cases
+    py10k is used for person years
+
+
+                            Parameter Summary Table
+
+ # Name                            Estimate     Std.Err.  Test Stat.  P value
+-- ----------------------------   ----------   ---------  ----------  --------
+Log-linear term 0
+ 1 sex_1....................          2.124     0.09741      21.81    < 0.001
+ 2 sex_2....................          1.448     0.08722       16.6    < 0.001
+ 3 naga.....................         0.2040     0.09048      2.255     0.0241
+ 4 nic * hiro...............       -0.07886      0.1008    -0.7824      0.434
+ 5 nic * naga...............        -0.3664      0.1898     -1.931     0.0535
+ 6 sex_1 * lage70...........          4.374      0.6887      6.352    < 0.001
+ 7 sex_2 * lage70...........          4.741      0.7096      6.681    < 0.001
+ 8 sex_1 * lage70sq.........         0.8215      0.8715     0.9426      0.346
+ 9 sex_2 * lage70sq.........          1.024       1.179     0.8685      0.385
+10 sex_1 * lage70qsp........         -6.169       5.533     -1.115      0.265
+11 sex_2 * lage70qsp........         -11.05       5.541     -1.993     0.0462
+12 sex_1 * e30..............        0.02316     0.05039     0.4597      > 0.5
+13 sex_2 * e30..............        0.08366     0.05935       1.41      0.159
+14 sex_1 * e30sq............       -0.01824     0.02108    -0.8652      0.387
+15 sex_2 * e30sq............       -0.03658     0.02446     -1.496      0.135
+
+Linear term 1
+16 cola02w10................          5.043        1.39      3.628    < 0.001
+
+Log-linear term 1
+17 e30......................        -0.2195      0.1865     -1.177      0.239
+18 lage70...................          2.858      0.9794      2.918    0.00352
+
+Linear product term 1
+19 %CON.....................          1.000     Aliased
+20 msex.....................        -0.2082      0.1913     -1.088      0.277
+
+            Records used        25570
+
+                Deviance     3852.764
+            Pearson Chi2     28251.37      Degrees of freedom   25551
+
+
+
+! Gender-specific cancers
+select sex == 2 @
+
+13212 records to be used
+
+
+tran lage50preqsp = log(age/50)^2*(age<50) @
+
+pline 1 @
+logl 0 %con naga nic*hiro nic*naga 
+     	 lage50preqsp lage70:4 lage70sq lage70qsp 
+       e30 e30sq  
+@
+
+! Breast cancer	(ERR and EAR models)
+cases breast @
+! ERR
+rrisk @
+line 1 brea02w10 @
+para 11-13 free @
+fit @
+
+          Iter  Step      Deviance
+
+             0     0     7420.326
+             1     2     6077.227
+             2     2     5285.075
+             3     1     3529.146
+             4     0     3324.773
+             5     0     3295.462
+             6     0     3295.243
+             7     0     3295.243
+
+Piece-wise exponential regression
+Product additive excess model { T0 * ( 1 + T1 + T2 +...) }
+
+Using sex == 2 
+
+   breast is used for cases
+    py10k is used for person years
+
+
+                            Parameter Summary Table
+
+ # Name                            Estimate     Std.Err.  Test Stat.  P value
+-- ----------------------------   ----------   ---------  ----------  --------
+Log-linear term 0
+ 1 %CON.....................          2.087     0.06667       31.3    < 0.001
+ 2 naga.....................        -0.1667     0.07833     -2.129     0.0333
+ 3 lage50preqsp.............         -10.85       2.938     -3.694    < 0.001
+ 4 lage70...................          2.492      0.6405      3.891    < 0.001
+ 5 lage70sq.................          2.045       1.543      1.325      0.185
+ 6 lage70qsp................        -0.9628       5.628    -0.1711      > 0.5
+ 7 e30......................        -0.3883     0.03647     -10.65    < 0.001
+ 8 e30sq....................       -0.01374     0.01482    -0.9268      0.354
+ 9 nic * hiro...............       -0.05127     0.08855    -0.5791      > 0.5
+10 nic * naga...............        0.05893       0.162     0.3638      > 0.5
+
+Linear term 1
+11 brea02w10................         0.8781      0.2073      4.236    < 0.001
+
+Log-linear term 1
+12 e30......................       0.004822      0.1364    0.03534      > 0.5
+13 lage70...................         -2.222      0.7031     -3.161    0.00157
+
+            Records used        13212
+
+                Deviance     3295.243
+            Pearson Chi2     12441.13      Degrees of freedom   13199
+
+
+
+! EAR
+add @
+fit @
+
+          Iter  Step      Deviance
+
+             0     0     3404.605
+             1     0     3357.559
+             2     1     3325.954
+             3     0     3308.966
+             4     0     3307.142
+             5     0     3307.120
+             6     0     3307.119
+             7     0     3307.119
+
+Piece-wise exponential regression
+Additive model { T0 + T1 + T2 +... }
+
+Using sex == 2 
+
+   breast is used for cases
+    py10k is used for person years
+
+
+                            Parameter Summary Table
+
+ # Name                            Estimate     Std.Err.  Test Stat.  P value
+-- ----------------------------   ----------   ---------  ----------  --------
+Log-linear term 0
+ 1 %CON.....................          2.076     0.06996      29.67    < 0.001
+ 2 naga.....................        -0.2033     0.09014     -2.255     0.0241
+ 3 lage50preqsp.............         -13.29       3.825     -3.474    < 0.001
+ 4 lage70...................          2.504      0.7129      3.512    < 0.001
+ 5 lage70sq.................          2.658       1.785      1.489      0.137
+ 6 lage70qsp................         -2.292        6.24    -0.3672      > 0.5
+ 7 e30......................        -0.3796     0.03722      -10.2    < 0.001
+ 8 e30sq....................       -0.01266     0.01604    -0.7894       0.43
+ 9 nic * hiro...............       -0.05912     0.08923    -0.6626      > 0.5
+10 nic * naga...............        0.08586      0.1654     0.5191      > 0.5
+
+Linear term 1
+11 brea02w10................          9.257       1.578      5.865    < 0.001
+
+Log-linear term 1
+12 e30......................        -0.4543      0.1209     -3.758    < 0.001
+13 lage70...................          1.725      0.4526      3.811    < 0.001
+
+            Records used        13212
+
+                Deviance     3307.119
+            Pearson Chi2     12054.35      Degrees of freedom   13199
+
+
+
+! Cancer of the uterus (constant ERR only)
+cases uterus @
+rrisk @
+logl 0 %con naga nic*hiro nic*naga 
+     	 lage70:4 lage70sq lage70qsp 
+       e30 e30sq  
+@
+line 1 utea02w10 @
+para 11-12=0 @
+fit @
+
+          Iter  Step      Deviance
+
+             0     0     7434.810
+             1     2     6143.080
+             2     1     3325.354
+             3     0     3168.407
+             4     0     3156.145
+             5     0     3156.062
+             6     0     3156.062
+
+Piece-wise exponential regression
+Product additive excess model { T0 * ( 1 + T1 + T2 +...) }
+
+Using sex == 2 
+
+   uterus is used for cases
+    py10k is used for person years
+
+
+                            Parameter Summary Table
+
+ # Name                            Estimate     Std.Err.  Test Stat.  P value
+-- ----------------------------   ----------   ---------  ----------  --------
+Log-linear term 0
+ 1 %CON.....................          2.071     0.06487      31.93    < 0.001
+ 2 naga.....................        -0.1369     0.07701     -1.778     0.0754
+ 3 lage70...................         -1.700      0.3696       -4.6    < 0.001
+ 4 lage70sq.................         -3.462      0.5012     -6.907    < 0.001
+ 5 lage70qsp................          4.490       3.908      1.149      0.251
+ 6 e30......................         0.2214     0.02815      7.867    < 0.001
+ 7 e30sq....................       -0.01480     0.01275     -1.161      0.246
+ 8 nic * hiro...............       0.008768     0.07804     0.1123      > 0.5
+ 9 nic * naga...............        0.08998      0.1507     0.5971      > 0.5
+
+Linear term 1
+10 utea02w10................         0.1013      0.1335     0.7591      0.448
+
+Log-linear term 1
+11 e30......................          0.000       Fixed      -1.291      0.197
+12 lage70...................          0.000       Fixed      0.6636      > 0.5
+
+            Records used        13212
+
+                Deviance     3156.062
+            Pearson Chi2     13472.48      Degrees of freedom   13202
+
+
+
+! Ovarian cancer (constant ERR only)
+cases ovary @
+rrisk @
+line 1 ovaa02w10 @
+para 11-12=0 @
+fit @
+
+          Iter  Step      Deviance
+
+             0     0     2410.104
+             1     0     1524.688
+             2     0     1332.740
+             3     0     1310.197
+             4     0     1309.464
+             5     0     1309.463
+             6     0     1309.463
+
+Piece-wise exponential regression
+Product additive excess model { T0 * ( 1 + T1 + T2 +...) }
+
+Using sex == 2 
+
+    ovary is used for cases
+    py10k is used for person years
+
+
+                            Parameter Summary Table
+
+ # Name                            Estimate     Std.Err.  Test Stat.  P value
+-- ----------------------------   ----------   ---------  ----------  --------
+Log-linear term 0
+ 1 %CON.....................         0.6641      0.1297      5.121    < 0.001
+ 2 naga.....................         0.1296      0.1567     0.8273      0.408
+ 3 lage70...................         0.9092      0.8349      1.089      0.276
+ 4 lage70sq.................         -2.604       1.255     -2.075      0.038
+ 5 lage70qsp................          4.515       7.442     0.6068      > 0.5
+ 6 e30......................       -0.04018     0.05896    -0.6815      0.496
+ 7 e30sq....................        0.02052     0.02572     0.7979      0.425
+ 8 nic * hiro...............       -0.02539      0.1805    -0.1407      > 0.5
+ 9 nic * naga...............       -0.04452      0.3181    -0.1399      > 0.5
+
+Linear term 1
+10 ovaa02w10................         0.6137      0.3868      1.587      0.113
+
+Log-linear term 1
+11 e30......................          0.000       Fixed      0.1086      > 0.5
+12 lage70...................          0.000       Fixed     -0.3702      > 0.5
+
+            Records used        13212
+
+                Deviance     1309.463
+            Pearson Chi2     8661.708      Degrees of freedom   13202
+
+
+
+! Prostate cancer (onstant ERR only)
+select sex == 1 @
+
+12358 records to be used
+
+cases prost @
+rrisk @
+line 1 blaa02w10 @
+para 11-12=0 @
+fit @
+
+          Iter  Step      Deviance
+
+             0     0     2410.007
+             1     1     1670.051
+             2     0     1521.784
+             3     0     1469.844
+             4     0     1460.328
+             5     0     1456.950
+             6     0     1454.851
+             7     0     1454.579
+             8     0     1454.575
+             9     0     1454.575
+
+Piece-wise exponential regression
+Product additive excess model { T0 * ( 1 + T1 + T2 +...) }
+
+Using sex == 1 
+
+    prost is used for cases
+    py10k is used for person years
+
+
+                            Parameter Summary Table
+
+ # Name                            Estimate     Std.Err.  Test Stat.  P value
+-- ----------------------------   ----------   ---------  ----------  --------
+Log-linear term 0
+ 1 %CON.....................          2.347     0.09773      24.02    < 0.001
+ 2 naga.....................        -0.2213      0.1433     -1.544      0.123
+ 3 lage70...................          12.37       1.319       9.38    < 0.001
+ 4 lage70sq.................         -8.314       6.889     -1.207      0.227
+ 5 lage70qsp................         -12.40       11.29     -1.098      0.272
+ 6 e30......................        -0.3604     0.06586     -5.473    < 0.001
+ 7 e30sq....................        0.05387     0.02408      2.237     0.0253
+ 8 nic * hiro...............       0.008704      0.1312    0.06634      > 0.5
+ 9 nic * naga...............         0.1552       0.249     0.6231      > 0.5
+
+Linear term 1
+10 blaa02w10................         0.1216      0.2168     0.5609      > 0.5
+
+Log-linear term 1
+11 e30......................          0.000       Fixed     -0.9974      0.319
+12 lage70...................          0.000       Fixed      -1.055      0.291
+
+            Records used        12358
+
+                Deviance     1454.575
+            Pearson Chi2     12955.34      Degrees of freedom   12348
+
+
+
+

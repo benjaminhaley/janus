@@ -1,0 +1,5 @@
+Group ID|Group Name|Treatment Sequence|Treatment Age|Treatment Type|Treatment Quantity|Treatment Unit|Treatment Application|Treatment Remarks|No of individuals in study|Species|Strain|Sex|Age|Group Endpoints|Individual ID|Group ID|Age at death|Pathology type |Pathology location|Pathology Description|
+10-2-1|X-Gy 0,n/a|Sequence:1, Age:45,Type:none (controls),Quantity:0,Unit:grays,Application:not applicable or not supplied, Remarks:n/a|43 (0 in ERA)|Mouse|Mouse, SAS/4|Male|Juvenile|observed tumours sacrif.|No information on individuals available for this study
+10-2-2|X-Gy 2,n/a|Sequence:1, Age:45,Type:X-rays whole body,Quantity:2,Unit:grays,Application:External exposure, Remarks:whole body|50 (0 in ERA)|Mouse|Mouse, SAS/4|Male|Juvenile|observed tumours sacrif.|No information on individuals available for this study
+10-2-3|N-Gy 2,n/a|Sequence:1, Age:45,Type:neutrons <100 keV,Quantity:2,Unit:grays,Application:External exposure, Remarks:whole body|80 (0 in ERA)|Mouse|Mouse, SAS/4|Male|Juvenile|observed tumours sacrif.|No information on individuals available for this study
+		

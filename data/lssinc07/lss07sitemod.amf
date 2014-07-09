@@ -1,0 +1,249 @@
+names city, sex, un4gy, distcat, agxcat, agecat, dcat, time, subjects, 
+      upyr, pyr, gdist, agex, age, year, solid, oralca, lip, tongue, 
+      saliv, mouth, pharynx, digestca, esoph, stomach, smallint, colon, 
+      rectum, liver, gallbldr, pancr, othdig, respca, nasal, larynx, 
+      lung, othres, thymus, skinbone, bone, connect, nmskin, skbasal, 
+      sksquam, bowens, breast, femgenca, uterus, utrnos, cervix, corpus, 
+      ovary, othfem, malgenca, prost, testis, othmale, urinca, bladder, 
+      kidney, renal, othurin, cnsca, thyroid, othsol, msother, 
+      adeno, squam, othepi, sarcoma, othnonepi, histnos, 
+      cola02w10, cola02g, cola02n, mara02w10, mara02g, mara02n, 
+      braa02w10, brea02w10, liva02w10, liva02g, liva02n, luna02w10, 
+      ovaa02w10, pana02w10, skea02w10, skia02w10, stoa02w10, 
+      tesa02w10, thya02w10, blaa02w10, utea02w10, trunc02, adjust02
+@
+
+! Remove unknown dose records
+
+tran if cola02w10 < 0 then delete endif @
+SKIP 1 @
+
+INPUT lssinc07.csv @
+
+! set up categorical variables
+leve city sex un4gy distcat agxcat agecat dcat time @
+
+! define dose and age at exposure  categories for case summary tables
+categ cola02w10 < 0.005 0.1 0.2 0.5 1 2 > as tbdcat @
+categ cola02w10 < 0.005 0.5 1 > as d4cat @
+
+categ agex < 10 20 30 40 50 > as agxdec @
+
+
+! define variables used in fitting models
+
+tran msex = 2*sex - 3 ;
+     lage70 = log(age/70) ; lage70sq = lage70^2 ;
+     lage70qsp = lage70sq*(age > 70) ; 
+     lage50sp = log(age/50)*(age >= 50) ;
+     e30 = (agex - 30)/10 ; e30sq = e30^2 ;
+     py10k = pyr/10000 ; 
+     hidose = cola02w10 > 2 ;
+     lodose = 1 - hidose ;
+@
+
+! Define additional variables of interest
+tran
+     distal = distcat == 2 ;
+	 nic = distcat == 3 ; 
+	 hiro = city == 1 ; naga = city == 2 ;
+     tsx25 = (age - agex - 25) ;
+@
+
+
+cases solid @
+pyr py10k @
+excess @
+rrisk @
+line 1 cola02w10 @
+
+logl 1 e30 lage70 @
+pline 1 %con=1 msex @
+
+fit sex:4 naga nic*hiro nic*naga 
+    sex*lage70:4 sex*lage70sq sex*lage70qsp 
+    sex*e30 sex*e30sq - %con 
+@
+
+add @
+fit @
+
+
+
+! Cancers of the Oral Cavity (constant ERR only)
+cases oralca @
+rrisk @
+line 1 skia02w10 @
+para 17-18=0 20=0 @
+fit @
+
+! Cancer of the esophagus(constant ERR only)
+rrisk @
+cases esoph @
+line 1 stoa02w10 @
+fit @
+
+! Stomach cancer (ERR and EAR models)
+cases stomach @
+
+! ERR model
+rrisk @
+line 1 stoa02w10 @
+para 17-18 free 20 free @
+fit @
+
+! EAR model
+add @
+fit @
+
+! Colon cancer (ERR and EAR models)
+cases colon @
+
+! ERR model
+rrisk @
+line 1 cola02w10 @
+fit @
+
+! EAR model
+add @
+fit @
+
+! Cancer of the rectum (constant ERR only)
+cases rectum @
+rrisk @
+line 1 blaa02w10 @
+para 17-18=0 20=0 @
+fit @
+
+
+! Liver cancer (ERR and EAR models)
+cases liver @
+
+! ERR model
+rrisk @
+line 1 liva02w10  @
+para 17-18 free 20 free @
+fit @
+
+! EAR model
+add @
+fit @
+
+
+! Gallbladder cancer (constant ERR only)
+cases gallbldr@
+rrisk @
+line 1 pana02w10  @
+para 17-18=0 20=0 @
+fit @
+
+! Pancreatic cancer (constant ERR only)
+cases pancr @
+rrisk @
+line 1 pana02w10 @
+para 17-18=0 20=0 @
+fit @
+
+
+! Lung cancer (ERR and EAR models)
+cases lung @
+! ERR
+rrisk @
+line 1 luna02w10 @
+para 17-18 free 20 free @
+fit @
+
+! EAR
+add @
+fit @
+
+! Renal cell tumors (constant ERR only)
+cases kidney @
+rrisk @
+line 1 blaa02w10  @
+para 17-18=0 20=0 @
+fit @
+
+! Bladder cancer (ERR and EAR models)
+cases bladder @
+
+! ERR
+rrisk @
+line 1 blaa02w10 @
+para 17-18 free 20 free @
+fit @
+
+! EAR 
+add @
+fit @
+
+
+! CNS tumors (constant ERR only)
+cases cnsca @
+rrisk @
+line 1 braa02w10 @
+para 17-18=0 20=0 @
+fit @
+
+! Other sites (ERR and EAR models)
+cases msother @
+! ERR
+rrisk @
+line 1 cola02w10 @
+para 17-18 free 20 free @
+fit @
+
+! EAR
+add @
+fit @
+
+! Gender-specific cancers
+select sex == 2 @
+
+tran lage50preqsp = log(age/50)^2*(age<50) @
+
+pline 1 @
+logl 0 %con naga nic*hiro nic*naga 
+     	 lage50preqsp lage70:4 lage70sq lage70qsp 
+       e30 e30sq  
+@
+
+! Breast cancer	(ERR and EAR models)
+cases breast @
+! ERR
+rrisk @
+line 1 brea02w10 @
+para 11-13 free @
+fit @
+
+! EAR
+add @
+fit @
+
+! Cancer of the uterus (constant ERR only)
+cases uterus @
+rrisk @
+logl 0 %con naga nic*hiro nic*naga 
+     	 lage70:4 lage70sq lage70qsp 
+       e30 e30sq  
+@
+line 1 utea02w10 @
+para 11-12=0 @
+fit @
+
+! Ovarian cancer (constant ERR only)
+cases ovary @
+rrisk @
+line 1 ovaa02w10 @
+para 11-12=0 @
+fit @
+
+! Prostate cancer (onstant ERR only)
+select sex == 1 @
+cases prost @
+rrisk @
+line 1 blaa02w10 @
+para 11-12=0 @
+fit @
+
+

@@ -1,0 +1,70 @@
+!lss14.scr@
+new size 8000000 @
+
+names city sex gd3 ahs agexcat agecat ctime dosecat subjects pyr agex age  
+colon10 stomach10 bladder10 liver10 pancreas10 lung10 breast10 uterus10 ovary10 marrow10 
+death solid esoph stomach colon rectum liver gallbldr pancre othdig lung breast uterus ovary prostate bladder
+kidney othuri othsolid leukemia lymphoma myeloma blooddis cvd respiratory digestive genitourinary inf external  @
+
+skip 1@
+input lss14.csv @
+show@
+
+level city sex agexcat agecat@
+
+tran py1 = pyr/10000;
+colon10 = colon10/1000; d2=1.12*colon10*colon10; pygy = py1*colon10;
+ew30=(agex-30)/10; ew30sq = ew30*ew30;
+e30sp = ew30* (agex > 30); e30qsp = e30sp*e30sp; 
+e50sp = ((agex - 50)/10)* (agex > 50); e50qsp = e50sp*e50sp; 
+lage70=log(age/70); lage70sq = lage70^2;
+lage70qsp = (age >= 70)* lage70sq; lage40qsp = (age >= 40)* log(age/40)^2;
+msex = 2*sex - 3;female = sex == 2@
+
+! define colon dose categories for table 1
+categ  colon10 as fdosecat < /0.005 /0.1 /0.2 /0.5 /1.0 /2.0  >@
+! define age at exposure categories for table 2
+categ  agex as fagexcat < /10 /20 /30 /40 /50  >@
+
+!Number of subjects by colon dose category, city, and sex (Table 1)
+sum subjects@
+sum subjects ; by fdosecat @
+sum subjects ; by city @
+sum subjects ; by sex @
+
+!Number of deaths by age at exposure (Table 2)
+sum death@
+sum death; by fagexcat @
+
+!Test and estimation of ERR for all causes  by sex  (Table 3)
+strata city sex agexcat agecat@
+pyr py1@
+case death@
+! For males
+select sex eq 1@sum death@
+fit@null@line 1 colon10@fit@lrt@
+bound 2@line 1@
+!For female
+select sex eq 2@sum death@
+fit@null@line 1 colon10@fit@lrt@
+bound 2@line 1@
+
+!ERR and effect modifications for solid cancer (Table 4)
+noselect@
+case solid@
+line 1 colon10@
+logl 1 ew30 lage70@
+pline 1 %con = 1 msex@fit@
+bound 2@bound 3@bound 4@
+
+!EAR and effect modifications for solid cancer (Table 5)
+nostrata@
+add@
+logl 0 sex*city:-5 sex*ew30 sex*ew30sq sex*e30qsp sex*e50qsp 
+     sex*lage70 sex*lage70sq sex*lage40qsp sex*lage70qsp
+     ew30*lage70 -%con@ 
+line 1 colon10@
+logl 1 ew30 lage70@
+pline 1 %con = 1 msex@fit@
+bound 22@bound 23@bound 24@
+stop@

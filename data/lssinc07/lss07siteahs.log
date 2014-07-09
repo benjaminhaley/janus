@@ -1,0 +1,736 @@
+names city  sex  ahs  un4gy  distcat  agxcat  agecat  dcat  time  subjects  
+      upyr  pyr  gdist  agex  age  year  
+      solid  nmskin  skbasal  sksquam  bowens  thyroid  
+      cola02w10  cola02g  cola02n  skia02w10  thya02w10  trunc02  adjust02
+@
+
+tran if cola02w10 < 0 then delete endif @
+
+skip 1 @
+input lssinc07ahs.csv @
+
+Input from lssinc07ahs.csv
+
+       44371 records read       42040 records used
+                                 2331 records rejected
+
+31 variables defined  At least 500 additional variables can be created.
+
+
+levels city sex un4gy distcat agxcat agecat dcat time @
+
+city has 2 levels from 1 to 2
+sex has 2 levels from 1 to 2
+un4gy has 2 levels from 0 to 1
+distcat has 3 levels from 1 to 3
+agxcat has 15 levels from 1 to 15
+agecat has 16 levels from 3 to 18
+dcat has 22 levels from 2 to 23
+time has 10 levels from 1 to 10
+
+tran msex = 2*sex - 3 ; lage50sp = log(age/50)*(age >= 50) ;
+     py10k = pyr/10000 ; iage35 = age < 35 ;  distal = distcat == 2 ;
+	 nic = distcat == 3 ; inahs = ahs == 2 ; 
+	 hiro = city == 1 ; naga = city == 2 ;
+	 unkdose = cola02w10 < 0 ;
+	 hidose = cola02w10 > 2 ; lodose = 1 - hidose ;
+	 if (unkdose) then cola02w10 = 0  endif
+      cola02wsq = 1.12*cola02w10^2 ;
+      skia02wsq = 1.12*skia02w10^2 ;
+      thya02wsq = 1.12*thya02w10^2 ;
+      e30 = (agex - 30)/10 ; e30sq = e30^2 ;
+      lage70 = log(age/70) ; lage70sq = lage70^2 ; lage70sp = lage70^2*(age > 70) ;
+
+@
+
+categ thya02w10 as tbdcat_t < 0.005 0.1 0.2 0.5 1 2 > @
+tbdcat_t has 7 levels from 1 to 7
+tran if nic then tbdcat_t = 0 endif @
+leve tbdcat_t @
+
+tbdcat_t has 8 levels from 0 to 7
+
+categ skia02w10 as tbdcat_s < 0.005 0.1 0.2 0.5 1 2 > @
+tbdcat_s has 7 levels from 1 to 7
+tran if nic then tbdcat_s = 0 endif @
+leve tbdcat_s @
+
+tbdcat_s has 8 levels from 0 to 7
+
+excess @
+ *** WARNING: Fit model again to compute statistics
+
+! Skin cancer models
+nomodel
+rrisk @
+cases nmskin @
+pyr py10k @
+
+tran 	  ski1Gyth = (skia02w10 - 1) * (skia02w10 > 1) ;
+@
+
+!  ERR linear spline with knot at 1 Gy
+
+line 1 skia02w10 ski1Gyth @
+logl 1 e30 lage70 @
+pline 1 %con=1 msex @
+
+fit sex:2 naga nic*hiro nic*naga 
+    sex*lage70:4 sex*lage70sq sex*lage70sp 
+    sex*e30 sex*e30sq inahs  - %con 
+@
+
+          Iter  Step      Deviance
+
+             0     0     3191.016
+             1     0     2466.741
+             2     0     2445.695
+             3     0     2293.608
+             4     0     2270.673
+             5     0     2267.698
+             6     0     2267.508
+             7     0     2267.504
+             8     0     2267.504
+
+Piece-wise exponential regression
+Product additive excess model { T0 * ( 1 + T1 + T2 + ...) }
+
+   nmskin is used for cases
+    py10k is used for person years
+
+
+                            Parameter Summary Table
+
+ # Name                            Estimate     Std.Err.  Test Stat.  P value
+-- ----------------------------   ----------   ---------  ----------  --------
+Log-linear term 0
+ 1 sex_1....................         0.8992      0.1633      5.508    < 0.001
+ 2 sex_2....................         0.5401      0.1258      4.292    < 0.001
+ 3 naga.....................         0.1004      0.1336     0.7516      0.452
+ 4 inahs....................         0.2973      0.1359      2.187     0.0287
+ 5 nic * hiro...............        -0.3120      0.1671     -1.868     0.0618
+ 6 nic * naga...............        -0.5908      0.3543     -1.667     0.0954
+ 7 sex_1 * lage70...........          5.356       1.085      4.937    < 0.001
+ 8 sex_2 * lage70...........          8.032      0.9097      8.829    < 0.001
+ 9 sex_1 * lage70sq.........          2.068       1.166      1.774     0.0761
+10 sex_2 * lage70sq.........          4.886      0.8353      5.849    < 0.001
+11 sex_1 * lage70sp.........          6.247       7.249     0.8618      0.389
+12 sex_2 * lage70sp.........         -9.528       5.406     -1.762      0.078
+13 sex_1 * e30..............       -0.02996     0.09937    -0.3015      > 0.5
+14 sex_2 * e30..............         0.1697      0.1106      1.534      0.125
+15 sex_1 * e30sq............       -0.07983     0.04179      -1.91     0.0561
+16 sex_2 * e30sq............       -0.09127     0.04003      -2.28     0.0226
+
+Linear term 1
+17 skia02w10................         0.1813      0.1644      1.103       0.27
+18 ski1Gyth.................          1.084      0.5138      2.109     0.0349
+
+Log-linear term 1
+19 e30......................         -1.291      0.3283     -3.933    < 0.001
+20 lage70...................         0.2771       1.082     0.2561      > 0.5
+
+Linear product term 1
+21 %CON.....................          1.000     Aliased
+22 msex.....................         0.3774      0.2346      1.608      0.108
+
+            Records used        42040
+
+                Deviance     2267.504
+            Pearson Chi2     41873.57      Degrees of freedom   42019
+
+
+! Slope for 1+ Gy doses
+lincomb  17 + 18 @
+
+                      Estimate     Std.Error         95% Wald Bounds
+
+              MLE :     1.2651      0.54540       0.19617        2.3341   
+
+
+sum subjects pyr nmskin %bk %ex @
+
+           Summary for subjects
+
+                Sum         Count      Minimum      Maximum
+             105427         42040            0          625
+
+           Summary for pyr
+
+                Sum         Count      Minimum      Maximum
+        2.76473e+06         42040   0.00054000       2883.3
+
+           Summary for nmskin
+
+                Sum         Count      Minimum      Maximum
+                330         42040            0            2
+
+           Summary for %BK
+
+                Sum         Count      Minimum      Maximum
+            295.218         42040   9.3570e-09      0.59527
+
+           Summary for %EX
+
+                Sum         Count      Minimum      Maximum
+            34.7822         42040            0      0.17871
+
+sum subjects pyr nmskin %bk %ex by sex @
+
+           Summary for subjects
+
+  sex           Sum         Count      Minimum      Maximum
+    1         42902         19814            0          619
+    2         62525         22226            0          625
+
+           Summary for pyr
+
+  sex           Sum         Count      Minimum      Maximum
+    1   1.04027e+06         19814   0.00054000       2704.6
+    2   1.72445e+06         22226   0.00059000       2883.3
+
+           Summary for nmskin
+
+  sex           Sum         Count      Minimum      Maximum
+    1           123         19814            0            2
+    2           207         22226            0            2
+
+           Summary for %BK
+
+  sex           Sum         Count      Minimum      Maximum
+    1       108.298         19814   9.3570e-09      0.27008
+    2       186.920         22226   1.5756e-08      0.59527
+
+           Summary for %EX
+
+  sex           Sum         Count      Minimum      Maximum
+    1       14.7023         19814            0      0.10863
+    2       20.0798         22226            0      0.17871
+
+sum subjects pyr nmskin %bk %ex by sex tbdcat_s @
+For sex = 1
+
+           Summary for subjects
+
+tbdcat_s           Sum         Count      Minimum      Maximum
+    0         10491          1235            0          619
+    1         14415          2336            0          437
+    2          9843          3369            0          390
+    3          2439          2550            0          112
+    4          2320          3897            0           37
+    5          1668          1669            0           63
+    6          1069          1914            0           30
+    7           657          2844            0           20
+
+           Summary for pyr
+
+tbdcat_s           Sum         Count      Minimum      Maximum
+    0       261594.          1235     0.040190       2704.6
+    1       342498.          2336    0.0018700       1822.7
+    2       241849.          3369   0.00092000       1919.4
+    3       58613.9          2550    0.0044600       429.91
+    4       56069.7          3897   0.00054000       178.78
+    5       39406.8          1669   0.00066000       309.95
+    6       25002.6          1914   0.00055000       111.06
+    7       15241.1          2844   0.00066000       81.467
+
+           Summary for nmskin
+
+tbdcat_s           Sum         Count      Minimum      Maximum
+    0            20          1235            0            2
+    1            37          2336            0            2
+    2            27          3369            0            1
+    3            11          2550            0            1
+    4             6          3897            0            1
+    5             4          1669            0            1
+    6             6          1914            0            1
+    7            12          2844            0            1
+
+           Summary for %BK
+
+tbdcat_s           Sum         Count      Minimum      Maximum
+    0       21.6225          1235   2.4486e-06      0.27008
+    1       38.5746          2336   1.3645e-06      0.18158
+    2       24.1767          3369   1.4815e-08      0.14270
+    3       6.38551          2550   1.1328e-07     0.038424
+    4       6.87603          3897   9.3570e-09     0.022398
+    5       4.81281          1669   9.3776e-08     0.036060
+    6       3.83478          1914   1.0400e-08     0.026837
+    7       2.01466          2844   1.3407e-07     0.020883
+
+           Summary for %EX
+
+tbdcat_s           Sum         Count      Minimum      Maximum
+    0             0          1235            0            0
+    1     0.0140208          2336            0   0.00028868
+    2      0.269949          3369   2.9933e-10    0.0036874
+    3      0.262040          2550   1.0816e-10    0.0044504
+    4      0.535314          3897   2.4717e-10    0.0058735
+    5      0.932398          1669   2.0981e-09     0.016326
+    6       3.44020          1914   9.7670e-09     0.049091
+    7       9.24841          2844   6.4754e-08      0.10863
+
+For sex = 2
+
+           Summary for subjects
+
+tbdcat_s           Sum         Count      Minimum      Maximum
+    0         14756          1274            0          625
+    1         21127          2447            0          418
+    2         14541          3767            0          380
+    3          3286          2990            0           75
+    4          3830          4532            0           41
+    5          2741          1869            0           78
+    6          1387          2037            0           40
+    7           857          3310            0           23
+
+           Summary for pyr
+
+tbdcat_s           Sum         Count      Minimum      Maximum
+    0       419150.          1274     0.015560       2883.3
+    1       575693.          2447    0.0025900       2121.3
+    2       399485.          3767    0.0039900       1995.3
+    3       91469.3          2990    0.0019900       321.20
+    4       104237.          4532   0.00066000       209.29
+    5       74149.0          1869    0.0075100       393.57
+    6       38805.3          2037    0.0025100       214.68
+    7       21462.9          3310   0.00059000       87.184
+
+           Summary for nmskin
+
+tbdcat_s           Sum         Count      Minimum      Maximum
+    0            35          1274            0            2
+    1            71          2447            0            2
+    2            42          3767            0            2
+    3            14          2990            0            1
+    4            10          4532            0            1
+    5            10          1869            0            1
+    6            11          2037            0            1
+    7            14          3310            0            1
+
+           Summary for %BK
+
+tbdcat_s           Sum         Count      Minimum      Maximum
+    0       33.3775          1274   1.2672e-06      0.59527
+    1       68.0317          2447   3.4155e-07      0.49163
+    2       44.1303          3767   8.3634e-08      0.50145
+    3       10.8346          2990   2.7800e-07     0.080412
+    4       13.9076          4532   1.5756e-08     0.057296
+    5       8.98134          1869   5.5152e-08      0.10240
+    6       5.36369          2037   1.2298e-07      0.10075
+    7       2.29333          3310   8.0030e-08     0.023269
+
+           Summary for %EX
+
+tbdcat_s           Sum         Count      Minimum      Maximum
+    0             0          1274            0            0
+    1     0.0227026          2447            0   0.00027962
+    2      0.376533          3767   7.7852e-10    0.0025352
+    3      0.362966          2990   1.1918e-09    0.0023178
+    4      0.922526          4532   1.6741e-09    0.0037049
+    5       1.66682          1869   1.9145e-08     0.017920
+    6       5.10418          2037   2.2304e-08     0.058197
+    7       11.6241          3310   8.2450e-07      0.17871
+
+
+
+! EAR model linear spline with knot at 1 Gy (excess cases per 10,000 PYGy)
+
+add @
+fit @
+
+          Iter  Step      Deviance
+
+             0     0     2408.680
+             1     0     2310.300
+             2     0     2281.788
+             3     0     2274.042
+             4     0     2272.659
+             5     0     2272.387
+             6     0     2272.289
+             7     0     2272.250
+             8     0     2272.235
+             9     0     2272.230
+            10     0     2272.229
+            11     0     2272.228
+            12     0     2272.228
+
+Piece-wise exponential regression
+Additive model { T0 + T1 + T2 + ... }
+
+   nmskin is used for cases
+    py10k is used for person years
+
+
+                            Parameter Summary Table
+
+ # Name                            Estimate     Std.Err.  Test Stat.  P value
+-- ----------------------------   ----------   ---------  ----------  --------
+Log-linear term 0
+ 1 sex_1....................         0.8471      0.1704       4.97    < 0.001
+ 2 sex_2....................         0.5702      0.1273      4.479    < 0.001
+ 3 naga.....................        0.07079      0.1458     0.4853      > 0.5
+ 4 inahs....................         0.2960      0.1415      2.092     0.0364
+ 5 nic * hiro...............        -0.3257      0.1676     -1.944     0.0519
+ 6 nic * naga...............        -0.5691      0.3568     -1.595      0.111
+ 7 sex_1 * lage70...........          5.224       1.143      4.571    < 0.001
+ 8 sex_2 * lage70...........          8.536       1.047      8.157    < 0.001
+ 9 sex_1 * lage70sq.........          2.454       1.119      2.194     0.0283
+10 sex_2 * lage70sq.........          5.488      0.9786      5.608    < 0.001
+11 sex_1 * lage70sp.........          6.806       7.359     0.9248      0.355
+12 sex_2 * lage70sp.........         -11.99       5.992     -2.001     0.0453
+13 sex_1 * e30..............       -0.02534      0.1032    -0.2456      > 0.5
+14 sex_2 * e30..............         0.1850      0.1196      1.547      0.122
+15 sex_1 * e30sq............       -0.06904     0.04315       -1.6       0.11
+16 sex_2 * e30sq............        -0.1068     0.04448     -2.402     0.0163
+
+Linear term 1
+17 skia02w10................         0.3636      0.3376      1.077      0.281
+18 ski1Gyth.................          2.819         1.2      2.348     0.0189
+
+Log-linear term 1
+19 e30......................        -0.9044      0.2565     -3.526    < 0.001
+20 lage70...................          4.159       1.108      3.753    < 0.001
+
+Linear product term 1
+21 %CON.....................          1.000     Aliased
+22 msex.....................       -0.07835      0.2036    -0.3849      > 0.5
+
+            Records used        42040
+
+                Deviance     2272.228
+            Pearson Chi2     51133.68      Degrees of freedom   42019
+
+! Slope for 1+ Gy doses
+lincomb  17 + 18 @
+
+                      Estimate     Std.Error         95% Wald Bounds
+
+              MLE :     3.1823       1.2560       0.72066        5.6440   
+
+! Thyroid cancer models
+
+nomodel
+rrisk @
+cases thyroid @
+pyr py10k @
+
+! ERR linear dose response
+
+line 1 thya02w10  @
+logl 1 e30 lage70 inahs=0 @
+pline 1 %con=1 msex @
+
+fit sex:1 naga nic*hiro nic*naga inahs
+    sex*lage70:2 sex*lage70sq sex*lage70sp 
+    sex*e30 sex*e30sq - %con 
+@
+
+          Iter  Step      Deviance
+
+             0     0     3268.077
+             1     0     3089.787
+             2     0     3043.849
+             3     0     3038.148
+             4     0     3037.971
+             5     0     3037.968
+             6     0     3037.968
+             7     0     3037.968
+
+Piece-wise exponential regression
+Product additive excess model { T0 * ( 1 + T1 + T2 + ...) }
+
+  thyroid is used for cases
+    py10k is used for person years
+
+                            Parameter Summary Table
+
+ # Name                            Estimate     Std.Err.  Test Stat.  P value
+-- ----------------------------   ----------   ---------  ----------  --------
+Log-linear term 0
+ 1 sex_1....................         0.3380      0.2188      1.545      0.122
+ 2 sex_2....................         0.9200      0.1067      8.621    < 0.001
+ 3 naga.....................        -0.2026      0.1157     -1.751       0.08
+ 4 inahs....................         0.3392       0.116      2.925    0.00345
+ 5 nic * hiro...............        -0.4320      0.1469     -2.942    0.00326
+ 6 nic * naga...............        -0.5900      0.3202     -1.842     0.0654
+ 7 sex_1 * lage70...........          2.711       1.163      2.332     0.0197
+ 8 sex_2 * lage70...........          1.471      0.5605      2.625    0.00867
+ 9 sex_1 * lage70sq.........         0.9752       0.944      1.033      0.302
+10 sex_2 * lage70sq.........        -0.5265       0.585    -0.9001      0.368
+11 sex_1 * lage70sp.........         -31.06       16.05     -1.935      0.053
+12 sex_2 * lage70sp.........         -10.81       6.111     -1.768      0.077
+13 sex_1 * e30..............         0.1750     0.09794      1.787      0.074
+14 sex_2 * e30..............        0.03362     0.05159     0.6517      > 0.5
+15 sex_1 * e30sq............        0.05053     0.04093      1.234      0.217
+16 sex_2 * e30sq............        0.09530      0.0194      4.913    < 0.001
+
+Linear term 1
+17 thya02w10................         0.5767      0.2636      2.188     0.0287
+
+Log-linear term 1
+18 e30......................        -0.3739      0.2258     -1.656     0.0978
+19 lage70...................         -1.445      0.8157     -1.772     0.0765
+20 inahs....................          0.000       Fixed      0.6535      > 0.5
+
+Linear product term 1
+21 %CON.....................          1.000     Aliased
+22 msex.....................         0.1433      0.2871     0.4994      > 0.5
+
+            Records used        42040
+
+                Deviance     3037.968
+            Pearson Chi2     33681.27      Degrees of freedom   42020
+
+
+
+sum subjects pyr thyroid  %bk %ex @
+
+           Summary for subjects
+
+                Sum         Count      Minimum      Maximum
+             105427         42040            0          625
+
+           Summary for pyr
+
+                Sum         Count      Minimum      Maximum
+        2.76473e+06         42040   0.00054000       2883.3
+
+           Summary for thyroid
+
+                Sum         Count      Minimum      Maximum
+                471         42040            0            3
+
+           Summary for %BK
+
+                Sum         Count      Minimum      Maximum
+            407.843         42040   1.3770e-08      0.47375
+
+           Summary for %EX
+
+                Sum         Count      Minimum      Maximum
+            63.1565         42040            0      0.10644
+
+sum subjects pyr thyroid %bk %ex by sex @
+
+           Summary for subjects
+
+  sex           Sum         Count      Minimum      Maximum
+    1         42902         19814            0          619
+    2         62525         22226            0          625
+
+           Summary for pyr
+
+  sex           Sum         Count      Minimum      Maximum
+    1   1.04027e+06         19814   0.00054000       2704.6
+    2   1.72445e+06         22226   0.00059000       2883.3
+
+           Summary for thyroid
+
+  sex           Sum         Count      Minimum      Maximum
+    1            90         19814            0            2
+    2           381         22226            0            3
+
+           Summary for %BK
+
+  sex           Sum         Count      Minimum      Maximum
+    1       79.6828         19814   1.3770e-08      0.19567
+    2       328.161         22226   1.5565e-07      0.47375
+
+           Summary for %EX
+
+  sex           Sum         Count      Minimum      Maximum
+    1       10.3172         19814            0     0.021514
+    2       52.8394         22226            0      0.10644
+
+sum subjects pyr thyroid %bk %ex by sex tbdcat_t @
+For sex = 1
+
+           Summary for subjects
+
+tbdcat_t           Sum         Count      Minimum      Maximum
+    0         10491          1235            0          619
+    1         14418          2348            0          437
+    2         10661          3976            0          390
+    3          2405          3050            0          112
+    4          2496          3469            0           63
+    5          1057          1502            0           38
+    6           975          2320            0           30
+    7           399          1914            0           20
+
+           Summary for pyr
+
+tbdcat_t           Sum         Count      Minimum      Maximum
+    0       261594.          1235     0.040190       2704.6
+    1       342504.          2348    0.0018700       1822.7
+    2       260362.          3976   0.00092000       1919.4
+    3       59197.3          3050     0.010890       429.91
+    4       61272.7          3469   0.00054000       309.95
+    5       23338.5          1502   0.00066000       148.66
+    6       22951.4          2320   0.00055000       105.53
+    7       9054.97          1914   0.00066000       81.467
+
+           Summary for thyroid
+
+tbdcat_t           Sum         Count      Minimum      Maximum
+    0             9          1235            0            1
+    1            33          2348            0            2
+    2            27          3976            0            1
+    3             5          3050            0            1
+    4             3          3469            0            1
+    5             5          1502            0            1
+    6             5          2320            0            1
+    7             3          1914            0            1
+
+           Summary for %BK
+
+tbdcat_t           Sum         Count      Minimum      Maximum
+    0       14.3296          1235   8.9922e-07      0.15602
+    1       28.1515          2348   1.9956e-07      0.19567
+    2       20.2869          3976   2.7735e-08      0.13007
+    3       5.27835          3050   4.5732e-07     0.029267
+    4       5.67668          3469   1.3770e-08     0.030416
+    5       2.45884          1502   1.1981e-07     0.021282
+    6       2.59054          2320   2.2736e-08     0.018629
+    7      0.910483          1914   1.3238e-07    0.0084907
+
+           Summary for %EX
+
+tbdcat_t           Sum         Count      Minimum      Maximum
+    0             0          1235            0            0
+    1     0.0278411          2348            0   0.00040145
+    2      0.712214          3976   1.5026e-09    0.0039434
+    3      0.709343          3050   5.5370e-08    0.0052926
+    4       1.84679          3469   7.0810e-09     0.021514
+    5       1.61609          1502   2.2550e-08     0.016789
+    6       2.87436          2320   5.4513e-08     0.018271
+    7       2.53053          1914   1.2102e-07     0.020615
+
+For sex = 2
+
+           Summary for subjects
+
+tbdcat_t           Sum         Count      Minimum      Maximum
+    0         14756          1274            0          625
+    1         21127          2451            0          418
+    2         15622          4422            0          380
+    3          3630          3598            0           53
+    4          4159          4086            0           78
+    5          1534          1645            0           40
+    6          1212          2361            0           39
+    7           485          2389            0           23
+
+           Summary for pyr
+
+tbdcat_t           Sum         Count      Minimum      Maximum
+    0       419150.          1274     0.015560       2883.3
+    1       575694.          2451    0.0025900       2121.3
+    2       429883.          4422    0.0039900       1995.3
+    3       100449.          3598   0.00066000       247.20
+    4       113438.          4086    0.0035100       393.57
+    5       40843.4          1645    0.0062800       214.68
+    6       32763.9          2361    0.0025100       144.12
+    7       12229.6          2389   0.00059000       87.184
+
+           Summary for thyroid
+
+tbdcat_t           Sum         Count      Minimum      Maximum
+    0            61          1274            0            3
+    1           103          2451            0            2
+    2            89          4422            0            2
+    3            29          3598            0            2
+    4            47          4086            0            1
+    5            21          1645            0            1
+    6            19          2361            0            1
+    7            12          2389            0            1
+
+           Summary for %BK
+
+tbdcat_t           Sum         Count      Minimum      Maximum
+    0       55.6704          1274   3.4016e-06      0.42579
+    1       117.143          2451   3.2133e-07      0.47375
+    2       85.9528          4422   7.7290e-07      0.45349
+    3       22.4461          3598   2.5263e-07     0.070182
+    4       25.8524          4086   1.5565e-07     0.088871
+    5       10.1467          1645   6.4838e-07     0.081015
+    6       8.01496          2361   6.9630e-07     0.035672
+    7       2.93383          2389   1.8199e-07     0.025364
+
+           Summary for %EX
+
+tbdcat_t           Sum         Count      Minimum      Maximum
+    0             0          1274            0            0
+    1      0.155775          2451            0    0.0013889
+    2       3.59025          4422   3.4622e-08     0.015760
+    3       3.84421          3598   1.9224e-08     0.018730
+    4       11.0654          4086   1.7198e-07      0.10093
+    5       9.65366          1645   4.4667e-07     0.061778
+    6       13.3916          2361   3.6903e-07     0.051201
+    7       11.1385          2389   3.9397e-07      0.10644
+
+
+! EAR linear dose response (excess cases per 10,000 PYGy)
+
+add @
+fit @
+
+          Iter  Step      Deviance
+
+             0     0     3062.860
+             1     0     3043.953
+             2     0     3042.087
+             3     0     3041.999
+             4     0     3041.989
+             5     0     3041.988
+             6     0     3041.987
+             7     0     3041.987
+
+Piece-wise exponential regression
+Additive model { T0 + T1 + T2 + ... }
+
+  thyroid is used for cases
+    py10k is used for person years
+
+
+                            Parameter Summary Table
+
+ # Name                            Estimate     Std.Err.  Test Stat.  P value
+-- ----------------------------   ----------   ---------  ----------  --------
+Log-linear term 0
+ 1 sex_1....................         0.3499      0.2305      1.518      0.129
+ 2 sex_2....................         0.9327       0.113      8.255    < 0.001
+ 3 naga.....................        -0.2223      0.1312     -1.694     0.0902
+ 4 inahs....................         0.3673      0.1246      2.948     0.0032
+ 5 nic * hiro...............        -0.4459       0.147     -3.033    0.00242
+ 6 nic * naga...............        -0.5851      0.3236     -1.808     0.0706
+ 7 sex_1 * lage70...........          2.712       1.367      1.984     0.0473
+ 8 sex_2 * lage70...........          1.594      0.6463      2.466     0.0136
+ 9 sex_1 * lage70sq.........         0.8689        1.25      0.695      0.487
+10 sex_2 * lage70sq.........        -0.2664      0.6894    -0.3865      > 0.5
+11 sex_1 * lage70sp.........         -31.32       17.08     -1.834     0.0667
+12 sex_2 * lage70sp.........         -11.81        6.56     -1.801     0.0718
+13 sex_1 * e30..............         0.1810       0.106      1.708     0.0877
+14 sex_2 * e30..............        0.04014     0.05293     0.7583      0.448
+15 sex_1 * e30sq............        0.05206     0.04416      1.179      0.238
+16 sex_2 * e30sq............        0.09309     0.02056      4.529    < 0.001
+
+Linear term 1
+17 thya02w10................          1.232      0.5061      2.434     0.0149
+
+Log-linear term 1
+18 e30......................        -0.5903      0.2385     -2.475     0.0133
+19 lage70...................         0.5921      0.6191     0.9565      0.339
+20 inahs....................          0.000       Fixed       1.276      0.202
+
+Linear product term 1
+21 %CON.....................          1.000     Aliased
+22 msex.....................         0.5699      0.1649      3.456    < 0.001
+
+            Records used        42040
+
+                Deviance     3041.987
+            Pearson Chi2     34650.86      Degrees of freedom   42020
+
+
+
+
+

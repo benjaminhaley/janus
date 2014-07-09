@@ -1,6 +1,4 @@
 #Anything in the data folder
-data/*
-scripts/data/*
 scripts/results/*
 
 # Cached data

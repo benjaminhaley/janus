@@ -1,0 +1,144 @@
+a.userOn:link, a.userOn:visited, a.userOn:hover, a.userOn:active, a.userOff:link, a.userOff:visited, a.userOff:hover, a.userOff:active, a.logout:link, a.logout:visited, a.logout:hover, a.logout:active, a.cart:link, a.cart:visited, a.cart:hover, a.cart:active, a.register:link, a.register:visited, a.register:hover, a.register:active {
+	color: white;	
+}
+
+
+
+a.userOff {
+	
+	padding-left: 10px;
+
+	font-size: 11px;
+	line-height: 50px;
+	color: white;
+	font-family: Arial, Helvetica, sans-serif;
+	text-decoration: none;
+	vertical-align: baseline;
+	
+	}
+
+a.logout {
+	
+	padding-left: 10px;
+	padding-right: 5px;
+	
+	font-size: 11px;
+	line-height: 50px;
+	color: white;
+	font-family: Arial, Helvetica, sans-serif;
+	text-decoration: none;
+	vertical-align: baseline;
+	
+}
+
+a.userOn, a.cart, a.register {
+	
+	padding-left: 5px;
+	color: white;
+	font-size: 11px;
+	line-height: 50px;
+	font-family: Arial, Helvetica, sans-serif;
+	text-decoration: none;
+	
+	
+}
+
+#naplogo_bg_big {
+	background: #990000; /* Old browsers */
+	/* IE9 SVG, needs conditional override of 'filter' to 'none' */
+
+background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzk5MDAwMCIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM3YTAwMDAiIHN0b3Atb3BhY2l0eT0iMSIvPgogIDwvbGluZWFyR3JhZGllbnQ+CiAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+);
+	background: -moz-linear-gradient(top, #990000 0%, #7a0000 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #990000), color-stop(100%, #7a0000)); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top, #990000 0%, #7a0000 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top, #990000 0%, #7a0000 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top, #990000 0%, #7a0000 100%); /* IE10+ */
+	background: linear-gradient(to bottom, #990000 0%, #7a0000 100%); /* W3C */
+ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#990000', endColorstr='#7a0000', GradientType=0 ); /* IE6-8 */
+	height: 92px;
+	width: 100%;
+}
+
+#naplogo_bg_big img {
+	max-width: 100%;
+}
+
+
+#nas_150 {
+	display: inline-block;
+}
+.menu_mobile {
+	display: none;
+}
+.menu_full {
+	display: inline;
+}
+
+.menu_full a {
+	color: white;
+	padding: 0 3px 0 3px;	
+}
+#naplogo_mobile {
+	float: left;
+	display: inline;
+	margin-left: 5px;
+	width: 60%;
+	/*min-width: 460px;*/
+}
+#mobilesearch {
+	float: right;
+	height: 25px;
+	margin-top: 28px;
+	
+}
+#mobilesearch input.term {
+	height: 30px;
+	border-radius: 0px;
+	
+	border: none;
+	font-size: 14px;
+	background: #fff url('/images/icon_search_bg.png') no-repeat left;
+	padding: 0 0 0 22px;
+	width: 265px;
+	color: #666;
+	vertical-align: top;
+	line-height: 30px;
+	*padding-top: 5px;
+	_padding-top: 5px;
+}
+#mobilesearch button.mobilesubmit {
+	height: 30px;
+	border: 1px solid white;
+	margin-right: 10px;
+	border-radius: 0px;
+	vertical-align: top; 
+	background: #4a4a4a; 
+	color: white; 
+	font-size: 14px; 
+	font-weight: bold; 
+	border-radius: 0px;  
+	cursor: pointer;
+}
+
+#mobilesearch button.mobilesubmit:hover {
+	
+	background: #000000; 
+	color: white; 
+	  
+}
+
+#mobilesearch fieldset {
+	 background: none; padding: 5px 0px 5px 0px;	
+	 border: none;
+}
+
+
+
+::-webkit-input-placeholder { color:#999; }
+:-moz-placeholder { color:#999; }
+:-ms-input-placeholder { color:#999; }
+
+span.phonelink a:link {
+	text-decoration: none;
+	color: white;	
+}

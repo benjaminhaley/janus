@@ -1,0 +1,105 @@
+names city  sex  ahs  un4gy  distcat  agxcat  agecat  dcat  time  subjects  
+      upyr  pyr  gdist  agex  age  year  
+      solid  nmskin  skbasal  sksquam  bowens  thyroid  
+      cola02w10  cola02g  cola02n  skia02w10  thya02w10  trunc02  adjust02
+@
+
+tran if cola02w10 < 0 then delete endif @
+
+skip 1 @
+input lssinc07ahs.csv @
+
+levels city sex un4gy distcat agxcat agecat dcat time @
+
+tran msex = 2*sex - 3 ; lage50sp = log(age/50)*(age >= 50) ;
+     py10k = pyr/10000 ; iage35 = age < 35 ;  distal = distcat == 2 ;
+	 nic = distcat == 3 ; inahs = ahs == 2 ; 
+	 hiro = city == 1 ; naga = city == 2 ;
+	 unkdose = cola02w10 < 0 ;
+	 hidose = cola02w10 > 2 ; lodose = 1 - hidose ;
+	 if (unkdose) then cola02w10 = 0  endif
+      cola02wsq = 1.12*cola02w10^2 ;
+      skia02wsq = 1.12*skia02w10^2 ;
+      thya02wsq = 1.12*thya02w10^2 ;
+      e30 = (agex - 30)/10 ; e30sq = e30^2 ;
+      lage70 = log(age/70) ; lage70sq = lage70^2 ; lage70sp = lage70^2*(age > 70) ;
+
+@
+
+categ thya02w10 as tbdcat_t < 0.005 0.1 0.2 0.5 1 2 > @
+tran if nic then tbdcat_t = 0 endif @
+leve tbdcat_t @
+
+categ skia02w10 as tbdcat_s < 0.005 0.1 0.2 0.5 1 2 > @
+tran if nic then tbdcat_s = 0 endif @
+leve tbdcat_s @
+
+excess @
+
+! Skin cancer models
+nomodel
+rrisk @
+cases nmskin @
+pyr py10k @
+
+tran 	  ski1Gyth = (skia02w10 - 1) * (skia02w10 > 1) ;
+@
+
+!  ERR linear spline with knot at 1 Gy
+
+line 1 skia02w10 ski1Gyth @
+logl 1 e30 lage70 @
+pline 1 %con=1 msex @
+
+fit sex:2 naga nic*hiro nic*naga 
+    sex*lage70:4 sex*lage70sq sex*lage70sp 
+    sex*e30 sex*e30sq inahs  - %con 
+@
+
+! Slope for 1+ Gy doses
+lincomb  17 + 18 @
+
+sum subjects pyr nmskin %bk %ex @
+sum subjects pyr nmskin %bk %ex by sex @
+sum subjects pyr nmskin %bk %ex by sex tbdcat_s @
+
+
+! EAR model linear spline with knot at 1 Gy (excess cases per 10,000 PYGy)
+
+add @
+fit @
+
+! Slope for 1+ Gy doses
+lincomb  17 + 18 @
+
+
+! Thyroid cancer models
+
+nomodel
+rrisk @
+cases thyroid @
+pyr py10k @
+
+
+! ERR linear dose response
+
+line 1 thya02w10  @
+logl 1 e30 lage70 inahs=0 @
+pline 1 %con=1 msex @
+
+fit sex:1 naga nic*hiro nic*naga inahs
+    sex*lage70:2 sex*lage70sq sex*lage70sp 
+    sex*e30 sex*e30sq - %con 
+@
+
+sum subjects pyr thyroid  %bk %ex @
+sum subjects pyr thyroid %bk %ex by sex @
+sum subjects pyr thyroid %bk %ex by sex tbdcat_t @
+
+! EAR linear dose response (excess cases per 10,000 PYGy)
+
+add @
+fit @
+
+
+

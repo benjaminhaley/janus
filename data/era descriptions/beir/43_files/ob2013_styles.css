@@ -1,0 +1,2357 @@
+@charset "UTF-8";
+/* CSS Document */
+
+body {
+	min-width: 480px;
+}
+div.ocrtext {
+	margin-left: -99999px !important;
+	position: absolute;
+	top: 0;
+	left: 0;
+	display: inline;
+	float: left;
+	z-index: -200;
+}
+span#logobig {
+	display: inline;
+}
+span#logosmall {
+	display: none;
+}
+#logosmall img {
+	padding-top: 10px;
+	padding-left: 20px;
+}
+.format {
+	white-space: nowrap;
+}
+.obleft {
+	width: 32%;
+	height: 20px;
+	display: inline-block;
+	float: left;
+}
+.obmid {
+	width: 32%;
+	display: inline-block;
+	float: left;
+	min-width: 300px;
+	text-align: center;
+}
+.obright {
+	width: 25%;
+	display: inline-block;
+	float: right;
+	padding-top: 5px;
+	text-align: right;
+}
+.obleft_m {
+	margin: 0;
+	padding: 0;
+	height: 43px;
+}
+.ob_actionbtn {
+	text-align: left !important;
+	width: 80px;
+	margin-top: 10px;
+	/*margin-left: 55px;*/
+	margin-left: 20px;
+	text-wrap:none;
+	display: block;
+}
+.save {
+}
+.save_off {
+	opacity: .2;
+	
+	padding-left: 20px;
+}
+/*  PAGE STYLES  =========================================================================== */
+
+
+
+#page {
+	padding: 0px;
+	/*min-width: 300px;*/
+	max-width: 550px;
+	height: auto;
+	/*height: 500px;
+	overflow-y: scroll;*/
+	display: block;
+	margin: 0 auto;
+	text-align: center;
+	position: relative;
+	top: 20px;
+	z-index: -1;
+}
+#textpage {
+	width: 600px;
+	height: 100%;
+	min-height: 500px;
+	background: #fff;
+	padding: 30px;
+	border: 1px solid #666;
+	margin: auto 0;
+	-webkit-box-shadow:  3px 3px 5px 2px #666666;
+	box-shadow:  3px 3px 5px 2px #666666;
+	z-index: -1;
+	margin-bottom: 300px;
+	margin-top: 0px;
+	margin-top: 0px\9;
+	position: relative;
+	top: 20px;
+	font-size: inherit;
+}
+#textpage>* {
+	line-height: 1.5
+}
+#page img {
+	max-width: 100%;/*display: block;*/
+}
+.page {
+	background: #fff;
+	border: 1px solid #666;
+	-webkit-box-shadow: 3px 3px 5px 2px #666;
+	box-shadow: 3px 3px 5px 2px #666;
+	margin: auto 0;
+}
+.textob {
+	background: #fff;
+	border: 1px solid #666;
+	-webkit-box-shadow: 3px 3px 5px 2px #666;
+	box-shadow: 3px 3px 5px 2px #666;
+	margin: auto 0;
+	padding: 10px;
+	margin-top: 120px
+}
+.page-wrapper {
+	position: relative;
+	margin-top: 135px;
+	min-height: 100%;
+}
+.obcover {
+	border: 8px solid white;
+	margin: 0px 10px 10px 20px;
+	-webkit-border-radius: 5px;
+	border-radius: 5px;
+	display: block;
+	margin-top: 10px;
+}
+.ob_biblio {
+	font-size: 9px;
+	padding-left: 10px;
+	line-height: 12px;
+	text-align: left;
+	margin-left: 12px
+}
+#headnavinner .span1 {
+	width: 90px !important;
+	margin: 10px !important;
+	display: inline-table !important;
+	float: left !important;
+}
+#headnavinner .span11 {
+	float: left !important;
+	display: inline !important;
+	margin-left: 0px !important;
+}
+#headnavinner .breadcrumb {
+	margin-left: 5px !important;
+}
+
+#headnavinner span.title {
+
+
+font-size: 100%;
+text-align: left;
+margin: 0;
+display: inline;
+}
+.border_shadow {
+	-webkit-box-shadow: 3px 3px 5px 2px #666;
+	box-shadow: 3px 3px 5px 2px #666;
+}
+/* Fixed head nav =========================================================================== */
+
+
+#headnavouter {
+	position: relative;
+}
+#headnavouter { /* required to avoid jumping */
+	left: 0px;
+	position: absolute;
+	width: 100%;
+	top: 50px;
+}
+#headnavinner {
+	position: fixed;
+	top: 40px;
+	width:100%;
+	left: 0;
+	z-index:1;
+	height: 80px;
+	background: #fff;
+}
+#headnav1 {
+	height: auto;
+	width:100%;
+}
+#headnav2 {
+	min-width: 775px;
+	border-bottom: 1px solid #e0dacd;
+	display: inline-block;
+	width: 100%;
+	background: #ffffff; /* Old browsers */
+	/* IE9 SVG, needs conditional override of 'filter' to 'none' */
+
+background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2ZmZmZmZiIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNlZmViZTMiIHN0b3Atb3BhY2l0eT0iMSIvPgogIDwvbGluZWFyR3JhZGllbnQ+CiAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+);
+	background: -moz-linear-gradient(top, #ffffff 0%, #efebe3 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #ffffff), color-stop(100%, #efebe3)); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top, #ffffff 0%, #efebe3 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top, #ffffff 0%, #efebe3 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top, #ffffff 0%, #efebe3 100%); /* IE10+ */
+	background: linear-gradient(to bottom, #ffffff 0%, #efebe3 100%); /* W3C */
+ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#efebe3', GradientType=0 ); /* IE6-8 */
+	white-space: nowrap;
+}
+#headnav_main {
+	height: auto;
+	width: 100%;
+	padding-bottom: 5px;
+	float: left;
+	border: 1px solid #e0dacd;
+	display: inline-block;
+	background: #ffffff; /* Old browsers */
+	/* IE9 SVG, needs conditional override of 'filter' to 'none' */
+
+background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2ZmZmZmZiIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNlZmViZTMiIHN0b3Atb3BhY2l0eT0iMSIvPgogIDwvbGluZWFyR3JhZGllbnQ+CiAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+);
+	background: -moz-linear-gradient(top, #ffffff 0%, #efebe3 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #ffffff), color-stop(100%, #efebe3)); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top, #ffffff 0%, #efebe3 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top, #ffffff 0%, #efebe3 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top, #ffffff 0%, #efebe3 100%); /* IE10+ */
+	background: linear-gradient(to bottom, #ffffff 0%, #efebe3 100%); /* W3C */
+ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#efebe3', GradientType=0 ); /* IE6-8 */
+}
+#headnavinner.fixed {
+	position: fixed;
+	top: 0;
+	z-index: 1 !important /*required for obnav to appear over page fixed*/;
+}
+.obactionbox {
+	padding: 5px;
+	/*margin-top: 20px;*/
+	margin-bottom: 10px;
+	margin-left: 2px;
+	display: block;
+	float: left;
+	width: 120px;
+}
+.obactionbox li {
+	padding-bottom: 3px;
+	text-align: left;
+	font-size: 11px;
+	border-bottom: 1px dotted #ccc;
+}
+.setactionbox li a {
+/*display: block;*/
+}
+/* Page Nav Sprites*/
+
+
+.obleft, .obmid, .obright {
+}
+ul.obpagenavleft, ul.obpagenavright {
+	list-style: none;
+	font-size: 10px;
+	color: #999;
+	display: inline;
+}
+ul#obpagenavcenter {
+	display:inline;
+	list-style: none;
+	/*background: #fdfcfa;
+	-webkit-border-radius: 19px;
+	border-radius: 19px;
+	border: 1px solid #ccc;*/
+	padding: 0;
+	margin-top: 10px;
+	margin-bottom: 0px;
+	display: inline-table;
+}
+ul.obpagenavleft a, ul.obpagenavright a {
+	color: #999;
+	text-decoration: none;
+	line-height: 45px;
+}
+ul.obpagenavleft li, ul#obpagenavcenter li, ul.obpagenavright li {
+	display: inline;
+	list-style: none;
+}
+ul#obpagenavcenter li a, ul#obpagenavcenter li span {
+	font: 0/0 a;
+	text-shadow: none;
+	color: transparent;
+	padding: 15px;
+	display: inline-block;
+}
+li.dopages {
+	background: url("/images/obnav_sprite.png") no-repeat scroll 0px -6px transparent;
+	padding-left: 25px;
+	line-height: 30px;
+	margin-bottom: 0px;
+}
+li.dopages:hover {
+	background: url("/images/obnav_sprite.png") no-repeat scroll 0 -36px transparent;
+	padding-left: 25px;
+	line-height: 30px;
+	margin-bottom: 0px;
+}
+li.doscroll {
+	background: url("/images/obnav_sprite.png") no-repeat scroll 0 -63px transparent;
+	padding-left: 15px;
+	line-height: 30px;
+	padding-bottom: 5px;
+}
+li.doscroll:hover {
+	background: url("/images/obnav_sprite.png") no-repeat scroll 0px -94px transparent;
+	padding-left: 15px;
+	line-height: 30px;
+	margin-bottom: 0px;
+}
+li.prevchap {
+	background: url("/images/obnav_sprite.png") no-repeat scroll 0 -129px transparent;
+	padding-left: 0px;
+	line-height: 30px;
+	margin-bottom: 0px;
+}
+li.prevchapoff {
+	background: url("/images/obnav_sprite.png") no-repeat scroll 0 -129px transparent;
+	padding-left: 0px;
+	line-height: 30px;
+	margin-bottom: 0px;
+	opacity: .1;
+}
+li.prevchap:hover {
+	background: url("/images/obnav_sprite.png") no-repeat scroll 0px -159px transparent;
+	padding-left: 0px;
+	line-height: 30px;
+	margin-bottom: 0px;
+}
+li.nextchap {
+	background: url("/images/obnav_sprite.png") no-repeat scroll 0 -189px transparent;
+	padding-left: 0px;
+	line-height: 30px;
+	margin-bottom: 0px;
+}
+li.nextchapoff {
+	background: url("/images/obnav_sprite.png") no-repeat scroll 0 -189px transparent;
+	padding-left: 0px;
+	line-height: 30px;
+	margin-bottom: 0px;
+	opacity: .1;
+}
+li.nextchap:hover {
+	background: url("/images/obnav_sprite.png") no-repeat scroll 0px -221px transparent;
+	padding-left: 0px;
+	line-height: 30px;
+	margin-bottom: 0px;
+}
+li.prevpage {
+	background: url("/images/obnav_sprite.png") no-repeat scroll 0 -248px transparent;
+	padding-left: 0px;
+	line-height: 30px;
+	margin-bottom: 0px;
+}
+li.prevpageoff {
+	background: url("/images/obnav_sprite.png") no-repeat scroll 0 -248px transparent;
+	padding-left: 0px;
+	line-height: 30px;
+	margin-bottom: 0px;
+	opacity: .1;
+}
+li.prevpage:hover {
+	background: url("/images/obnav_sprite.png") no-repeat scroll 0px -278px transparent;
+	padding-left: 0px;
+	line-height: 30px;
+	margin-bottom: 0px;
+}
+li.nextpage {
+	background: url("/images/obnav_sprite.png") no-repeat scroll 0 -311px transparent;
+	padding-left: 0px;
+	line-height: 30px;
+	margin-bottom: 0px;
+}
+li.nextpageoff {
+	background: url("/images/obnav_sprite.png") no-repeat scroll 0 -311px transparent;
+	padding-left: 0px;
+	line-height: 30px;
+	margin-bottom: 0px;
+	opacity: .1;
+}
+li.nextpage:hover {
+	background: url("/images/obnav_sprite.png") no-repeat scroll 0px -340px transparent;
+	padding-left: 0px;
+	line-height: 30px;
+	margin-bottom: 0px;
+}
+
+
+
+li.bookmark {
+		background: url("/images/obnav_sprite.png") no-repeat scroll 0px -370px transparent;
+	padding-left: 17px;
+	line-height: 30px;
+	margin-bottom: 0px;
+	margin-left: 25px;
+}
+li.bookmark_off {
+	background: url("/images/obnav_sprite.png") no-repeat scroll 0px -398px transparent;
+	padding-left: 17px;
+	line-height: 30px;
+	margin-bottom: 0px;
+	margin-left: 25px;
+}	
+
+
+
+
+.banner ul {
+	width: 100% !important;
+}
+/*Animated Sidebar*/
+ 
+
+
+.bezier {
+	transition: all 300ms cubic-bezier(0.860, 0.000, 0.070, 1.000) 40ms;
+	-moz-transition: all 300ms cubic-bezier(0.860, 0.000, 0.070, 1.000) 40ms;
+	-webkit-transition: all 300ms cubic-bezier(0.860, 0.000, 0.070, 1.000) 40ms;
+	-o-transition: all 300ms cubic-bezier(0.860, 0.000, 0.070, 1.000) 40ms;
+}
+
+
+#left {
+	position: absolute;
+	display: inline;
+	width: 230px;
+	max-height: 600px;
+	overflow-y: auto;
+	z-index: 24;
+	background: #fff;
+	top: -7px;
+	left: 0px;
+	padding-top: 20px;
+	padding-right: 20px;
+}
+#left.closed {
+	margin-left: -640px;
+}
+#page.open {
+}
+#right {
+	position: relative;
+	height: 100%;
+	overflow: hidden;
+	display: inline-block;
+	text-align: center;
+}
+#arrow {
+	position: absolute;
+	display: block;
+	width: 63px;
+	height: 3800px;
+	overflow: hidden;
+	left: 230px;
+	top: -10px;
+	margin-top: 0;
+	cursor: pointer;
+	z-index: 4;
+}
+#arrow.open {
+	margin-left: 0;
+	background-position: 0 0;
+	margin-right: 10px;
+}
+#arrow.closed {
+	margin-left: -230px;
+	background-position: -20px 0;
+}
+#left ul {
+	height: 50%;
+	overlow-y: scroll;
+	margin-bottom: 100px;
+	margin-left: 20px;
+}
+#left ul li.active-chapter {
+    opacity: 0.5;
+    border-left: 5px solid #99B3CC;
+    padding-left: 10px;
+}
+
+#left ul li {
+	text-align: left;
+	border-bottom: 1px solid #efefef;
+	/*	width: 75%;*/
+	margin-left: 5px;
+}
+#left ul li h4 {
+	font-size: 12.5px;
+	margin: 10px 0;
+	font-family: inherit;
+	font-weight: bold;
+	line-height: 20px;
+	color: inherit;
+	text-rendering: optimizelegibility;
+}
+#left span.pgs {
+	font-size: 12.5px;
+	color: #999;
+	font-weight: normal;
+	display: block;
+}
+
+
+#left form {
+	margin: 0px !important;	
+}
+
+#left .cover a {
+	width: 90px;
+	display: block;	
+}
+#left .cover{
+	width: 100px;
+	display: block;	
+}
+
+.obfooter {margin-top: 75px; padding: 20px; text-align: center}
+
+/*static footer*/
+
+
+.banner {
+	margin:0;
+	padding:0;
+	width:100%;
+	position:fixed;
+	bottom:0px;
+	left: 0px;
+	display:block;
+	margin:0 auto;
+	background:url('/images/banner.png') repeat;
+	height:0px;
+	z-index:200;
+}
+.banner_container {
+  color: #FFFFFF;
+  margin: 0 auto 0 -50px;
+  padding: 5px 10px;
+  position: relative;
+  text-align: left;
+}
+
+.banner_container .close {
+	display:block;
+	width:26px;
+	height:17px;
+	background:url('/images/btn_close.png') no-repeat left top;
+	position:absolute;
+	top:-17px;
+	right:50px;
+}
+.banner_container .close.active {
+	background-position:0 bottom
+}
+.banner_container a {
+	color:#FFF;
+}
+.banner ul {
+	padding:0;
+	margin:0;/*max-width: 700px;*/
+}
+.banner ul li {
+	display:inline;
+	padding:0 6px 0 0;
+}
+.banner ul li.leftli {
+	float:right
+}
+/* IE 6/7/8/9/10 */
+
+.page-wrapper {
+	width/*\**/:  100%\9;
+	text-align/*\**/: center\9;
+}
+.textob {
+	margin/*\**/: 0 auto\9;
+	width/*\**/: 600px\9;
+	text-align/*\**/: left\9;
+}
+#textpage {
+	margin-left/*\**/: auto\9;
+	margin-right/*\**/: auto\9;
+	margin: 0 auto;
+	height: auto;
+	min-height: 600px;
+}
+
+
+
+
+
+
+
+/************XHTML styles*****************/
+
+
+/* Paragraph has all of these .subclasses that follow */
+/* - all the way down to where SPAN.CodeSample starts */
+
+
+
+
+
+/* From Level Definitions .............................................. */
+
+
+/* Book title */
+.Heading-Heading1
+{
+    
+    font-weight: normal;
+    font-size: 24pt;
+    text-align: left;
+    margin-top: 36pt;
+    margin-left: 0pt;
+	margin-bottom: 7px;
+    color: black;
+}
+
+
+/* - */
+.Heading-Heading2
+{
+    
+    font-weight: bold;
+    font-style: italic;
+    font-size: 24pt;
+    margin-top: 36pt;
+    margin-left: 0pt;
+	margin-bottom: 7px
+
+}
+
+
+/* Chapter title */
+/* 	<h3 class='Heading-Heading2B'>Preface</h3> */
+/* or chapter number and title */
+/* 	<h3 class='Heading-Heading2B'>3 */
+/* 	<br /> */
+/* 	Enhancing Coordination and Information Sharing</h3> */
+.Heading-Heading2B
+{
+    
+    font-weight: bold;
+    font-size: 20pt;
+    margin-top: 36pt;
+    margin-left: 0pt;
+	margin-bottom: 7px
+}
+
+
+/* A HEAD - TEXT STYLE */
+.ahead
+	{
+	font-size: 110%;
+	font-style: normal;
+	font-weight: bold;
+	text-align: left;
+	margin-left: 4%;
+	margin-right: 5%;
+	margin-top: 2em;
+	margin-bottom: 1em;
+	}
+
+/* B HEAD - TEXT STYLE */
+.bhead
+	{
+	font-size: 95%;
+	font-style: normal;
+	font-weight: normal;
+	text-indent: 0em;
+	text-align: left;
+	margin-left: 4%;
+	margin-right: 5%;
+	margin-top: 1em;
+	margin-bottom: .5em;
+	}
+
+/* Chapter subhead - level 1 */
+/* 	<h4 class='Heading-Heading3'>Focus Of This Study</h4> */
+.Heading-Heading3
+{
+    
+    font-weight: bold;
+    font-size: 12pt;
+    margin-top: 12pt;
+    margin-left: 0pt;margin-bottom: 7px
+}
+
+
+/* Chapter subhead - level 2 */
+/* 	<h5 class='Heading-Heading4'>Scope of This Report</h5> */
+.Heading-Heading4
+{
+    
+    font-style: italic;
+    font-weight: bold;
+    font-size: 12pt;
+    margin-top: 9pt;
+    margin-left: 0pt;
+	margin-bottom: 7px
+}
+
+
+/* - */
+.Heading-Heading5
+{
+    
+    font-weight: bold;
+    font-size: 11pt;
+   
+    margin-top: 9pt;
+    margin-left: 0pt;
+	margin-bottom: 7px
+}
+
+
+/* - */
+.Heading-Heading6
+{
+    
+    font-style: italic;
+    font-weight: bold;
+    font-size: 10pt;
+    margin-top: 9pt;
+    margin-left: 0pt;
+	margin-bottom: 7px
+}
+
+
+/* - */
+.Heading-Heading7
+{
+    
+    font-style: italic;
+    font-size: 10pt;
+    margin-top: 9pt;
+    margin-left: 0pt;
+	margin-bottom: 7px
+}
+
+
+/* From Paragraph Style Definitions .................................... */
+
+
+/* End of text author/affiliation attribution */
+/* - As seen in Preface */
+/* 	KENNETH BRINK, CHAIR */
+/* 	OCEAN STUDIES BOARD */
+.attribution
+{
+    
+    font-size: small;
+    margin-top: 9pt;
+    margin-left: 72pt;
+}
+
+
+/* Book authors */
+/* 	Ocean Studies Board */
+/* 	Commission on Geosciences, Environment, and Resources */
+/* 	National Research Council */
+.author
+{
+    
+    font-size: small;
+   
+    text-align: center;
+    margin-top: 18px;
+}
+
+
+.bookauthor_info {
+	     
+    font-weight: normal;
+    font-size: small;
+    text-align: center;
+    margin-left: 20;
+    margin-top: 0pt;
+    margin-bottom: 0pt;
+}
+.bodytextcenter {
+	     
+    font-weight: normal;
+    font-size: small;
+    text-align: left;
+    margin-left: 20;
+    margin-top: 0 pt;
+    margin-bottom: 0pt;
+}
+
+.bookauthor_name {
+	     
+    font-weight: normal;
+    font-size: small;
+    text-align: center;
+    margin-left: 20;
+    margin-top: 0 pt;
+    margin-bottom: 0pt;
+}
+.booktitle 
+{
+	
+	font-weight: normal;
+	
+text-align: center;
+	margin-top: 30pt;
+	margin-left: 20;
+	margin-bottom: 7px;
+	color: black;
+	/*line-height : 30px;*/
+}
+.book_title 
+{
+	
+	font-weight: normal;
+	
+	text-align: center;
+	margin-top: 30pt;
+	margin-left: 20;
+	margin-bottom: 7px;
+	color: black;
+	/*line-height : 30px;*/
+}
+
+.book_subtitle 
+{
+    
+    font-weight: bold;
+    font-size: 12pt;
+    margin-top: 12pt;
+    margin-left: 20;
+	margin-bottom: 7px;
+	text-align: center
+}
+
+.booksubtitle 
+{
+    
+    font-weight: bold;
+    font-size: 12pt;
+    margin-top: 12pt;
+    margin-left: 20;
+	margin-bottom: 7px;
+	text-align: center
+}
+
+span.bookauthor_info {
+	
+    font-weight: normal;
+    font-size: small;
+    margin-left: 20;
+    margin-top: 0 pt;
+    margin-bottom: 0pt;
+}
+
+
+/* Figure header and caption */
+/* 	<p class='caption'>Figure 1-1 */
+/* 	<br /> */
+/* 	Trends in research funding (in current dollars) for the U.S. WOCE program (by */
+/* 	<br /> */
+/* 	agency). Data provided by the U.S. WOCE Program Office (Appendix F).</p> */
+.caption
+{
+    
+    font-size: x-small;
+   
+    text-align: left;
+    margin-top: 9pt;
+}
+
+.captionblock
+	{
+	margin-left: 5%;
+	margin-right: 5%;
+	margin-top: 1em;
+	margin-bottom: 1em;
+	}
+
+.center
+{
+	
+    font-weight: normal;
+    font-size: small;
+    text-align: center;
+    margin-left: 20;
+    margin-top: 0pt;
+	margin-bottom: 7px
+}
+
+/* - */
+.chapterauthor
+{
+    
+    font-size: 9pt;
+    margin-top: 9pt;
+}
+
+.chapter_title 
+{
+    
+    font-weight: bold;
+    font-size: 12pt;
+    margin-top: 12pt;
+    margin-bottom: 7px
+}
+
+/* - */
+.code
+{
+    font-family: "Courier New",monospace;
+    font-size: xsmall;
+    margin-top: 9pt;
+}
+
+
+/* - */
+.code-indent
+{
+    font-family: "Courier New",monospace;
+   
+    margin-top: 9px;
+    margin-left: 18px;
+}
+
+
+/* - */
+.continuation
+{
+    
+    font-style: italic;
+    font-size: 9pt;
+    margin-top: 9pt;
+}
+
+/*-copyright info*/
+
+.copyright {
+    font-weight: normal;
+    font-size: small;
+    margin-left: 0;
+    margin-top: 0pt;
+	margin-bottom: 7px;
+	}
+.copyright_year{ 
+    font-weight: normal;
+    font-size: small;
+    margin-left: 0;
+    margin-top: 0pt;
+	margin-bottom: 7px;
+	}
+
+.copyright_holder{  
+    font-weight: normal;
+    font-size: small;
+    margin-left: 0;
+    margin-top: 0pt;
+	margin-bottom: 7px
+	}
+
+
+/* - */
+.dedication
+{
+    
+    font-style: italic;
+    font-size: 9pt;
+    margin-top: 36pt;
+}
+
+.dropcap {
+	
+	font-size: x-large;
+	font-weight: bold;
+	elevation : level;
+	text-transform : capitalize;
+	line-height: normal;
+	
+}
+	/* - */
+.epigraph
+{
+    
+    font-style: italic;
+    font-size: 9pt;
+    margin-top: 9pt;
+    margin-right: 144pt;
+}
+
+
+/* Indented section of text. Blockquote */
+.extract
+{
+    
+    font-size: small;
+    margin-top: 10pt;
+    margin-left: 30pt;
+    margin-right: 18px;
+    line-height: auto;
+}
+
+/*-*/
+.flindent
+{
+    
+    font-weight: normal;
+    font-size: small;
+    margin-left: 20px;
+    margin-top: 0pt;
+	margin-bottom: 7px;
+	text-indent: 3em; 
+	}
+
+
+
+
+
+/* Note */
+/* 	<p class='footnote'> */
+/* 	<span class="Superscript">1</span> */
+/* 	http://www.ngs.noaa.gov/~efry/psntides.htm April 27, 1998</p> */
+
+/* NoteRef is a little weak */
+/* 	<span class="Superscript">1</span> */
+.footnote
+{
+	
+	font-size: x-small;
+	margin-top: 9pt;
+	margin-left: 18pt;
+	margin-right: 18pt;
+	padding-top: x-small;
+	
+	border-color: black;
+	border-style: solid none;
+	border-bottom-width : 1px;
+	border-top-width : 1px;
+}
+
+
+/* - */
+.tinytag
+{
+    
+    font-size: x-small;
+    margin-top: 0pt;
+    margin-left: 0pt;
+    margin-right: 0pt;
+    margin-bottom: 0pt;
+    padding-top: 0pt;
+   
+    text-align: center;
+    background-color: lightblue;
+}
+
+
+/* Note */
+/* - But what's the point when .footnote above is already defined? */
+/* 	I guess that it is because the first one gets additional leading space. */
+
+/* 	<p class='footnote2'> */
+/* 	<span class="Superscript">2</span> */
+/* 	For example, at its peak in 1944 the U.S. Navy's Hydrographic Office&#151;a predecessor of today's Naval Oceanographic Office&#151;issued 43 million charts in a single year (Nelson, 1990).</p> */
+.footnote2
+{
+   
+    font-size: x-small;
+    margin-top: 4pt;
+    margin-left: 18pt;
+    margin-right: 18pt;
+}
+/*center image*/
+.image
+	{
+	text-align: center;
+	margin-left: 5%;
+	margin-right: 5%;
+	margin-top: 1em;
+	margin-bottom: 1em;
+	}
+	
+.image img {
+	max-width: 100%; 
+	
+	
+}
+
+
+/* Indented text. Like <UL> */
+.IndentHanging
+{
+    
+    font-size: 9pt;
+    margin-top: 9pt;
+    margin-left: 18pt;
+}
+
+
+/* Indented text - 2nd level. Like <UL> within <UL> */
+.IndentHanging2
+{
+    
+    font-size: 9pt;
+    margin-top: 9pt;
+    margin-left: 36pt;
+}
+
+
+/* - */
+.IndentHanging3
+{
+    
+    font-size: 9pt;
+    margin-top: 9pt;
+    margin-left: 54pt;
+}
+
+.listitem {
+	list-style-position: inside;
+	list-style: disc; 
+	font: small ;
+	
+}
+
+li.clear {
+	list-style-image : none;
+	list-style-position : outside;
+	list-style-type : none;
+	
+	margin: 10px;
+}
+
+/* - */
+.NLtable
+{
+    
+    font-size: 9pt;
+    margin-top: 9pt;
+}
+/* */
+.note
+{
+	
+	font-size: small;
+	text-align: left;
+	margin-top: 18pt;
+	margin-bottom : 5px;
+}
+
+/* NOTEBOX BLOCK */
+.noteboxblock
+	{
+	width: 90%;
+	text-align: center;
+	margin-left: 5%;
+	margin-right: 5%;
+	margin-top: 1em;
+	margin-bottom: 1em;
+	}
+	
+	
+.trbl {
+	border-style: solid;
+	border-width: thin;
+	border-color: #000000;
+	margin-right: 30px;
+		}
+
+
+
+
+.noindent
+{
+
+    font-weight: normal;
+    font-size: small;
+    margin-left: 20;
+    margin-top: 0pt;
+	margin-bottom: 7px
+		}
+
+.normal
+{
+
+    font-weight: normal;
+    font-size: small;
+    margin-left: 20;
+    margin-top: 0pt;
+	margin-bottom: 7px
+	
+		}
+		
+		
+/* Page number */
+
+/* Anchor for links */
+/* 	<a id="JD_Page_ii" name='JD_Page_ii'> */
+/* 	</a> */
+
+/* Displayed page number */
+/* 	<p class='PageNumber'> */
+/* 		<span class="PageNumber" field="Page Number">Page ii</span> */
+/* 	</p> */
+/*.PageNumber
+{
+    
+    font-size: 6pt;
+    color: #FF0000;
+    text-align: left;
+    margin-left: 0pt;
+}
+/*-*/
+
+
+.paraindent {
+	
+	font-weight: normal;
+	font-size: small;
+	margin-left: 20	;
+	margin-top: 0pt;margin-bottom: 7px;
+	padding-left : 20px;
+	
+} 
+
+/* - */
+.pause
+{
+    
+    font-size: 9pt;
+    text-align: center;
+    margin-top: 21pt;
+    margin-bottom: 12pt;
+}
+
+
+/* - */
+.Popup
+{
+    
+    font-size: 10pt;
+    margin-top: 9pt;
+}
+
+
+/* Publisher is NAP */
+/* 	<p class='publisher'>NATIONAL ACADEMY PRESS */
+/* 	<br /> */
+/* 	Washington, D.C. 1999</p> */
+
+.publication_stmt 
+{ 
+    font-size: small;
+    text-align: left;
+    margin-top: 18pt;
+}
+
+
+
+.publisher
+{
+    
+    font-size: small;
+    text-align: center;
+    margin-top: 18pt;
+}
+.refitem
+{
+    
+    font-size: small;
+    text-align: left;
+    margin-top: 18pt;
+}
+
+/* - */
+.sidebar
+{
+    
+    font-size: small;
+    margin-top: 9pt;
+    margin-left: 72pt;
+    margin-right: 72pt;
+    padding-top: x-small;
+    border-top: 2pt solid;
+    padding-bottom: x-small;
+    border-bottom: 2pt solid;
+}
+
+
+/* - */
+.sidebar-first
+{
+    
+    font-size: small;
+    margin-top: 9pt;
+    margin-left: 72pt;
+    margin-right: 72pt;
+    padding-top: x-small;
+    border-top: 2pt solid;
+}
+
+
+/* - */
+.sidebar-last
+{
+    
+    font-size: small;
+    margin-top: 9pt;
+    margin-left: 72pt;
+    margin-right: 72pt;
+    padding-bottom: x-small;
+    border-bottom: 2pt solid;
+}
+
+
+/* - */
+.sidebar-middle
+{
+    
+    font-size: small;
+    margin-top: 9pt;
+    margin-left: 72pt;
+    margin-right: 72pt;
+}
+
+
+/* Book's subtitle */
+.subtitle
+{
+    
+    font-weight: bold;
+    font-size: 13pt;
+    text-align: left;
+    margin-top: 9pt;
+}
+.subhead1 
+{
+    
+    font-weight: bold;
+    font-size: 11pt;
+  
+    margin-top: 9pt;
+    margin-left: 0pt;
+	margin-bottom: 7px
+}
+
+/* Table data */
+/* - Paragraph text in table cells */
+/* - Can be Box headers */
+/* <td colspan="2" width="672" valign="TOP" bgcolor="#C0C0C0" bordercolor="#000000"> */
+/* 	<p class='table'> */
+/* 		<b>Box 2-3 Continued</b> */
+/* 	</p> */
+/* </td> */
+.table
+{
+    
+    font-size: x-small;
+}
+
+/* TABLE BLOCK */
+.tableblock
+	{
+	width: 95%;
+	margin-left: 3%;
+	margin-right: 5%;
+	margin-top: 1em;
+	margin-bottom: 1em;
+	border: solid 1px #ffffff;
+	text-align: center;
+	}
+	
+	
+	.b {
+	border-bottom-style: solid;
+	border-bottom-width: thin;
+	border-bottom-color: #000000;
+	}
+
+
+ .tb {
+	border-top-style: solid;	
+	border-top-width: thin;
+	border-top-color: #000000;
+	border-bottom-style: solid;
+	border-bottom-width: thin;
+	border-bottom-color: #000000;
+	}
+
+	/* TABLE BORDER STYLES */
+   .t {
+	border-style: solid;	
+	border-top-width: thin;
+	color: #000000;
+	}
+	
+	
+	/* TABLE BODY - TEXT STYLE */
+.tabletext
+	{
+	font-size: small;
+	font-style: normal;
+	font-weight: normal;
+	text-indent: 0em;
+	margin-left: 2px;
+	margin-right: 3px;
+	margin-top: 0em;
+	margin-bottom: 0em;
+	text-align: left;
+	}
+	
+	
+	
+	
+/* - */
+.titlepage
+{
+	margin-top: 9pt;
+	
+}
+
+.toc
+{
+    
+    font-weight: normal;
+    font-size: small;
+    margin-left: 20;
+    margin-top: 0pt;
+	margin-bottom: 7px
+}
+
+
+.toc_list
+{
+    
+    font-weight: normal;
+    font-size: small;
+    margin-left: 20;
+    margin-top: 0pt;margin-bottom: 7px
+}
+
+
+
+.Title2
+{
+    
+    font-weight: bold;
+    font-size: 12pt;
+    text-align: center;
+    margin-top: 18pt;
+}
+
+
+/* - */
+.TOC-author
+{
+    
+    font-style: italic;
+    font-size: 9pt;
+}
+
+
+/* Chapter title */
+/* 	<td width="480" valign="TOP"> */
+/* 		<p class='TOC-chaptitle'>Executive Summary</p> */
+/* 	</td> */
+.TOC-chaptitle
+{
+    
+    font-size: 12pt;
+    margin-top: 9pt;
+}
+
+
+/* Page number in a TOC table. */
+/* - Links to page anchor */
+/* <td width="96" valign="TOP"> */
+/* 	<p class='TOC-pagenumber'> */
+/* 		<a href='#JD_Page_1'>1</a> */
+/* 	</p> */
+/* </td> */
+.TOC-pagenumber
+{
+    
+    font-size: 12pt;
+    text-align: right;
+    margin-top: 9pt;
+}
+
+
+/* - */
+.TOC-part
+{
+    
+    font-weight: bold;
+    font-size: 12pt;
+    margin-top: 9pt;
+}
+
+
+/* 1st level TOC subhead */
+/* 	<td width="480" valign="TOP"> */
+/* 		<p class='TOC-subchapterhead'>Focus of this Study</p> */
+/* 	</td> */
+.TOC-subchapterhead
+{
+    
+    font-size: 12pt;
+    margin-top: 9pt;
+    margin-left: 18pt;
+}
+
+
+/* - */
+.TOC-sub-subchapterhead
+{
+    
+    font-size: 10pt;
+    margin-top: 9pt;
+    margin-left: 36pt;
+}
+
+
+/* - */
+.TOC-sub-sub-subchapterhead
+{
+    
+    font-size: 10pt;
+    margin-top: 9pt;
+    margin-left: 54pt;
+}
+
+
+/* - */
+.verse
+{
+    
+    font-size: 10pt;
+    margin-top: 9pt;
+}
+
+
+/* - */
+.verse-extract
+{
+    
+    font-size: small;
+    margin-top: 9pt;
+    margin-left: 18pt;
+    margin-right: 18pt;
+}
+
+
+/* From Character Style Definitions .................................... */
+
+
+/* - */
+SPAN.CodeSample
+{
+    font-family: "Courier New",monospace;
+    font-size: 10pt;
+}
+
+
+/* - */
+SPAN.CodeSample-footnote
+{
+    font-family: "Courier New",monospace;
+    font-size: small;
+}
+
+
+/* - */
+SPAN.FootnoteRef
+{
+    
+    font-size: small;
+    vertical-align: super;
+}
+
+
+/* - */
+SPAN.smallcaps
+{
+    
+    font-size: 9pt;
+}
+
+
+/* Subscript - <SUB> */
+/* 	<span class="Subscript">2</span> */
+SPAN.Subscript
+{
+    
+    font-size: small;
+    vertical-align: sub;
+}
+
+
+/* Superscript - <SUP> */
+/* 	<span class="Superscript">1</span> */
+SPAN.Superscript
+{
+    
+    font-size: small;
+    vertical-align: super;
+}
+
+
+/* - */
+SPAN.WebLink
+{
+    text-decoration: underline;
+    color: #0000FF;
+}
+
+
+/* From Highlighter Definitions ........................................ */
+
+
+/* - */
+SPAN.BlueDefault
+{
+    color: #FFFFFF;
+    background-color: #0000FF;
+}
+
+
+/* - */
+SPAN.RedDefault
+{
+    color: #FFFFFF;
+    background-color: #FF0000;
+}
+
+
+/* - */
+SPAN.YellowDefault
+{
+    color: #000000;
+    background-color: #FFFF00;
+}
+
+
+/* From Field Definitions .............................................. */
+
+
+/* - */
+SPAN.Note
+{
+}
+
+
+/* Displayed page number */
+/* 	<p class='PageNumber'> */
+/* 		<span class="PageNumber" field="Page Number">Page ii</span> */
+/* 	</p> */
+SPAN.PageNumber
+{
+}
+
+
+/* - */
+SPAN.PIPeanutHidden
+{
+}
+
+
+/* - */
+SPAN.PITag
+{
+    color: #FFFF00;
+    background-color: #800000;
+}
+/*-*/
+SPAN.publisher
+{
+    
+    font-size: small;
+    text-align: center;
+    margin-top: 18pt;
+}
+
+
+/* - */
+SPAN.Popup
+{
+}
+td.listnum 
+{
+	vertical-align: top; 
+	padding-left: 15px;
+}
+
+
+#bktitle {
+	font: bold medium ;
+	color: #333333;
+	padding-bottom: 5px;
+}
+
+
+
+
+/* BOOK TITLE GROUP BLOCK */
+
+.booktitlegroup {
+	font-family: "times new roman", times, serif;
+	text-align: center;
+	margin-left: 10%;
+	margin-right: 10%;
+	margin-top: 5em;
+	margin-bottom: 3em;
+	
+}
+/* BOOK TITLE MAIN - TEXT STYLE */
+
+.booktitle {
+	font-family: "times New Roman", times, serif;
+	font-size: 200%;
+	font-weight: normal;
+	font-style: normal;
+	text-indent: 0em;
+	text-align: center;
+	margin-left: 0%;
+	margin-right: 0%;
+	margin-top: 1.5em;
+	margin-bottom: 0.5em;
+}
+/* BOOK TITLE AUTHOR - TEXT STYLE */
+
+.author {
+	font-family: "times new roman", times, serif;
+	font-size: 125%;
+	font-style: italic;
+	font-weight: normal;
+	text-indent: 0em;
+	text-align: center;
+	margin-left: 0%;
+	margin-right: 0%;
+	margin-top: 1em;
+	margin-bottom: 1em;
+}
+/* GENERAL BLOCK */
+
+.generalblock {
+	margin-left: 0%;
+	margin-right: 0%;
+	margin-top: 1em;
+	margin-bottom: 1em;
+}
+/* BODYTEXT CENTER - TEXT STYLE */
+
+.bodytextcenter {
+	font-family: "times new roman", times, serif;
+	font-size: 100%;
+	font-style: normal;
+	font-weight: normal;
+	text-indent: 0em;
+	text-align: center;
+	margin-left: 0%;
+	margin-right: 0%;
+	margin-top: 0em;
+	margin-bottom: 0em;
+}
+/* COPYRIGHT PAGE BLOCKS ----- STARTS */
+
+/* COPYRIGHT BLOCK */
+
+.copyrightblock {
+	margin-left: 5%;
+	margin-right: 5%;
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+/* COPYRIGHT TEXT - TEXT STYLE */
+
+.copyrightpara {
+	font-family: "times new roman", times, serif;
+	font-size: 91%;
+	font-style: normal;
+	font-weight: normal;
+	text-indent: 0em;
+	text-align: center;
+	margin-left: 0%;
+	margin-right: 0%;
+	margin-top: 0em;
+	margin-bottom: 0em;
+}
+/* PRINTINFORMATION BLOCK */
+
+.printinformation {
+	margin-left: 0%;
+	margin-right: 0%;
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+/* CHAPTER TITLE GROUP BLOCK */ 
+
+.chaptertitlegroup {
+	font-family: "times new roman", times, serif;
+	margin-left: 5%;
+	margin-right: 5%;
+	margin-top: 3em;
+	margin-bottom: 2em;
+}
+/* CHAPTER TITLE - TEXT STYLE */
+
+.chaptertitle {
+	font-family: "times new roman", times, serif;
+	font-size: 175%;
+	font-style: normal;
+	font-weight: normal;
+	text-indent: 0em;
+	text-align: center;
+	margin-left: 0%;
+	margin-right: 0%;
+	margin-top: 0em;
+	margin-bottom: 0.5em;
+}
+/* BODY TEXT FIRST PARAGRAPH */
+
+.bodytextfp {
+	font-family: "times new roman", times, serif;
+	font-size: 100%;
+	font-weight: normal;
+	font-style: normal;
+	text-indent: 0em;
+	text-align: left;
+	margin-left: 0%;
+	margin-right: 0%;
+	margin-top: 0em;
+	margin-bottom: 0em;
+}
+/* LOT STYLES-----ENDS */
+
+
+
+
+
+/* BODY TEXT STYLES-----STARTS */
+
+
+
+/* BODY TEXT NORMAL PARAGRAPH */
+
+.bodytext {
+	font-family: "times new roman", times, serif;
+	font-size: 100%;
+	font-weight: normal;
+	font-style: normal;
+	text-indent: 1em;
+	text-align: left;
+	margin-left: 0%;
+	margin-right: 0%;
+	margin-top: 0em;
+	margin-bottom: 0em;
+}
+.right {
+	font-family: "times new roman", times, serif;
+	font-size: 100%;
+	font-weight: normal;
+	font-style: normal;
+	text-indent: 1em;
+	text-align: right;
+	margin-left: 0%;
+	margin-right: 0%;
+	margin-top: 0em;
+	margin-bottom: 0em;
+}
+/* BLANK PAGE STYLES */
+
+.blank {
+	font-family: arial;
+	font-size: 100%;
+	font-weight: normal;
+	font-style: normal;
+	text-indent: 0em;
+	text-align: center;
+	margin-left: 0%;
+	margin-right: 0%;
+	margin-top: 3em;
+	margin-bottom: 5em;
+}
+/* AAHEAD TITLE GROUP BLOCK */
+
+.aaheadtitlegroup {
+	font-family: "times new roman", times, serif;
+	text-align: center;
+	margin-left: 5%;
+	margin-right: 5%;
+	margin-top: 2em;
+	margin-bottom: 1em;
+}
+/* AA HEADING - TEXT STYLE */
+
+.aahead {
+	font-family: "times new roman", times, serif;
+	font-size: 116%;
+	font-style: normal;
+	font-weight: normal;
+	text-indent: 0em;
+	text-align: center;
+	margin-left: 0%;
+	margin-right: 0%;
+	margin-top: 0em;
+	margin-bottom: 0em;
+}
+/* EXTRACT BLOCK */
+
+.extractblock {
+	margin-left: 5%;
+	margin-right: 5%;
+	margin-top: 1em;
+	margin-bottom: 1em;
+	border: solid 1px #ffffff;
+}
+/* TABLE BLOCK */
+
+.tableblock {
+	width: 100%;
+	margin-left: 0%;
+	margin-right: 0%;
+	margin-top: 1em;
+	margin-bottom: 1em;
+	border: solid 1px #ffffff;
+}
+/* STYLES FOR TOC CHAPTER NUMBER */
+
+.tocchapnum {
+	font-family: "times new roman", times, serif;
+	font-size: 100%;
+	font-weight: normal;
+	font-style: normal;
+	text-indent: 0em;
+	text-align: right;
+	margin-left: 2%;
+	margin-right: 0%;
+	margin-top: 0em;
+	margin-bottom: 0.5em;
+}
+/* TOC STYLES ------- STARTS */
+
+
+
+.verticalspacel {
+	width: 0.5em;
+}
+/* STYLES FOR TOC STEP 2 */
+
+.tocchap {
+	font-family: "times new roman", times, serif;
+	font-size: 100%;
+	font-weight: normal;
+	font-style: normal;
+	text-indent: 0em;
+	text-align: left;
+	margin-left: 2%;
+	margin-right: 0%;
+	margin-top: 0em;
+	margin-bottom: 0.5em;
+}
+.verticalspacer {
+	width: 1.5em;
+}
+/* TOC REF NUMBER FOR CHAPTER/SECTION - TEXT STYLE */
+
+.tocnum {
+	font-family: "times new roman", times, serif;
+	font-size: 100%;
+	font-weight: normal;
+	font-style: normal;
+	text-indent: 0em;
+	text-align: right;
+	margin-left: 0%;
+	margin-right: 0%;
+	margin-top: 0em;
+	margin-bottom: 0.5em;
+}
+/* STYLES FOR TOC STEP 3 */
+
+.tocsub {
+	font-family: "times new roman", times, serif;
+	font-size: 100%;
+	font-weight: normal;
+	font-style: normal;
+	text-indent: 0em;
+	text-align: left;
+	margin-left: 4%;
+	margin-right: 0%;
+	margin-top: 0em;
+	margin-bottom: 0.5em;
+}
+/* MEDIA BLOCK */
+
+.image {
+	text-align: center;
+	margin-left: 5%;
+	margin-right: 5%;
+	margin-top: 1em;
+	margin-bottom: 1em;
+}
+/* CAPTION - BLOCK */
+
+.captionblock {
+	margin-left: 5%;
+	margin-right: 5%;
+	margin-top: 1em;
+	margin-bottom: 1em;
+}
+/* BODY TEXT 1 FIRST PARAGRAPH */
+
+.bodytext1fp {
+	font-family: "times new roman", times, serif;
+	font-size: 91%;
+	font-weight: normal;
+	font-style: normal;
+	text-indent: 0em;
+	text-align: left;
+	margin-left: 0%;
+	margin-right: 0%;
+	margin-top: 0em;
+	margin-bottom: 0em;
+}
+/* STYLE FOR LIST TERM */
+
+.listterm {
+	font-family: "times new roman", times, serif;
+	font-size: 100%;
+	font-weight: normal;
+	font-style: normal;
+	text-indent: 0em;
+	text-align: left;
+	margin-left: 0%;
+	margin-right: 0%;
+	margin-top: 0em;
+	margin-bottom: 0em;
+}
+/* LIST NESTED STEP1 BLOCK */
+
+.list1 {
+	width: 98%;
+	margin-left: 0%;
+	margin-right: 0%;
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+	border: solid 1px #ffffff;
+}
+/* STYLES FOR LIST NUMBER TD*/
+
+.listnum {
+	width: 1em;
+	vertical-align: top;
+}
+/* END NOTE NUMBER TEXT*/
+
+.endnotenumtext {
+	font-family: "times new roman", times, serif;
+	font-size: 83%;
+	font-weight: normal;
+	font-style: normal;
+	text-indent: 0em;
+	text-align: right;
+	margin-left: 0%;
+	margin-right: 0%;
+	margin-top: 0em;
+	margin-bottom: 0em;
+}
+/* FOOTNOTE PARAGRAPH - TEXT STYLE */
+
+.footnote {
+	font-family: "times new roman", times, serif;
+	font-size: 83%;
+	font-style: normal;
+	font-weight: normal;
+	text-indent: 0em;
+	text-align: left;
+	margin-left: 0%;
+	margin-right: 0%;
+	margin-top: 0em;
+	margin-bottom: 0em;
+}
+/* BHEAD TITLE GROUP BLOCK */
+
+.bheadtitlegroup {
+	font-family: "times new roman", times, serif;
+	text-align: center;
+	margin-left: 5%;
+	margin-right: 5%;
+	margin-top: 1.5em;
+	margin-bottom: 0.5em;
+}
+/* B HEAD - TEXT STYLE */
+
+.bhead {
+	font-family: "times new roman", times, serif;
+	font-size: 100%;
+	font-style: normal;
+	font-weight: normal;
+	text-indent: 0em;
+	text-align: center;
+	margin-left: 0%;
+	margin-right: 0%;
+	margin-top: 1em;
+	margin-bottom: 1em;
+}
+/* AHEAD TITLE GROUP BLOCK */
+
+.aheadtitlegroup {
+	font-family: "times new roman", times, serif;
+	text-align: center;
+	margin-left: 5%;
+	margin-right: 5%;
+	margin-top: 1.5em;
+	margin-bottom: 0.5em;
+}
+/* A HEAD - TEXT STYLE */
+
+.ahead {
+	font-family: "times new roman", times, serif;
+	font-size: 110%;
+	font-style: normal;
+	font-weight: normal;
+	text-indent: 0em;
+	text-align: center;
+	margin-left: 0%;
+	margin-right: 0%;
+	margin-top: 0em;
+	margin-bottom: 0em;
+}
+/* NOTEBOX BLOCK */
+
+.noteboxblock {
+	width: 90%;
+	text-align: center;
+	margin-left: 5%;
+	margin-right: 5%;
+	margin-top: 1em;
+	margin-bottom: 1em;
+}
+.trbl {
+	border-style: solid;
+	border-width: thin;
+	border-color: #000000;
+}
+/* TABLE BORDER STYLES */
+
+   .t {
+	border-top-style: solid;
+	border-top-width: thin;
+	border-top-color: #000000;
+}
+/* TABLE BODY - TEXT STYLE */
+
+.tabletext {
+	font-family: "times new roman", times, serif;
+	font-size: 91%;
+	font-style: normal;
+	font-weight: normal;
+	text-indent: 0em;
+	margin-left: 0%;
+	margin-right: 0%;
+	margin-top: 0em;
+	margin-bottom: 0em;
+}
+.tb {
+	border-top-style: solid;
+	border-top-width: thin;
+	border-top-color: #000000;
+	border-bottom-style: solid;
+	border-bottom-width: thin;
+	border-bottom-color: #000000;
+}
+/* NOTES TEXT - TEXT STYLE */
+
+.endnote {
+	font-family: "times new roman", times, serif;
+	font-size: 83%;
+	font-style: normal;
+	font-weight: normal;
+	text-indent: 0em;
+	text-align: left;
+	margin-left: 0%;
+	margin-right: 0%;
+	margin-top: 0em;
+	margin-bottom: 0em;
+}
+/* FLOAT TITLE TEXT STYLE */
+
+.floattitle {
+	font-size: 100%;
+	font-weight: normal;
+	font-style: normal;
+	text-indent: 0em;
+	margin-left: 0%;
+	margin-right: 0%;
+	margin-top: 1em;
+	margin-bottom: 1em;
+}
+/* BIBLIOGRAPHY HANGING - TEXT STYLE */
+
+.refentry {
+	font-family: "times new roman", times, serif;
+	font-size: 100%;
+	font-style: normal;
+	font-weight: normal;
+	text-indent: -1em;
+	text-align: left;
+	margin-left: 1em;
+	margin-right: 0em;
+	margin-top: 0em;
+	margin-bottom: 0em;
+}
+/* SIGNED BLOCK */
+
+.signed {
+	text-align: right;
+	margin-left: 0%;
+	margin-right: 0%;
+	margin-top: 1em;
+	margin-bottom: 1em;
+}
+.right {
+	font-family: "times new roman", times, serif;
+	font-size: 100%;
+	font-weight: normal;
+	font-style: normal;
+	text-indent: 1em;
+	text-align: right;
+	margin-left: 0%;
+	margin-right: 0%;
+	margin-top: 0em;
+	margin-bottom: 0em;
+}
+
+/*Div Alert Pop up*/
+
+/*Interrupt Styles*/	
+
+	/*Open Book pop up div*/
+	
+	#blanket {
+   background-color:#111;
+   opacity: 0.65;
+   -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=65)"; // first!
+	filter: alpha(opacity=65);
+   position:fixed;
+   z-index: 9001; 
+   top:0px;
+   left:0px;
+   width:100%;
+   height: 100%;
+}
+
+
+	#alertwindow {
+  position: fixed;
+  background: url("http://images.nap.edu/images/OBalert_background.png") no-repeat top left;
+  width: 565px;
+  height: 405px;
+  top: 50%;
+  left: 50%;
+  z-index: 9002;
+  font-family: arial, helvetica, sans-serif;
+  margin: -202px 0 0 -233px;
+}
+	
+	
+	
+	#alertwindow .alerttitle {
+		padding: 15px 0px 5px 0px; 
+		text-align: center; 
+		font: bold 19pt arial; 
+		color: white;
+	}
+	
+	#alertwindow p.alerttext {
+		margin: 40px 20px 10px 0px;
+		font-family: arial, helvetica, sans-serif;
+		font-size: 14pt;
+		text-align: center;
+		font-weight: normal;
+	}
+	
+		#alertwindow p.alerttextbody {
+		margin: 5px 20px 10px 0px;
+		font-family: arial, helvetica, sans-serif;
+		font-size: 11pt;
+		text-align: center;
+		font-weight: bold;
+	}
+	
+	#alertwindow p.alerttextbody_small {
+		margin: 5px 20px 10px 0px;
+		font-family: arial, helvetica, sans-serif;
+		font-size: 9pt;
+		text-align: center;
+		font-weight: normal;
+	}
+	
+	#alertwindow ul.alertlist {
+		margin: 20px 30px 20px 30px;
+		list-style: none;
+	}
+	
+	#alertwindow ul.alertlist li {
+		list-style: none;
+		background: url(http://images.nap.edu/images/right.png) no-repeat top left;
+		padding-left: 30px;
+		padding-bottom: 10px;
+		margin-bottom: 5px;
+		padding-right: 20px;
+	}
+	
+	#alertwindow div.buyit {
+	background: url(http://images.nap.edu/images/redbutton.png) no-repeat top center; 
+	width: 100%; 
+	height: 36px; 
+	text-align: center;
+	}
+	
+	#alertwindow div.buyit a {
+		color: white; 
+		text-decoration: none; 
+		font: bold 9pt arial; 
+		position: relative; 
+		top: 10px;
+		
+	}
+		
+	
+	#alertwindow .closewindow {
+		display: block; 
+		width: 550px; 
+		height: 36px; 
+		clear: both; 
+		text-align: center; 
+		float: left; 
+		position: absolute; 
+		top: 370px;
+	}
+	
+	
+	
+	
