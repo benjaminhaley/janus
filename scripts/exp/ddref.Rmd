@@ -22,8 +22,6 @@ Table of contents
   - [Introduction](#introduction) - What are we doing here?
   - [Defining DDREF](#defining_ddref) - What is the equation?
   - [Log Likelihood](#loglike) - How is log likelihood calculated?
-  - [Metaregression](#metaregression) - Show the principals of
-  metaregression.
   - [To log or not?](#log-or-not) - Should data be fit to a linear scale or a log linear scale and should a threshold be used when estimating DDREF?
 
 **Data**
@@ -52,6 +50,8 @@ Table of contents
 
   - [Concordance](#concordance) - Tables describing the data in detail.
   - [10B4 with only acute data](#10B4-with-only-acute-data) reproduce lifespan analysis using only the acute data which is available as individual level data.
+  - [Metaregression](#metaregression) - Show the principals of
+  metaregression.
 
 ___________________________________________________________________
 
@@ -2127,86 +2127,13 @@ Looks bad, clearly, we are over-confident!
 
 ________________________________________________________________________
 
-<a name="metaregression"></a>
-
-Meta Regression Figure
-========================================================
-*Last update: July 2014*
-
-A figure that shows off the principal of meta-regression.
-
-```{r}
-# Common
-setwd('~/janus')
-source('scripts/util/util.R') # http://goo.gl/VYzkAs
-
-# Fake data
-set.seed(1)
-data <- data.frame(
-    yi = rnorm(5, mean=1:5, sd=1),
-    vi = rnorm(5)^2,
-    x = 1:5
-)
-
-# Add an outlier
-data$yi[3] <- 0
-data$vi[3] <- .01
-
-# Model
-m <- rma(
-    yi,
-    vi,
-    mods = cbind(x),
-    data = data,
-    method="ML"
-)
-data <- data %>%
-  mutate(p = predict(m)$pred,
-         tau2 = m[['tau2']],
-         o2 = vi + tau2,
-         e = 0.3*(p - yi))
-
-# Predict likelihood
-n <- nrow(data)
-l <- with(data, sum(
-    -(1/2) * sum(e^2 / o2) +
-    -(1/2) * log(o2) +
-    -(1/2) * log(2*pi)
-))
-logLik(m)
-l
-
-# Show
-ggplot(data, aes(x, yi)) +
-    geom_point() +
-    geom_errorbar(aes(
-        ymin=yi - vi^0.5,
-        ymax=yi + vi^0.5,
-    ), width=0.1, alpha=0.5) +
-    geom_errorbar(aes(
-        ymin=yi - (vi + tau2)^0.5,
-        ymax=yi + (vi + tau2)^0.5,
-    ), width=0.1, alpha=0.5, color='red') +
-    geom_path(aes(x, p), color='black')
-ggsave_for_ppt('meta_regression_example.png')
-```
-
-## Figure: The principal of metaregression
-Here we show an artificially generated dataset of 5 points with one outlier in the middle.  The standard error of each point is diplayed in grey error bars, the increased estimate, including random effects is displayed with red error bars.  The best fit after updating the error estimates via metaregression is shown with the line in black.
-
-The essence here is that the initial error estamates are too low if a straight line explains the data.  Specifically the outlier is highly confident, but falls far off the best fit line.  This implies that the confidence is too high or that the relationship is not linear afterall.  With meta-regression we assume the relationship is in-fact linear but that the error of the data points has been systematicaly under-estimated.  The random effects error estimate is added to each point equally so that their distance from the best fit line is a probable number of stadard deviations.
-
-^ back to [table of contents](#contents)
-
-________________________________________________________________________
-
 <a name="10B3-meta"></a>
 
 Meta Regression of BEIR 10B3
 ========================================================
 *Last update: June 2013*
 
-BEIR fits oak ridge data as if they are points, but actually each point represents many samples and we know the standard deviation of this estimate.  Therefore meta-regression is a more appropriate form of analysis.  Here we show the fit by meta-regression.
+BEIR fits oak ridge data as if they are points, but actually each point represents many samples and we know the standard deviation of this estimate.  Therefore [metaregression][#metaregression] is a more appropriate form of analysis.  Here we show the fit by meta-regression.
 
 We will also run a heterogeneity test.
 
@@ -3280,3 +3207,77 @@ Scary that this result is so sensitive to these two treatment groups!
 ^ back to [table of contents](#contents)
 
 ___________________________________________________________________
+
+
+
+<a name="metaregression"></a>
+
+Meta Regression Figure
+========================================================
+*Last update: July 2014*
+
+A figure that shows off the principal of meta-regression.
+
+```{r}
+# Common
+setwd('~/janus')
+source('scripts/util/util.R') # http://goo.gl/VYzkAs
+
+# Fake data
+set.seed(1)
+data <- data.frame(
+    yi = rnorm(5, mean=1:5, sd=1),
+    vi = rnorm(5)^2,
+    x = 1:5
+)
+
+# Add an outlier
+data$yi[3] <- 0
+data$vi[3] <- .01
+
+# Model
+m <- rma(
+    yi,
+    vi,
+    mods = cbind(x),
+    data = data,
+    method="ML"
+)
+data <- data %>%
+  mutate(p = predict(m)$pred,
+         tau2 = m[['tau2']],
+         o2 = vi + tau2,
+         e = 0.3*(p - yi))
+
+# Predict likelihood
+n <- nrow(data)
+l <- with(data, sum(
+    -(1/2) * sum(e^2 / o2) +
+    -(1/2) * log(o2) +
+    -(1/2) * log(2*pi)
+))
+logLik(m)
+l
+
+# Show
+ggplot(data, aes(x, yi)) +
+    geom_point() +
+    geom_errorbar(aes(
+        ymin=yi - vi^0.5,
+        ymax=yi + vi^0.5,
+    ), width=0.1, alpha=0.5) +
+    geom_errorbar(aes(
+        ymin=yi - (vi + tau2)^0.5,
+        ymax=yi + (vi + tau2)^0.5,
+    ), width=0.1, alpha=0.5, color='red') +
+    geom_path(aes(x, p), color='black')
+```
+
+## Figure: The principal of metaregression
+Here we show an artificially generated dataset of 5 points with one outlier in the middle.  The standard error of each point is diplayed in grey error bars, the increased estimate, including random effects is displayed with red error bars.  The best fit after updating the error estimates via metaregression is shown with the line in black.
+
+The essence here is that the initial error estamates are too low if a straight line explains the data.  Specifically the outlier is highly confident, but falls far off the best fit line.  This implies that the confidence is too high or that the relationship is not linear afterall.  With meta-regression we assume the relationship is in-fact linear but that the error of the data points has been systematicaly under-estimated.  The random effects error estimate is added to each point equally so that their distance from the best fit line is a probable number of stadard deviations.
+
+^ back to [table of contents](#contents)
+
+________________________________________________________________________
