@@ -165,3 +165,29 @@ only <- function(x) {
   u
 }
 
+# extract
+# like sub, but retrive the matching substring
+# extract('[0-9]*', '123 cool') == "123"
+extract <- function(pattern, x) regmatches(x, regexpr(pattern, x))
+
+# order by number
+# Sometimes the name of a factor starts with a number and it should
+# be ordered by the value of that number, rather than alphabetically.
+# This is for those times.
+order_by_number <- function(x) {
+  u <- unique(x)
+  number <- as.numeric(extract('^[0-9.]*', u))
+  x <- factor(x, levels=u[order(number)])
+  x
+}
+order_by_number(c('2 is before', '10'))
+x <- '99.3, red balloons'
+grep('^[0-9\\.]*', x, value=TRUE)
+
+
+
+x <- c("A and B", "A, B and C", "A, B, C and D", "foobar")
+pattern <- "[[:space:]]*(,|and)[[:space:]]"
+## Match data from regexpr()
+m <- regexpr(pattern, x)
+regmatches("A and B", regexpr("[[:space:]]*(,|and)[[:space:]]", "A and B"))

@@ -30,7 +30,6 @@ Table of contents
 
   - [Data Funnel](#data_funnel) - Which data will we analyze?
   - [Data Cleaning](#cleaning) - Damn, data, you look good!
-  - [Concordance](#concordance) - Tables describing the data in detail.
   - [Visualize](#visual_concordance) - Show what the data looks like.
   - [Atomic Bomb Survivors](#lss) - Load data from atomic bomb survivors as well.
   
@@ -51,8 +50,9 @@ Table of contents
 
 **Supplemental**
 
+  - [Concordance](#concordance) - Tables describing the data in detail.
   - [10B4 with only acute data](#10B4-with-only-acute-data) reproduce lifespan analysis using only the acute data which is available as individual level data.
-  
+
 ___________________________________________________________________
 
 ```{r global_options, include=FALSE}
@@ -65,7 +65,8 @@ opts_chunk$set(fig.width=10.24,
                fig.path='Figs/',
                #echo=FALSE,         # Toggle this to show the code
                warning=FALSE, 
-               message=FALSE)
+               message=FALSE,
+               cache=TRUE)
 ```
 
 
@@ -606,295 +607,7 @@ write.csv0(d,file='data/ddref.csv')
 ### Results
 Data is so fresh and so clean.
 
-
-
-<a name="concordance"></a>
-
-Concordance
-========================================================
-*Last update: April 2013*
-
-Give a detailed description of the dataset for those that want to make a close inspection.
-
-
-```{r}
-
-# Common
-setwd('~/janus')
-source('scripts/util/util.R') # http://goo.gl/VYzkAs
-
-# Data
-setwd('~/janus')
-d <- readRDS('data/ddref.rds')
-
-# Helpers
-group_summary <- function(data){
-    .all <- function(x, c=' ') paste(unique(x), collapse=c)
-    summary <- with(data, c(
-        ' ♂ '          = sum(sex == '♂'),
-        ' ♀ '          = sum(sex == '♀'),
-        'avg. age'      = round(mean(lifespan)),
-        'dose'          = .all(signif(dose, 2)),
-        'rate'          = .all(signif(dose_rate, 1)),
-        '# fractions'   = .all(fractions),
-        warnings        = .all(gsub('[^0-9]', '', warning_reason))
-    ))
-    summary[summary == 0] <- '-'
-    summary[is.na(summary)] <- '-'  
-    summary
-}
-
-find_in_file <- function(pattern, file='~/janus/scripts/exp/radiation.R'){
-		lines <- readLines(file)
-		lines[grepl(pattern, lines)]
-}
-```
-
-#### Group details
-Show the details of each treatment group in the dataset organized by cluster
-
-```{r}
-for(id in sort(unique(d$cluster_id))) {
-  df <- d[d$cluster_id == id,]
-  cluster <- as.character(df$cluster[1])
-  cat('\n', 
-      cluster, 
-      '\n------------------------------------------------\n')
-  s <- ddply(df, .(group_id), function(df) {
-    group_summary(df)
-  })
-  s <- s %>% 
-    mutate(study=sub('^[0-9]*-', '', group_id),
-           group=as.numeric(sub('^[0-9]*-', '', study)),
-           study=as.numeric(sub('-[0-9]*$', '', study))) %>%
-    arrange(study, group) %>%
-    select(-study, -group)
-  print(s)
-}
-```
-
-#### Warnings
-Some issues were found when digging through the input data that were not judged to be severe enough to exclude the data, but do exemplify deviations from our expectations.  These are listed as follows.
-
-```{r}
-# Warnings are listed in radiation.R on lines that start with
-# the following prefix
-prefix <- "# warning-"
-
-# Get a list of all the warnings relevant to this dataset
-warnings <- gsub('[^0-9]', '', unique(d$warning_reason))
-warnings <- sort(as.numeric(warnings[warnings != ""]))
-
-# Find the corresponding warning definition in radiation.R
-warning_prefixes <- paste0(prefix, warnings)
-for(p in warning_prefixes) cat(find_in_file(p), '\n')
-
-```
-
-#### Study Details
-Here are a description of each of the original studies used in this analysis as provided by the 'Gray Book' ([Gerber et al. 1996](#gerber_1996)).  Studies can easily be found by lab and study id which are the first two parts of the group id.  Concretely, a group id of 1007-3-6 is the sixth groups from the third study conducted at lab 1007, Oak Ridge National Laboratory.
-
-TODO(later) summarize this information in a table
-TODO(later) this information should be stored as data, not text
-
-##### 3-1 
-cluster 7 - ♀ BC3F1 Mice ENEA X-ray at 91 days old  
-
-![][3-1]  
-More detail in ([Covelli 1988][Covelli 1988])
-
-[3-1]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-24%2020.59.22.png
-[Covelli 1988]: http://dl.dropbox.com/u/1131693/bloodrop/3577210.pdf
-
-
-##### 3-5 
-cluster 13 - ♂ BC3F1 Mice ENEA X-ray at 92 days old  
-cluster 15 - ♂ BC3F1 Mice ENEA X-ray at -4 days old  
-cluster 16 - ♀ BC3F1 Mice ENEA X-ray at -4 days old   
-cluster 17 - ♂ BC3F1 Mice ENEA X-ray at 580 days old   
-
-![][3-5]  
-More detail in ([Covelli 1984][Covelli 1984])
-
-[3-5]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.25.17.png
-[Covelli 1984]: http://dl.dropbox.com/u/1131693/bloodrop/3576356.pdf 
-
-
-##### 9-5 
-cluster 6 - ♂ BALB/c/Cnb Mice SCK/CEN γ-ray at 84 days old  
-
-![][9-5]  
-More detail in ([Maisin 1983][Maisin 1983])
-
-[9-5]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.28.32.png
-[Maisin 1983]: http://dl.dropbox.com/u/1131693/bloodrop/3575970.pdf 
-
-
-##### 9-6 
-cluster 4 - ♂ C57BL/Cnb Mice SCK/CEN γ-ray at 84 days old  
-
-![][9-6]  
-![][9-6-2]  
-More detail in ([Maisin 1988][Maisin 1988])
-
-[9-6]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.29.07.png
-[9-6-2]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.29.42.png
-[Maisin 1988]: http://dl.dropbox.com/u/1131693/bloodrop/3577205.pdf 
-
-
-##### 9-7 
-cluster 14 - ♂ C57BL/Cnb Mice SCK/CEN X-ray at 7 days old
-
-![][9-7]  
-More detail in ([Maisin 1988][Maisin 1988])
-
-[9-7]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.30.19.png
-[Maisin 1988]: Reference 
-
-
-##### 1003-20 
-cluster 2 - ♀ B6CF1 Mice ANL γ-ray at 114 days old   
-cluster 3 - ♂ B6CF1 Mice ANL γ-ray at 113 days old    
-
-![][1003-20]  
-More detail in ([Grahn 1995][Grahn 1995])
-
-[1003-20]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-22%2016.36.24.png
-[Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf
-
-
-##### 1003-21 
-cluster 2 - ♀ B6CF1 Mice ANL γ-ray at 114 days old   
-cluster 3 - ♂ B6CF1 Mice ANL γ-ray at 113 days old  
-
-![][1003-21]  
-More detail in ([Grahn 1995][Grahn 1995])
-
-[1003-21]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.20.41.png
-[Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf 
-
-
-##### 1003-22 cluster  (only controls)
-cluster 2 - ♀ B6CF1 Mice ANL γ-ray at 114 days old   
-cluster 3 - ♂ B6CF1 Mice ANL γ-ray at 113 days old  
-
-![][1003-22]  
-More detail in ([Grahn 1995][Grahn 1995])
-
-[1003-22]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.21.26.png
-[Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf
-
-
-##### 1003-24 cluster  (only controls)
-cluster 2 - ♀ B6CF1 Mice ANL γ-ray at 114 days old  
-cluster 3 - ♂ B6CF1 Mice ANL γ-ray at 113 days old  
-
-![][1003-24]  
-More detail in ([Grahn 1995][Grahn 1995])
-
-[1003-24]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.22.00.png
-[Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf 
-
-
-##### 1003-25 cluster  (only controls)
-cluster 2 - ♀ B6CF1 Mice ANL γ-ray at 114 days old  
-cluster 3 - ♂ B6CF1 Mice ANL γ-ray at 113 days old  
-
-![][1003-25]  
-More detail in ([Grahn 1995][Grahn 1995])
-
-[1003-25]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.22.34.png
-[Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf 
-
-
-##### 1003-26 cluster 
-cluster 2 - ♀ B6CF1 Mice ANL γ-ray at 114 days old  
-cluster 3 - ♂ B6CF1 Mice ANL γ-ray at 113 days old  
-
-![][1003-26]  
-More detail in ([Grahn 1995][Grahn 1995])
-
-[1003-26]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.23.02.png
-[Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf 
-
-
-##### 1003-27 cluster 
-cluster 12 - ♂ leucopus Peromyscus ANL γ-ray at 137 days old   
-
-![][1003-27]  
-More detail in ([Grahn 1995][Grahn 1995])
-
-[1003-27]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.26.08.png
-[Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf
-
-
-##### 1003-28 cluster  (only controls)
-cluster 2 - ♀ B6CF1 Mice ANL γ-ray at 114 days old  
-cluster 3 - ♂ B6CF1 Mice ANL γ-ray at 113 days old  
-
-![][1003-28]  
-More detail in ([Grahn 1995][Grahn 1995])
-
-[1003-28]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.23.34.png
-[Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf
-
-
-##### 1003-29 cluster 
-cluster 2 - ♀ B6CF1 Mice ANL γ-ray at 114 days old  
-cluster 3 - ♂ B6CF1 Mice ANL γ-ray at 113 days old  
-
-![][1003-29]  
-More detail in ([Grahn 1995][Grahn 1995])
-
-[1003-29]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.23.59.png
-[Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf
-
-
-##### 1003-30 cluster  (only controls)
-cluster 2 - ♀ B6CF1 Mice ANL γ-ray at 114 days old  
-cluster 3 - ♂ B6CF1 Mice ANL γ-ray at 113 days old  
-
-![][1003-30]  
-More detail in ([Grahn 1995][Grahn 1995])
-
-[1003-30]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.24.25.png
-[Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf
-
-
-
-##### 1007-2 
-cluster 8 - ♂ C57BL/6Bd Mice ORNL γ-ray at 70 days old 
-cluster 9 - ♀ C3Hf/Bd Mice ORNL γ-ray at 70 days old 
-cluster 10 - ♀ C57BL/6Bd Mice ORNL γ-ray at 70 days old  
-cluster 11 - ♂ C3Hf/Bd Mice ORNL γ-ray at 70 days old 
-
-![][1007-2]  
-More detail in ([Storer 1988][Storer 1988])
-
-[1007-2]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.31.08.png
-[Storer 1988]: http://dl.dropbox.com/u/1131693/bloodrop/3577229.pdf 
-
-
-##### 1007-3 
-cluster 1 - ♀ RFM/Un Mice ORNL γ-ray at 70 days old   
-cluster 5 - ♂ RFM/Un Mice ORNL γ-ray at 70 days old  
-
-![][1007-3]  
-More detail in ([Ullrich 1979][Ullrich 1979])
-
-[1007-3]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.31.26.png
-[Ullrich 1979]: http://dl.dropbox.com/u/1131693/bloodrop/3575012.pdf 
-
-
-
-
-##### References
-<a name="gerber_1996"></a>
-Gerber, Watson, Sugahara, Okada. International Radiobiology Archives of Long-Term Animal Studies I. Descriptions of Participating Institutions and Studies. 1996. [link](http://www.ustur.wsu.edu/nra/pdf/ira.pdf)
-
-^ back to [table of contents](#contents)
-
-____________________________________________________________________
+________________________________________________________
 
 <a name="visual_concordance"></a>
 
@@ -1719,7 +1432,6 @@ model_10B3 <- function(data){
     )
 }
 
-@here
 # Constants
 threshold_dose_to_model = 1.5001
 strain_to_model = 'RFM'
@@ -1923,88 +1635,6 @@ In any case, the estimate has changed a trivial amount from the original.  Makin
 
 ___________________________________________________________________
 
-<a name="10B4-with-only-acute-data"></a>
-
-Supplemental: Reproduce lifespan analysis using only acute data
-========================================================
-*Last update: June 2014*
-Individual level data from oak ridge is only available from acute exposures.  How does the profile likelihood change if only this data is used?
-
-This is a simple adaptation of the techniques used to [reproduce 10B4][#10B4].
-
-```{r} 
-# Common
-setwd('~/janus')
-source('scripts/util/util.R') # http://goo.gl/VYzkAs
-
-# Data
-data <- read.csv('data/storer_1979_processed.csv') 
-data_10B2 <- read.csv('data/10B2_fits.csv')
-
-# Model
-model_10B4 <- function(data, o){    
-    glm(
-        I(1/age) ~ I(dose + o*dose^2 / (fractions)),
-        data=data,
-        weights=n
-    )
-}
-
-data <- get_likelihoods(
-  data %>% filter(in_my_analysis & modeled_in_10B3),
-  model_10B4)
-
-
-# Merge likelihoods with data from 10B2
-data <- merge(
-  data %>% mutate(o=round(o, 2)), 
-  data_10B2 %>% mutate(o=round(o, 2)))
-
-# Clean data and calcualte the mean likelihood
-data = data %>%
-  mutate(tumor = likelihood,
-         lifespan = l,
-         mean = (tumor + lifespan)/2) %>%
-  select(-l, -likelihood)
-```
-
-#### Show
-
-##### 10B4 with acute lifespan data
-Here is 10B4 if only acute data is used.
-
-```{r}
-g <- melt(data, 
-          id.vars='o', 
-          value.name='likelihood', 
-          variable.name='source')
-ggplot(g, aes(o, likelihood, linetype=source, color=source)) + 
-  geom_path() +
-  scale_linetype_manual(values=c('dotted', 'dotdash', 'solid')) +
-  scale_color_manual(values=c('black', 'red', 'black')) +
-  scale_y_continuous(breaks = c(0:5)/5, limits=c(0,1.2))
-```
-
-
-##### Confidence intervals with acute only
-Here's how the confidence intervals of the mean come out when only acute data is used.
-
-```{r}
-# was       " 0.4 ( 0.1, 3.5)"
-# is        "-0.1 (-0.3, 1.1)"  
-confidence_interval(data$o, data$mean, 0.05)
-```
-
-
-#### Results
-If we only include acute results we see that the profile likelihood changes dramatically, giving a substantially lower estimate.  The mean confidence interval goes down as well.  The net effect is that we center around a confidence interval very close to 1.
-
-Scary that this result is so sensitive to these two treatment groups!
-
-^ back to [table of contents](#contents)
-
-___________________________________________________________________
-
 <a name="10-2"></a>
 
 Reproduce BEIR 10-2 (fail)
@@ -2074,6 +1704,7 @@ to_predict$err <- err(factor_fit, to_predict)
 aggregate <- to_predict %>%
   group_by(dose) %>%
   summarize(err=mean(err))
+
 ```
 
 #### Show
@@ -2378,8 +2009,8 @@ to_predict$type[to_predict$fractions > 1] <- 'C'
 aggregate = data %>%
   group_by(cluster, group_id) %>%
   summarize(age=mean(lifespan),
-            sd=sd(lifespan),
             n=length(lifespan),
+            sd=sd(lifespan)/n^0.5,
             dose=only(dose),
             fractions=only(fractions),
             type=only(type))
@@ -2392,6 +2023,9 @@ control_ages <- aggregate %>%
   summarize(control_age=mean(age[dose == min(dose)]))
 aggregate <- merge(aggregate, control_ages)
 
+# Save aggregated data for later use
+write.csv0(aggregate, file='data/10B4_all_data_aggregated.csv')
+
 # Model
 predictions <- ddply(aggregate, .(cluster), function(df){
   m <- model_10B3(df)
@@ -2400,8 +2034,6 @@ predictions <- ddply(aggregate, .(cluster), function(df){
   to_predict
 })
 predictions <- merge(predictions, control_ages)
-
-@here
 
 # Show
 # As in 10B3
@@ -2420,16 +2052,6 @@ ggplot(aggregate, aes(dose,
   ) +
   geom_text(size=4) + 
   facet_wrap(~ cluster, scales='free_y')
-
-# TODO add this
-geom_smooth(
-    data=g[!is.na(g$p),],
-    aes(dose, p, color=type), 
-    method='lm', 
-    formula='y ~ x + I(x^2)',
-    se=FALSE
-) +
-ggsave_for_ppt('inverse_lifespan.png')
 ```
 
 #### Results
@@ -2454,97 +2076,51 @@ ________________________________________________________________________
 
 Show graphs like Storer 1979 10B4 but for all data.
 
-```{r}     
+```{r}
 
 # Common
 setwd('~/janus')
 source('scripts/util/util.R') # http://goo.gl/VYzkAs
 
 # Data
-data <- readRDS('data/ddref.rds')
-
+aggregate <- read.csv('data/10B4_all_data_aggregated.csv')
 
 # Helpers
-model_10B4 <- function(data, o){    
-    glm(
-        I(1/age) ~ I(dose + o*dose^2 / (fractions)),
-        data=data,
-        weights=n
-    )
-}       
-    
-# Mean Lifespans
-aggregate <- ddply(data, .(cluster, group_id, sex), function(df){
-    u <- function(x) paste(unique(x), collapse=' ')
-    dont_aggregate <- c('lifespan', 'id', 'X', 'n')
-    data.frame(
-        llply(df[,!names(df) %in% dont_aggregate], u),
-        age=mean(df$lifespan),
-        age_sd=sd(df$lifespan),
-        n=nrow(df)
-    )   
-})
-
-# Restore Sanity
-numerics <- names(data)[laply(data, is.numeric)]
-for(n in numerics) {
-    if(n %in% names(aggregate)){
-        aggregate[,n] <- as.numeric(as.character(aggregate[,n]))
-    }
+model_10B4 <- function(data, o){
+  glm(
+    I(1/age - 1/control_age) ~ I(dose + o * dose^2 / (fractions)) - 1,
+    data=data,
+    weights=1/sd^2
+  )
 }
 
-
 # Model
-low = -2
-high = 6
-delta = 0.01  # decrease for higher resolution
-o_range = (low/delta):(high/delta) * delta
-    
-
-# Model
-aggregate <- ldply(o_range, function(o){
-    ddply(aggregate, .(cluster, sex), function(df){
-        
-        m <- model_10B4(df, o)
-        df$l <- logLik(m)
-        df$o <- o
-        df
-    })
+likelihoods <- ddply(aggregate, .(cluster), function(df){
+  l <- get_likelihoods(df, model_10B4)
+  l$cluster <- only(df$cluster)
+  l
 })
 
 # Summarize Effect
-summary <- ddply(aggregate, .(o), function(df){
-    sum(df$l, na.rm=TRUE)
-})
-names(summary) <- c('o','l')
-summary$l <- normalize_likelihood(summary$l, delta)
-
-
-# Normalize
-aggregate <- ddply(aggregate, .(cluster, sex), function(df){
-    df$l <- normalize_likelihood(df$l, delta)
-    df
-})
+delta = likelihoods$o[2] - likelihoods$o[1]
+summary_effect <- likelihoods %>% 
+  group_by(o) %>%
+  summarize(log_l = sum(log(l))) %>%
+  mutate(l = normalize_likelihood(log_l, delta),
+         cluster = "summary effect") %>% 
+  select(-log_l)
+likelihoods <- rbind(likelihoods, summary_effect)
 
 # Show
 # As in 10B4
 # http://www.nap.edu/openbook.php?record_id=11340&page=257
-a <- aggregate
+ggplot(likelihoods, aes(o, l)) + 
+    geom_path() +
+    ylim(0,1) +
+    facet_wrap(~ cluster)
 
-show <- function(g){
-    g$cluster <- as.factor(as.character(g$cluster))
-    g$l <- pmin(g$l, 1)
-    suppressWarnings(print(
-    ggplot(g, aes(o, l)) + 
-        geom_path() +
-        ylim(0,1) +
-        facet_wrap(~ cluster)
-    ))
-}
-g <- a
-show(g)
-ggsave_for_ppt('inverse_lifespan_profile.png')
-
+# TODO fix out of bound results
+# TODO show aggregate
 ```
     
 #### Results
@@ -3335,3 +2911,375 @@ TODO: See if the hypotherical threshold proposed by BEIR VII actually plays out 
 ^ back to [table of contents](#contents)
 
 __________________________________________________________________
+
+
+
+<a name="concordance"></a>
+
+Concordance
+========================================================
+*Last update: April 2013*
+
+Give a detailed description of the dataset for those that want to make a close inspection.
+
+
+```{r}
+
+# Common
+setwd('~/janus')
+source('scripts/util/util.R') # http://goo.gl/VYzkAs
+
+# Data
+setwd('~/janus')
+d <- readRDS('data/ddref.rds')
+
+# Helpers
+group_summary <- function(data){
+    .all <- function(x, c=' ') paste(unique(x), collapse=c)
+    summary <- with(data, c(
+        ' ♂ '          = sum(sex == '♂'),
+        ' ♀ '          = sum(sex == '♀'),
+        'avg. age'      = round(mean(lifespan)),
+        'dose'          = .all(signif(dose, 2)),
+        'rate'          = .all(signif(dose_rate, 1)),
+        '# fractions'   = .all(fractions),
+        warnings        = .all(gsub('[^0-9]', '', warning_reason))
+    ))
+    summary[summary == 0] <- '-'
+    summary[is.na(summary)] <- '-'  
+    summary
+}
+
+find_in_file <- function(pattern, file='~/janus/scripts/exp/radiation.R'){
+  	lines <- readLines(file)
+		lines[grepl(pattern, lines)]
+}
+```
+
+#### Group details
+Show the details of each treatment group in the dataset organized by cluster
+
+```{r}
+for(id in sort(unique(d$cluster_id))) {
+  df <- d[d$cluster_id == id,]
+  cluster <- as.character(df$cluster[1])
+  cat('\n', 
+      cluster, 
+      '\n------------------------------------------------\n')
+  s <- ddply(df, .(group_id), function(df) {
+    group_summary(df)
+  })
+  s <- s %>% 
+    mutate(study=sub('^[0-9]*-', '', group_id),
+           group=as.numeric(sub('^[0-9]*-', '', study)),
+           study=as.numeric(sub('-[0-9]*$', '', study))) %>%
+    arrange(study, group) %>%
+    select(-study, -group)
+  print(s)
+}
+```
+
+#### Warnings
+Some issues were found when digging through the input data that were not judged to be severe enough to exclude the data, but do exemplify deviations from our expectations.  These are listed as follows.
+
+```{r}
+# Warnings are listed in radiation.R on lines that start with
+# the following prefix
+prefix <- "# warning-"
+
+# Get a list of all the warnings relevant to this dataset
+warnings <- gsub('[^0-9]', '', unique(d$warning_reason))
+warnings <- sort(as.numeric(warnings[warnings != ""]))
+
+# Find the corresponding warning definition in radiation.R
+warning_prefixes <- paste0(prefix, warnings)
+for(p in warning_prefixes) cat(find_in_file(p), '\n')
+
+```
+
+#### Study Details
+Here are a description of each of the original studies used in this analysis as provided by the 'Gray Book' ([Gerber et al. 1996](#gerber_1996)).  Studies can easily be found by lab and study id which are the first two parts of the group id.  Concretely, a group id of 1007-3-6 is the sixth groups from the third study conducted at lab 1007, Oak Ridge National Laboratory.
+
+TODO(later) summarize this information in a table
+TODO(later) this information should be stored as data, not text
+
+##### 3-1 
+cluster 7 - ♀ BC3F1 Mice ENEA X-ray at 91 days old  
+
+![][3-1]  
+More detail in ([Covelli 1988][Covelli 1988])
+
+[3-1]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-24%2020.59.22.png
+[Covelli 1988]: http://dl.dropbox.com/u/1131693/bloodrop/3577210.pdf
+
+
+##### 3-5 
+cluster 13 - ♂ BC3F1 Mice ENEA X-ray at 92 days old  
+cluster 15 - ♂ BC3F1 Mice ENEA X-ray at -4 days old  
+cluster 16 - ♀ BC3F1 Mice ENEA X-ray at -4 days old   
+cluster 17 - ♂ BC3F1 Mice ENEA X-ray at 580 days old   
+
+![][3-5]  
+More detail in ([Covelli 1984][Covelli 1984])
+
+[3-5]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.25.17.png
+[Covelli 1984]: http://dl.dropbox.com/u/1131693/bloodrop/3576356.pdf 
+
+
+##### 9-5 
+cluster 6 - ♂ BALB/c/Cnb Mice SCK/CEN γ-ray at 84 days old  
+
+![][9-5]  
+More detail in ([Maisin 1983][Maisin 1983])
+
+[9-5]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.28.32.png
+[Maisin 1983]: http://dl.dropbox.com/u/1131693/bloodrop/3575970.pdf 
+
+
+##### 9-6 
+cluster 4 - ♂ C57BL/Cnb Mice SCK/CEN γ-ray at 84 days old  
+
+![][9-6]  
+![][9-6-2]  
+More detail in ([Maisin 1988][Maisin 1988])
+
+[9-6]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.29.07.png
+[9-6-2]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.29.42.png
+[Maisin 1988]: http://dl.dropbox.com/u/1131693/bloodrop/3577205.pdf 
+
+
+##### 9-7 
+cluster 14 - ♂ C57BL/Cnb Mice SCK/CEN X-ray at 7 days old
+
+![][9-7]  
+More detail in ([Maisin 1988][Maisin 1988])
+
+[9-7]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.30.19.png
+[Maisin 1988]: Reference 
+
+
+##### 1003-20 
+cluster 2 - ♀ B6CF1 Mice ANL γ-ray at 114 days old   
+cluster 3 - ♂ B6CF1 Mice ANL γ-ray at 113 days old    
+
+![][1003-20]  
+More detail in ([Grahn 1995][Grahn 1995])
+
+[1003-20]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-22%2016.36.24.png
+[Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf
+
+
+##### 1003-21 
+cluster 2 - ♀ B6CF1 Mice ANL γ-ray at 114 days old   
+cluster 3 - ♂ B6CF1 Mice ANL γ-ray at 113 days old  
+
+![][1003-21]  
+More detail in ([Grahn 1995][Grahn 1995])
+
+[1003-21]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.20.41.png
+[Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf 
+
+
+##### 1003-22 cluster  (only controls)
+cluster 2 - ♀ B6CF1 Mice ANL γ-ray at 114 days old   
+cluster 3 - ♂ B6CF1 Mice ANL γ-ray at 113 days old  
+
+![][1003-22]  
+More detail in ([Grahn 1995][Grahn 1995])
+
+[1003-22]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.21.26.png
+[Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf
+
+
+##### 1003-24 cluster  (only controls)
+cluster 2 - ♀ B6CF1 Mice ANL γ-ray at 114 days old  
+cluster 3 - ♂ B6CF1 Mice ANL γ-ray at 113 days old  
+
+![][1003-24]  
+More detail in ([Grahn 1995][Grahn 1995])
+
+[1003-24]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.22.00.png
+[Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf 
+
+
+##### 1003-25 cluster  (only controls)
+cluster 2 - ♀ B6CF1 Mice ANL γ-ray at 114 days old  
+cluster 3 - ♂ B6CF1 Mice ANL γ-ray at 113 days old  
+
+![][1003-25]  
+More detail in ([Grahn 1995][Grahn 1995])
+
+[1003-25]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.22.34.png
+[Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf 
+
+
+##### 1003-26 cluster 
+cluster 2 - ♀ B6CF1 Mice ANL γ-ray at 114 days old  
+cluster 3 - ♂ B6CF1 Mice ANL γ-ray at 113 days old  
+
+![][1003-26]  
+More detail in ([Grahn 1995][Grahn 1995])
+
+[1003-26]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.23.02.png
+[Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf 
+
+
+##### 1003-27 cluster 
+cluster 12 - ♂ leucopus Peromyscus ANL γ-ray at 137 days old   
+
+![][1003-27]  
+More detail in ([Grahn 1995][Grahn 1995])
+
+[1003-27]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.26.08.png
+[Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf
+
+
+##### 1003-28 cluster  (only controls)
+cluster 2 - ♀ B6CF1 Mice ANL γ-ray at 114 days old  
+cluster 3 - ♂ B6CF1 Mice ANL γ-ray at 113 days old  
+
+![][1003-28]  
+More detail in ([Grahn 1995][Grahn 1995])
+
+[1003-28]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.23.34.png
+[Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf
+
+
+##### 1003-29 cluster 
+cluster 2 - ♀ B6CF1 Mice ANL γ-ray at 114 days old  
+cluster 3 - ♂ B6CF1 Mice ANL γ-ray at 113 days old  
+
+![][1003-29]  
+More detail in ([Grahn 1995][Grahn 1995])
+
+[1003-29]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.23.59.png
+[Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf
+
+
+##### 1003-30 cluster  (only controls)
+cluster 2 - ♀ B6CF1 Mice ANL γ-ray at 114 days old  
+cluster 3 - ♂ B6CF1 Mice ANL γ-ray at 113 days old  
+
+![][1003-30]  
+More detail in ([Grahn 1995][Grahn 1995])
+
+[1003-30]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.24.25.png
+[Grahn 1995]: https://dl.dropboxusercontent.com/u/1131693/bloodrop/anl-95-3.pdf
+
+
+
+##### 1007-2 
+cluster 8 - ♂ C57BL/6Bd Mice ORNL γ-ray at 70 days old 
+cluster 9 - ♀ C3Hf/Bd Mice ORNL γ-ray at 70 days old 
+cluster 10 - ♀ C57BL/6Bd Mice ORNL γ-ray at 70 days old  
+cluster 11 - ♂ C3Hf/Bd Mice ORNL γ-ray at 70 days old 
+
+![][1007-2]  
+More detail in ([Storer 1988][Storer 1988])
+
+[1007-2]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.31.08.png
+[Storer 1988]: http://dl.dropbox.com/u/1131693/bloodrop/3577229.pdf 
+
+
+##### 1007-3 
+cluster 1 - ♀ RFM/Un Mice ORNL γ-ray at 70 days old   
+cluster 5 - ♂ RFM/Un Mice ORNL γ-ray at 70 days old  
+
+![][1007-3]  
+More detail in ([Ullrich 1979][Ullrich 1979])
+
+[1007-3]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202014-04-23%2014.31.26.png
+[Ullrich 1979]: http://dl.dropbox.com/u/1131693/bloodrop/3575012.pdf 
+
+
+##### References
+<a name="gerber_1996"></a>
+Gerber, Watson, Sugahara, Okada. International Radiobiology Archives of Long-Term Animal Studies I. Descriptions of Participating Institutions and Studies. 1996. [link](http://www.ustur.wsu.edu/nra/pdf/ira.pdf)
+
+^ back to [table of contents](#contents)
+
+____________________________________________________________________
+
+
+
+<a name="10B4-with-only-acute-data"></a>
+
+Supplemental: Reproduce lifespan analysis using only acute data
+========================================================
+*Last update: June 2014*
+Individual level data from oak ridge is only available from acute exposures.  How does the profile likelihood change if only this data is used?
+
+This is a simple adaptation of the techniques used to [reproduce 10B4][#10B4].
+
+```{r} 
+# Common
+setwd('~/janus')
+source('scripts/util/util.R') # http://goo.gl/VYzkAs
+
+# Data
+data <- read.csv('data/storer_1979_processed.csv') 
+data_10B2 <- read.csv('data/10B2_fits.csv')
+
+# Model
+model_10B4 <- function(data, o){    
+    glm(
+        I(1/age) ~ I(dose + o*dose^2 / (fractions)),
+        data=data,
+        weights=n
+    )
+}
+
+data <- get_likelihoods(
+  data %>% filter(in_my_analysis & modeled_in_10B3),
+  model_10B4)
+
+
+# Merge likelihoods with data from 10B2
+data <- merge(
+  data %>% mutate(o=round(o, 2)), 
+  data_10B2 %>% mutate(o=round(o, 2)))
+
+# Clean data and calcualte the mean likelihood
+data = data %>%
+  mutate(tumor = likelihood,
+         lifespan = l,
+         mean = (tumor + lifespan)/2) %>%
+  select(-l, -likelihood)
+```
+
+#### Show
+
+##### 10B4 with acute lifespan data
+Here is 10B4 if only acute data is used.
+
+```{r}
+g <- melt(data, 
+          id.vars='o', 
+          value.name='likelihood', 
+          variable.name='source')
+ggplot(g, aes(o, likelihood, linetype=source, color=source)) + 
+  geom_path() +
+  scale_linetype_manual(values=c('dotted', 'dotdash', 'solid')) +
+  scale_color_manual(values=c('black', 'red', 'black')) +
+  scale_y_continuous(breaks = c(0:5)/5, limits=c(0,1.2))
+```
+
+
+##### Confidence intervals with acute only
+Here's how the confidence intervals of the mean come out when only acute data is used.
+
+```{r}
+# was       " 0.4 ( 0.1, 3.5)"
+# is        "-0.1 (-0.3, 1.1)"  
+confidence_interval(data$o, data$mean, 0.05)
+```
+
+
+#### Results
+If we only include acute results we see that the profile likelihood changes dramatically, giving a substantially lower estimate.  The mean confidence interval goes down as well.  The net effect is that we center around a confidence interval very close to 1.
+
+Scary that this result is so sensitive to these two treatment groups!
+
+^ back to [table of contents](#contents)
+
+___________________________________________________________________
