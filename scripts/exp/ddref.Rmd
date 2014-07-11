@@ -516,11 +516,17 @@ for(ex in exclusions){
 d <- filter_by_n_groups(d)
 count(d)
 
-#    studies   clusters treatments    animals not vetted to exclude
-#          8         17         95      29072          0          0
-
 # How many duplicates after filtering?
 table0(d$duplicates)  # 19462 FALSE 9610 TRUE
+
+# Remove leucopus
+# (becuase they all have very small doses 0, 0.008, 0.013 Gy)
+# and they were messing with my later analysis
+d <- d[d$species != 'Peromyscus',]
+count(d)
+
+#   studies   clusters treatments    animals not vetted to exclude 
+#         8         16         91      28289          0          0 
 
 # Warnings
 # show, but do not remove
@@ -555,7 +561,6 @@ Clean
 DDREF data has been filtered.  Now its time to prettify it.
 
 ```{r}
-
 # Common functions
 setwd('~/janus')
 source('scripts/util/util.R') # http://goo.gl/VYzkAs
@@ -605,7 +610,6 @@ d$cluster = sort_by_n(d$cluster)
 # Save Data for later use
 saveRDS(d, 'data/ddref.rds')
 write.csv0(d,file='data/ddref.csv')
-
 ```
 
 ### Results
@@ -1649,7 +1653,6 @@ Reproduce BEIR 10-2 (fail)
 Reproduce the BEIR estimates of dose reponse for atomic bomb survivors.
 
 ```{r}
-
 # Common
 setwd('~/janus')
 source('scripts/util/util.R') # http://goo.gl/VYzkAs
@@ -1776,7 +1779,6 @@ Reproduce the BEIR VII estimates of DDREF likelihood using atomic bomb survivor 
 *Note this data is based on a reproduction of figure 10-2 instead of on original atomic bomb survivor data for the reasons listed in my [attempt to reproduce 10-2](#10-2)
 
 ```{r}
-
 # Common
 setwd('~/janus')
 source('scripts/util/util.R') # http://goo.gl/VYzkAs
@@ -2088,6 +2090,7 @@ ________________________________________________________________________
 Show graphs like Storer 1979 10B4 but for all data.
 
 ```{r}
+@here
 
 # Common
 setwd('~/janus')
@@ -2120,7 +2123,9 @@ summary_effect <- likelihoods %>%
   mutate(l = normalize_likelihood(log_l, delta),
          cluster = "summary effect") %>%
   select(-log_l)
-likelihoods <- rbind(likelihoods, summary_effect)
+likelihoods <- rbind(likelihoods, summary_effect) %>%
+  mutate(cluster = order_levels_by_number(likelihoods$cluster))
+
 
 # Show
 # As in 10B4
@@ -2304,7 +2309,7 @@ ggplot(beir_r, aes(o, l)) +
 ```
 
 #### Results
-Unsurprisingly, uncertainty growth larger when a meta-analyisis is applied.
+Unsurprisingly, uncertainty grows larger when a meta-analyisis is applied.
 
 ^ back to [table of contents](#contents)
 
@@ -2319,36 +2324,24 @@ Meta-regression on all data
 Show graphs like Storer 1979 10B3 but for all data using random effects meta-regression.
 
 ```{r}
-
-# TODO(ben) Why is this section failing?
-
 # Common
 setwd('~/janus')
 source('scripts/util/util.R') # http://goo.gl/VYzkAs
 
 # Data
-data <- readRDS('data/ddref.rds')
+aggregate <- read.csv('data/10B4_all_data_aggregated.csv')
 
-```
-
-#### Modeling functions
-Specify modeling functions.
-
-`model_10B3` will fit a linear quadratic model exactly as in the BEIR VII report, without accounting for within or between group error.
-
-```{r}
 model_10B3 <- function(data){
-    glm(
-        I(1/age) ~ dose*cluster + I(dose^2/fractions)*cluster,
-        data=data,
-        weights=n
-    )
+  glm(
+    I(1/age - 1/control_age) ~ 
+        dose * cluster
+      + I(dose^2 / (fractions)) * cluster
+      - cluster
+      - 1,
+    data=data,
+    weights=1/sd^2
+  )
 }
-```
-
-`model_meta` will fit an identical model except that within group and between group error will be accounted for.
-
-```{r}
 model_meta <- function(data){
   data$a <- data$dose
   data$B <- with(data, dose^2 / (fractions))
@@ -2356,40 +2349,21 @@ model_meta <- function(data){
   rma(
     yi,
     vi,
-    mods = ~ a*cluster + B*cluster -a -B -1,
-    data = head(data, 6),
-    method="ML"
+    mods = ~ a*cluster + B*cluster -a -B -cluster -1,
+    data = data,
+    method='ML'
   )
 }
 
+# Prepare for Meta
+aggregate <- aggregate %>%
+  mutate(yi = 1/age,
+         vi = (1/age - 1/(age + sd))^2)
 
-# # Mean Lifespans
-# aggregate <- ddply(data, .(cluster, group_id, sex), function(df){
-#     u <- function(x) paste(unique(x), collapse=' ')
-#     dont_aggregate <- c('lifespan', 'id', 'X', 'n')
-#     n <- nrow(df)
-#     data.frame(
-#         llply(df[,!names(df) %in% dont_aggregate], u),
-#         age=mean(df$lifespan),
-#         sd=sd(df$lifespan)/n^0.5,
-#         n=nrow(df)
-#     )
-# })
-#
-# # Prepare for Meta
-# aggregate$yi <- with(aggregate, 1/age)
-# aggregate$vi <- with(aggregate, (1/age - 1/(age + sd))^2)
-#
-# # Restore Sanity
-# numerics <- names(data)[laply(data, is.numeric)]
-# for(n in numerics) {
-#     if(n %in% names(aggregate)){
-#         aggregate[,n] <- as.numeric(as.character(aggregate[,n]))
-#     }
-# }
-#
-# # Model
-# m <- model_meta(aggregate)
+# Model
+m <- model_meta(aggregate %>% 
+                  filter(cluster %in% c('12 - ♂ leucopus Peromyscus ANL \n γ-ray at 137 days old')) %>%
+                  mutate(cluster=as.character(as.factor(cluster))))
 # c <- coefficients(m)
 # aggregate <- aggregate %>%
 #   mutate(i=c[paste0('cluster', cluster)],
@@ -2716,17 +2690,13 @@ TODO: See if the hypotherical threshold proposed by BEIR VII actually plays out 
 
 __________________________________________________________________
 
-
-
 <a name="concordance"></a>
 
-Concordance
+Detailed Concordance
 ========================================================
 *Last update: April 2013*
 
-
 Give a detailed description of the dataset for those that want to make a close inspection.
-
 
 ```{r}
 
