@@ -2,7 +2,7 @@
 ========================================================
 Measure ddref, for my thesis ([code][code link]).
 benjamin.haley@gmail.com
-*last update: June 2014*
+*last update: July 2014*
 
 
 [public link]: http://rpubs.com/benjaminhaley/ddref
@@ -2090,8 +2090,6 @@ ________________________________________________________________________
 Show graphs like Storer 1979 10B4 but for all data.
 
 ```{r}
-@here
-
 # Common
 setwd('~/janus')
 source('scripts/util/util.R') # http://goo.gl/VYzkAs
@@ -2124,7 +2122,7 @@ summary_effect <- likelihoods %>%
          cluster = "summary effect") %>%
   select(-log_l)
 likelihoods <- rbind(likelihoods, summary_effect) %>%
-  mutate(cluster = order_levels_by_number(likelihoods$cluster))
+  mutate(cluster = order_levels_by_number(cluster))
 
 
 # Show
@@ -2343,9 +2341,9 @@ model_10B3 <- function(data){
   )
 }
 model_meta <- function(data){
-  data$a <- data$dose
-  data$B <- with(data, dose^2 / (fractions))
-
+  data <- data %>%
+    mutate(a = dose,
+           B = dose^2 / (fractions))
   rma(
     yi,
     vi,
@@ -2355,102 +2353,70 @@ model_meta <- function(data){
   )
 }
 
+# Prediction Intervals
+to_predict <- expand.grid(
+    fractions = c(1, 1000),
+    dose = seq(0, 1.5, 0.1),
+    cluster = unique(aggregate$cluster)
+)
+to_predict$type <- 'A'
+to_predict$type[to_predict$fractions > 1] <- 'C'
+to_predict <- to_predict %>%
+  mutate(a = dose,
+         B = dose^2 / (fractions))
+
 # Prepare for Meta
 aggregate <- aggregate %>%
-  mutate(yi = 1/age,
+  mutate(yi = 1/age - 1/control_age,
          vi = (1/age - 1/(age + sd))^2)
 
 # Model
-m <- model_meta(aggregate %>% 
-                  filter(cluster %in% c('12 - ♂ leucopus Peromyscus ANL \n γ-ray at 137 days old')) %>%
-                  mutate(cluster=as.character(as.factor(cluster))))
-# c <- coefficients(m)
-# aggregate <- aggregate %>%
-#   mutate(i=c[paste0('cluster', cluster)],
-#          a=c[paste0('a:cluster', cluster)],
-#          B=c[paste0('cluster', cluster, ':B')],
-#          tau2=m$tau2)
-# aggregate$p_my_analysis <- predict(m)$pred
-# aggregate$p_10B3 <- predict(model_10B3(aggregate))
-#
-# # Project
-# # Add projections across the entire range (0-1.5 Gy) for
-# # acute and protracted exposures.  This will create nicer
-# # graphs.
-# doses = seq(from=0, to=1.5, by=.1)
-# coefficients = unique(aggregate[,c('i', 'a', 'B', 'cluster')])
-# projections = ddply(coefficients, .(cluster), function(df){
-#   acute <- with(df, cbind(data.frame(
-#     dose = doses,
-#     type = 'A',
-#     fractions = 1,
-#     p_my_analysis = i + a * doses + B * doses^2
-#   ), df))
-#
-#   chronic <- with(df, cbind(data.frame(
-#     dose = doses,
-#     type = 'C',
-#     fractions = 1000,
-#     p_my_analysis = i + a * doses
-#   ), df))
-#
-#   rbind(acute, chronic)
-# })
-# projections$p_10B3 <- predict(model_10B3(aggregate),
-#                               newdata=projections)
-#
-# # Show
-# g <- aggregate
-# f <- function(x) round(x, 2)
-# g$cluster <- with(g, paste0(
-#     cluster, '\n',
-#     #'a=', f(a),
-#     #' B=', f(B),
-#     ' ddref =', f((a + B) / a)
-# ))
-# projections$cluster <- projections$cluster
-# projections$cluster <- with(projections, paste0(
-#     cluster, '\n',
-#     #'a=', f(a),
-#     #' B=', f(B),
-#     ' ddref =', f((a + B) / a)
-# ))
-#
-# ggplot(g, aes(
-#     dose,
-#     1/age,
-#     label=type,
-#     group=type)) +
-#     geom_errorbar(aes(
-#         ymin=1/age + (vi + tau2)^0.5,
-#         ymax=1/age - (vi + tau2)^0.5
-#         ), alpha=0.5, width=.05, color='red') +
-#     geom_errorbar(aes(
-#         ymin=1/age + vi^0.5,
-#         ymax=1/age - vi^0.5
-#     ), alpha=0.5, width=.1) +
-#     geom_text(size=4) +
-#     geom_smooth(
-#         data = projections,
-#         aes(dose, p_10B3),
-#         method='lm',
-#         formula='y ~ x + I(x^2)',
-#         se=FALSE,
-#         color='black'
-#     ) +
-#     geom_smooth(
-#         data = projections,
-#         aes(dose, p_my_analysis),
-#         method='lm',
-#         formula='y ~ x + I(x^2)',
-#         se=FALSE,
-#         color='red'
-#     ) +
-#     facet_wrap(~ cluster, scales="free_y")
-#
-#
-# ggsave_for_ppt('meta_regression.png')
+m <- model_meta(aggregate)
+tau2 <- m$tau2
+newmods <- model.matrix(~ a*cluster + B*cluster -a -B -cluster -1,
+                        data=to_predict)
+to_predict$p_my_analysis <- predict(m, newmods=newmods)$pred
+to_predict$p_10B3 <- predict(model_10B3(aggregate), newdata=to_predict)
 
+# Add control ages
+control_ages <- unique(aggregate %>% select(control_age, cluster))
+to_predict <- merge(to_predict, control_ages)
+
+# Make sure factor levels are correct
+to_predict <- to_predict %>% mutate(cluster = order_levels_by_number(cluster))
+aggregate <- aggregate %>% mutate(cluster = order_levels_by_number(cluster))
+
+# Show
+# As in 10B3
+# http://www.nap.edu/openbook.php?record_id=11340&page=257
+ggplot(aggregate, aes(dose,
+                      1/age,
+                      label=type,
+                      group=type)) +
+  geom_smooth(
+    data=to_predict,
+    aes(dose, p_10B3 + 1/control_age, linetype=type),
+    method='lm',
+    formula='y ~ x + I(x^2)',
+    se=FALSE,
+    color='black'
+  ) +
+  geom_smooth(
+    data=to_predict,
+    aes(dose, p_my_analysis + 1/control_age, linetype=type),
+    method='lm',
+    formula='y ~ x + I(x^2)',
+    se=FALSE,
+    color='red'
+  ) +
+  geom_text(size=4) +
+  geom_errorbar(aes(ymin=1/age + (vi + tau2)^0.5,
+                    ymax=1/age - (vi + tau2)^0.5), 
+                alpha=0.5, width=.05, color='red') +
+  geom_errorbar(aes(ymin=1/age + (vi)^0.5,
+                    ymax=1/age - (vi)^0.5), 
+                alpha=0.5, width=.15) + 
+  facet_wrap(~ cluster, scales='free_y')
 ```
 
 #### Results
