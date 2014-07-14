@@ -183,11 +183,3 @@ order_levels_by_number <- function(x) {
 order_levels_by_number(factor(c('2 is before', '10')))
 x <- '99.3, red balloons'
 grep('^[0-9\\.]*', x, value=TRUE)
-
-
-
-x <- c("A and B", "A, B and C", "A, B, C and D", "foobar")
-pattern <- "[[:space:]]*(,|and)[[:space:]]"
-## Match data from regexpr()
-m <- regexpr(pattern, x)
-regmatches("A and B", regexpr("[[:space:]]*(,|and)[[:space:]]", "A and B"))
