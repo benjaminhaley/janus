@@ -2354,8 +2354,17 @@ model_meta <- function(data){
   )
 }
 
+# Prepare for Meta
+aggregate <- aggregate %>%
+  mutate(yi = 1/age - 1/control_age,
+         vi = (1/age - 1/(age + sd))^2)
+
+# Model
+m <- model_meta(aggregate)
+tau2 <- m$tau2
+
 # TODO: factor out prediction interval code
-# Prediction Intervals
+# Define Prediction Intervals
 to_predict <- expand.grid(
     fractions = c(1, 1000),
     dose = seq(0, 1.5, 0.1),
@@ -2366,23 +2375,15 @@ to_predict$type[to_predict$fractions > 1] <- 'C'
 to_predict <- to_predict %>%
   mutate(a = dose,
          B = dose^2 / (fractions))
-
-# Prepare for Meta
-aggregate <- aggregate %>%
-  mutate(yi = 1/age - 1/control_age,
-         vi = (1/age - 1/(age + sd))^2)
-
-# Model
-m <- model_meta(aggregate)
-tau2 <- m$tau2
-newmods <- model.matrix(~ a*cluster + B*cluster -a -B -cluster -1,
-                        data=to_predict)
-to_predict$p_my_analysis <- predict(m, newmods=newmods)$pred
-to_predict$p_10B3 <- predict(model_10B3(aggregate), newdata=to_predict)
-
-# Add control ages
 control_ages <- unique(aggregate %>% select(control_age, cluster))
 to_predict <- merge(to_predict, control_ages)
+
+newmods <- model.matrix(~ a*cluster + B*cluster -a -B -cluster -1,
+                        data=to_predict)
+
+# Make predictions
+to_predict$p_my_analysis <- predict(m, newmods=newmods)$pred
+to_predict$p_10B3 <- predict(model_10B3(aggregate), newdata=to_predict)
 
 # Make sure factor levels are correct
 to_predict <- to_predict %>% mutate(cluster = order_levels_by_number(cluster))
