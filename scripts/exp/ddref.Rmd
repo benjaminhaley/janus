@@ -2044,67 +2044,6 @@ However, we see some glimmers of hope.  While we can't trust these fits outright
 
 ________________________________________________________________________
 
-<a name="10B4-all-data"></a>
-
-1/lifespan profiles on all data
-========================================================
-*Last update: June 2013*
-
-
-Show graphs like Storer 1979 10B4 but for all data.
-
-```{r}
-# Common
-setwd('~/janus')
-source('scripts/util/util.R') # http://goo.gl/VYzkAs
-
-# Data
-aggregate <- read.csv('data/10B4_all_data_aggregated.csv')
-
-# Helpers
-model_10B4 <- function(data, o){
-  glm(
-    I(1/age - 1/control_age) ~ I(dose + o * dose^2 / (fractions)) - 1,
-    data=data,
-    weights=1/sd^2
-  )
-}
-
-# Model
-likelihoods <- ddply(aggregate, .(cluster), function(df){
-  l <- get_likelihoods(df, model_10B4)
-  l$cluster <- only(df$cluster)
-  l
-})
-
-# Summarize Effect
-delta = likelihoods$o[2] - likelihoods$o[1]
-summary_effect <- likelihoods %>%
-  group_by(o) %>%
-  summarize(log_l = sum(log(l))) %>%
-  mutate(l = normalize_likelihood(log_l, delta),
-         cluster = "summary effect") %>%
-  select(-log_l)
-likelihoods <- rbind(likelihoods, summary_effect) %>%
-  mutate(cluster = order_levels_by_number(cluster))
-
-
-# Show
-# As in 10B4
-# http://www.nap.edu/openbook.php?record_id=11340&page=257
-ggplot(likelihoods, aes(o, l)) +
-    geom_path() +
-    coord_cartesian(ylim=c(0,1)) +
-    facet_wrap(~ cluster)
-```
-
-#### Results
-Looks bad, clearly, we are over-confident!
-
-^ back to [table of contents](#contents)
-
-________________________________________________________________________
-
 <a name="10B3-meta"></a>
 
 Meta Regression of BEIR 10B3
