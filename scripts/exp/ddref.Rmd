@@ -2447,127 +2447,53 @@ Show graphs like Storer 1979 10B4 but for all data using the random effects meta
 
 ```{r}
 
-# TODO(ben) why isn't this working?
+# Common
+setwd('~/janus')
+source('scripts/util/util.R') # http://goo.gl/VYzkAs
 
-# # Common
-# setwd('~/janus')
-# source('scripts/util/util.R') # http://goo.gl/VYzkAs
-#
-# # Data
-# data <- readRDS('data/ddref.rds')
-#
-# # Helpers
-# model_10B4 <- function(data, o){
-#     glm(
-#         I(1/age) ~ cluster * I(dose + o*dose^2 / (fractions)),
-#         data=data,
-#         weights=n
-#     )
-# }
-# model_meta <- function(data, o){
-#     data$curved_dose <- with(data, dose + o*dose^2 / (fractions))
-#     rma(
-#         yi,
-#         vi,
-#         mods = cbind(cluster, curved_dose),
-#         data = data,
-#         method="ML"
-#     )
-# }
-#
-#
-# # Define Acute
-# chronic <- data$fractions > 1
-# data$type <- 'A'
-# data$type[chronic] <- 'C'
-#
-# # Mean Lifespans
-# aggregate <- ddply(data, .(cluster, group_id), function(df){
-#     u <- function(x) paste(unique(x), collapse=' ')
-#     dont_aggregate <- c('lifespan', 'id', 'X', 'n')
-#     n <- nrow(df)
-#     data.frame(
-#         llply(df[,!names(df) %in% dont_aggregate], u),
-#         age=mean(df$lifespan),
-#         sd=sd(df$lifespan)/n^0.5,
-#         n=nrow(df)
-#     )
-# })
-#
-# # Prepare for Meta
-# aggregate$yi <- with(aggregate, 1/age)
-# aggregate$vi <- with(aggregate, (1/age - 1/(age + sd))^2)
-#
-# # Restore Sanity
-# numerics <- names(data)[laply(data, is.numeric)]
-# for(n in numerics) {
-#     if(n %in% names(aggregate)){
-#         aggregate[,n] <- as.numeric(as.character(aggregate[,n]))
-#     }
-# }
-#
-# # Model
-# low = -2
-# high = 6
-# delta = .1   # Reduce to increase resolution
-# o_range = (low/delta):(high/delta) * delta
-#
-# # Model
-# summary <- ldply(o_range, function(o){
-#       # BEIR
-#       m <- model_10B4(aggregate, o)
-#       l_10B4 <- logLik(m)
-#
-#       # Random Effects
-#       m <- model_meta(aggregate, o)
-#       l_meta <- logLik(m)
-#
-#       c(l_10B4=l_10B4, l_meta=l_meta, o=o)
-# })
-# summary <- summary %>%
-#   mutate(l_10B4 = normalize_likelihood(l_10B4, delta),
-#          l_meta = normalize_likelihood(l_meta, delta))
-#
-# # Normalize
-# aggregate <- ddply(aggregate, .(cluster, sex), function(df){
-#     df$l_10B4 <- normalize_likelihood(df$l_10B4, delta)
-#     df$l_meta <- normalize_likelihood(df$l_meta, delta)
-#     df
-# })
-#
-#
-# # Show
-# # As in 10B4
-# # http://www.nap.edu/openbook.php?record_id=11340&page=257
-# a <- aggregate
-#
-# show <- function(g){
-#     g$cluster <- as.factor(as.character(g$cluster))
-#     g$l_10B4 <- pmin(g$l_10B4, 1)
-#     g$l_meta <- pmin(g$l_meta, 1)
-#     suppressWarnings(print(
-#     ggplot(g, aes(o, l)) +
-#         geom_path(aes(o, l_10B4), color='black') +
-#         geom_path(aes(o, l_meta), color='red') +
-#         facet_wrap(~ cluster) + scale_y_log10()
-#     ))
-# }
-#
-# g <- a
-# show(g)
-#
-#
-# ggsave_for_ppt('meta_regression_profile.png')
-#
-# summary$l_10B4 <- pmin(4, summary$l_10B4)
-# summary$l_meta <- pmin(4, summary$l_meta)
-# ggplot(summary, aes(o, l)) +
-#     geom_path(aes(o, l_meta))
-#     ylim(0,4)
-# ggsave_for_ppt('meta_regression_summary_effect.png')
-#
-#
-# # TODO: Maybe I would not get absurd profile-likelihood values if I just perfomed a single regression, instead of multiple regressions with bayesian updates.  Concretely I would do 1/age ~ cluster * ...
+# Data
+aggregate <- read.csv('data/10B4_all_data_aggregated.csv')
+
+# TODO: factor our these model definitions into a single place
+model_10B4 <- function(data, o){
+  glm(
+    I(1/age) ~ cluster * I(dose + o*dose^2 / (fractions)),
+    data=data,
+    weights=1/sd^2
+  )
+}
+model_meta <- function(data, o){
+  data$curved_dose <- with(data, dose + o*dose^2 / (fractions))
+  rma(
+    yi,
+    vi,
+    mods = ~ cbind(cluster, curved_dose),
+    data = data,
+    method='ML'
+  )
+}
+
+# Prepare for Meta
+aggregate <- aggregate %>%
+  mutate(yi = 1/age - 1/control_age,
+         vi = (1/age - 1/(age + sd))^2)
+
+# Model
+regular <- get_likelihoods(aggregate, model_10B4) %>%
+  mutate(likelihood_regular=l) %>%
+  select(-l)
+meta <- get_likelihoods(aggregate, model_meta) %>%
+  mutate(likelihood_meta=l) %>%
+  select(-l)
+likelihoods <- merge(regular, meta)
+
+# Show
+ggplot(likelihoods) +
+    geom_path(aes(o, likelihood_regular), color='black') +
+    geom_path(aes(o, likelihood_meta), color='red')
+
+
+# TODO: Maybe I would not get absurd profile-likelihood values if I just perfomed a single regression, instead of multiple regressions with bayesian updates.  Concretely I would do 1/age ~ cluster * ...
 
 ```
 

@@ -174,12 +174,10 @@ extract <- function(pattern, x) regmatches(x, regexpr(pattern, x))
 # Sometimes the name of a factor starts with a number and it should
 # be ordered by the value of that number, rather than alphabetically.
 # This is for those times.
+# order_levels_by_number(factor(c('2 is before', '10')))
 order_levels_by_number <- function(x) {
   u <- unique(as.character(x))
   number <- as.numeric(extract('^[0-9.]*', u))
   x <- factor(x, levels=u[order(number)])
   x
 }
-order_levels_by_number(factor(c('2 is before', '10')))
-x <- '99.3, red balloons'
-grep('^[0-9\\.]*', x, value=TRUE)
