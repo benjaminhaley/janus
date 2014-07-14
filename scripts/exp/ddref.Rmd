@@ -40,8 +40,7 @@ Table of contents
   - [Reproduce BEIR 10B2](#10B2) - Show that we can fit the same model of cancer risk vs. dose as BEIR VII.
   - [Reproduce BEIR 10B3](#10B3) - Show that we can fit the same model of lifespan vs. dose as BEIR VII.
   - [Reproduce BEIR 10B4](#10B4) - Show that we can reproduce the likelihood profiles from animal data in BEIR VII.
-  - [10B3 on all data](#10B3-all-data) - Fit 1/lifespan models on all of the data.
-  - [10B4 on all data](#10B4-all-data) - 1/lifespan models profile likelihoods on all of the data.
+  - [10B3 and 10B4 on all data](#10B3-and-10B4-all-data) - Fit 1/lifespan models on all of the data.
   - [10B3 with metaregression](#10B3-meta) - Reproduce dose response figure applying the principals of meta-regression
   - [10B4 with metaregression](#10B4-meta) - Reproduce profile likelihood figure applying the principals of meta-regression.
   - [10B3 metareression on all data](#10B3-meta-all) Apply meta regression to all of the datasets.
@@ -1317,8 +1316,7 @@ source('scripts/util/util.R') # http://goo.gl/VYzkAs
 # Data
 data <- read.csv('data/edwards_1992.csv', sep='\t')
 
-
-# apply selection criteria
+# Apply selection criteria
 data <- data %>%
   filter(protraction == 'Acute',
          !is.na(risk),
@@ -1331,29 +1329,22 @@ data <- ddply(data, .(facet), function(df){
   df
 })
 
-
 # Fit models to all data
 # vary curvature and measure total likelihood of each model
-low = -2
-high = 6
-delta = .01
-o_range = (low/delta):(high/delta) * delta
-fits <- ldply(o_range, function(o){
-  model <- lm(risk ~ factor(facet) * I(dose + o*dose^2),
-              data,
-              weights=(1/error^2))
-  c(o=o,
-    likelihood=logLik(model))
-})
+model_10B2 <- function(data, o){
+  lm(
+    risk ~ factor(facet) * I(dose + o*dose^2),
+    data,
+    weights=(1/error^2)
+  )
+}
+fits <- get_likelihoods(data, model_10B2)
 
-fits <- fits %>%
-  mutate(likelihood=normalize_likelihood(likelihood, delta))
-
-ggplot(fits, aes(o, likelihood)) + geom_path()
+ggplot(fits, aes(o, l)) + geom_path()
 
 
 # Make predictions for most likely model
-o = with(fits, o[which.max(likelihood)])
+o = with(fits, o[which.max(l)])
 model <- lm(risk ~ factor(facet) * I(dose + o*dose^2),
               data,
               weights=(1/error^2))
@@ -1430,15 +1421,6 @@ source('scripts/util/util.R') # http://goo.gl/VYzkAs
 # Data
 data <- read.csv('data/storer_1979.csv', sep='\t')
 
-# Helpers
-model_10B3 <- function(data){
-  glm(
-    I(1/age - 1/control_age) ~ dose + I(dose^2 / (fractions)) - 1,
-    data=data,
-    weights=1/sd^2
-  )
-}
-
 # Constants
 threshold_dose_to_model = 1.5001
 strain_to_model = 'RFM'
@@ -1478,17 +1460,8 @@ data = data %>%
 # TODO: re-enable
 write.csv0(data, 'data/storer_1979_processed.csv')
 
-# Fake data to predict across
-# This allows us to fit two lines across a limited
-# data range for graphing
-to_predict <- expand.grid(
-    fractions = c(1, Inf),
-    dose = seq(0, 1.5, 0.1)
-)
-to_predict$type <- 'A'
-to_predict$type[to_predict$fractions > 1] <- 'C'
-m <- model_10B3(data[data$modeled_in_10B3,])
-to_predict$p <- predict(m, newdata=to_predict) + 1/636.175
+m <- lq_model(data[data$modeled_in_10B3,])
+to_predict$p <- predict(m, newdata=to_predict)
 
 ```
 
@@ -1522,13 +1495,10 @@ I am capable of reproducing their results [very well][overlay].  There are a few
 1. They combined treatement groups from tables 1 and 2 if they were
    acute and had the same total dose
 2. They only used female RFM mice.
-3. The regression intercept was [set to the control condition][wo-intercept]
-4. The regression is weighted by 1/sd^2
+3. The regression is weighted by 1/sd^2
 
 *Data not represented*
-This figure does not include male mice or BALB/c females from [Storer 1979][storer 1979].  Its not clear if these are excluded from the profile likelihood generation as well, or not.
-
-In any case they fit the inclusion criteria, and should have been addressed.
+This figure does not include male mice or BALB/c females from [Storer 1979][storer 1979].  Its not clear if these are excluded from the profile likelihood generation as well, or not.  In any case they fit the inclusion criteria, and should have been addressed.
 
 [overlay]: http://dl.dropbox.com/u/1131693/bloodrop/10b3_temp_png.png
 [wo-intercept]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot_2014-05-21_16_45_53_png_-_Dropbox.png
@@ -1543,17 +1513,12 @@ Reproduce BEIR 10B4
 ========================================================
 *Last update: June 2014*
 
-Reproduce the BEIR estimates on the oak ridge lifespan data
-from storer 1979 (3575012.pdf) and combine these with the
-oak ridge tumor estimates developed in the
-[10B2 reproduction](#10B2) to reproduce 10B4.
+Reproduce the BEIR estimates on the oak ridge lifespan data from storer 1979 (3575012.pdf) and combine these with the oak ridge tumor estimates developed in the [10B2 reproduction](#10B2) to reproduce 10B4.
 
-Verify that confidence intervals are the same as those seen
-in table 10-2.
+Verify that confidence intervals are the same as those seen in table 10-2.
 
 ```{r}
 # TODO(ben) make sure the reproduction is perfect, instead of almost perfect
-# TODO(ben) check if they included BALB/c females or RFM mice
 
 # Common
 setwd('~/janus')
@@ -1563,16 +1528,10 @@ source('scripts/util/util.R') # http://goo.gl/VYzkAs
 data <- read.csv('data/storer_1979_processed.csv')
 data_10B2 <- read.csv('data/10B2_fits.csv')
 
-# Model
-model_10B4 <- function(data, o){
-    glm(
-        I(1/age) ~ I(dose + o*dose^2 / (fractions)),
-        data=data,
-        weights=1/sd^2
-    )
-}
-
-beir_r <- get_likelihoods(data %>% filter(modeled_in_10B3), model_10B4)
+beir_r <- get_likelihoods(data %>% filter(modeled_in_10B3), fixed_o_model)
+beir_r <- beir_r %>%
+  mutate(likelihood = l) %>%
+  select(-l)
 
 # Merge likelihoods with data from 10B2
 data <- merge(
@@ -1630,12 +1589,11 @@ Note, my confidence interfal should match the first row and last column, the 95%
 ```{r}
 # is        "0.4 (0.1, 3.5)"
 # should be "0.5 (0.1, 3.2)"
-confidence_interval(data$o, data$mean, 0.05)
+. <- confidence_interval(data$o, data$mean, 0.05)
 ```
 
 
 #### Results
-
 I was able to reproduce figure 10B4 and the confidence intervals very well.  The slight disparity that is observed could be due to outstanding methodological issues or small differences in the data.  For example, perhaps the original researchers applied rounding that I did not, or perhaps my estiamtes of the points on their graphs were different.
 
 In any case, the estimate has changed a trivial amount from the original.  Making it perfect is a job for later.
@@ -1846,7 +1804,6 @@ ggplot(likelihoods, aes(o, l)) +
 #### BEIR 10-3 reproduction of lss analysis
 We are able to form a 'reasonable' reproduction of the atomic bomb survivor curve from 10-3.  It's peak does not rise quite as high as the original firgure.  This may be because of errors when re-constructing the data used in this figure, or because of unknown differences in methodology.  In any case, the difference is small and difficult to resolve because the original data and full methodology is un-available.
 
-
 ![10-3-image]:
 
 ##### BEIR 10-3
@@ -1981,14 +1938,13 @@ Nearly identical, only some very small (trivial?) differences.  Time to move for
 
 ___________________________________________________________________
 
-<a name="10B3-all-data"></a>
+<a name="10B3-and-10B4-all-data"></a>
 
 1/lifespan on all data
 ========================================================
 *Last update: July 2014*
 
-
-Show graphs like Storer 1979 10-B3 but for all data.
+Show graphs like Storer 1979 10-B3 and 10-B4 but for all data.
 
 ```{r}
 # Common
@@ -1997,23 +1953,6 @@ source('scripts/util/util.R') # http://goo.gl/VYzkAs
 
 # Data
 data <- readRDS('data/ddref.rds')
-
-# Helpers
-model_10B3 <- function(data){
-    glm(
-        I(1/age - 1/control_age) ~ dose + I(dose^2 / (fractions)) - 1,
-        data=data,
-        weights=1/sd^2
-    )
-}
-
-# Prediction Intervals
-to_predict <- expand.grid(
-    fractions = c(1, 1000),
-    dose = seq(0, 1.5, 0.1)
-)
-to_predict$type <- 'A'
-to_predict$type[to_predict$fractions > 1] <- 'C'
 
 # Mean Lifespans
 aggregate = data %>%
@@ -2025,25 +1964,42 @@ aggregate = data %>%
             fractions=only(fractions),
             type=only(type))
 
-# Determine control ages
-# This is so we can fix the curve to always fit the control
-# as BEIR VII did
-control_ages <- aggregate %>%
-  group_by(cluster) %>%
-  summarize(control_age=mean(age[dose == min(dose)]))
-aggregate <- merge(aggregate, control_ages)
-
 # Save aggregated data for later use
 write.csv0(aggregate, file='data/10B4_all_data_aggregated.csv')
 
-# Model
+# Model by cluster
 predictions <- ddply(aggregate, .(cluster), function(df){
-  m <- model_10B3(df)
+  m <- lq_model(df)
   to_predict$p <- predict(m, newdata=to_predict)
   to_predict$cluster <- only(df$cluster)
   to_predict
 })
-predictions <- merge(predictions, control_ages)
+
+# Find likelihood profile of theta, o
+likelihoods <- get_likelihoods(aggregate, fixed_o_model)
+
+# Show 10B4 with all data
+ggplot(likelihoods, aes(o, l)) + 
+  geom_path() + 
+  # TODO: make sure cood_cartisian is used in place of xlim/ylim and used consistently
+  coord_cartesian(ylim=c(-0.1,1.5)) +
+  # TODO: be sure we are using theta, o, consistently.  It should be θ
+  xlab("θ (DDREF.lss - 1)") + 
+  ylab("likelihood")
+```
+
+#### Figure: Likelihood profile when using all animal data
+Analogous to the lifespan likelihood curve from figure 10B4 but using all of the animal data, instead of limiting to that avaiable from storer 1979.  Note that DDREF has gone down substantially and is now strongly centered around a value of 1, which would imply that protracted exposures are just as dangerous as acute exposures.
+
+
+```{r}
+# Find best theta (o) value
+o = with(likelihoods, o[which.max(l)])
+print(o)
+
+# Fit with best theta value
+m <- fixed_o_model(aggregate, o)
+predictions$p_all <- predict(m, newdata=predictions)
 
 # Show
 # As in 10B3
@@ -2054,13 +2010,21 @@ ggplot(aggregate, aes(dose,
                       group=type)) +
   geom_smooth(
       data=predictions,
-      aes(dose, p + 1/control_age, linetype=type),
+      aes(dose, p, color=type),
+      method='lm',
+      formula='y ~ x + I(x^2)',
+      se=FALSE
+  ) +
+  geom_smooth(
+      data=predictions,
+      aes(dose, p_all, color=type),
       method='lm',
       formula='y ~ x + I(x^2)',
       se=FALSE,
-      color='black'
-  ) +
+      linetype='dotted'
+  ) + 
   geom_text(size=4) +
+  scale_color_manual(values=c('black', 'grey')) +
   facet_wrap(~ cluster, scales='free_y')
 ```
 
@@ -2492,6 +2456,8 @@ ggplot(likelihoods) +
     geom_path(aes(o, likelihood_regular), color='black') +
     geom_path(aes(o, likelihood_meta), color='red')
 
+
+# TODO: Double check the above, clean up the chart, it should actually look more like 10B4
 
 # TODO: Maybe I would not get absurd profile-likelihood values if I just perfomed a single regression, instead of multiple regressions with bayesian updates.  Concretely I would do 1/age ~ cluster * ...
 

@@ -99,7 +99,13 @@ confidence_interval <- function(x, likelihood, p=0.05) {
   minimum_acceptable_likelihood <- exp(log(max(likelihood)) - qnorm(1 - p/2))
   lowest_acceptable_x <- min(x[likelihood > minimum_acceptable_likelihood])
   highest_acceptable_x <- max(x[likelihood > minimum_acceptable_likelihood])
-    
+  
+  # Round
+  # to prettify
+  most_likely_x <- round(most_likely_x, 1)
+  lowest_acceptable_x <- round(lowest_acceptable_x, 1)
+  highest_acceptable_x <- round(highest_acceptable_x, 1)
+  
   print(paste0(most_likely_x,' (',
                lowest_acceptable_x,', ',
                highest_acceptable_x, ')'))
@@ -181,3 +187,50 @@ order_levels_by_number <- function(x) {
   x <- factor(x, levels=u[order(number)])
   x
 }
+
+# lq model
+# The basic linear quadratic model used in the BEIR VII report
+lq_model <- function(data){
+  
+  formula <- I(1/age) ~ dose + I(dose^2 / (fractions))
+  
+  # Define a formula that accomidates multiple clusters
+  if("cluster" %in% names(data) & length(unique(data$cluster)) > 1) {
+    formula <- I(1/age) ~ dose*cluster + I(dose^2 / (fractions))*cluster}
+  
+  glm(
+    formula,
+    data=data,
+    weights=1/sd^2
+  )
+}
+
+# fixed o model
+# As above, the linear quadratic model used in the BEIR VII report
+# But with a fixed curvature, o, so that we can test the likelihood
+# of a particular curvature
+fixed_o_model <- function(data, o){
+
+  formula <- I(1/age) ~ I(dose + o*dose^2 / (fractions))
+  
+  # Define a formula that accomidates multiple clusters
+  if("cluster" %in% names(data) & length(unique(data$cluster)) > 1) {
+    formula <- I(1/age) ~ I(dose + o*dose^2 / (fractions))*cluster}
+  
+  # Build the model
+  glm(
+    formula,
+    data=data,
+    weights=1/sd^2
+  )
+}
+
+# Fake data to predict across
+# This allows us to fit two lines across a limited
+# data range for graphing
+to_predict <- expand.grid(
+  fractions = c(1, Inf),
+  dose = seq(0, 1.5, 0.1)
+)
+to_predict$type <- 'A'
+to_predict$type[to_predict$fractions > 1] <- 'C'
