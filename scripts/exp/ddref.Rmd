@@ -2329,6 +2329,7 @@ source('scripts/util/util.R') # http://goo.gl/VYzkAs
 # Data
 aggregate <- read.csv('data/10B4_all_data_aggregated.csv')
 
+# TODO: factor our these model definitions into a single place
 model_10B3 <- function(data){
   glm(
     I(1/age - 1/control_age) ~ 
@@ -2353,6 +2354,7 @@ model_meta <- function(data){
   )
 }
 
+# TODO: factor out prediction interval code
 # Prediction Intervals
 to_predict <- expand.grid(
     fractions = c(1, 1000),
@@ -2421,9 +2423,15 @@ ggplot(aggregate, aes(dose,
 
 #### Results
 
-Curves don't change that radically, though standard errors often change rather dramatically!
 
 ^ back to [table of contents](#contents)
+
+
+TODO: show meta regression when DDREF is constrained to a fixed value (after finding
+      the appropriate value below
+
+TODO: show how fits look on all data when DDREF is constrained to a fixed value
+      can we actually fit the curves?
 
 ________________________________________________________________________
 
