@@ -2294,9 +2294,8 @@ ggplot(likelihoods, aes(o, l)) +
 Analogous to the lifespan likelihood curve from figure 10B4 but using all of the animal data and applying meta-analysis, instead of limiting to that avaiable from storer 1979. Note that DDREF has been restored to something similar to the original value, far more reasonable.
 
 ```{r}
-@here
 # Model
-m <- model_meta_fixed_o(aggregate)
+m <- model_meta(aggregate)
 tau2 <- m$tau2
 
 # Make predictions
