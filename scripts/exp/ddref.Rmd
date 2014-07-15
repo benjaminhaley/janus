@@ -1,9 +1,8 @@
 [DDREF][public link]
 ========================================================
-Measure ddref, for my thesis ([code][code link]).
-benjamin.haley@gmail.com
-*last update: July 2014*
-
+Measure ddref, for my thesis ([code][code link]).  
+benjamin.haley@gmail.com  
+*last update: July 2014*  
 
 [public link]: http://rpubs.com/benjaminhaley/ddref
 [code link]: https://github.com/benjaminhaley/janus/blob/master/scripts/exp/ddref.Rmd
@@ -60,8 +59,8 @@ ___________________________________________________________________
 # This will supress warnings and make graphs a nice size.
 
 library(knitr)
-opts_chunk$set(fig.width=10.24,
-               fig.height=7.68,
+opts_chunk$set(fig.width=4,
+               fig.height=3,
                fig.path='Figs/',
                #echo=FALSE,         # Toggle this to show the code
                warning=FALSE,
@@ -245,7 +244,6 @@ Create a data set that might be used for DDREF analysis and
 make a description of this data.
 
 ```{r}
-
 # Common functions
 setwd('~/janus')
 source('scripts/util/util.R') # http://goo.gl/VYzkAs
@@ -326,7 +324,6 @@ aliases <- list(
     'beagle'='Beagle'
   )
 )
-
 
 threshold_dose <- 1.5
 
@@ -626,7 +623,7 @@ Visualize
 Now that the data is reasonably clean, show what it looks
 like.
 
-```{r, cache=F}
+```{r, cache=FALSE}
 # Common
 setwd('~/janus')
 source('scripts/util/util.R') # http://goo.gl/VYzkAs
@@ -634,11 +631,7 @@ source('scripts/util/util.R') # http://goo.gl/VYzkAs
 # Data
 setwd('~/janus')
 d <- readRDS('data/ddref.rds')
-```
 
-
-
-```{r}
 # TODO(later): figure out what is the cause of early effects in ORNL data based on the pathology codes released with that dataset.
 
 ggplot(d,
@@ -1457,12 +1450,11 @@ data = data %>%
   mutate(control_age = age[dose == 0])
 
 # Save for later use
-# TODO: re-enable
 write.csv0(data, 'data/storer_1979_processed.csv')
 
 m <- lq_model(data[data$modeled_in_10B3,])
+to_predict <- get_data_to_predict()
 to_predict$p <- predict(m, newdata=to_predict)
-
 ```
 
 #### Show
@@ -1540,8 +1532,8 @@ data <- merge(
 
 # Clean data and calcualte the mean likelihood
 data = data %>%
-  mutate(tumor = likelihood,
-         lifespan = l,
+  mutate(tumor = l,
+         lifespan = likelihood,
          mean = (tumor + lifespan)/2) %>%
   select(-l, -likelihood)
 
@@ -1880,6 +1872,8 @@ data <- data %>%
            delta)
          )
 
+# Save for later
+write.csv0(data, "data/10-3.csv")
 ```
 
 ```{r}
@@ -1970,6 +1964,7 @@ write.csv0(aggregate, file='data/10B4_all_data_aggregated.csv')
 # Model by cluster
 predictions <- ddply(aggregate, .(cluster), function(df){
   m <- lq_model(df)
+  to_predict <- get_data_to_predict()
   to_predict$p <- predict(m, newdata=to_predict)
   to_predict$cluster <- only(df$cluster)
   to_predict
@@ -1993,46 +1988,88 @@ Analogous to the lifespan likelihood curve from figure 10B4 but using all of the
 
 
 ```{r}
-# Find best theta (o) value
-o = with(likelihoods, o[which.max(l)])
-print(o)
+# See how this affects downstream likelihood curves
+setwd('~/janus')
+tenb4 <- read.csv('data/10B4.csv')
+tenb4 <- merge(tenb4 %>% mutate(o=round(o, 2)),
+               likelihoods %>% mutate(o=round(o, 2))) %>%
+  mutate(new_lifespan=l,
+         new_mean=(tumor + new_lifespan) / 2,
+         new_tumor=tumor) %>%
+  select(-l)
 
-# Fit with best theta value
-m <- fixed_o_model(aggregate, o)
-predictions$p_all <- predict(m, newdata=predictions)
-
-# Show
-# As in 10B3
-# http://www.nap.edu/openbook.php?record_id=11340&page=257
-ggplot(aggregate, aes(dose,
-                      1/age,
-                      label=type,
-                      group=type)) +
-  geom_smooth(
-      data=predictions,
-      aes(dose, p, color=type),
-      method='lm',
-      formula='y ~ x + I(x^2)',
-      se=FALSE
-  ) +
-  geom_smooth(
-      data=predictions,
-      aes(dose, p_all, color=type),
-      method='lm',
-      formula='y ~ x + I(x^2)',
-      se=FALSE,
-      linetype='dotted'
-  ) + 
-  geom_text(size=4) +
-  scale_color_manual(values=c('black', 'grey')) +
-  facet_wrap(~ cluster, scales='free_y')
+g <- melt(tenb4,
+          id.vars='o',
+          value.name='likelihood',
+          variable.name='source') %>%
+  mutate(new = c('old', 'new')[grepl('^new_', source) + 1],
+         source = sub('^new_', '', source))
+ggplot(g, aes(o, likelihood, linetype=source, color=new, alpha=new)) +
+  geom_path() +
+  scale_linetype_manual(values=c('dotdash', 'solid', 'dotted')) +
+  scale_alpha_manual(values=c(0.7, 0.5), guide=FALSE) +
+  scale_color_manual(values=c('red', 'black'), guide=FALSE) +
+  scale_y_continuous(breaks = c(0, 0.5, 1, 1.5)) +
+  coord_cartesian(ylim=c(-0.1, 1.6)) +
+  facet_grid(new ~ .) +
+  theme()
 ```
+
+#### Figure: Combined animal likelihood profiles when using all animal data
+Analagous to all of figure 10B4, we see the effect of using this new lifespan profile estimate on the ultimate profile likelihood (mean_more_data).  Notably, the mean has shifted lower and now contains a 'double hump' a questionable shape that implies that certain intermediate values of ddref are less likely than values of either side of them!
+
+```{r}
+# And the fina likelihood curve
+setwd('~/janus')
+tenthree <- read.csv("data/10-3.csv")
+tenb4 <- tenb4 %>% 
+  mutate(new_Radiobiological_prior=new_mean) %>%
+  select(o, new_Radiobiological_prior)
+
+# Merge with new data
+tenthree <- merge(tenb4 %>% mutate(o=round(o, 2)),
+                  tenthree %>% mutate(o=round(o, 2)))
+
+# Determine profile resolutions
+# (this is needed to normalize the profile likelihood curves for
+#  graphing)
+delta = tenthree$o[2] - tenthree$o[1]
+
+# Find the posterior distribution
+# (by baysian update)
+tenthree <- tenthree %>%
+  mutate(new_Combined_posterior = normalize_likelihood(
+           log(new_Radiobiological_prior) + log(LSS_likelihood),
+           delta),
+         new_LSS_likelihood = LSS_likelihood
+         )
+
+g <- melt(tenthree,
+          id.vars='o',
+          value.name='likelihood',
+          variable.name='source') %>%
+  mutate(new = c('old', 'new')[grepl('^new_', source) + 1],
+         source = sub('^new_', '', source))
+ggplot(g, aes(o, likelihood, linetype=source, color=new, alpha=new)) +
+  geom_path() +
+  scale_linetype_manual(values=c('solid', 'dotted', 'dotdash')) +
+  scale_alpha_manual(values=c(0.7, 0.5), guide=FALSE) +
+  scale_color_manual(values=c('red', 'black'), guide=FALSE) +
+  scale_y_continuous(breaks = c(0, 0.5, 1, 1.5)) +
+  coord_cartesian(ylim=c(-0.1, 1.6)) +
+  facet_grid(new ~ .) +
+  theme()
+```
+
+#### Figure: Human and animal likelihood profiles when using all animal data
+Analogous to figure 10-3 from BEIR VII but using the additional animal data from this study.  We see that the combined posterior estimate moves in convert with the new Radiobioligical prior.  As in the previous figure, this becomes lower, but also more absurd with a double hump.
+
 
 #### Results
 
 The fits are from well behaved!
 
-Chronic effects may appear better or worse than projected acute effects.  Sometimes hormesis like respsonses appear.  Its not obvious from this graph because the y-axis is stretched to fit the data, but the magnitude of the effect is changing wildly too.
+Chronic effects may appear better or worse than projected acute effects.  Sometimes hormesis like respsonses appear.  Its not obvious from this graph because the y-axis is stretched to fit the data, but the magnitude of the effect is changing wildly too, especially at ORNL, cluster 1, where the effect of radiation is much stronger than in other cases.
 
 It is no wonder that radiobiology is full of debate!
 
@@ -2043,6 +2080,8 @@ However, we see some glimmers of hope.  While we can't trust these fits outright
 ^ back to [table of contents](#contents)
 
 ________________________________________________________________________
+
+
 
 <a name="10B3-meta"></a>
 
@@ -2059,52 +2098,23 @@ We will also run a heterogeneity test.
 setwd('~/janus')
 source('scripts/util/util.R') # http://goo.gl/VYzkAs
 
-# Save for later use
+# data
 data <- read.csv('data/storer_1979_processed.csv')
 
-# Helpers
-model_10B3 <- function(data){
-  glm(
-    I(1/age - 1/control_age) ~ dose + I(dose^2 / (fractions)) - 1,
-    data=data,
-    weights=1/sd^2
-  )
-}
-model_meta <- function(data){
-  rma(
-    yi,
-    vi,
-    mods = ~ dose + I(dose^2 / (fractions)) - 1,
-    data = data,
-    method='ML'
-  )
-}
-predict_meta <- function(m, newdata){
-    newdata$a <- newdata$dose
-    newdata$B <- with(newdata, dose^2 / (fractions))
-    predict(m, newmods=with(newdata, cbind(a, B)))$pred
-}
-
 # Prepare for Meta
-data$yi <- with(data, 1/age - 1/control_age)
+data$yi <- with(data, 1/age)
 data$vi <- with(data, (1/age - 1/(age + sd))^2)
 
-# Fake data to predict across
-# This allows us to fit two lines across a limited
-# data range for graphing
-to_predict <- expand.grid(
-    fractions = c(1, Inf),
-    dose = seq(0, 1.5, 0.1)
-)
-to_predict$type <- 'A'
-to_predict$type[to_predict$fractions > 1] <- 'C'
+# Predictions
+# With original regression
+m <- lq_model(data %>% filter(modeled_in_10B3))
+to_predict <- get_data_to_predict()
+to_predict$p <- predict(m, newdata=to_predict)
 
-
-m <- model_10B3(data %>% filter(modeled_in_10B3))
-to_predict$p <- predict(m, newdata=to_predict) + 1/636.175
-
+# Predictions
+# With meta regression
 m <- model_meta(data %>% filter(modeled_in_10B3))
-to_predict$p_meta <- predict_meta(m, newdata=to_predict) + 1/636.175
+to_predict$p_meta <- predict_meta(m, newdata=to_predict)
 data$tau2 <- m$tau2
 p_heterogeneity <- m$QEp
 
@@ -2115,15 +2125,23 @@ g <- data[with(data,
 ),]
 ggplot(g, aes(dose, 1/age)) +
   geom_text(size=5, aes(label=type, group=type)) +
-  geom_path(data=to_predict, aes(dose, p, group=type)) +
-  geom_path(data=to_predict, aes(dose, p_meta, group=type), color='red') +
+  geom_path(data=to_predict, 
+            aes(dose, p, group=type), 
+            alpha=0.5) +
+  geom_path(data=to_predict, 
+            aes(dose, p_meta, group=type), 
+            color='red', 
+            alpha=0.5) +
   scale_y_continuous(breaks = 0.0002*0:4+0.0016) + 
   geom_errorbar(aes(ymin=1/age + (vi + tau2)^0.5,
                     ymax=1/age - (vi + tau2)^0.5), 
-                alpha=0.5, width=.05, color='red') +
+                alpha=0.5, 
+                width=.05, 
+                color='red') +
   geom_errorbar(aes(ymin=1/age + (vi)^0.5,
                     ymax=1/age - (vi)^0.5), 
-                alpha=0.5, width=.15) + 
+                alpha=0.5, 
+                width=.15) + 
   annotate("text", x=1, y=0.0024,
             label=paste("p heterogeneity < ",
                         format(p_heterogeneity, scientific=TRUE, digits=1)))
@@ -2178,28 +2196,8 @@ source('scripts/util/util.R') # http://goo.gl/VYzkAs
 data <- read.csv('data/storer_1979_processed.csv')
 
 # Helpers
-model_10B4 <- function(data, o){
-  glm(
-    I(1/age) ~ I(dose + o*dose^2 / (fractions)),
-    data=data,
-    weights=1/sd^2
-  )
-}
-model_meta <- function(data, o){
-  data$curved_dose <- with(data,
-    dose + o*dose^2 / (fractions)
-  )
-  rma(
-    1/age,
-    (1/age - 1/(age + sd))^2,
-    mods = cbind(curved_dose),
-    data = data,
-    method='ML'
-  )
-}
-
-beir_r <- get_likelihoods(data %>% filter(modeled_in_10B3), model_10B4)
-my_r <- get_likelihoods(data %>% filter(modeled_in_10B3), model_meta)
+beir_r <- get_likelihoods(data %>% filter(modeled_in_10B3), fixed_o_model)
+my_r <- get_likelihoods(data %>% filter(modeled_in_10B3), model_meta_fixed_o)
 
 # Reproduce 10B4
 # http://www.nap.edu/openbook.php?record_id=11340&page=258
@@ -2224,6 +2222,9 @@ Meta-regression on all data
 
 Show graphs like Storer 1979 10B3 but for all data using random effects meta-regression.
 
+TODO: this should model the previous analysis, finding the profile then fitting
+TODO: the graph should look like the previous too.
+
 ```{r}
 # Common
 setwd('~/janus')
@@ -2231,66 +2232,21 @@ source('scripts/util/util.R') # http://goo.gl/VYzkAs
 
 # Data
 aggregate <- read.csv('data/10B4_all_data_aggregated.csv')
-
-# TODO: factor our these model definitions into a single place
-model_10B3 <- function(data){
-  glm(
-    I(1/age - 1/control_age) ~ 
-        dose * cluster
-      + I(dose^2 / (fractions)) * cluster
-      - cluster
-      - 1,
-    data=data,
-    weights=1/sd^2
-  )
-}
-model_meta <- function(data){
-  data <- data %>%
-    mutate(a = dose,
-           B = dose^2 / (fractions))
-  rma(
-    yi,
-    vi,
-    mods = ~ a*cluster + B*cluster -a -B -cluster -1,
-    data = data,
-    method='ML'
-  )
-}
+aggregate <- aggregate %>% mutate(cluster = order_levels_by_number(cluster))
 
 # Prepare for Meta
 aggregate <- aggregate %>%
-  mutate(yi = 1/age - 1/control_age,
+  mutate(yi = 1/age,
          vi = (1/age - 1/(age + sd))^2)
 
 # Model
 m <- model_meta(aggregate)
 tau2 <- m$tau2
 
-# TODO: factor out prediction interval code
-# Define Prediction Intervals
-to_predict <- expand.grid(
-    fractions = c(1, 1000),
-    dose = seq(0, 1.5, 0.1),
-    cluster = unique(aggregate$cluster)
-)
-to_predict$type <- 'A'
-to_predict$type[to_predict$fractions > 1] <- 'C'
-to_predict <- to_predict %>%
-  mutate(a = dose,
-         B = dose^2 / (fractions))
-control_ages <- unique(aggregate %>% select(control_age, cluster))
-to_predict <- merge(to_predict, control_ages)
-
-newmods <- model.matrix(~ a*cluster + B*cluster -a -B -cluster -1,
-                        data=to_predict)
-
 # Make predictions
-to_predict$p_my_analysis <- predict(m, newmods=newmods)$pred
-to_predict$p_10B3 <- predict(model_10B3(aggregate), newdata=to_predict)
-
-# Make sure factor levels are correct
-to_predict <- to_predict %>% mutate(cluster = order_levels_by_number(cluster))
-aggregate <- aggregate %>% mutate(cluster = order_levels_by_number(cluster))
+to_predict <- get_data_to_predict(clusters=aggregate$cluster)
+to_predict$p_my_analysis <- predict_meta(m, newdata=to_predict, clustered=TRUE)
+to_predict$p_10B3 <- predict(lq_model(aggregate), newdata=to_predict)
 
 # Show
 # As in 10B3
@@ -2301,7 +2257,7 @@ ggplot(aggregate, aes(dose,
                       group=type)) +
   geom_smooth(
     data=to_predict,
-    aes(dose, p_10B3 + 1/control_age, linetype=type),
+    aes(dose, p_10B3, linetype=type),
     method='lm',
     formula='y ~ x + I(x^2)',
     se=FALSE,
@@ -2309,7 +2265,7 @@ ggplot(aggregate, aes(dose,
   ) +
   geom_smooth(
     data=to_predict,
-    aes(dose, p_my_analysis + 1/control_age, linetype=type),
+    aes(dose, p_my_analysis, linetype=type),
     method='lm',
     formula='y ~ x + I(x^2)',
     se=FALSE,
@@ -2337,76 +2293,7 @@ TODO: show meta regression when DDREF is constrained to a fixed value (after fin
 TODO: show how fits look on all data when DDREF is constrained to a fixed value
       can we actually fit the curves?
 
-________________________________________________________________________
 
-<a name="10B4-meta-all"></a>
-
-Meta Regression profiles on all data
-========================================================
-*Last update: June 2013*
-
-
-Show graphs like Storer 1979 10B4 but for all data using the random effects meta regression.
-
-```{r}
-
-# Common
-setwd('~/janus')
-source('scripts/util/util.R') # http://goo.gl/VYzkAs
-
-# Data
-aggregate <- read.csv('data/10B4_all_data_aggregated.csv')
-
-# TODO: factor our these model definitions into a single place
-model_10B4 <- function(data, o){
-  glm(
-    I(1/age) ~ cluster * I(dose + o*dose^2 / (fractions)),
-    data=data,
-    weights=1/sd^2
-  )
-}
-model_meta <- function(data, o){
-  data$curved_dose <- with(data, dose + o*dose^2 / (fractions))
-  rma(
-    yi,
-    vi,
-    mods = ~ cbind(cluster, curved_dose),
-    data = data,
-    method='ML'
-  )
-}
-
-# Prepare for Meta
-aggregate <- aggregate %>%
-  mutate(yi = 1/age - 1/control_age,
-         vi = (1/age - 1/(age + sd))^2)
-
-# Model
-regular <- get_likelihoods(aggregate, model_10B4) %>%
-  mutate(likelihood_regular=l) %>%
-  select(-l)
-meta <- get_likelihoods(aggregate, model_meta) %>%
-  mutate(likelihood_meta=l) %>%
-  select(-l)
-likelihoods <- merge(regular, meta)
-
-# Show
-ggplot(likelihoods) +
-    geom_path(aes(o, likelihood_regular), color='black') +
-    geom_path(aes(o, likelihood_meta), color='red')
-
-
-# TODO: Double check the above, clean up the chart, it should actually look more like 10B4
-
-# TODO: Maybe I would not get absurd profile-likelihood values if I just perfomed a single regression, instead of multiple regressions with bayesian updates.  Concretely I would do 1/age ~ cluster * ...
-
-```
-
-#### Results
-
-We still seem to have biased likelihood estimates, but things are improving a bit...
-
-^ back to [table of contents](#contents)
 
 __________________________________________________________________
 
@@ -2811,9 +2698,9 @@ model_10B4 <- function(data, o){
     )
 }
 
-data <- get_likelihoods(
-  data %>% filter(in_my_analysis & modeled_in_10B3),
-  model_10B4)
+data <- get_likelihoods(data %>% filter(in_my_analysis & modeled_in_10B3), model_10B4) %>%
+  mutate(likelihood = l) %>%
+  select(-l)
 
 
 # Merge likelihoods with data from 10B2

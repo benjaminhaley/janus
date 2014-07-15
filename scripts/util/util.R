@@ -188,6 +188,10 @@ order_levels_by_number <- function(x) {
   x
 }
 
+# has clusters
+# Determine if a dataset contains multiple clusters
+has_clusters <- function(data) "cluster" %in% names(data) & length(unique(data$cluster)) > 1
+
 # lq model
 # The basic linear quadratic model used in the BEIR VII report
 lq_model <- function(data){
@@ -195,7 +199,7 @@ lq_model <- function(data){
   formula <- I(1/age) ~ dose + I(dose^2 / (fractions))
   
   # Define a formula that accomidates multiple clusters
-  if("cluster" %in% names(data) & length(unique(data$cluster)) > 1) {
+  if(has_clusters(data)) {
     formula <- I(1/age) ~ dose*cluster + I(dose^2 / (fractions))*cluster}
   
   glm(
@@ -214,7 +218,7 @@ fixed_o_model <- function(data, o){
   formula <- I(1/age) ~ I(dose + o*dose^2 / (fractions))
   
   # Define a formula that accomidates multiple clusters
-  if("cluster" %in% names(data) & length(unique(data$cluster)) > 1) {
+  if(has_clusters(data)) {
     formula <- I(1/age) ~ I(dose + o*dose^2 / (fractions))*cluster}
   
   # Build the model
@@ -225,12 +229,72 @@ fixed_o_model <- function(data, o){
   )
 }
 
+# Model meta
+# An update to the BEIR VII model that accounts for random effects
+model_meta <- function(data){
+  
+  formula <- ~ dose + I(dose^2 / (fractions))
+
+  # Define a formula that accomidates multiple clusters
+  if(has_clusters(data)) {
+    formula <- ~ dose * cluster + I(dose^2 / (fractions)) * cluster}
+  
+  rma(
+    yi,
+    vi,
+    mods = model.matrix(formula, data=data),
+    data = data,
+    method='ML'
+  )
+}
+predict_meta <- function(m, newdata, clustered=FALSE){
+  
+  formula <- ~ dose + I(dose^2 / (fractions))
+  
+  if(clustered) {
+    formula <- ~ dose * cluster + I(dose^2 / (fractions)) * cluster
+  }
+  newdata$a <- newdata$dose
+  newdata$B <- with(newdata, dose^2 / (fractions))
+  newmods <- model.matrix(formula, data=newdata)
+  predict(m, newmods=newmods[,2:ncol(newmods)])$pred
+}
+
+# Model meta fixed o
+# As before, but with a fixed curvature.
+model_meta_fixed_o <- function(data, o){
+  
+  formula <- ~ I(dose + o*dose^2 / (fractions))
+  
+  # Define a formula that accomidates multiple clusters
+  if(has_clusters(data)) {
+    formula <- ~ I(dose + o*dose^2 / (fractions)) * cluster}
+  
+  rma(
+    1/age,
+    (1/age - 1/(age + sd))^2,
+    mods = formula,
+    data = data,
+    method='ML'
+  )
+}
+predict_meta_fixed_o <- function(m, newdata){
+  newmods <- model.matrix(~ a*cluster + B*cluster -a -B -cluster -1,
+                          data=to_predict)
+  predict(m, newmods=newmods)$pred
+}
+
+
 # Fake data to predict across
 # This allows us to fit two lines across a limited
 # data range for graphing
-to_predict <- expand.grid(
-  fractions = c(1, Inf),
-  dose = seq(0, 1.5, 0.1)
-)
-to_predict$type <- 'A'
-to_predict$type[to_predict$fractions > 1] <- 'C'
+get_data_to_predict <- function(clusters=''){
+  to_predict <- expand.grid(
+    fractions = c(1, Inf),
+    dose = seq(0, 1.5, 0.1),
+    cluster = order_levels_by_number(unique(clusters))
+  )
+  to_predict$type <- 'A'
+  to_predict$type[to_predict$fractions > 1] <- 'C'
+  to_predict
+}
