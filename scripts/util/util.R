@@ -249,24 +249,28 @@ model_meta <- function(data){
 }
 predict_meta <- function(m, newdata, clustered=FALSE){
   
-  formula <- ~ dose + I(dose^2 / (fractions))
-  
+  # Determine the formula
+  # Stratify by cluster, or not
+  formula <- ~ dose + I(dose^2 / (fractions))  
   if(clustered) {
     formula <- ~ dose * cluster + I(dose^2 / (fractions)) * cluster
   }
-  newdata$a <- newdata$dose
-  newdata$B <- with(newdata, dose^2 / (fractions))
+  
   newmods <- model.matrix(formula, data=newdata)
-  predict(m, newmods=newmods[,2:ncol(newmods)])$pred
+  # Remove the intercept
+  # because rma automatically adds it, and I can't get it to stop
+  # confusing
+  newmods <- newmods[,2:ncol(newmods)]
+  predict(m, newmods=newmods)$pred
 }
 
 # Model meta fixed o
 # As before, but with a fixed curvature.
 model_meta_fixed_o <- function(data, o){
   
+  # Determine the formula
+  # Stratify by cluster, or not
   formula <- ~ I(dose + o*dose^2 / (fractions))
-  
-  # Define a formula that accomidates multiple clusters
   if(has_clusters(data)) {
     formula <- ~ I(dose + o*dose^2 / (fractions)) * cluster}
   
@@ -278,9 +282,20 @@ model_meta_fixed_o <- function(data, o){
     method='ML'
   )
 }
-predict_meta_fixed_o <- function(m, newdata){
-  newmods <- model.matrix(~ a*cluster + B*cluster -a -B -cluster -1,
-                          data=to_predict)
+predict_meta_fixed_o <- function(m, newdata, clustered=FALSE){
+
+  # Determine the formula
+  # Stratify by cluster, or not
+  formula <- ~ I(dose + o*dose^2 / (fractions))
+  if(clustered) {
+    formula <- ~ I(dose + o*dose^2 / (fractions)) * cluster
+  }
+ 
+  newmods <- model.matrix(formula, data=newdata)
+  # Remove the intercept
+  # because rma automatically adds it, and I can't get it to stop
+  # confusing
+  newmods <- newmods[,2:ncol(newmods)]
   predict(m, newmods=newmods)$pred
 }
 

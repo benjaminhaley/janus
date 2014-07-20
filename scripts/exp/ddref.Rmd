@@ -686,7 +686,7 @@ ggplot(g,
            linetype = protracted,
            y=..scaled..)) +
   geom_density(adjust=2) +
-  facet_grid(dose~cluster, scales='free') +
+  facet_grid(dose~cluster, scales='free_x') +
   scale_colour_gradient(
     guide = guide_legend(title = "Dose (Gy)"),
     breaks= c(0,0.5,1.0,1.5),
@@ -723,7 +723,7 @@ ggplot(d,
            color=dose,
            group=factor(paste(dose, dose_rate, fractions)))) +
   geom_path() +
-  facet_wrap(~ cluster, scales='free') +
+  facet_wrap(~ cluster) +
   scale_color_continuous(
     guide = guide_legend(title = "Dose (Gy)"),
     trans = "sqrt"
@@ -2007,11 +2007,12 @@ ggplot(aggregate, aes(dose,
   ) + 
   geom_text(size=4) +
   scale_color_manual(values=c('black', 'grey')) +
-  facet_wrap(~ cluster, scales='free_y')
+  facet_wrap(~ cluster, scales='free_y') + 
+  theme(axis.text.y=element_blank())
 ```
-#### Results
 
-The fits are from well behaved!
+#### Results
+The fits are far from well behaved!
 
 Chronic effects may appear better or worse than projected acute effects.  Sometimes hormesis like respsonses appear.  Its not obvious from this graph because the y-axis is stretched to fit the data, but the magnitude of the effect is changing wildly too, especially at ORNL, cluster 1, where the effect of radiation is much stronger than in other cases.
 
@@ -2023,22 +2024,7 @@ However, we see some glimmers of hope.  While we can't trust these fits outright
 
 
 ```{r}
-# Show 10B4 with all data
-ggplot(likelihoods, aes(o, l)) + 
-  geom_path() + 
-  # TODO: make sure cood_cartisian is used in place of xlim/ylim and used consistently
-  coord_cartesian(ylim=c(-0.1,1.5)) +
-  # TODO: be sure we are using theta, o, consistently.  It should be θ
-  xlab("θ (DDREF.lss - 1)") + 
-  ylab("likelihood")
-```
-
-#### Figure: Likelihood profile when using all animal data
-Analogous to the lifespan likelihood curve from figure 10B4 but using all of the animal data, instead of limiting to that avaiable from storer 1979.  Note that DDREF has gone down substantially and is now strongly centered around a value of 1, which would imply that protracted exposures are just as dangerous as acute exposures.
-
-
-```{r}
-# See how this affects downstream likelihood curves
+# Merge with previous data
 setwd('~/janus')
 tenb4 <- read.csv('data/10B4.csv')
 tenb4 <- merge(tenb4 %>% mutate(o=round(o, 2)),
@@ -2054,6 +2040,23 @@ g <- melt(tenb4,
           variable.name='source') %>%
   mutate(new = c('old', 'new')[grepl('^new_', source) + 1],
          source = sub('^new_', '', source))
+ggplot(g %>% filter(source == 'lifespan'), 
+       aes(o, likelihood, color=new, alpha=new)) +
+  geom_path() +
+  scale_alpha_manual(values=c(0.7, 0.5), guide=FALSE) +
+  scale_color_manual(values=c('red', 'black'), guide=FALSE) +
+  scale_y_continuous(breaks = c(0, 0.5, 1, 1.5)) +
+  coord_cartesian(ylim=c(-0.1, 1.6)) +
+  facet_grid(new ~ .) +
+  xlab("θ (DDREF.lss - 1)") + 
+  theme()
+```
+
+#### Figure: Likelihood profile when using all animal data
+Analogous to the lifespan likelihood curve from figure 10B4 but using all of the animal data, instead of limiting to that avaiable from storer 1979.  Note that DDREF has gone down substantially and is now strongly centered around a value of 1, which would imply that protracted exposures are just as dangerous as acute exposures.
+
+
+```{r}
 ggplot(g, aes(o, likelihood, linetype=source, color=new, alpha=new)) +
   geom_path() +
   scale_linetype_manual(values=c('dotdash', 'solid', 'dotted')) +
@@ -2062,6 +2065,7 @@ ggplot(g, aes(o, likelihood, linetype=source, color=new, alpha=new)) +
   scale_y_continuous(breaks = c(0, 0.5, 1, 1.5)) +
   coord_cartesian(ylim=c(-0.1, 1.6)) +
   facet_grid(new ~ .) +
+  xlab("θ (DDREF.lss - 1)") + 
   theme()
 ```
 
@@ -2072,12 +2076,12 @@ Analagous to all of figure 10B4, we see the effect of using this new lifespan pr
 # And the fina likelihood curve
 setwd('~/janus')
 tenthree <- read.csv("data/10-3.csv")
-tenb4 <- tenb4 %>% 
+animal <- tenb4 %>% 
   mutate(new_Radiobiological_prior=new_mean) %>%
   select(o, new_Radiobiological_prior)
 
 # Merge with new data
-tenthree <- merge(tenb4 %>% mutate(o=round(o, 2)),
+tenthree <- merge(animal %>% mutate(o=round(o, 2)),
                   tenthree %>% mutate(o=round(o, 2)))
 
 # Determine profile resolutions
@@ -2114,6 +2118,29 @@ ggplot(g, aes(o, likelihood, linetype=source, color=new, alpha=new)) +
 #### Figure: Human and animal likelihood profiles when using all animal data
 Analogous to figure 10-3 from BEIR VII but using the additional animal data from this study.  We see that the combined posterior estimate moves in convert with the new Radiobioligical prior.  As in the previous figure, this becomes lower, but also more absurd with a double hump.
 
+
+```{r}
+o <- tenthree$o
+
+# How has lifespan changed?
+. <- confidence_interval(o, tenb4[['lifespan']], 0.05)      # was   1.4 ( 0.5, 6.0)
+. <- confidence_interval(o, tenb4[['new_lifespan']], 0.05)  # is   -0.1 (-0.2, 0.1)
+
+# How did this affect all animal data?
+. <- confidence_interval(o, tenthree[['Radiobiological_prior']], 0.05)      # was   0.4 ( 0.1, 3.5)
+. <- confidence_interval(o, tenthree[['new_Radiobiological_prior']], 0.05)  # is   -0.1 (-0.2, 0.7)
+
+# How did it affect the overall estimate
+. <- confidence_interval(o, tenthree[['Combined_posterior']], 0.05)      # was   0.4 ( 0.1, 1.2)
+. <- confidence_interval(o, tenthree[['new_Combined_posterior']], 0.05)  # is   -0.1 (-0.2, 0.9)
+```
+
+#### Table: confidence intervals updated with new lifespan data
+This quantifies the evidence from the profile likelihood curves by showing the 95% confidence intervals both before and after incorporating the new data.  Data is shown as "central (low, high)".  This is analogous to table 10-2 from the BEIR VII report.  
+
+Unsurprisingly, the largest effect is on the confidence interval comming directly from lifespan which shifts from a center of 1.4 (DDREF ~ 2.4) to -0.1 (DDREF ~ 0.9).  The 95% confidence interval of this new estimate does not overlap at all with the 95% confidence interval of the old estimate which strongly suggests that the technique is over-confident.
+
+The depression of lifespan estimates influences the combined posterior resulting in a central estimate of -0.1 (DDREF ~ 0.9).  If we were to trust this analysis it would suggest that DDREF is ~1, that is there is no influence of protraction.  But we should not trust this anlaysis as clearly exemplified by the contradictory results observed when new data is applied to the same technique.
 
 ^ back to [table of contents](#contents)
 
@@ -2280,6 +2307,63 @@ aggregate <- aggregate %>%
 # Fine likelihood by o
 likelihoods <- get_likelihoods(aggregate, model_meta_fixed_o)
 
+# Find best theta (o) value
+o = with(likelihoods, o[which.max(l)])
+print(o)
+
+# Fit with best theta value
+m <- model_meta_fixed_o(aggregate, o)
+
+# Find hetorogeneity
+tau2 <- m$tau2
+
+# Make predictions
+to_predict <- get_data_to_predict(clusters=aggregate$cluster)
+to_predict$p_my_analysis <- predict_meta_fixed_o(m, newdata=to_predict, clustered=TRUE)
+to_predict$p_10B3 <- predict(lq_model(aggregate), newdata=to_predict)
+
+# Show
+# As in 10B3
+# http://www.nap.edu/openbook.php?record_id=11340&page=257
+ggplot(aggregate, aes(dose,
+                      1/age,
+                      label=type,
+                      group=type)) +
+  geom_smooth(
+    data=to_predict,
+    aes(dose, p_10B3),
+    method='lm',
+    formula='y ~ x + I(x^2)',
+    se=FALSE,
+    color='black'
+  ) +
+  geom_smooth(
+    data=to_predict,
+    aes(dose, p_my_analysis),
+    method='lm',
+    formula='y ~ x + I(x^2)',
+    se=FALSE,
+    color='red',
+    linetype='dotted'
+  ) +
+  geom_text(size=4, alpha=0.9) +
+  geom_errorbar(aes(ymin=1/age + (vi + tau2)^0.5,
+                    ymax=1/age - (vi + tau2)^0.5), 
+                alpha=0.5, width=.05, color='red') +
+  geom_errorbar(aes(ymin=1/age + (vi)^0.5,
+                    ymax=1/age - (vi)^0.5), 
+                alpha=0.5, width=.15) + 
+  facet_wrap(~ cluster, scales='free_y') +
+  theme(axis.text.y=element_blank())
+```
+
+#### Figure: 1/lifespan meta-analysis fits on all data
+Analagous to figure ??? from BEIR VII we see ordinary linear quadratic models (black) fit to 1/lifespan of accutely, A, and chronically, C, mice at various doses in Gy.  Straight lines correspond to chronic predictions while curved lines correspond to accute predictions.  Grey error bards show measured uncertainty, red error bars show measured uncertainty plus estimated heterogeneity by meta-regression.  The best fit after meta regression across all clusters is shown in red dotted lines.
+
+This figure does not change much from before, expect that it reveals a high level of unmeasured uncertainty that is revealed in some data points (e.g. cluster 8).  The result is more tollerance for curvature values because the data is not constrained to fit a very tight model.
+
+
+```{r}
 # Show 10B4 with all data meta
 ggplot(likelihoods, aes(o, l)) + 
   geom_path() + 
@@ -2294,46 +2378,7 @@ ggplot(likelihoods, aes(o, l)) +
 Analogous to the lifespan likelihood curve from figure 10B4 but using all of the animal data and applying meta-analysis, instead of limiting to that avaiable from storer 1979. Note that DDREF has been restored to something similar to the original value, far more reasonable.
 
 ```{r}
-# Model
-m <- model_meta(aggregate)
-tau2 <- m$tau2
 
-# Make predictions
-to_predict <- get_data_to_predict(clusters=aggregate$cluster)
-to_predict$p_my_analysis <- predict_meta(m, newdata=to_predict, clustered=TRUE)
-to_predict$p_10B3 <- predict(lq_model(aggregate), newdata=to_predict)
-
-# Show
-# As in 10B3
-# http://www.nap.edu/openbook.php?record_id=11340&page=257
-ggplot(aggregate, aes(dose,
-                      1/age,
-                      label=type,
-                      group=type)) +
-  geom_smooth(
-    data=to_predict,
-    aes(dose, p_10B3, linetype=type),
-    method='lm',
-    formula='y ~ x + I(x^2)',
-    se=FALSE,
-    color='black'
-  ) +
-  geom_smooth(
-    data=to_predict,
-    aes(dose, p_my_analysis, linetype=type),
-    method='lm',
-    formula='y ~ x + I(x^2)',
-    se=FALSE,
-    color='red'
-  ) +
-  geom_text(size=4) +
-  geom_errorbar(aes(ymin=1/age + (vi + tau2)^0.5,
-                    ymax=1/age - (vi + tau2)^0.5), 
-                alpha=0.5, width=.05, color='red') +
-  geom_errorbar(aes(ymin=1/age + (vi)^0.5,
-                    ymax=1/age - (vi)^0.5), 
-                alpha=0.5, width=.15) + 
-  facet_wrap(~ cluster, scales='free_y')
 ```
 
 #### Results
