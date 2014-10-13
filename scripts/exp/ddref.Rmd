@@ -2,7 +2,7 @@
 ========================================================
 Measure ddref, for my thesis ([code][code link]).  
 benjamin.haley@gmail.com  
-*last update: July 2014*  
+*last update: October 2014*  
 
 [public link]: http://rpubs.com/benjaminhaley/ddref
 [code link]: https://github.com/benjaminhaley/janus/blob/master/scripts/exp/ddref.Rmd
@@ -63,7 +63,7 @@ Table of contents
 
 ___________________________________________________________________
 
-```{r global_options, include=FALSE}
+```{r include=FALSE}
 # Global knitr configuration options
 # This will supress warnings and make graphs a nice size.
 
@@ -2150,6 +2150,7 @@ However, we see some glimmers of hope.  While we can't trust these fits outright
 ```{r}
 # Merge with previous data
 setwd('~/janus')
+
 tenb4 <- read.csv('data/10B4.csv')
 
 r <- rbind(
@@ -2168,7 +2169,7 @@ ggplot(r, aes(o, l, color=analysis, alpha=analysis)) +
   coord_cartesian(ylim=c(-0.1, 1.0)) +
   xlab("θ (~ DDREF.lss - 1)") + 
   ylab("likelihood")
-
+ 
 ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/all_lifespan_profiles.png")
 ```
 
@@ -2177,38 +2178,20 @@ Analogous to the lifespan likelihood curve from figure 10B4 but using all of the
 
 
 ```{r}
-. <- confidence_interval(likelihoods$o, likelihoods$l, 0.05)
-
-most_likely_o_in_new_data <- confidence_interval(tenb4$o, tenb4$new_lifespan)['middle']
-p <- significance(most_likely_o_in_new_data, tenb4$o, tenb4$lifespan)
+most_likely_o_in_new_data <- confidence_interval(likelihoods$o, likelihoods$l, 0.05)['middle'] 
+p <- significance(most_likely_o_in_new_data, tenb4$o, tenb4$lifespan)  # 2e-13
 ```
 
 #### Result: How significant is the difference?
-The new data suggests a most likely theta value of `r most_likely_o_in_new_data`.  The likelihood curve developed from the original data assigns this a p value < `r p`!
+The new data suggests a most likely theta value of -0.1.  The likelihood curve developed from the original data assigns this a p value < 2e-13!
 
 
-```{r}
-ggplot(g, aes(o, likelihood, linetype=source, color=new, alpha=new)) +
-  geom_path() +
-  scale_linetype_manual(values=c('dotdash', 'solid', 'dotted')) +
-  scale_alpha_manual(values=c(0.7, 0.5), guide=FALSE) +
-  scale_color_manual(values=c('red', 'black'), guide=FALSE) +
-  scale_y_continuous(breaks = c(0, 0.5, 1, 1.5)) +
-  coord_cartesian(ylim=c(-0.1, 1.6)) +
-  facet_grid(new ~ .) +
-  xlab("θ (~ DDREF.lss - 1)") + 
-  theme()
-```
-
-#### Figure: Combined animal likelihood profiles when using all animal data
-Analagous to all of figure 10B4, we see the effect of using this new lifespan profile estimate on the ultimate profile likelihood.  Notably, the mean has shifted lower and now contains a 'double hump' a questionable shape that implies that certain intermediate values of ddref are less likely than values of either side of them!
-
-```{r}
+```{r} 
 # And the final likelihood curve
 setwd('~/janus')
 tenthree <- read.csv("data/10-3.csv")
 animal <- tenb4 %>% 
-  mutate(new_Radiobiological_prior=new_mean) %>%
+  mutate(new_Radiobiological_prior=mean) %>%
   select(o, new_Radiobiological_prior)
 
 # Merge with new data
@@ -2758,7 +2741,7 @@ Show details of each study suitable for publication
 ```{r}
 
 # TODO put this in util.R
-table <- function(df, ...) {
+html_table <- function(df, ...) {
   print(xtable(df, ...), 
       type="html",
       include.rownames = FALSE,
@@ -2779,7 +2762,7 @@ summarize_treatments <- function(df){
            fr.=as.integer(fractions)) %>%
     select(-dose, -dose_rate, -fractions)
   
-  table(summary, print.results=FALSE)
+  html_table(summary, print.results=FALSE)
 }
 
 # Built manually
@@ -2793,7 +2776,7 @@ summary <- ddply(d, .(lab, strain, species), function(df){ with(df, c(
   references=references[[only(lab)]]
 ))})
 
-table(summary, sanitize.text.function=function(x){x})
+html_table(summary, sanitize.text.function=function(x){x})
 
 ```
 
@@ -3938,25 +3921,7 @@ source('scripts/util/util.R') # http://goo.gl/VYzkAs
 setwd('~/janus')
 d <- readRDS('data/protraction.rds')
 
-cohens <- d %>%
-  ungroup() %>%
-  group_by(cluster, dose, dose_rate, fractions) %>%
-  summarize(n=length(cluster),
-            s=sd(lifespan),
-            u=mean(lifespan)) %>%
-  ungroup() %>%
-  group_by(cluster) %>%
-  mutate(cluster_n = length(cluster),
-         cluster_s = sd(lifespan),
-         cluster_u = mean(lifespan),
-         pooled_s = )
-
-
-
-
-         control_s = s[control],
-         control_u = u[control])
-
 ```
 
+... WIP ...
 

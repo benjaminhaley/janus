@@ -352,7 +352,7 @@ predict_meta_fixed_o <- function(m, newdata, clustered=FALSE, negative_dose_resp
 # then remove them and return a model without
 # negatives.
 model_meta_fixed_o_non_negative <- function(data, o) {
-  negative_dose_responses <- model_meta_negative_dose_responses(data, o)
+  negative_dose_responses <- model_meta_get_negative_dose_responses(data, o)
   model_meta_fixed_o(data, o, negative_dose_responses)
 }
 
