@@ -249,13 +249,20 @@
 		data$in_era == 0
 	,]
 
-	# General Stats	
-	length(unique(to_remove$file))
-	length(unique(data$file))        		# 178 of 302 studies
-	length(unique(to_remove$Group.ID))
-	length(unique(data$Group.ID))  			# 4199 of 6810 groups
+	# Stats	
+  # Total
+  length(unique(data$file))          	# 302 studies
+  length(unique(data$Group.ID))       # 6810 groups
+  # from era website [1]              # 452,595 animals
+  
+  # [1]: http://www.bfs.de/en/bfs/forschung/era.html
+
+  # Stats
+  # (with) Individual level data
+	length(unique(data$file)) - length(unique(to_remove$file))      		# 124 studies
+	length(unique(data$Group.ID)) - length(unique(to_remove$Group.ID))  # 2611 groups
 	sum(to_remove$n, na.rm=T)			
-	nrow(data[data$Individual.ID != i,])	# 280 K of 500 K indiv	
+	length(unique(data$Individual.ID))	                                # 205,758 individuals
 
 	# Specific examples
 	head(s(unique(to_remove$file)))
@@ -468,70 +475,24 @@ external_studies <- c(
 	to_remove <- data[!subset,]
 	data <- data[subset,]
 	
-	# Quantify the loss
-	nrow(data); nrow(to_remove)		# Removed 96K of 230K individual
-	length(unique(to_remove$file))
-	length(unique(data$file))		# Removed 105 of 148 studies
-	length(unique(to_remove$Group.ID))
-	length(unique(data$Group.ID))	# Removed 1081 of 1530 groups
+	# Stats
+  # (with) external treatments
+  length(unique(data$file))		          # 43 studies
+  length(unique(data$Group.ID))         # 1081 groups
+  length(unique(data$Individual.ID))    # 118636 individuals
 
 	
 # Check Studies
 # I now have a reasonable list of 43 studies.  Its time that
 # I read about them a little more carefully to check that they
 # are valid and to see what I am working with.
-
-c(
-'lab_1002_study_1.csv', 'Lifespan study of 382 female dogs at ITEH exposed to xrays across a range of fractionations and intervals',
-'lab_1003_study_20.csv','Lifespan study of 11590 mice at ANL exposed to gamma and neutrons testing the effects of widely spaced small fractions vs accute exposures',
-'lab_1003_study_21.csv','Lifespan study of 3275 mice at ANL exposed to 20 minutes of gamma or neutron exposures of varying doses',
-'lab_1003_study_22.csv','Lifespan study of 8270 mice at ANL exposed once a week to gamma or neutron irradiation',
-'lab_1003_study_23.csv','Lifespan study of 1145 mice exposed almost continuously for 23 or 59 weeks to gamma or neutron irradiation',
-'lab_1003_study_24.csv','Lifespan study of 2735 mice exposed once a week for 60 weeks to gamma or neutron irradiation',
-'lab_1003_study_25.csv','Lifespan study of 1880 mice exposed once a week for the duration of their lives to gamma or neutron irradiation',
-'lab_1003_study_26.csv','Lifespan study of 5450 mice exposed once or more to cGy quantities of gamma or neutron irradiation'
-'lab_1003_study_27.csv','Lifespan study of 2645 mice or white footed feild mice exposed once or more fractions of gamma or neutron irradiation',
-'lab_1003_study_28.csv','Lifespan study of 600 mice or exposed to various protractions of neutron irradiation',
-'lab_1003_study_29.csv','Lifespan study of 7895 mice exposed once a week to gamma and neutron radiation at extremely low dose rates',
-'lab_1003_study_30.csv','Lifespan study of 4000 mice exposed to gamma and neutron radiation after receiving saline or radioprotector injections',
-'lab_1003_study_5.csv','Lifespan study of 276 beagle dogs exposed to gamma  radiation continuously until death at various dose rates, definitions lacking',
-'lab_1003_study_51.csv','Lifespan study of 298 beagle dogs exposed to gamma radiation in utero, definitions lacking',
-'lab_1003_study_52.csv','Lifespan study of 144 beagle dogs exposed to gamma radiation, definitions lacking',
-'lab_1003_study_54.csv','Lifespan study of 131 beagle dogs exposed to gamma radiation, definitions lacking',
-'lab_1003_study_55.csv','Lifespan study of 149 beagle dogs exposed to gamma radiation, definitions lacking',
-'lab_1003_study_6.csv','Lifespan study of 392 beagle dogs exposed to gamma radiation until death, definitions lacking',
-'lab_1003_study_7.csv','Lifespan study of 27 beagle dogs exposed to gamma radiation until death, definitions lacking'
-'lab_1005_study_47.csv','Lifespan studies of 209 beagle dogs conduted at ITRI, definitions lacking',
-'lab_1007_study_1.csv','Lifespan study of 4728 mice from two strains exposed once to varying total doses of gamma irradiation',
-'lab_1007_study_2.csv','Lifespan study of 2506 mice from two strains exposed once to varying total doses of gamma irradiation',
-'lab_1007_study_3.csv','Lifespan study of 17139 mice, mostly female, exposed once to varying total doses of gamma irradiation',
-'lab_1008_study_3.csv','Lifespan study of 1680 beagle dogs exposed to gamma irradiation at various stages in utero'
-'lab_11_study_1.csv','Lifespan study of 5387 rats of several strains exposed to xrays or neutrons, sometimes with ovarectomies or estrogen treatments',
-'lab_11_study_2.csv','Lifespan study of 6562 rats exposed to xrays, gamma rays, and neutrons sometimes with hormone treatments across several strains',
-'lab_2_study_1.csv','2632 Sprague-Dawley or Wistar rats used as controls for studies 2.02-2.16'
-'lab_2_study_10.csv','Life span studies of 543 Sprague-Dawley rats exposed to gamma irradiation at a variety of dose rates and total doses in order to determine the ddref'
-'lab_2_study_11.csv','Lifespan study of 1507 Sprague-Dawley rats exposed to gamma irradiation at a variety of ages and doses including low dose rates.'
-'lab_2_study_12.csv','Lifespan study of 2916 rats exposed to a variety of neutron sources, alpha particles and xrays with some chemical co-carcinogens'
-'lab_2_study_13.csv','Neutron exposures combined with several carcinogens'
-'lab_2_study_14.csv','Neutron or gamma ray exposure combined with several carcinogen treatments.'
-'lab_3_study_1.csv','Lifespan study of 1745 mice exposed to xray and neutron irradiation to develop RBE estimates.'
-'lab_3_study_2.csv','Lifespan study of 2714 mice exposed to single and fractoinated exposures of gamma rays or fission neutrons in order to estimate the relative biological effectiveness of various dose rates'
-'lab_3_study_3.csv','Lifespan study of 296 mice exposed to a single xray exposure at varying total doses'
-'lab_3_study_4.csv','Lifespan study of 2110 male mice exposed to xrays or fission neutrons at a variety of total doses'
-'lab_3_study_5.csv','Lifespan study of 2221 mice exposed to neutrons or xrays at various ages'
-'lab_3_study_6.csv','Lifespan study of 1398 mice exposed to xrays or fission neutrons'
-'lab_9_study_4.csv','Lifespan study of 4205 mice exposed to xrays and treated with various radio-protectors'
-'lab_9_study_5.csv','Lifespan study of 2908 mice exposed to gamma and neutron irradiation at a variety of total doses'
-'lab_9_study_6.csv','Lifespan study of 4469 mice exposed to gamma or neutron irradiation'
-'lab_9_study_7.csv','Lifespan study of 1261 mice exposed to xrays or neutrons at various ages',
-'lab_9_study_8.csv','Lifespan studies of 1035 male mice exposed to xrays and various carbontetrachloride compounds'
-)	
+# ...
+# done!
 
 # Save Results
 	setwd('~/janus')
 	saveRDS(data, 'data/external.rds', ascii = T, compress = F)
 	data <- readRDS('data/external.rds')
-
 
 
 # So I've gone through all the studies in my data set and I am 
@@ -1264,7 +1225,6 @@ c(
 # Prevoius analysis did not allow me to carefully check animals
 # that had recieved multiple treatments.  I will do that now.
 
-
 	# Libraries
 	library(plyr)
 
@@ -1683,6 +1643,7 @@ c(
 	janus$cluster <- paste0(janus$study.id, '-', 1)
 	janus$strain <- 'Mouse, B6CF1'
 	janus$strain[janus$species == 'Peromyscus'] <- 'leucopus'
+  janus$file <- janus$study.id
 	
 	#   strain (based on species)
 	# 	group.id <- study.id + cached_study.id 
@@ -1826,6 +1787,7 @@ beagle$cluster <- paste0(beagle$study.id, '-', 1)
 beagle$strain <- 'Dog, Beagle'
 beagle$species <- 'Dog'
 beagle$quality <- 'gamma-rays whole body'
+beagle$file <- beagle$study_id
 
 # Remove animals that died of un-natural causes
 natural_deaths <- c('Radiation',

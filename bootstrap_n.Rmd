@@ -1,0 +1,63 @@
+---
+title: "Bootstrap Factors in N"
+author: "Benjamin Haley"
+date: "September 9, 2014"
+output: html_document
+---
+
+## Why this experiment?
+I received an email asking if bootstrapped results became more significant as n increases.
+
+> I think you have have taught me enough that I can have an educated conversation about this stuff now.  I understand the merits of using a bootstrap method to estimate the sample mean and the variance within it. (In fact is make more sense the just "randomly"plugging unknowns into a statistical model)   Then using the overlap of the histograms to determine the probability the two populations are different.  However, In thinking about this I was given some pause.  There is no accounting for  number of observations which might be good because you can't "cheat" a pValue by increasing your N.  This has a downside as well, I think.  Two populations can exist that are different but very similar, using a standard T-Test making enough observations will allow you to be confident that there is a subtle difference but a true difference, whereas bootstrapping would never be able to lead you to this conclusions.  Thoughts?
+
+Here's an experiment to prove that they do.
+
+## The data
+Let's consider two normal variables, x and y, with different means and from each select a small sample size an a large sample size.
+
+
+```{r}
+# Seed the random values
+# so that the experiment behaves consistently
+set.seed(1)
+
+# Create the data
+x_small <- rnorm( n=5, mean=1)
+x_big   <- rnorm(n=10, mean=1)
+
+y_small <- rnorm( n=5, mean=0)
+y_big   <- rnorm(n=10, mean=0)
+```
+
+## T-test
+T test should show that a and b are different.  But this difference should be more significant when the sample size is larger.  Indeed it is.
+
+```{r}
+t.test(x=x_big, y=y_big, alternative="greater")$p.value       # p < 0.008151
+t.test(x=x_small, y=y_small, alternative="greater")$p.value   # p < 0.1061
+```
+
+## Bootstrap
+Bootstrap should have the same trend, a larger sample size results in more significance.
+
+```{r}
+bootstrap <- function(x, y, n=10000) {
+  x_is_bigger = c()
+  for(i in 1:n) {
+    mean_x <- mean(sample(x, replace=TRUE))
+    mean_y <- mean(sample(y, replace=TRUE))
+    x_is_bigger <- c(x_is_bigger, mean_x > mean_y)
+  }
+  p <- 1 - sum(x_is_bigger) / n
+  
+  p
+}
+
+bootstrap(x_small, y_small)  # p < 0.0541
+bootstrap(x_big, y_big)      # p < 0.0032
+```
+
+## Conclusions
+Why is bootstrap getting more significant with larger sample sizes?  The answer is in the [central limit theorem][1].  If you take more samples from a normal distribution their mean will tend to get closer to the true mean.  The same is true when you pull bootstrap sample sizes from a larger dataset.  The means tend to be closer together.
+
+[1]: https://en.wikipedia.org/wiki/Central_limit_theorem

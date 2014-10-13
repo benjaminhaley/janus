@@ -15,7 +15,7 @@ library(survival)
 library(directlabels)
 library(metafor)
 library(reshape2)
-
+library(xtable)
 
 # table0
 # Just like table, but show's NA's by default
@@ -100,16 +100,37 @@ confidence_interval <- function(x, likelihood, p=0.05) {
   lowest_acceptable_x <- min(x[likelihood > minimum_acceptable_likelihood])
   highest_acceptable_x <- max(x[likelihood > minimum_acceptable_likelihood])
   
-  # Round
-  # to prettify
-  most_likely_x <- round(most_likely_x, 1)
-  lowest_acceptable_x <- round(lowest_acceptable_x, 1)
-  highest_acceptable_x <- round(highest_acceptable_x, 1)
+  # Show
+  print(paste0(round(most_likely_x, 1),' (',
+               round(lowest_acceptable_x, 1),', ',
+               round(highest_acceptable_x, 1), ')'))
   
-  print(paste0(most_likely_x,' (',
-               lowest_acceptable_x,', ',
-               highest_acceptable_x, ')'))
-  c(lowest_acceptable_x, most_likely_x, highest_acceptable_x)
+  c(low=lowest_acceptable_x, 
+    middle=most_likely_x, 
+    high=highest_acceptable_x)
+}
+
+# Find a p value
+# Based on a value, v, in a set x with given likelihoods,
+# Find the p value of v.
+# This is highly related to the previous function
+significance <- function(v, x, likelihood) {
+  p <- 2 - 2*pnorm(log(max(likelihood)) - log(likelihood[which.closest(v, x)]))
+  
+  p
+}
+
+# Find the closest value in a list
+# e.g.
+#   closest(1.7, c(1, 2, 3)) == 2
+#
+# Default to the first item in the list in the case of ties
+#   closest(1.5, c(1, 2, 3)) == 1
+which.closest <- function(value, list) {
+  which.min(abs(list - value))
+}
+closest <- function(value, list) {
+  list[which.closest(value, list)]
 }
 
 
@@ -264,39 +285,75 @@ predict_meta <- function(m, newdata, clustered=FALSE){
   predict(m, newmods=newmods)$pred
 }
 
+# get negative dose responses
+#
+# Models should be limited to positive dose
+# responses if they are to fit to the linear
+# quadratic assumptoins.
+#
+# This list can be used to eliminate positive
+# responses from the design matrix
+model_meta_get_negative_dose_responses <- function(data, o) {
+  m <- model_meta_fixed_o(data, o)
+  negative_dose_responses <- names(coefficients(m)[coefficients(m) < 0 & grepl('dose', names(coefficients(m)))])
+  negative_dose_responses
+}
+
 # Model meta fixed o
 # As before, but with a fixed curvature.
-model_meta_fixed_o <- function(data, o){
+model_meta_fixed_o <- function(data, o, negative_dose_responses = c()){
   
   # Determine the formula
   # Stratify by cluster, or not
   formula <- ~ I(dose + o*dose^2 / (fractions))
   if(has_clusters(data)) {
-    formula <- ~ I(dose + o*dose^2 / (fractions)) * cluster}
+    formula <- ~ I(dose + o*dose^2 / (fractions)) * cluster - I(dose + o*dose^2 / (fractions))
+  }
   
+  # Determine mods
+  # We determine the model matrix ourselves
+  # in case any mods are to be excluded.
+  mods <- model.matrix(formula, data)
+  mods <- mods[,!colnames(mods) %in% negative_dose_responses]
+    
   rma(
     1/age,
     (1/age - 1/(age + sd))^2,
-    mods = formula,
+    mods = mods,
     data = data,
     method='ML'
   )
 }
-predict_meta_fixed_o <- function(m, newdata, clustered=FALSE){
+predict_meta_fixed_o <- function(m, newdata, clustered=FALSE, negative_dose_responses=c()){
 
   # Determine the formula
   # Stratify by cluster, or not
   formula <- ~ I(dose + o*dose^2 / (fractions))
   if(clustered) {
-    formula <- ~ I(dose + o*dose^2 / (fractions)) * cluster
+    formula <- ~ I(dose + o*dose^2 / (fractions)) * cluster - I(dose + o*dose^2 / (fractions))  
   }
  
-  newmods <- model.matrix(formula, data=newdata)
+  # Determine mods
+  # We determine the model matrix ourselves
+  # in case any mods are to be excluded.
+  newmods <- model.matrix(formula, newdata)
+  newmods <- newmods[,!colnames(newmods) %in% negative_dose_responses]
+  
   # Remove the intercept
   # because rma automatically adds it, and I can't get it to stop
   # confusing
   newmods <- newmods[,2:ncol(newmods)]
   predict(m, newmods=newmods)$pred
+}
+# Full model (meta, no negative coefficients)
+#
+# A simple wrapper function
+# First find the negative coefficients
+# then remove them and return a model without
+# negatives.
+model_meta_fixed_o_non_negative <- function(data, o) {
+  negative_dose_responses <- model_meta_negative_dose_responses(data, o)
+  model_meta_fixed_o(data, o, negative_dose_responses)
 }
 
 
