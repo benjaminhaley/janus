@@ -24,6 +24,11 @@ library(xtable)
 #   table0(NA) == c('<NA>'=1)
 table0 <- function(...) table(..., useNA='ifany')
 
+# n_unique
+# Numbe of unique items in a data frame.
+n_unique <- function(...) length(unique(paste(...))) 
+
+
 # ggsave_for_ppt
 # wrapper around ggsave to save plots with a good default size
 # and resolution for powerpoint presentations.
@@ -304,8 +309,8 @@ model_meta_get_negative_dose_responses <- function(data, o, ...) {
 model_meta_fixed_o <- function(data, 
                                o,
                                negative_dose_responses = c(),
-                               yi = 1/age,
-                               vi = (1/age - 1/(age + sd))^2){
+                               yi = 1/data$age,
+                               vi = (1/data$age - 1/(data$age + data$sd))^2){
   
   # Determine the formula
   # Stratify by cluster, or not

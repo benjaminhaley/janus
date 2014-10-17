@@ -77,7 +77,8 @@ opts_chunk$set(fig.width=10,
                warning=FALSE,
                message=FALSE,
                cache=TRUE,
-               results='asis')
+               results='asis',
+               root.dir = '~/janus/')
 ```
 
 
@@ -668,7 +669,7 @@ Visualize
 Now that the data is reasonably clean, show what it looks
 like.
 
-```{r, cache=FALSE}
+```{r}
 # Common
 setwd('~/janus')
 source('scripts/util/util.R') # http://goo.gl/VYzkAs
@@ -699,7 +700,7 @@ ggplot(d,
   expand_limits(x = -4) +
   theme(text = element_text(size = 10))
 
-ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/lifespan-density.png")
+ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/lifespan-density.png") 
 ```
 
 #### Figure: Lifespan by dose and cluster
@@ -734,7 +735,7 @@ ggplot(d,
   ) +
   expand_limits(x = -4) +
   theme(text = element_text(size = 10)) +
-  xlab("age (days)")
+  xlab("age (days)") 
 
 
 ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/survival.png")
@@ -748,7 +749,9 @@ This does not tell us anything new, I've included it because survival plots are 
 
 
 ```{r}
-n_unique <- function(...) length(unique(paste(...)))
+setwd('~/janus')
+source('scripts/util/util.R') # http://goo.gl/VYzkAs
+d <- readRDS('data/ddref.rds')
 
 g <- d %>%
   ungroup() %>%
@@ -787,7 +790,6 @@ median_survival <- comparables %>%
   summarize(median_survival = median(lifespan))
 comparables <- merge(comparables, median_survival) %>%
   arrange(lifespan)
-
 
 # Elaborate on the groups
 details <- comparables %>%
@@ -1499,54 +1501,54 @@ from storer 1979 (3575012.pdf).
 [grouped]: http://dl.dropbox.com/u/1131693/bloodrop/10b3_temp_png.png
 
 ```{r}
-# Common
-setwd('~/janus')
-source('scripts/util/util.R') # http://goo.gl/VYzkAs
-
-# Data
-data <- read.csv('data/storer_1979.csv', sep='\t')
-
-# Constants
-threshold_dose_to_model = 1.5001
-strain_to_model = 'RFM'
-sex_to_model = 'F'
-type_in_my_analysis = 'A'
-chronic_threshold_for_dose_rate = 0.1
-rate_to_fraction = c('6.9e-05'=Inf, '0.4'=1, '0.45'=1)
-chronic_to_letter = c('TRUE'='C', 'FALSE'='A')
-
-# Clean
-# Here we will:
-#   1. Define fractions, chronic, and type
-#   2. Combine acute exposures with the same treatment
-#      (see note above for a justification)
-#   3. Define which data is modeled
-data = data %>%
-  mutate(fractions = convert(rate, rate_to_fraction),
-         chronic = rate < chronic_threshold_for_dose_rate,
-         type = convert(chronic, chronic_to_letter)) %>%
-  group_by(dose, type, sex, fractions, strain) %>%
-  summarise(table=list_unique(table),
-            total_n=sum(n),
-            rate=mean(rate),
-            age= sum(age * n) / total_n,
-            sd= (sum(sd^2 * n) / total_n)^0.5) %>%
-  mutate(modeled_in_10B3 = dose < threshold_dose_to_model &
-                           strain == strain_to_model &
-                           sex == sex_to_model,
-         in_my_analysis = type == type_in_my_analysis,
-         n = total_n) %>%
-  select(-total_n) %>%
-  ungroup() %>%
-  group_by(sex, strain) %>%
-  mutate(control_age = age[dose == 0])
-
-# Save for later use
-write.csv0(data, 'data/storer_1979_processed.csv')
-
-m <- lq_model(data[data$modeled_in_10B3,])
-to_predict <- get_data_to_predict()
-to_predict$p <- predict(m, newdata=to_predict)
+# # Common
+# setwd('~/janus')
+# source('scripts/util/util.R') # http://goo.gl/VYzkAs
+# 
+# # Data
+# data <- read.csv('~/janus/data/storer_1979.csv', sep='\t')
+# 
+# # Constants
+# threshold_dose_to_model = 1.5001
+# strain_to_model = 'RFM'
+# sex_to_model = 'F'
+# type_in_my_analysis = 'A'
+# chronic_threshold_for_dose_rate = 0.1
+# rate_to_fraction = c('6.9e-05'=Inf, '0.4'=1, '0.45'=1)
+# chronic_to_letter = c('TRUE'='C', 'FALSE'='A')
+# 
+# # Clean
+# # Here we will:
+# #   1. Define fractions, chronic, and type
+# #   2. Combine acute exposures with the same treatment
+# #      (see note above for a justification)
+# #   3. Define which data is modeled
+# data = data %>%
+#   mutate(fractions = convert(rate, rate_to_fraction),
+#          chronic = rate < chronic_threshold_for_dose_rate,
+#          type = convert(chronic, chronic_to_letter)) %>%
+#   group_by(dose, type, sex, fractions, strain) %>%
+#   summarise(table=list_unique(table),
+#             total_n=sum(n),
+#             rate=mean(rate),
+#             age= sum(age * n) / total_n,
+#             sd= (sum(sd^2 * n) / total_n)^0.5) %>%
+#   mutate(modeled_in_10B3 = dose < threshold_dose_to_model &
+#                            strain == strain_to_model &
+#                            sex == sex_to_model,
+#          in_my_analysis = type == type_in_my_analysis,
+#          n = total_n) %>%
+#   select(-total_n) %>%
+#   ungroup() %>%
+#   group_by(sex, strain) %>%
+#   mutate(control_age = age[dose == 0])
+# 
+# # Save for later use
+# write.csv0(data, 'data/storer_1979_processed.csv')
+# 
+# m <- lq_model(data[data$modeled_in_10B3,])
+# to_predict <- get_data_to_predict()
+# to_predict$p <- predict(m, newdata=to_predict)
 ```
 
 #### Show
@@ -1562,17 +1564,17 @@ This is the original [10B3 figure][10B3-citation] from the beir VII report [beir
 ##### Reproduce 10B3
 This is my reproduction of 10B3 to prove that I am faithfully applying their methodology.
 ```{r}
-g <- data[with(data,
-    strain == 'RFM' &
-    sex == 'F' &
-    rate != 0.4
-),]
-ggplot(g, aes(dose, 1/age)) +
-  geom_text(size=5, aes(label=type, group=type)) +
-  geom_path(data=to_predict, aes(dose, p, group=type)) +
-  scale_y_continuous(breaks = 0.0002*0:4+0.0016)
-
-ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/beir-10b3-reproduction.png")
+# g <- data[with(data,
+#     strain == 'RFM' &
+#     sex == 'F' &
+#     rate != 0.4
+# ),]
+# ggplot(g, aes(dose, 1/age)) +
+#   geom_text(size=5, aes(label=type, group=type)) +
+#   geom_path(data=to_predict, aes(dose, p, group=type)) +
+#   scale_y_continuous(breaks = 0.0002*0:4+0.0016)
+# 
+# ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/beir-10b3-reproduction.png")
 ```
 
 ### Results
@@ -1704,7 +1706,7 @@ setwd('~/janus')
 source('scripts/util/util.R') # http://goo.gl/VYzkAs
 
 # Data
-data <- read.csv('data/lss14/lss14_spruced_up.csv')
+data <- read.csv('~/janus/data/lss14/lss14_spruced_up.csv')
 
 # Constants
 graphable_threshold = 2.0
@@ -1771,7 +1773,6 @@ This is the original [10-2 figure][10-2-citation] from the beir VII report.
 [10-2-citation]: http://www.nap.edu/openbook.php?record_id=11340&page=248
 [10-2-image]: http://dl.dropbox.com/u/1131693/bloodrop/10-2.jpg
 
-
 ##### Reproduce 10-2
 This is my attempt to reproduce 10-2 to prove that I am faithfully applying their methodology.
 ```{r}
@@ -1782,8 +1783,8 @@ lm_smooth <- function(...) geom_smooth(method='lm',
                                        fullrange=TRUE,
                                        ...)
 
-ggplot(data=aggregate %.% filter(dose <= modelable_threshold),
-       aes(dose, err)) +
+data <- aggregate[aggregate$dose <= modelable_threshold,]
+ggplot(data, aes(dose, err)) +
   lm_smooth(formula='y ~ x - 1') +
   lm_smooth(formula='y ~ I(x + 0.3*x^2) - 1') +
   lm_smooth(formula='y ~ I(x + 0.7*x^2) - 1') +
@@ -1851,7 +1852,7 @@ ggplot(data %>% filter(dose < 1.5), aes(dose, err)) +
   scale_x_continuous(breaks = c(0:4)/2) +
   geom_pointrange(data=data,
                   aes(ymax=err + 2*sd, ymin=err - 2*sd)) +
-  coord_cartesian(xlim=c(-0.1,2.1), ylim=c(-0.1,1.6))
+  coord_cartesian(xlim=c(-0.1,2.1), ylim=c(-0.1,1.6)) 
 
 ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/figure-10-2-reproduction.png")
 ```
@@ -1877,7 +1878,7 @@ Erroneously, these fits are from unweighted regression where each point counts e
 # Data
 data_to_model <- data %>%
   # < 1.5 Sv of exposure
-  filter(dose < 1.5)
+  filter(dose < 1.5) 
 
 # Model
 modeler <- function(data, o) glm(err ~ I(dose + o*dose^2),
@@ -2433,8 +2434,8 @@ Unsurprisingly, uncertainty grows larger when a meta-analyisis is applied.
 
 
 ```{r}
-. <- confidence_interval(beir_r$o, beir_r$l, 0.05)
-. <- confidence_interval(my_r$o, my_r$l, 0.05)
+. <- confidence_interval(beir_r$o, beir_r$l, 0.05)  # "1.4 (0.5, 6)"
+. <- confidence_interval(my_r$o, my_r$l, 0.05)      # "1.4 (0.3, 6)"
 ```
 
 #### Confidence
@@ -2647,6 +2648,7 @@ ggplot(r, aes(o, l, color=analysis, alpha=analysis)) +
   coord_cartesian(ylim=c(-0.1, 1.2)) +
   xlab("θ (~ DDREF.lss - 1)") + 
   ylab("likelihood")
+
 ```
 
 #### Figure animal carcinogenesis data with meta anlaysis
@@ -2705,9 +2707,10 @@ ggplot(data,
 ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/beir-10b2-meta.png")
 
 # confidence intervals
-. <- confidence_interval(likelihoods$o, likelihoods$l, 0.05)
+. <- confidence_interval(likelihoods$o, likelihoods$l, 0.05) 
 
 # save likelihoods for use in 10B4 meta
+setwd('~/janus')
 write.csv0(likelihoods, 'data/10B2_meta_likelihoods.csv')
 ```
 
@@ -3803,7 +3806,7 @@ Visualize 2
 Now that the data is reasonably clean, show what it looks
 like.
 
-```{r, cache=FALSE}
+```{r}
 # Common
 setwd('~/janus')
 source('scripts/util/util.R') # http://goo.gl/VYzkAs
