@@ -293,15 +293,19 @@ predict_meta <- function(m, newdata, clustered=FALSE){
 #
 # This list can be used to eliminate positive
 # responses from the design matrix
-model_meta_get_negative_dose_responses <- function(data, o) {
-  m <- model_meta_fixed_o(data, o)
+model_meta_get_negative_dose_responses <- function(data, o, ...) {
+  m <- model_meta_fixed_o(data, o, ...)
   negative_dose_responses <- names(coefficients(m)[coefficients(m) < 0 & grepl('dose', names(coefficients(m)))])
   negative_dose_responses
 }
 
 # Model meta fixed o
 # As before, but with a fixed curvature.
-model_meta_fixed_o <- function(data, o, negative_dose_responses = c()){
+model_meta_fixed_o <- function(data, 
+                               o,
+                               negative_dose_responses = c(),
+                               yi = 1/age,
+                               vi = (1/age - 1/(age + sd))^2){
   
   # Determine the formula
   # Stratify by cluster, or not
@@ -317,11 +321,12 @@ model_meta_fixed_o <- function(data, o, negative_dose_responses = c()){
   mods <- mods[,!colnames(mods) %in% negative_dose_responses]
     
   rma(
-    1/age,
-    (1/age - 1/(age + sd))^2,
+    yi,
+    vi,
     mods = mods,
     data = data,
-    method='ML'
+    method='ML',
+    control=list(maxiter=1000, threshold=10e-12)
   )
 }
 predict_meta_fixed_o <- function(m, newdata, clustered=FALSE, negative_dose_responses=c()){
@@ -351,10 +356,16 @@ predict_meta_fixed_o <- function(m, newdata, clustered=FALSE, negative_dose_resp
 # First find the negative coefficients
 # then remove them and return a model without
 # negatives.
-model_meta_fixed_o_non_negative <- function(data, o) {
-  negative_dose_responses <- model_meta_get_negative_dose_responses(data, o)
-  model_meta_fixed_o(data, o, negative_dose_responses)
+model_meta_fixed_o_non_negative <- function(data, o, ...) {
+  negative_dose_responses <- model_meta_get_negative_dose_responses(data, o, ...)
+  model_meta_fixed_o(data, o, negative_dose_responses, ...)
 }
+
+
+
+
+
+
 
 
 # Fake data to predict across

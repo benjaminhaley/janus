@@ -43,8 +43,8 @@ Table of contents
   - [DDREF ambivilance](#ddref_ambivilance) - Why we need to restrict the linear quadratic model to positive coefficients if we are going to use DDREF.
   - [10B3 with metaregression](#10B3-meta) - Reproduce dose response figure applying the principals of meta-regression and postive coefficients.
   - [10B4 with metaregression](#10B4-meta) - Reproduce profile likelihood figure applying the principals of meta-regression and postive coefficients.
-  - [10B3 metareression on all data](#10B3-meta-all) Apply meta regression with positive coefficients to all of the datasets.
-  - [10B4 metaregression on all data](#10B4-meta-all) Apply meta regression with positive coefficients to all of the datasets to generate profiles.
+  - [10B3 metareression on all lifespan data](#10B3-meta-all) Apply meta regression with positive coefficients to all of the lifespan datasets.
+  - [10B4 metaregression on all lifespan data](#10B4-meta-all) Apply meta regression with positive coefficients to all of the lifespan datasets to generate profiles.
 
 **Supplemental**
 
@@ -52,6 +52,8 @@ Table of contents
   - [10B4 with only acute data](#10B4-with-only-acute-data) reproduce lifespan analysis using only the acute data which is available as individual level data.
   - [Metaregression](#metaregression) - Show the principals of
   metaregression.
+  - [Metaregression vs OLS](#meta_regression_vs_normal_regression) - Show that meta-regression will always be more conservative (higher uncertainty estimates) than OLS analysis
+
   
 ** New anlaysis **
   - [Data Funnel 2](#data_funnel_2) - Which data will we analyze?
@@ -1875,12 +1877,10 @@ Erroneously, these fits are from unweighted regression where each point counts e
 # Data
 data_to_model <- data %>%
   # < 1.5 Sv of exposure
-  filter(dose < 1.5) %>%
-  # Prevent sd from ever equalling 0 (to allow 1/sd to work)
-  mutate(sd = sd + 0.00001)
+  filter(dose < 1.5)
 
 # Model
-modeler <- function(data, o) glm(err ~ I(dose + o*dose^2) - 1,
+modeler <- function(data, o) glm(err ~ I(dose + o*dose^2),
                                  data=data,
                                  weights=1/sd^2)
 likelihoods <- get_likelihoods(data_to_model, modeler)
@@ -1920,7 +1920,7 @@ This is the original [10-2 table][table-10-2-citation] from the beir VII report 
 Reproduce confidence intervals from my lss profile likelihood curve reproductions, to provide quantitiave evidence that I am faithfully applying the same methodology.
 
 ```{r}
-# is        "0.3 (-0.2, 1.7)"
+# is        "0.3 (-0.2, 1.4)"
 # should be "0.3 (-0.1, 1.5)"
 . <- confidence_interval(likelihoods$o, likelihoods$l, 0.05)
 ```
@@ -2467,21 +2467,13 @@ aggregate <- aggregate %>%
          vi = (1/age - 1/(age + sd))^2) %>%
   arrange(cluster)
 
-# Fine likelihood by o
-likelihoods <- get_likelihoods(aggregate, 
-                               model_meta_fixed_o_non_negative,
-                               o_range = seq(0, 6, by=0.01))
-
-# Find best theta (o) value
-o = with(likelihoods, o[which.max(l)])
-print(o)
-
-
-
-# Fine likelihood by o
+# Find likelihood by o
 likelihoods <- get_likelihoods(aggregate, 
                                model_meta_fixed_o_non_negative,
                                o_range = seq(-2, 6, by=0.01))
+
+# Save them for later use
+write.csv0(likelihoods, 'data/10B2_meta_fits.csv')
 
 # Find best theta (o) value
 o = with(likelihoods, o[which.max(l)])
@@ -2597,11 +2589,206 @@ DDREF from animal data now includes 1 in the 95% confidence interval.
 ^ back to [table of contents](#contents)
 
 
-TODO: show meta regression when DDREF is constrained to a fixed value (after finding
-      the appropriate value below
+__________________________________________________________________
 
-TODO: show how fits look on all data when DDREF is constrained to a fixed value
-      can we actually fit the curves?
+<a name="10B2_meta"></a>
+
+Reproduce BEIR 10B2 using meta model with postive coefficients
+========================================================
+*Last update: October 2014*
+
+Apply the new model, meta-regression with positive dose response coefficients to carcinogenesis data from animals.
+
+```{r}
+# Common
+setwd('~/janus')
+source('scripts/util/util.R') # http://goo.gl/VYzkAs
+
+# Data
+data <- read.csv('data/edwards_1992.csv', sep='\t')
+data_10B2_likelihoods <- read.csv('data/10B2_fits.csv')
+
+
+# Apply selection criteria
+data <- data %>%
+  filter(protraction == 'Acute',
+         !is.na(risk),
+         dose <= 2.0) %>%
+  mutate(cluster = as.factor(facet),
+         fractions = 1)
+
+# Fit a linear quadratic model to each facet
+data <- ddply(data, .(facet), function(df){
+  model <- lm(risk ~ dose + I(dose^2), df, weights=(1/error^2))
+  df$seperate_prediction <- predict(model)
+  df
+})
+
+# Define the model
+# This is just like the meta regression lifespan model
+# except that the outcome is risk and the variances are error^2
+model_meta_10B2 <- function(data, o) {
+  model_meta_fixed_o_non_negative(data, o, yi=data$risk, vi=(data$error^2))
+}
+
+# Fit models to all data
+likelihoods <- get_likelihoods(data, model_meta_10B2)
+
+# Show the results
+r <- rbind(
+  data_10B2_likelihoods %>% mutate(analysis="original"),
+  likelihoods %>% mutate(analysis="meta analysis"))
+
+ggplot(r, aes(o, l, color=analysis, alpha=analysis)) +
+  geom_path() +
+  scale_y_continuous(breaks = c(0:5)/5) +
+  scale_alpha_manual(values=c(0.7, 0.5), guide=FALSE) +
+  scale_color_manual(values=c('red', 'black'), guide = guide_legend(title = "analysis")) +
+  coord_cartesian(ylim=c(-0.1, 1.2)) +
+  xlab("θ (~ DDREF.lss - 1)") + 
+  ylab("likelihood")
+```
+
+#### Figure animal carcinogenesis data with meta anlaysis
+Note how uncertainty increases and the plausible values include values less than zero now.
+
+```{r}
+
+# Find the most likely curvature
+o = with(likelihoods, o[which.max(l)])
+print(o)
+
+# Make predictions for most likely model
+negative_dose_responses <- 
+  model_meta_get_negative_dose_responses(data, 
+                                         o, 
+                                         yi=data$risk,
+                                         vi=(1/data$error^2))
+m <- model_meta_fixed_o(data, 
+                        o, 
+                        negative_dose_responses, 
+                        yi=data$risk, 
+                        vi=(1/data$error^2))
+data$single_prediction <- predict_meta_fixed_o(m,
+                                               newdata=data,
+                                               clustered=TRUE,
+                                               negative_dose_responses)
+
+# Plot a reproduction of 10B2
+ggplot(data,
+       aes(x=dose,
+           y=risk,
+           ymin=risk - error*2,
+           ymax=risk + error*2, 32)) +
+  geom_point(aes(shape=source)) +
+  geom_pointrange(aes(ymin=risk - error*2, ymax=risk)) +
+  geom_pointrange(aes(ymin=risk, ymax=risk + error*2)) +
+  geom_smooth(aes(x=dose, y=seperate_prediction),
+              method="lm",
+              formula = "y ~ x + I(x^2)",
+              fullrange=TRUE,
+              color='black') +
+  geom_smooth(aes(x=dose, y=single_prediction),
+              method="lm",
+              formula = "y ~ x + I(x^2)",
+              fullrange=TRUE,
+              color='black',
+              linetype='dotted') +
+  facet_wrap(~ facet + cancer + sex + strain + species,
+             scales='free_y',
+             ncol=3) +
+  xlim(0, 2) +
+  xlab("Dose (Gy)") +
+  ylab("Risk %")
+# TODO compare this to the original results
+
+ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/beir-10b2-meta.png")
+
+# confidence intervals
+. <- confidence_interval(likelihoods$o, likelihoods$l, 0.05)
+
+# save likelihoods for use in 10B4 meta
+write.csv0(likelihoods, 'data/10B2_meta_likelihoods.csv')
+```
+
+#### Figure: 10B2 reproduction with meta regression
+The fit is similar, with some small differences.
+
+
+
+
+___________________________________________________________________
+
+<a name="10-3-lss-meta"></a>
+
+Fit atomic bomb survivor data with a meta regression model
+========================================================
+*Last update: October 2014*
+
+Similar to BEIR 10-3 reproduced above, but applying a meta regression model to the analysis.
+
+```{r}
+# Common
+setwd('~/janus')
+source('scripts/util/util.R') # http://goo.gl/VYzkAs
+
+# Data
+data <- read.csv('data/10-2.csv')  # a reproduction of BEIR 10-2
+
+# Filter data
+data <- data %>%
+  # < 1.5 Sv of exposure
+  filter(dose < 1.5) %>%
+  # add fractions so we can re-use our old models
+  mutate(fractions=1)
+
+# Define the model
+# This is just like the meta regression lifespan model
+# except that the outcome is err and the variance are sd^2
+model_meta_10_3 <- function(data, o) {
+  model_meta_fixed_o_non_negative(data, o, yi=data$err, vi=data$sd^2)
+}
+likelihoods <- get_likelihoods(data, model_meta_10_3, o_range = seq(-2, 6, by=0.01))
+# TODO: fix vi in previous model
+# @here
+
+# save for later
+setwd('~/janus')
+write.csv0(likelihoods, file='data/10-3-lss-meta.csv')
+
+# Show
+ggplot(likelihoods, aes(o, l)) +
+  geom_path(linetype='dotdash') +
+  scale_y_continuous(breaks = c(0, 0.5, 1.0, 1.5), limits=c(0,1.5))
+
+# Save
+ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/figure-10-2-meta.png")
+
+# Report confidence
+# was       "0.3 (-0.2, 1.7)"
+#  is       "0.2 (-0.1, 1)"
+. <- confidence_interval(likelihoods$o, likelihoods$l, 0.05)
+
+```
+
+#### BEIR 10-3 meta
+We become even more confident that the atomic bomb survivor data is only very slightly curved.
+
+^ back to [table of contents](#contents)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3599,6 +3786,11 @@ write.csv0(d,file='data/protraction.csv')
 ### Results
 Data is so fresh and so clean.
 
+
+^ back to [table of contents](#contents)
+
+
+
 ________________________________________________________
 
 <a name="visual_concordance_2"></a>
@@ -3897,31 +4089,82 @@ Basically cell studies confirm the idea that DDREF is likely to be quite small. 
 [a_b_illustration]: http://dl.dropbox.com/u/1131693/bloodrop/alpha_beta.jpg
 [late responders]: https://www.inkling.com/read/radiobiology-for-the-radiologist-hall-giaccia-7th/chapter-24/early--and-late-responding
 
-
-
+^ back to [table of contents](#contents)
 
 __________________________________________________________________
 
-<a name="DDREF_derived_from_cells"></a>
+<a name="meta_regression_vs_normal_regression"></a>
 
-Cohen's D
+Meta Regression vs Normal Regression
 ========================================================
 *Last Update: October 2014*
 
-To compare effect sizes between studies which measure different outcomes (lifeshortening in humans, life shortening in mice, cancer rates in mice) we need a common outcome.
-
-What happens if we apply cohen's D to to the data?  Is it reasonable?
+Re-running my analysis with meta regression instead of ols I was surprised to find that the profile likelihood curves were becomming more confident with the meta regression technique.  I'd like to get an intuition for that by playing around with it.
 
 ```{r}
 # Common
 setwd('~/janus')
 source('scripts/util/util.R') # http://goo.gl/VYzkAs
 
-# Data
-setwd('~/janus')
-d <- readRDS('data/protraction.rds')
+set.seed(1)
+data <- data.frame(
+    x = 1:10,
+    y = rnorm(n=10, mean=1:10, sd=1),
+    sd = 1)
 
+slope_range = (0:200)/100
+delta = slope_range[2] - slope_range[1]
+
+linear_model <- function(slope, data) {
+  glm(y - I(slope * x) ~ 1, data=data)
+}
+meta_model <- function(method="ML", sd_multiplier=1) {
+  function(slope, data) {
+    rma(
+      yi = data$y - data$x * slope,
+      vi = (data$sd * sd_multiplier)^2,
+      mods = ~ 1,
+      data = data,
+      method=method
+    )  
+  }
+}
+meta_model_true_sd <- meta_model()
+meta_model_optimistic_sd <- meta_model(sd_multiplier = 0.1)
+meta_model_pessimistic_sd <- meta_model(sd_multiplier = 10)
+meta_model_maximum_likelihood <- meta_model()
+
+get_profile <- function(modeler, range=slope_range, d=data) {
+  profile <- ldply(range, function(slope) {
+    model <- modeler(slope, d)
+    data.frame(
+      slope=slope,
+      log_likelihood = logLik(model)
+    )
+  })
+  profile$likelihood = normalize_likelihood(profile$log_likelihood, delta)
+
+  profile
+}
+
+profile <- rbind(
+  get_profile(linear_model) %>% mutate(model = 'linear'),
+  get_profile(meta_model_true_sd) %>% mutate(model = 'random effects'),
+  get_profile(meta_model_optimistic_sd) %>% mutate(model = 'optimistic sd'),
+  get_profile(meta_model_pessimistic_sd) %>% mutate(model = 'pessimistic sd')
+)
+
+ggplot(profile, aes(slope, likelihood)) + geom_path() + facet_grid(~ model)
 ```
 
-... WIP ...
+#### Results
+My heart is at ease.  My intuitive expectations play out quite well.
 
+- **Optimistic standard deviations do not fool meta regression** this is why "optimistic sd"" is no more confident than linear model.  Basically meta analysis added uncertainty to the optimistic standard deviations until they became as high as that estimated by linear regression.
+- **High measured standard deviations are not tricked by good fits.**  They default to the measured standard, which is why the random effects and pessimistic sd models appear less certain than the linear model.
+
+So for the sake of my analysis, it appears that the meta-regression analysis has not contributed much.  Still it shouldn't be that the atomic bomb survivor fit grows more likely with meta analysis.  It should never become more likely.  I will have to investigate that more carefully.
+
+^ back to [table of contents](#contents)
+
+__________________________________________________________________
