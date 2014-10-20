@@ -41,10 +41,12 @@ Table of contents
   - [Reproduce BEIR 10B4](#10B4) - Show that we can reproduce the likelihood profiles from animal data in BEIR VII.
   - [Use all data](#all-data) - Fit 1/lifespan models on all of the data then update profile curves.
   - [DDREF ambivilance](#ddref_ambivilance) - Why we need to restrict the linear quadratic model to positive coefficients if we are going to use DDREF.
-  - [10B3 with metaregression](#10B3-meta) - Reproduce dose response figure applying the principals of meta-regression and postive coefficients.
+  - [10B3 with metaregression](#10B3-meta) - Reproduce dose response figure applying the principals of meta-regression and positive coefficients.
   - [10B4 with metaregression](#10B4-meta) - Reproduce profile likelihood figure applying the principals of meta-regression and postive coefficients.
   - [10B3 metareression on all lifespan data](#10B3-meta-all) Apply meta regression with positive coefficients to all of the lifespan datasets.
   - [10B4 metaregression on all lifespan data](#10B4-meta-all) Apply meta regression with positive coefficients to all of the lifespan datasets to generate profiles.
+  - [Animal profiles after meta-regression](#animal-profiles-meta) Determine the profile likelihood function from lifespan and carcinogenesis animal data combined when meta-regression with positive coefficients is applied to the data.
+  - [Profiles after meta-regression](#profiles-meta) Determine the profile likelihood function for all data, human, animal, and combined when meta-regression with positive coefficients is applied to the data.
 
 **Supplemental**
 
@@ -53,9 +55,13 @@ Table of contents
   - [Metaregression](#metaregression) - Show the principals of
   metaregression.
   - [Metaregression vs OLS](#meta_regression_vs_normal_regression) - Show that meta-regression will always be more conservative (higher uncertainty estimates) than OLS analysis
+  - [Lifespan vs Inverse lifespan](#lifespan_vs_inverse_lifespan) - Does taking the inverse of lifespan distort curvature substantially?  No, not over the range we care about.
+
+
 
   
-** New anlaysis **
+**New anlaysis**
+
   - [Data Funnel 2](#data_funnel_2) - Which data will we analyze?
   - [Data Cleaning 2](#cleaning_2) - Damn, data, you look good!
   - [Visualize 2](#visual_concordance_2) - Show what the data looks like.
@@ -1466,7 +1472,7 @@ ggplot(data,
 ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/beir-10b2-reproduction.png")
 
 # save fits for use in 10B4
-write.csv0(fits, 'data/10B2_fits.csv')
+write.csv0(fits, 'data/animal_carcinogenesis_likelihoods.csv')
 ```
 
 #### Figure: 10B2 reproduction
@@ -1614,7 +1620,7 @@ source('scripts/util/util.R') # http://goo.gl/VYzkAs
 
 # Data
 data <- read.csv('data/storer_1979_processed.csv')
-data_10B2 <- read.csv('data/10B2_fits.csv')
+data_10B2 <- read.csv('data/animal_carcinogenesis_likelihoods.csv')
 
 beir_r <- get_likelihoods(data %>% filter(modeled_in_10B3), fixed_o_model)
 beir_r <- beir_r %>%
@@ -1634,7 +1640,7 @@ data = data %>%
   select(-l, -likelihood)
 
 # save for later
-write.csv0(data, file='data/10B4.csv')
+write.csv0(data, file='data/animal_likelihoods.csv')
 ```
 
 #### Show
@@ -1947,7 +1953,7 @@ source('scripts/util/util.R') # http://goo.gl/VYzkAs
 
 # Data
 data_lss <- read.csv('data/10-3-lss.csv')
-data_animal <- read.csv('data/10B4.csv')
+data_animal <- read.csv('data/animal_likelihoods.csv')
 
 # Rename likelihood columns
 # so we can distiguish between sources
@@ -2152,7 +2158,7 @@ However, we see some glimmers of hope.  While we can't trust these fits outright
 # Merge with previous data
 setwd('~/janus')
 
-tenb4 <- read.csv('data/10B4.csv')
+tenb4 <- read.csv('data/animal_likelihoods.csv')
 
 r <- rbind(
   tenb4 %>%
@@ -2447,7 +2453,7 @@ ________________________________________________________________________
 
 <a name="10B3-meta-all"></a>
 
-Meta-regression on all data
+Meta-regression on all lifespan data
 ========================================================
 *Last update: October 2014*
 
@@ -2474,7 +2480,7 @@ likelihoods <- get_likelihoods(aggregate,
                                o_range = seq(-2, 6, by=0.01))
 
 # Save them for later use
-write.csv0(likelihoods, 'data/10B2_meta_fits.csv')
+write.csv0(likelihoods, 'data/animal_lifespan_all_data_meta_likelihoods.csv')
 
 # Find best theta (o) value
 o = with(likelihoods, o[which.max(l)])
@@ -2553,7 +2559,7 @@ Analagous to figure 10B3 from BEIR VII we see ordinary linear quadratic models (
 ```{r}
 # Merge with previous data
 setwd('~/janus')
-tenb4 <- read.csv('data/10B4.csv')
+tenb4 <- read.csv('data/animal_likelihoods.csv')
 
 r <- rbind(
   tenb4 %>%
@@ -2607,7 +2613,7 @@ source('scripts/util/util.R') # http://goo.gl/VYzkAs
 
 # Data
 data <- read.csv('data/edwards_1992.csv', sep='\t')
-data_10B2_likelihoods <- read.csv('data/10B2_fits.csv')
+data_10B2_likelihoods <- read.csv('data/animal_carcinogenesis_likelihoods.csv')
 
 
 # Apply selection criteria
@@ -2711,13 +2717,11 @@ ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/beir-10b2-met
 
 # save likelihoods for use in 10B4 meta
 setwd('~/janus')
-write.csv0(likelihoods, 'data/10B2_meta_likelihoods.csv')
+write.csv0(likelihoods, 'data/animal_carcinogenesis_meta_likelihoods.csv')
 ```
 
 #### Figure: 10B2 reproduction with meta regression
 The fit is similar, with some small differences.
-
-
 
 
 ___________________________________________________________________
@@ -2737,6 +2741,7 @@ source('scripts/util/util.R') # http://goo.gl/VYzkAs
 
 # Data
 data <- read.csv('data/10-2.csv')  # a reproduction of BEIR 10-2
+original_likelihoods <- read.csv('data/10-3-lss.csv')
 
 # Filter data
 data <- data %>%
@@ -2752,48 +2757,215 @@ model_meta_10_3 <- function(data, o) {
   model_meta_fixed_o_non_negative(data, o, yi=data$err, vi=data$sd^2)
 }
 likelihoods <- get_likelihoods(data, model_meta_10_3, o_range = seq(-2, 6, by=0.01))
-# TODO: fix vi in previous model
-# @here
 
 # save for later
 setwd('~/janus')
 write.csv0(likelihoods, file='data/10-3-lss-meta.csv')
 
+# Combine with original anlaysis
+r <- rbind(
+  original_likelihoods %>% mutate(analysis="original"),
+  likelihoods %>% mutate(analysis="new analysis:\n  meta regression\n  positive coefficients"))
+
 # Show
-ggplot(likelihoods, aes(o, l)) +
-  geom_path(linetype='dotdash') +
-  scale_y_continuous(breaks = c(0, 0.5, 1.0, 1.5), limits=c(0,1.5))
+ggplot(r, aes(o, l, color=analysis, alpha=analysis)) +
+  geom_path() +
+  scale_y_continuous(breaks = c(0:5)/5) +
+  scale_alpha_manual(values=c(0.7, 0.5), guide=FALSE) +
+  scale_color_manual(values=c('red', 'black'), guide = guide_legend(title = "analysis")) +
+  coord_cartesian(ylim=c(-0.1, 1.2)) +
+  xlab("θ (~ DDREF.lss - 1)") + 
+  ylab("likelihood")
 
 # Save
 ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/figure-10-2-meta.png")
 
 # Report confidence
-# was       "0.3 (-0.2, 1.7)"
-#  is       "0.2 (-0.1, 1)"
+# was       "0.2 (-0.2, 1.4)"
+#  is       "0.3 (-0.1, 1.4)"
+. <- confidence_interval(original_likelihoods$o, original_likelihoods$l, 0.05)
 . <- confidence_interval(likelihoods$o, likelihoods$l, 0.05)
 
 ```
 
 #### BEIR 10-3 meta
-We become even more confident that the atomic bomb survivor data is only very slightly curved.
+Surprised to see that the profile likelhiood became slightly more confident in a slightly higher curvature.  I would have thought meta-regression would have increased uncertainty.  No theories on why.
 
 ^ back to [table of contents](#contents)
 
 
+________________________________________________________________
+
+<a name="animal-profiles-meta"></a>
+
+Animal data profiles after meta-regression
+========================================================
+*Last update: October 2014*
+
+Combine carcinogenesis and lifespan profile estimates from animal studies using meta regression with positive dose response coefficients.
+
+```{r}
+
+# Common
+setwd('~/janus')
+source('scripts/util/util.R') # http://goo.gl/VYzkAs
+
+# Data
+original_animal <- read.csv('data/animal_likelihoods.csv')
+meta_animal_carcinogenesis <- 
+  read.csv('data/animal_carcinogenesis_meta_likelihoods.csv')
+meta_animal_lifespan_all_data <- 
+  read.csv('data/animal_lifespan_all_data_meta_likelihoods.csv')
+
+# Determine mean
+meta_combined   <- meta_animal_lifespan_all_data
+meta_combined$l <- (meta_animal_lifespan_all_data$l +
+                    meta_animal_carcinogenesis$l) / 2
+
+# Organize data
+data <- rbind(
+  # Original Data
+  with(original_animal, data.frame(o, 
+                                   l=mean, 
+                                   source='mean', 
+                                   analysis='original' )),
+  with(original_animal, data.frame(o, 
+                                   l=tumor, 
+                                   source='tumor', 
+                                   analysis='original' )),
+  with(original_animal, data.frame(o, 
+                                   l=lifespan, 
+                                   source='lifespan', 
+                                   analysis='original' )),
+  
+  # New analysis
+  meta_combined %>% mutate(source='mean',
+                           analysis='new:\n  meta-regression\n  positive constraints'), 
+  meta_animal_carcinogenesis %>% mutate(source='tumor',
+                                        analysis='new:\n  meta-regression\n  positive constraints'),
+  meta_animal_lifespan_all_data %>% mutate(source='lifespan',
+                                           analysis='new:\n  meta-regression\n  positive constraints')
+)
+
+# Save for later
+write.csv0(data, 'data/original_and_meta_animal_likelihoods.csv')
+
+ggplot(data, aes(o, l, linetype=source, color=analysis)) +
+  geom_path() +
+  scale_linetype_manual(values=c('dotted', 'dotdash', 'solid')) +
+  scale_color_manual(values=c('black', 'red'), guide = guide_legend(title = "analysis")) +
+  xlab("θ (~ DDREF.lss - 1)") + 
+  ylab("likelihood") + 
+  scale_y_continuous(breaks = c(0, 0.5, 1, 1.5)) +
+  coord_cartesian(ylim=c(-0.1, 1.5)) +
+  facet_wrap(~ analysis, nrow=2)
+
+ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/animal_profiles_with_meta_regression.png")
+
+# was        "0.4 (0.1, 3.5)"
+. <- confidence_interval(original_animal$o, original_animal$mean, 0.05)
+# is         "0.5 (0.1, 3.2)"
+. <- confidence_interval(meta_combined$o, meta_combined$l, 0.05)
+```
+
+#### Results
+The new model pushes the uncertainy bounds downward slightly.  Now zero (no curvature) is a plausiable value.
+
+^ back to [table of contents](#contents)
+
+___________________________________________________________________
 
 
 
+<a name="profiles-meta"></a>
+
+Profiles after meta-regression
+========================================================
+*Last update: June 2014*
+
+Combine human and animal curves from the new analysis that used meta-regression restricted to positive coefficients.
+
+```{r}
+# Common
+setwd('~/janus')
+source('scripts/util/util.R') # http://goo.gl/VYzkAs
+
+# Data
+original <- read.csv('data/10-3.csv')
+lss_meta <- read.csv('data/10-3-lss-meta.csv')
+animal_meta <- read.csv('data/original_and_meta_animal_likelihoods.csv') %>%
+  filter(analysis == 'new:\n  meta-regression\n  positive constraints',
+         source == 'mean')
+
+# Find the combined posterior
+# (by baysian update)
+delta = lss_meta$o[2] - lss_meta$o[1]
+combined_meta <- lss_meta %>%
+  mutate(l = normalize_likelihood(log(l) + log(animal_meta$l), delta))
+
+# Organize data
+
+data <- rbind(
+
+  # Original Data
+  with(original, data.frame(o, 
+                            l=LSS_likelihood, 
+                            source='LSS likelihood', 
+                            analysis='original' )),
+  with(original, data.frame(o, 
+                            l=Radiobiological_prior, 
+                            source='Radiobiological prior', 
+                            analysis='original' )),
+  with(original, data.frame(o, 
+                            l=Combined_posterior, 
+                            source='Combined posterior', 
+                            analysis='original' )),
+  
+  # New analysis
+  animal_meta %>% 
+    mutate(source='Radiobiological prior'),
+  
+  lss_meta %>%
+    mutate(source='LSS likelihood',
+           analysis='new:\n  meta-regression\n  positive constraints'),
+  
+  combined_meta %>%
+    mutate(source='Combined posterior',
+           analysis='new:\n  meta-regression\n  positive constraints')
+)
+
+# Save for later
+write.csv0(data, "data/original_and_meta_likelihoods.csv")
+
+# Show
+ggplot(data, aes(o, l, linetype=source, color=analysis)) +
+  geom_path() +
+  scale_linetype_manual(values=c('dotted', 'dotdash', 'solid')) +
+  scale_color_manual(values=c('black', 'red'), guide = guide_legend(title = "analysis")) +
+  xlab("θ (~ DDREF.lss - 1)") + 
+  ylab("likelihood") + 
+  scale_y_continuous(breaks = c(0, 0.5, 1, 1.5)) +
+  coord_cartesian(ylim=c(-0.1, 1.5)) +
+  facet_wrap(~ analysis, nrow=2)
+
+ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/full-profiles-with-metaregression.png")
+
+# Confidence
+# was        "0.4 (0.1, 1.1)"
+original <- data %>% filter(source=="Combined posterior", 
+                            analysis=="original")
+. <- confidence_interval(original$o, original$l, 0.05)
+
+# is         "0.3 (0, 0.9)"
+new <- data %>% filter(source=="Combined posterior", 
+                       analysis=="new:\n  meta-regression\n  positive constraints")
+. <- confidence_interval(new$o, new$l, 0.05)
+```
+
+Nearly identical, only some very small (trivial?) differences.  Time to move forward.
 
 
-
-
-
-
-
-
-
-
-
+^ back to [table of contents](#contents)
 
 __________________________________________________________________
 
@@ -3232,7 +3404,7 @@ source('scripts/util/util.R') # http://goo.gl/VYzkAs
 
 # Data
 data <- read.csv('data/storer_1979_processed.csv')
-data_10B2 <- read.csv('data/10B2_fits.csv')
+data_10B2 <- read.csv('data/animal_carcinogenesis_likelihoods.csv')
 
 # Model
 model_10B4 <- function(data, o){
@@ -4171,3 +4343,37 @@ So for the sake of my analysis, it appears that the meta-regression analysis has
 ^ back to [table of contents](#contents)
 
 __________________________________________________________________
+
+
+<a name="lifespan_vs_inverse_lifespan"></a>
+
+Meta Regression vs Normal Regression
+========================================================
+*Last Update: October 2014*
+
+The BEIR VII analysis typically uses inverse lifespan.  I wonder how this affects a dose response curve?
+
+
+```{r}
+# Common
+setwd('~/janus')
+source('scripts/util/util.R') # http://goo.gl/VYzkAs
+
+data <- data.frame(dose = seq(0, 2, 0.1)) %>%
+  mutate(age = 600 - 80 * dose)
+
+ggplot(data, aes(dose, age)) +
+  geom_point(color='black')
+
+ggplot(data, aes(dose, 1/age)) + 
+  geom_point() +
+  geom_smooth(method='lm', se=F, formula= y ~ x)
+```
+
+#### Results
+My heart is at ease.  Over a range compable to ORNL data the inversion makes very little difference.  It might add a smidge of curvature, but not much.
+
+^ back to [table of contents](#contents)
+
+__________________________________________________________________
+

@@ -270,7 +270,7 @@ model_meta <- function(data){
     vi,
     mods = model.matrix(formula, data=data),
     data = data,
-    method='ML'
+    method='DL'
   )
 }
 predict_meta <- function(m, newdata, clustered=FALSE){
@@ -325,14 +325,16 @@ model_meta_fixed_o <- function(data,
   mods <- model.matrix(formula, data)
   mods <- mods[,!colnames(mods) %in% negative_dose_responses]
     
-  rma(
+  m <- rma(
     yi,
     vi,
     mods = mods,
     data = data,
-    method='ML',
+    method='DL',
     control=list(maxiter=1000, threshold=10e-12)
   )
+  
+  m
 }
 predict_meta_fixed_o <- function(m, newdata, clustered=FALSE, negative_dose_responses=c()){
 
