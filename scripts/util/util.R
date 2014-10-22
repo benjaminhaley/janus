@@ -101,7 +101,7 @@ normalize_likelihood <- function(log_likelihood, delta){
 
 confidence_interval <- function(x, likelihood, p=0.05) {
   most_likely_x <- x[which.max(likelihood)]
-  minimum_acceptable_likelihood <- exp(log(max(likelihood)) - qnorm(1 - p/2))
+  minimum_acceptable_likelihood <- exp(log(max(likelihood)) - qchisq(1 - p, 1)/2)
   lowest_acceptable_x <- min(x[likelihood > minimum_acceptable_likelihood])
   highest_acceptable_x <- max(x[likelihood > minimum_acceptable_likelihood])
   
@@ -115,15 +115,64 @@ confidence_interval <- function(x, likelihood, p=0.05) {
     high=highest_acceptable_x)
 }
 
+# Generate cdf
+# Given a set of likelihood return the corresponding cumulative 
+# density function
+cdf <- function(likelihoods) {
+  cdf <- (1 - pchisq(log(max(likelihoods)) - log(likelihoods), 1)) / 2
+  
+  # After 0.5 (the most likely) cdf values should count up to
+  # 1 instead of counting back down to 0
+  greater_than_most_likely <- which.max(cdf):length(cdf)
+  cdf[greater_than_most_likely] <- 1 - cdf[greater_than_most_likely]
+  
+  cdf
+}
+
 # Find a p value
 # Based on a value, v, in a set x with given likelihoods,
 # Find the p value of v.
 # This is highly related to the previous function
 significance <- function(v, x, likelihood) {
-  p <- 2 - 2*pnorm(log(max(likelihood)) - log(likelihood[which.closest(v, x)]))
+  p <- (1 - pchisq(log(max(likelihood)) - log(likelihood[which.closest(v, x)]), 1))/2
   
   p
 }
+
+# Compare pdfs
+
+# p greater
+# Given two cumulative probability density curves estimate the p value
+# associated with the hypothesis
+# a > b
+#
+# Tests
+# p_greater(c(0.000, 0.001), c(0.999, 1)) 
+# # ~ 0
+# p_greater(pnorm((-100:100)/100), pnorm((-100:100)/100)) 
+# # ~ 0.50
+# p_greater(pnorm((-100:100)/100, sd=2), pnorm((-100:100)/100, sd=1)) 
+# # ~ 0.50
+# p_greater(pnorm((-1000:1000)/100, mean=1), pnorm((-1000:1000)/100, mean=0)) 
+# # ~ 1 - sum(rnorm(1000000, mean=1) >= rnorm(1000000, mean=0)) / 1000000
+# # ~ 0.24
+p_greater <- function(cdf_a, cdf_b, n_samples=100000) {
+  a_sample <- which.closest(runif(n_samples), cdf_a)
+  b_sample <- which.closest(runif(n_samples), cdf_b)
+  a_greater <- a_sample > b_sample
+  a_equal <- a_sample == b_sample
+  1 - (sum(a_greater) + sum(a_equal)/2) / n_samples
+}
+
+# p different
+# Like p greater but a two sided test
+p_different <- function(cdf_a, cdf_b, n_samples=100000) {
+  p_a_greater <- p_greater(cdf_a, cdf_b, n_samples)
+  p_b_greater <- p_greater(cdf_b, cdf_a, n_samples)  
+  min(p_a_greater, p_b_greater) / 2
+}
+
+
 
 # Find the closest value in a list
 # e.g.
@@ -131,8 +180,8 @@ significance <- function(v, x, likelihood) {
 #
 # Default to the first item in the list in the case of ties
 #   closest(1.5, c(1, 2, 3)) == 1
-which.closest <- function(value, list) {
-  which.min(abs(list - value))
+which.closest <- function(values, list) {
+  sapply(values, function(value) which.min(abs(list - value)))
 }
 closest <- function(value, list) {
   list[which.closest(value, list)]
@@ -168,7 +217,7 @@ convert <- function(x, map) map[as.character(x)]
 # Get the likelihood of a range of o values
 get_likelihoods <- function(data, 
                             modeling_function, 
-                            o_range = seq(-2, 6, by=0.01),
+                            o_range = seq(-2, 10, by=0.01),
                             likelihood_function=logLik){
   r <- ldply(o_range, function(o){
     m <- modeling_function(data, o)

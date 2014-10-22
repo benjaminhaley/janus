@@ -1507,54 +1507,54 @@ from storer 1979 (3575012.pdf).
 [grouped]: http://dl.dropbox.com/u/1131693/bloodrop/10b3_temp_png.png
 
 ```{r}
-# # Common
-# setwd('~/janus')
-# source('scripts/util/util.R') # http://goo.gl/VYzkAs
-# 
-# # Data
-# data <- read.csv('~/janus/data/storer_1979.csv', sep='\t')
-# 
-# # Constants
-# threshold_dose_to_model = 1.5001
-# strain_to_model = 'RFM'
-# sex_to_model = 'F'
-# type_in_my_analysis = 'A'
-# chronic_threshold_for_dose_rate = 0.1
-# rate_to_fraction = c('6.9e-05'=Inf, '0.4'=1, '0.45'=1)
-# chronic_to_letter = c('TRUE'='C', 'FALSE'='A')
-# 
-# # Clean
-# # Here we will:
-# #   1. Define fractions, chronic, and type
-# #   2. Combine acute exposures with the same treatment
-# #      (see note above for a justification)
-# #   3. Define which data is modeled
-# data = data %>%
-#   mutate(fractions = convert(rate, rate_to_fraction),
-#          chronic = rate < chronic_threshold_for_dose_rate,
-#          type = convert(chronic, chronic_to_letter)) %>%
-#   group_by(dose, type, sex, fractions, strain) %>%
-#   summarise(table=list_unique(table),
-#             total_n=sum(n),
-#             rate=mean(rate),
-#             age= sum(age * n) / total_n,
-#             sd= (sum(sd^2 * n) / total_n)^0.5) %>%
-#   mutate(modeled_in_10B3 = dose < threshold_dose_to_model &
-#                            strain == strain_to_model &
-#                            sex == sex_to_model,
-#          in_my_analysis = type == type_in_my_analysis,
-#          n = total_n) %>%
-#   select(-total_n) %>%
-#   ungroup() %>%
-#   group_by(sex, strain) %>%
-#   mutate(control_age = age[dose == 0])
-# 
-# # Save for later use
-# write.csv0(data, 'data/storer_1979_processed.csv')
-# 
-# m <- lq_model(data[data$modeled_in_10B3,])
-# to_predict <- get_data_to_predict()
-# to_predict$p <- predict(m, newdata=to_predict)
+# Common
+setwd('~/janus')
+source('scripts/util/util.R') # http://goo.gl/VYzkAs
+
+# Data
+data <- read.csv('~/janus/data/storer_1979.csv', sep='\t')
+
+# Constants
+threshold_dose_to_model = 1.5001
+strain_to_model = 'RFM'
+sex_to_model = 'F'
+type_in_my_analysis = 'A'
+chronic_threshold_for_dose_rate = 0.1
+rate_to_fraction = c('6.9e-05'=Inf, '0.4'=1, '0.45'=1)
+chronic_to_letter = c('TRUE'='C', 'FALSE'='A')
+
+# Clean
+# Here we will:
+#   1. Define fractions, chronic, and type
+#   2. Combine acute exposures with the same treatment
+#      (see note above for a justification)
+#   3. Define which data is modeled
+data = data %>%
+  mutate(fractions = convert(rate, rate_to_fraction),
+         chronic = rate < chronic_threshold_for_dose_rate,
+         type = convert(chronic, chronic_to_letter)) %>%
+  group_by(dose, type, sex, fractions, strain) %>%
+  summarise(table=list_unique(table),
+            total_n=sum(n),
+            rate=mean(rate),
+            age= sum(age * n) / total_n,
+            sd= (sum(sd^2 * n) / total_n)^0.5) %>%
+  mutate(modeled_in_10B3 = dose < threshold_dose_to_model &
+                           strain == strain_to_model &
+                           sex == sex_to_model,
+         in_my_analysis = type == type_in_my_analysis,
+         n = total_n) %>%
+  select(-total_n) %>%
+  ungroup() %>%
+  group_by(sex, strain) %>%
+  mutate(control_age = age[dose == 0])
+
+# Save for later use
+write.csv0(data, 'data/storer_1979_processed.csv')
+
+m <- lq_model(data[data$modeled_in_10B3,])
+to_predict <- get_data_to_predict()
+to_predict$p <- predict(m, newdata=to_predict)
 ```
 
 #### Show
@@ -1570,17 +1570,17 @@ This is the original [10B3 figure][10B3-citation] from the beir VII report [beir
 ##### Reproduce 10B3
 This is my reproduction of 10B3 to prove that I am faithfully applying their methodology.
 ```{r}
-# g <- data[with(data,
-#     strain == 'RFM' &
-#     sex == 'F' &
-#     rate != 0.4
-# ),]
-# ggplot(g, aes(dose, 1/age)) +
-#   geom_text(size=5, aes(label=type, group=type)) +
-#   geom_path(data=to_predict, aes(dose, p, group=type)) +
-#   scale_y_continuous(breaks = 0.0002*0:4+0.0016)
-# 
-# ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/beir-10b3-reproduction.png")
+g <- data[with(data,
+    strain == 'RFM' &
+    sex == 'F' &
+    rate != 0.4
+),]
+ggplot(g, aes(dose, 1/age)) +
+  geom_text(size=5, aes(label=type, group=type)) +
+  geom_path(data=to_predict, aes(dose, p, group=type)) +
+  scale_y_continuous(breaks = 0.0002*0:4+0.0016)
+
+ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/beir-10b3-reproduction.png")
 ```
 
 ### Results
@@ -1663,7 +1663,9 @@ g <- melt(data,
 ggplot(g, aes(o, likelihood, linetype=source)) +
   geom_path() +
   scale_linetype_manual(values=c('dotted', 'dotdash', 'solid')) +
-  scale_y_continuous(breaks = c(0:5)/5, limits=c(0,1.2))
+  scale_y_continuous(breaks = c(0:5)/5, limits=c(0,1.2)) +
+  coord_cartesian(xlim=c(-1.0, 6.0)) +
+  xlab("θ (~ DDREF.lss - 1)")
 
 ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/beir-10b4-reproduction.png")
 ```
@@ -1683,7 +1685,7 @@ I am faithfully determining confidence intervals and to butress visual proof wit
 Note, my confidence interfal should match the first row and last column, the 95% confidence interval from radiobiology data.
 
 ```{r}
-# is        "0.4 (0.1, 3.5)"
+# is        "0.4 (0.1, 3.1)"
 # should be "0.5 (0.1, 3.2)"
 . <- confidence_interval(data$o, data$mean, 0.05)
 ```
@@ -1901,7 +1903,10 @@ write.csv0(likelihoods, file='data/10-3-lss.csv')
 # Show
 ggplot(likelihoods, aes(o, l)) +
   geom_path(linetype='dotdash') +
-  scale_y_continuous(breaks = c(0, 0.5, 1.0, 1.5), limits=c(0,1.5))
+  scale_y_continuous(breaks = c(0, 0.5, 1.0, 1.5), limits=c(0,1.5)) + 
+  coord_cartesian(xlim=c(-2, 6.0)) +
+  xlab("θ (~ DDREF.lss - 1)") + 
+  ylab("likelihood")
 ```
 
 #### BEIR 10-3 reproduction of lss analysis
@@ -2173,7 +2178,7 @@ ggplot(r, aes(o, l, color=analysis, alpha=analysis)) +
   scale_y_continuous(breaks = c(0:5)/5) +
   scale_alpha_manual(values=c(0.7, 0.5), guide=FALSE) +
   scale_color_manual(values=c('red', 'black'), guide = guide_legend(title = "analysis")) +
-  coord_cartesian(ylim=c(-0.1, 1.0)) +
+  coord_cartesian(ylim=c(-0.1, 1.0), xlim=c(-2, 6)) +
   xlab("θ (~ DDREF.lss - 1)") + 
   ylab("likelihood")
  
@@ -2185,8 +2190,7 @@ Analogous to the lifespan likelihood curve from figure 10B4 but using all of the
 
 
 ```{r}
-most_likely_o_in_new_data <- confidence_interval(likelihoods$o, likelihoods$l, 0.05)['middle'] 
-p <- significance(most_likely_o_in_new_data, tenb4$o, tenb4$lifespan)  # 2e-13
+p_different(cdf(likelihoods$l), cdf(tenb4$lifespan))  # 0.0035
 ```
 
 #### Result: How significant is the difference?
@@ -2198,7 +2202,7 @@ The new data suggests a most likely theta value of -0.1.  The likelihood curve d
 setwd('~/janus')
 tenthree <- read.csv("data/10-3.csv")
 animal <- tenb4 %>% 
-  mutate(new_Radiobiological_prior=mean) %>%
+  mutate(new_Radiobiological_prior=(likelihoods$l + tumor) / 2) %>%
   select(o, new_Radiobiological_prior)
 
 # Merge with new data
@@ -2231,7 +2235,7 @@ ggplot(g, aes(o, likelihood, linetype=source, color=new, alpha=new)) +
   scale_alpha_manual(values=c(0.7, 0.5), guide=FALSE) +
   scale_color_manual(values=c('red', 'black'), guide=FALSE) +
   scale_y_continuous(breaks = c(0, 0.5, 1, 1.5)) +
-  coord_cartesian(ylim=c(-0.1, 1.6)) +
+  coord_cartesian(ylim=c(-0.1, 1.6), xlim=c(-2, 6)) +
   facet_grid(new ~ .) +
   theme()
 ```
@@ -2244,16 +2248,18 @@ Analogous to figure 10-3 from BEIR VII but using the additional animal data from
 o <- tenthree$o
 
 # How has lifespan changed?
-. <- confidence_interval(o, tenb4[['lifespan']], 0.05)      # was   1.4 ( 0.5, 6.0)
-. <- confidence_interval(o, tenb4[['new_lifespan']], 0.05)  # is   -0.1 (-0.2, 0.1)
+# was   1.4 ( 0.5, 9.6)
+. <- confidence_interval(o, tenb4[['lifespan']], 0.05)  
+# is   -0.1 (-0.2, 0.1)
+. <- confidence_interval(o, likelihoods$l, 0.05) 
 
 # How did this affect all animal data?
-. <- confidence_interval(o, tenthree[['Radiobiological_prior']], 0.05)      # was   0.4 ( 0.1, 3.5)
+. <- confidence_interval(o, tenthree[['Radiobiological_prior']], 0.05)      # was   0.4 ( 0.1, 3.1)
 . <- confidence_interval(o, tenthree[['new_Radiobiological_prior']], 0.05)  # is   -0.1 (-0.2, 0.7)
 
 # How did it affect the overall estimate
-. <- confidence_interval(o, tenthree[['Combined_posterior']], 0.05)      # was   0.4 ( 0.1, 1.2)
-. <- confidence_interval(o, tenthree[['new_Combined_posterior']], 0.05)  # is   -0.1 (-0.2, 0.9)
+. <- confidence_interval(o, tenthree[['Combined_posterior']], 0.05)      # was   0.4 ( 0.1, 1.1)
+. <- confidence_interval(o, tenthree[['new_Combined_posterior']], 0.05)  # is   -0.1 (-0.2, 0.8)
 ```
 
 #### Table: confidence intervals updated with new lifespan data
@@ -2306,7 +2312,6 @@ BEIR fits oak ridge data as if they are points, but actually each point represen
 We will also run a heterogeneity test.
 
 ```{r}
-
 # Common
 setwd('~/janus')
 source('scripts/util/util.R') # http://goo.gl/VYzkAs
@@ -2440,8 +2445,8 @@ Unsurprisingly, uncertainty grows larger when a meta-analyisis is applied.
 
 
 ```{r}
-. <- confidence_interval(beir_r$o, beir_r$l, 0.05)  # "1.4 (0.5, 6)"
-. <- confidence_interval(my_r$o, my_r$l, 0.05)      # "1.4 (0.3, 6)"
+. <- confidence_interval(beir_r$o, beir_r$l, 0.05)  # "1.4 (0.5, 9.6)"
+. <- confidence_interval(my_r$o, my_r$l, 0.05)      # "1.3 (0.3, 10+)"
 ```
 
 #### Confidence
@@ -2453,7 +2458,7 @@ ________________________________________________________________________
 
 <a name="10B3-meta-all"></a>
 
-Meta-regression on all lifespan data
+10B3 metareression on all lifespan data
 ========================================================
 *Last update: October 2014*
 
@@ -2476,8 +2481,7 @@ aggregate <- aggregate %>%
 
 # Find likelihood by o
 likelihoods <- get_likelihoods(aggregate, 
-                               model_meta_fixed_o_non_negative,
-                               o_range = seq(-2, 6, by=0.01))
+                               model_meta_fixed_o_non_negative)
 
 # Save them for later use
 write.csv0(likelihoods, 'data/animal_lifespan_all_data_meta_likelihoods.csv')
@@ -2574,7 +2578,7 @@ ggplot(r, aes(o, l, color=analysis, alpha=analysis)) +
   scale_y_continuous(breaks = c(0:5)/5) +
   scale_alpha_manual(values=c(0.7, 0.5), guide=FALSE) +
   scale_color_manual(values=c('red', 'black'), guide = guide_legend(title = "analysis")) +
-  coord_cartesian(ylim=c(-0.1, 1.0)) +
+  coord_cartesian(ylim=c(-0.1, 1.0), xlim=c(-2, 6)) +
   xlab("θ (~ DDREF.lss - 1)") + 
   ylab("likelihood")
 
@@ -2586,14 +2590,40 @@ Analogous to the lifespan likelihood curve from figure 10B4 but using all of the
 
 
 ```{r}
-. <- confidence_interval(tenb4$o, tenb4$lifespan, 0.05)       # 1.4 ( 0.5, 6)
-. <- confidence_interval(likelihoods$o, likelihoods$l, 0.05)  # 0.3 (-0.2, 6)
+# was 1.4 ( 0.5, 9.9)
+. <- confidence_interval(tenb4$o, tenb4$lifespan, 0.05)       
+# is  0.5 (-0.2, 10+)
+. <- confidence_interval(likelihoods$o, likelihoods$l, 0.05)  
+
+p_different(cdf(likelihoods$l), cdf(tenb4$lifespan))  # 0.16
 ```
 
 #### Confidence intervals
 DDREF from animal data now includes 1 in the 95% confidence interval.
 
+
+```{r}
+# A fun aside for stack overflow
+# http://stats.stackexchange.com/questions/120974/determining-if-two-profile-likelihood-curves-are-significantly-different
+
+r <- ddply(r, .(analysis), function(df) {
+  df$cdf <- cdf(df$l)
+  df
+})
+ggplot(r, aes(o, cdf, color=analysis, alpha=analysis)) +
+  geom_path() +
+  scale_y_continuous(breaks = c(0:5)/5) +
+  scale_alpha_manual(values=c(0.7, 0.5), guide=FALSE) +
+  scale_color_manual(values=c('red', 'black'), guide = guide_legend(title = "analysis")) +
+  coord_cartesian(ylim=c(-0.1, 1.0)) +
+  xlab("θ (~ DDREF.lss - 1)") + 
+  ylab("cumulative probability")
+
+ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/metaregression_cdf_all_data.png")
+```
+
 ^ back to [table of contents](#contents)
+
 
 
 __________________________________________________________________
@@ -2651,7 +2681,7 @@ ggplot(r, aes(o, l, color=analysis, alpha=analysis)) +
   scale_y_continuous(breaks = c(0:5)/5) +
   scale_alpha_manual(values=c(0.7, 0.5), guide=FALSE) +
   scale_color_manual(values=c('red', 'black'), guide = guide_legend(title = "analysis")) +
-  coord_cartesian(ylim=c(-0.1, 1.2)) +
+  coord_cartesian(ylim=c(-0.1, 1.3), xlim=c(-2, 6)) +
   xlab("θ (~ DDREF.lss - 1)") + 
   ylab("likelihood")
 
@@ -2722,6 +2752,7 @@ write.csv0(likelihoods, 'data/animal_carcinogenesis_meta_likelihoods.csv')
 
 #### Figure: 10B2 reproduction with meta regression
 The fit is similar, with some small differences.
+This is hard to see because I have not made a direct comparison.
 
 
 ___________________________________________________________________
@@ -2735,6 +2766,7 @@ Fit atomic bomb survivor data with a meta regression model
 Similar to BEIR 10-3 reproduced above, but applying a meta regression model to the analysis.
 
 ```{r}
+
 # Common
 setwd('~/janus')
 source('scripts/util/util.R') # http://goo.gl/VYzkAs
@@ -2756,7 +2788,7 @@ data <- data %>%
 model_meta_10_3 <- function(data, o) {
   model_meta_fixed_o_non_negative(data, o, yi=data$err, vi=data$sd^2)
 }
-likelihoods <- get_likelihoods(data, model_meta_10_3, o_range = seq(-2, 6, by=0.01))
+likelihoods <- get_likelihoods(data, model_meta_10_3)
 
 # save for later
 setwd('~/janus')
@@ -2773,7 +2805,7 @@ ggplot(r, aes(o, l, color=analysis, alpha=analysis)) +
   scale_y_continuous(breaks = c(0:5)/5) +
   scale_alpha_manual(values=c(0.7, 0.5), guide=FALSE) +
   scale_color_manual(values=c('red', 'black'), guide = guide_legend(title = "analysis")) +
-  coord_cartesian(ylim=c(-0.1, 1.2)) +
+  coord_cartesian(ylim=c(-0.1, 1.2), xlim=c(-2, 6)) +
   xlab("θ (~ DDREF.lss - 1)") + 
   ylab("likelihood")
 
@@ -2782,7 +2814,7 @@ ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/figure-10-2-m
 
 # Report confidence
 # was       "0.2 (-0.2, 1.4)"
-#  is       "0.3 (-0.1, 1.4)"
+#  is       "0.3 (-0.1, 1.3)"
 . <- confidence_interval(original_likelihoods$o, original_likelihoods$l, 0.05)
 . <- confidence_interval(likelihoods$o, likelihoods$l, 0.05)
 
@@ -2852,19 +2884,19 @@ write.csv0(data, 'data/original_and_meta_animal_likelihoods.csv')
 
 ggplot(data, aes(o, l, linetype=source, color=analysis)) +
   geom_path() +
-  scale_linetype_manual(values=c('dotted', 'dotdash', 'solid')) +
+  scale_linetype_manual(values=c('solid' , 'dotted', 'dotdash')) +
   scale_color_manual(values=c('black', 'red'), guide = guide_legend(title = "analysis")) +
   xlab("θ (~ DDREF.lss - 1)") + 
   ylab("likelihood") + 
   scale_y_continuous(breaks = c(0, 0.5, 1, 1.5)) +
-  coord_cartesian(ylim=c(-0.1, 1.5)) +
+  coord_cartesian(ylim=c(-0.1, 1.5), xlim=c(-2, 6)) +
   facet_wrap(~ analysis, nrow=2)
 
 ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/animal_profiles_with_meta_regression.png")
 
-# was        "0.4 (0.1, 3.5)"
+# was        "0.4 (0.1, 3.1)"
 . <- confidence_interval(original_animal$o, original_animal$mean, 0.05)
-# is         "0.5 (0.1, 3.2)"
+# is         "0.4 (0.0, 1.9)"
 . <- confidence_interval(meta_combined$o, meta_combined$l, 0.05)
 ```
 
