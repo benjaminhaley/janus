@@ -47,6 +47,7 @@ Table of contents
   - [10B4 metaregression on all lifespan data](#10B4-meta-all) Apply meta regression with positive coefficients to all of the lifespan datasets to generate profiles.
   - [Animal profiles after meta-regression](#animal-profiles-meta) Determine the profile likelihood function from lifespan and carcinogenesis animal data combined when meta-regression with positive coefficients is applied to the data.
   - [Profiles after meta-regression](#profiles-meta) Determine the profile likelihood function for all data, human, animal, and combined when meta-regression with positive coefficients is applied to the data.
+  - [Low Curvature Fits Chronic Acute Comparisons Poorly](#low-curvature-fits-chronic-acute-comparisons-poorly) Studies that directly compared chronis and acute exposures tended to show a stonger effect of protraction.
 
 **Supplemental**
 
@@ -56,6 +57,7 @@ Table of contents
   metaregression.
   - [Metaregression vs OLS](#meta_regression_vs_normal_regression) - Show that meta-regression will always be more conservative (higher uncertainty estimates) than OLS analysis
   - [Lifespan vs Inverse lifespan](#lifespan_vs_inverse_lifespan) - Does taking the inverse of lifespan distort curvature substantially?  No, not over the range we care about.
+  - [DDREF derived from cells](#DDREF_derived_from_cells) - If we look at alpha/Beta ratios in cell studies what can we learn about the effects of protraction?
 
 
 
@@ -1397,9 +1399,6 @@ Note, Edwards This source was not found, however most of the same information
 Edwards, A.A. 1992. Low Dose and Low Dose Rate Effects in Laboratory Animals, Technical Memorandum 1(92). Chilton, UK: National Radiological Protection Board.
 
 ```{r}
-
-# TODO: 10B2 needs to also use meta regression as in 10B4 to see how that influences the effect
-
 # Common
 setwd('~/janus')
 source('scripts/util/util.R') # http://goo.gl/VYzkAs
@@ -1431,7 +1430,8 @@ model_10B2 <- function(data, o){
 }
 fits <- get_likelihoods(data, model_10B2)
 
-ggplot(fits, aes(o, l)) + geom_path()
+ggplot(fits, aes(o, l)) + 
+  geom_path()
 
 
 # Make predictions for most likely model
@@ -1999,7 +1999,9 @@ g <- melt(data,
 ggplot(g, aes(o, likelihood, linetype=source)) +
   geom_path() +
   scale_linetype_manual(values=c('dotted', 'dotdash', 'solid')) +
-  scale_y_continuous(breaks = c(0, 0.5, 1, 1.5), limits=c(0,1.5))
+  scale_y_continuous(breaks = c(0, 0.5, 1, 1.5)) +
+  coord_cartesian(ylim=c(-0.1, 1.6), xlim=c(-2, 6))
+
 
 ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/beir-10-3-reproduction.png")
 ```
@@ -3000,6 +3002,123 @@ Nearly identical, only some very small (trivial?) differences.  Time to move for
 ^ back to [table of contents](#contents)
 
 __________________________________________________________________
+
+
+
+<a name="low-curvature-fits-chronic-acute-comparisons-poorly"></a>
+
+Low curvature fits chronic acute comparisons poorly
+========================================================
+*Last update: October 2014*
+
+I have found that the consensensus curvature, ~ 0.53 does not fit experiments where chronic and acute doses were compared directly.  Illustrate this point.
+
+```{r}
+# Common
+setwd('~/janus')
+source('scripts/util/util.R') # http://goo.gl/VYzkAs
+
+# Data
+aggregate <- read.csv('data/10B4_all_data_aggregated.csv')
+aggregate <- aggregate %>% mutate(cluster = order_levels_by_number(cluster))
+likelihoods <- read.csv('data/animal_lifespan_all_data_meta_likelihoods.csv')
+
+# Limit to experiments where both chronic and acute exposures were applied
+aggregate <- ddply(aggregate, .(cluster), function(df) {
+  print(unique(df$type))
+  print(unique(df$type))
+  if ('A' %in% df$type & 'C' %in% df$type){
+    return(df)
+  } else {
+    return(NULL)
+  }
+})
+
+# Prepare for Meta
+aggregate <- aggregate %>%
+  mutate(yi = 1/age,
+         vi = (1/age - 1/(age + sd))^2) %>%
+  mutate(cluster = order_levels_by_number(cluster)) %>%
+  arrange(cluster) 
+
+# What was the best o value from all of the data (including acute only exposures)
+o = with(likelihoods, o[which.max(l)])
+print(o)
+
+# Fit with best theta value
+negative_dose_responses <- model_meta_get_negative_dose_responses(aggregate, o)
+m <- model_meta_fixed_o(aggregate, o, negative_dose_responses)
+
+# Find hetorogeneity
+tau2 <- m$tau2
+print(tau2)   # 5.18e-10
+
+# Make predictions
+to_predict <- get_data_to_predict(clusters=aggregate$cluster)
+to_predict$p_my_analysis <- predict_meta_fixed_o(m, newdata=to_predict, clustered=TRUE, negative_dose_responses)
+to_predict$p_10B3 <- predict(lq_model(aggregate), newdata=to_predict)
+
+# Scaling
+# We want the graphs to have the same scale
+# but start at different y intercepts
+scales <- aggregate %>%
+  group_by(cluster) %>%
+  summarize(min=min(1/age), 
+            max=max(1/age),
+            range = max - min,
+            type='')
+scales$max <- scales$min + max(scales$range)
+
+# Show
+# As in 10B3
+# http://www.nap.edu/openbook.php?record_id=11340&page=257
+ggplot(aggregate, aes(dose,
+                      1/age,
+                      label=type,
+                      group=type)) +
+  geom_smooth(
+    data=to_predict,
+    aes(dose, p_10B3),
+    method='lm',
+    formula='y ~ x + I(x^2)',
+    se=FALSE,
+    color='black'
+  ) +
+  geom_smooth(
+    data=to_predict,
+    aes(dose, p_my_analysis),
+    method='lm',
+    formula='y ~ x + I(x^2)',
+    se=FALSE,
+    color='red',
+    linetype='dotted'
+  ) +
+  geom_text(size=4, alpha=0.9) +
+  geom_errorbar(aes(ymin=1/age + (vi + tau2)^0.5,
+                    ymax=1/age - (vi + tau2)^0.5), 
+                alpha=0.5, width=.05, color='red') +
+  geom_errorbar(aes(ymin=1/age + (vi)^0.5,
+                    ymax=1/age - (vi)^0.5), 
+                alpha=0.5, width=.15) + 
+  geom_text(data=scales, aes(x=1, y=min)) + 
+  geom_text(data=scales, aes(x=1, y=max)) + 
+  facet_wrap(~ cluster, scales="free_y") +
+  theme(text = element_text(size = 10),
+        axis.text.y=element_blank()) +
+  ylab("1 / mean age (days)") +
+  xlab("dose (Gy)") +
+  theme(legend.position = "none") 
+
+ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/low-curvature-fits-chronic-acute-comparisons-poorly.png")
+```
+
+#### Figure: Limit to studies that directly compared acute and chronic
+Analagous to figure 10B3 from BEIR VII we see ordinary linear quadratic models (black) fit to 1/lifespan of acutely, A, and chronically, C, mice at various doses in Gy.  Straight lines correspond to chronic predictions while curved lines correspond to accute predictions.  Grey error bards show measured uncertainty, red error bars show measured uncertainty plus estimated heterogeneity by meta-regression.  The best fit of the most likely curvature determined by meta-regression across all clusters is shown in red dotted lines.  These are constrained to positive dose-response values as was the meta-regression.
+
+^ back to [table of contents](#contents)
+
+__________________________________________________________________
+
 
 <a name="log-or-not"></a>
 
