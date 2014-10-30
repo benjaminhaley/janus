@@ -242,7 +242,7 @@ write.csv0 <- function(...) write.csv(..., row.names=FALSE)
 only <- function(x) { 
   u <- unique(x)
   n <- length(u)
-  if(n > 1) stop("More than one value")
+  if(n > 1) stop(paste("More than one value", paste(head(u), collapse=', ')))
   u
 }
 
@@ -262,6 +262,13 @@ order_levels_by_number <- function(x) {
   x <- factor(x, levels=u[order(number)])
   x
 }
+
+# get cluster number
+get_cluster_number <- function(x) {
+  as.numeric(extract('^[0-9.]*', x))
+}
+
+
 
 # has clusters
 # Determine if a dataset contains multiple clusters
@@ -416,10 +423,6 @@ model_meta_fixed_o_non_negative <- function(data, o, ...) {
   negative_dose_responses <- model_meta_get_negative_dose_responses(data, o, ...)
   model_meta_fixed_o(data, o, negative_dose_responses, ...)
 }
-
-
-
-
 
 
 
