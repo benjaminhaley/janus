@@ -39,15 +39,18 @@ Table of contents
   - [Reproduce BEIR 10B2](#10B2) - Show that we can fit the same model of cancer risk vs. dose as BEIR VII.
   - [Reproduce BEIR 10B3](#10B3) - Show that we can fit the same model of lifespan vs. dose as BEIR VII.
   - [Reproduce BEIR 10B4](#10B4) - Show that we can reproduce the likelihood profiles from animal data in BEIR VII.
+  - [Are BEIR Profiles significantly different?](#Are-BEIR-Profiles-significantly-different?) - Are lifespan and carcinogenesis profiles significantly different from one another?
   - [Use all data](#all-data) - Fit 1/lifespan models on all of the data then update profile curves.
   - [DDREF ambivilance](#ddref_ambivilance) - Why we need to restrict the linear quadratic model to positive coefficients if we are going to use DDREF.
   - [10B3 with metaregression](#10B3-meta) - Reproduce dose response figure applying the principals of meta-regression and positive coefficients.
   - [10B4 with metaregression](#10B4-meta) - Reproduce profile likelihood figure applying the principals of meta-regression and postive coefficients.
-  - [10B3 metareression on all lifespan data](#10B3-meta-all) Apply meta regression with positive coefficients to all of the lifespan datasets.
-  - [10B4 metaregression on all lifespan data](#10B4-meta-all) Apply meta regression with positive coefficients to all of the lifespan datasets to generate profiles.
+  - [10B3 & 10B4 metareression on all lifespan data](#10B3-meta-all) Apply meta regression with positive coefficients to all of the lifespan datasets.
   - [Animal profiles after meta-regression](#animal-profiles-meta) Determine the profile likelihood function from lifespan and carcinogenesis animal data combined when meta-regression with positive coefficients is applied to the data.
   - [Profiles after meta-regression](#profiles-meta) Determine the profile likelihood function for all data, human, animal, and combined when meta-regression with positive coefficients is applied to the data.
-  - [Low Curvature Fits Chronic Acute Comparisons Poorly](#low-curvature-fits-chronic-acute-comparisons-poorly) Studies that directly compared chronis and acute exposures tended to show a stonger effect of protraction.
+  - [Low Curvature Fits Chronic Acute Comparisons Poorly](#low-curvature-fits-chronic-acute-comparisons-poorly) Studies that directly compared chronic and acute exposures tended to show a stonger effect of protraction.
+  - [Seperate acute analysis from direct comparisons of lifespan data](#seperate-acute-analysis) Chronic exposures imply a high DDREF, but this is not apparently from a linear quadratic fit to acute data.
+
+
 
 **Supplemental**
 
@@ -2061,6 +2064,34 @@ Nearly identical, only some very small (trivial?) differences.  Time to move for
 
 ___________________________________________________________________
 
+<a name="Are-BEIR-Profiles-significantly-different?"></a>
+
+Are BEIR Profiles significantly different?
+========================================================
+*Last update: October 2014*
+
+It looks like the animal estimates of lifespand and carcinogenesis in BEIR 10B4 are pretty different from one another.  
+
+![10B4-image](http://dl.dropbox.com/u/1131693/bloodrop/10B4.jpg)
+
+How significant is this difference?
+
+```{r}
+# Common
+setwd('~/janus')
+source('scripts/util/util.R') # http://goo.gl/VYzkAs
+
+# Data
+likelihoods <- read.csv('data/animal_likelihoods.csv')
+
+p_different(cdf(likelihoods$tumor), cdf(likelihoods$lifespan))  # 0.079975
+```
+
+They are almost significantly different than one another!
+
+^ back to [table of contents](#contents)
+
+___________________________________________________________________
 <a name="all-data"></a>
 
 1/lifespan on all data
@@ -2626,8 +2657,6 @@ ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/metaregressio
 
 ^ back to [table of contents](#contents)
 
-
-
 __________________________________________________________________
 
 <a name="10B2_meta"></a>
@@ -3114,6 +3143,138 @@ ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/low-curvature
 
 #### Figure: Limit to studies that directly compared acute and chronic
 Analagous to figure 10B3 from BEIR VII we see ordinary linear quadratic models (black) fit to 1/lifespan of acutely, A, and chronically, C, mice at various doses in Gy.  Straight lines correspond to chronic predictions while curved lines correspond to accute predictions.  Grey error bards show measured uncertainty, red error bars show measured uncertainty plus estimated heterogeneity by meta-regression.  The best fit of the most likely curvature determined by meta-regression across all clusters is shown in red dotted lines.  These are constrained to positive dose-response values as was the meta-regression.
+
+^ back to [table of contents](#contents)
+
+__________________________________________________________________
+
+<a name="seperate-acute-analysis"></a>
+
+Seperate acute analysis from direct comparisons of lifespan data
+========================================================
+*Last update: October 2014*
+
+Develop seperate profile likelihoods for lifespan data from studies of only acute exposures vs studies that directly compared acute and protracted exposures.
+
+
+```{r}
+# Common
+setwd('~/janus')
+source('scripts/util/util.R') # http://goo.gl/VYzkAs
+
+# Data
+aggregate <- read.csv('data/10B4_all_data_aggregated.csv')
+aggregate <- aggregate %>% mutate(cluster = order_levels_by_number(cluster))
+
+# Prepare for Meta
+aggregate <- aggregate %>%
+  mutate(yi = 1/age,
+         vi = (1/age - 1/(age + sd))^2) %>%
+  arrange(cluster)
+
+# Direct comparisons
+# A dataset of clusters that directly compared chronic and acute exposures
+direct_comparisons <- ddply(aggregate, .(cluster), function(df) {
+  if ('A' %in% df$type & 'C' %in% df$type){
+    return(df)
+  } else {
+    return(NULL)
+  }
+})
+direct_comparisons <- direct_comparisons %>%
+  mutate(cluster = order_levels_by_number(cluster))
+
+# Acute exposures
+# A dataset with only acute exposures.
+acute_only <- aggregate %>%
+  filter(type == 'A')
+
+
+# Find likelihood by o
+likelihoods_direct_comparisons <- get_likelihoods(
+  direct_comparisons, 
+  model_meta_fixed_o_non_negative
+  )
+likelihoods_acute_only <- get_likelihoods(
+  acute_only, 
+  model_meta_fixed_o_non_negative)
+
+# Save them for later use
+write.csv0(likelihoods_direct_comparisons, 
+           'data/likelihoods_direct_comparisons.csv')
+write.csv0(likelihoods_direct_comparisons, 
+           'data/likelihoods_acute_only.csv')
+
+# Merge with previous data
+r <- rbind(
+  likelihoods_direct_comparisons %>%
+    mutate(analysis="direct comparisons"),
+  likelihoods_acute_only %>%
+    mutate(analysis="acute only")
+)
+
+ggplot(r, aes(o, l, color=analysis, alpha=analysis)) +
+  geom_path() +
+  scale_y_continuous(breaks = c(0:5)/5) +
+  scale_alpha_manual(values=c(0.7, 0.5), guide=FALSE) +
+  scale_color_manual(values=c('red', 'black'), guide = guide_legend(title = "analysis")) +
+  coord_cartesian(ylim=c(-0.1, 1.0), xlim=c(-2, 10)) +
+  xlab("θ (~ DDREF.lss - 1)") + 
+  ylab("likelihood")
+
+ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/seperate-acute-analysis.png")
+
+# 
+```
+
+#### Figure: Likelihood profile when using meta analysis on all data
+Analogous to the lifespan likelihood curve from figure 10B4 but using all of the animal data and applying meta-analysis, instead of limiting to that avaiable from storer 1979. Red line represents models fit to only the acute data.  The black line represents models fit only to studies that directly compared acute and chronic exposures.
+
+*note: the curvature is cutoff at 10 because it [rises indefinitetly][rises indefinitetly].  This is because the best fit implies a chronic fit of 0.
+
+[rises indefinitetly]: http://dl.dropbox.com/u/1131693/bloodrop/direct%20comparisons%20support%20infinite%20ddref.png
+
+
+```{r}
+# direct comparison 10+ ( 1.8, 10+) 
+# *actually this should be 1.8 - Infinity
+. <- confidence_interval(likelihoods_direct_comparisons$o, 
+                         likelihoods_direct_comparisons$l, 
+                         0.05)
+
+# acute only  -0.1 (-0.3, 0.1)
+. <- confidence_interval(likelihoods_acute_only$o, 
+                         likelihoods_acute_only$l, 
+                         0.05)  
+
+# p ~ 0.000835
+p_different(cdf(likelihoods_acute_only$l), 
+            cdf(likelihoods_direct_comparisons$l)) 
+```
+
+#### Confidence intervals
+DDREF from animal data now includes 1 in the 95% confidence interval.
+
+
+```{r}
+# A fun aside for stack overflow
+# http://stats.stackexchange.com/questions/120974/determining-if-two-profile-likelihood-curves-are-significantly-different
+
+r <- ddply(r, .(analysis), function(df) {
+  df$cdf <- cdf(df$l)
+  df
+})
+ggplot(r, aes(o, cdf, color=analysis, alpha=analysis)) +
+  geom_path() +
+  scale_y_continuous(breaks = c(0:5)/5) +
+  scale_alpha_manual(values=c(0.7, 0.5), guide=FALSE) +
+  scale_color_manual(values=c('red', 'black'), guide = guide_legend(title = "analysis")) +
+  coord_cartesian(ylim=c(-0.1, 1.0)) +
+  xlab("θ (~ DDREF.lss - 1)") + 
+  ylab("cumulative probability")
+
+ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/metaregression_cdf_all_data.png")
+```
 
 ^ back to [table of contents](#contents)
 
@@ -3694,8 +3855,6 @@ The essence here is that the initial error estamates are too low if a straight l
 
 ^ back to [table of contents](#contents)
 
-________________________________________________________________________
-
 
 ___________________________________________________________________
 
@@ -4209,21 +4368,21 @@ ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/survival-2.pn
 TODO
 
 ```{r}
-# Median lifespans
-median <- d %>%
-  summarize(lifespan=median(lifespan))
-
-ggplot(median, 
-        aes(dose,
-            lifespan,
-            color=magnitude(dose_rate + 1e-6))) +
-  geom_point() +
-  geom_smooth(method='lm', se=F) +
-  facet_wrap(~ cluster) +
-  scale_color_continuous(
-    guide = guide_legend(title = "dose rate (Gy/min)"),
-    trans = "log10"
-  )
+# # Median lifespans
+# median <- d %>%
+#   summarize(lifespan=median(lifespan))
+# 
+# ggplot(median, 
+#         aes(dose,
+#             lifespan,
+#             color=magnitude(dose_rate + 1e-6))) +
+#   geom_point() +
+#   geom_smooth(method='lm', se=F) +
+#   facet_wrap(~ cluster) +
+#   scale_color_continuous(
+#     guide = guide_legend(title = "dose rate (Gy/min)"),
+#     trans = "log10"
+#   )
 ```
 
 #### Figure: Median lifespans
@@ -4232,72 +4391,72 @@ Astoundingly linear results.  Strongly suggests that DDREF is 1 or so.
 
 
 ```{r}
-n_unique <- function(...) length(unique(paste(...)))
-
-g <- d %>%
-  ungroup() %>%
-  mutate(facet=paste(dose, cluster))
-
-control <- g %>%
-  filter(dose == 0)
-
-comparable_doses <- g %>%
-  group_by(facet) %>%
-  summarize(n_groups=n_unique(acute)) %>%
-  filter(n_groups > 1)
-
-comparables <- g %>%
-  filter(facet %in% comparable_doses$facet) 
-
-# Add controls
-comparables <- ddply(comparables, .(facet), function(df) {
-  controls <- g %>% filter(cluster_id == only(df$cluster_id),
-                           dose == 0) %>%
-    mutate(facet = only(df$facet))
-  rbind(df, controls)
-})
-
-# Determine survival
-comparables <- comparables %>%
-  mutate(group = paste(cluster, dose, dose_rate, fractions)) %>%
-  group_by(group) %>%
-  arrange(lifespan) %>%
-  mutate(survival=rank(-lifespan) / length(lifespan),
-         control = dose == 0,
-         type=c('protracted', 'acute', 'control')[acute + control + 1])
-
-# Add mean survival by group
-median_survival <- comparables %>%
-  summarize(median_survival = median(lifespan))
-comparables <- merge(comparables, median_survival) %>%
-  arrange(lifespan)
-
-
-# Elaborate on the groups
-details <- comparables %>%
-  arrange(-median_survival) %>%
-  group_by(facet) %>%
-  summarize(groups=paste(unique(paste(
-      sprintf("%.3f", dose_rate), 
-      sprintf("%3s", fractions), 
-      sprintf("%5s", fraction_interval), 
-      sep=' '
-    )), collapse='\n'))
-
-# Show
-comparables$is_neutron <- grepl('neutron', comparables$quality)
-ggplot(comparables) +
-  geom_path(aes(lifespan,
-           survival,
-           group=group,
-           alpha=control,
-           color=type,
-           linetype=is_neutron)) +
-  facet_wrap(~ facet) +
-  scale_color_manual(values=c("red", "black", "black")) +
-  scale_alpha_manual(values=c(1, 0.5)) + 
-  expand_limits(x = -4) +
-  geom_text(data=details, aes(1200, 0.8, label=groups), size=3, lineheight=1, family="mono")
+# n_unique <- function(...) length(unique(paste(...)))
+# 
+# g <- d %>%
+#   ungroup() %>%
+#   mutate(facet=paste(dose, cluster))
+# 
+# control <- g %>%
+#   filter(dose == 0)
+# 
+# comparable_doses <- g %>%
+#   group_by(facet) %>%
+#   summarize(n_groups=n_unique(acute)) %>%
+#   filter(n_groups > 1)
+# 
+# comparables <- g %>%
+#   filter(facet %in% comparable_doses$facet) 
+# 
+# # Add controls
+# comparables <- ddply(comparables, .(facet), function(df) {
+#   controls <- g %>% filter(cluster_id == only(df$cluster_id),
+#                            dose == 0) %>%
+#     mutate(facet = only(df$facet))
+#   rbind(df, controls)
+# })
+# 
+# # Determine survival
+# comparables <- comparables %>%
+#   mutate(group = paste(cluster, dose, dose_rate, fractions)) %>%
+#   group_by(group) %>%
+#   arrange(lifespan) %>%
+#   mutate(survival=rank(-lifespan) / length(lifespan),
+#          control = dose == 0,
+#          type=c('protracted', 'acute', 'control')[acute + control + 1])
+# 
+# # Add mean survival by group
+# median_survival <- comparables %>%
+#   summarize(median_survival = median(lifespan))
+# comparables <- merge(comparables, median_survival) %>%
+#   arrange(lifespan)
+# 
+# 
+# # Elaborate on the groups
+# details <- comparables %>%
+#   arrange(-median_survival) %>%
+#   group_by(facet) %>%
+#   summarize(groups=paste(unique(paste(
+#       sprintf("%.3f", dose_rate), 
+#       sprintf("%3s", fractions), 
+#       sprintf("%5s", fraction_interval), 
+#       sep=' '
+#     )), collapse='\n'))
+# 
+# # Show
+# comparables$is_neutron <- grepl('neutron', comparables$quality)
+# ggplot(comparables) +
+#   geom_path(aes(lifespan,
+#            survival,
+#            group=group,
+#            alpha=control,
+#            color=type,
+#            linetype=is_neutron)) +
+#   facet_wrap(~ facet) +
+#   scale_color_manual(values=c("red", "black", "black")) +
+#   scale_alpha_manual(values=c(1, 0.5)) + 
+#   expand_limits(x = -4) +
+#   geom_text(data=details, aes(1200, 0.8, label=groups), size=3, lineheight=1, family="mono")
 ```
 
 #### Figure: Directly comparable protracted exposures
