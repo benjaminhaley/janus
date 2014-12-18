@@ -50,6 +50,7 @@ Table of contents
   - [Low Curvature Fits Chronic Acute Comparisons Poorly](#low-curvature-fits-chronic-acute-comparisons-poorly) Studies that directly compared chronic and acute exposures tended to show a stonger effect of protraction.
   - [Seperate acute analysis from direct comparisons of lifespan data](#seperate-acute-analysis) Chronic exposures imply a high DDREF, but this is not apparently from a linear quadratic fit to acute data.
   - [Infinite curvature fits chronic acute comparisons well](#infinite-curvature-fits-chronic-acute-comparisons-well) Studies that directly compared chronic and acute exposures tended to show a stonger effect of protraction.
+  - [Seperate analysis leads to better acute fits](#seperate-analysis-leads-to-better-acute-fits) Fitting acute data in isolation works better than fitting dropping in chronic and acute comparisons.
 
 
 **Supplemental**
@@ -231,7 +232,7 @@ If variance is estimated at zero, this goes to infinity, so
 the overfit regression model has problems.
 
 ```{r}
-
+# Unweighted
 data <- data.frame(
     y=1:100,
     x=rnorm(100, 1:100)
@@ -250,7 +251,35 @@ l <- with(data,
     -(1/(2*o2)) * sum(e^2)
 )
 l - as.numeric(logLik(m))
+
+# Weighted
+n <- 100
+data <- data.frame(
+    y=1:n,
+    x=rnorm(n, 1:n)
+)
+n <- nrow(data)
+w <- (1:n)/sum(1:n)
+m <- glm(y ~ x, data=data, weights=w)
+data$p <- predict(m)
+data$e <- data$y - data$p
+o2 = with(data,
+    (sum(w*e^2) / (n - 90))
+)
+o2 
+l <- with(data,
+    -(n/2) * log(2*pi) +
+    -(n/2) * log(o2) +
+    -(1/(2*o2)) * sum(w*e^2)
+)
+l - as.numeric(logLik(m))
 ```
+
+
+1.0           2.36897
+1.1           1.9845
+1.1*1.1       1.5955
+1.1*1.1*1.1   
 
 ^ back to [table of contents](#contents)
 
@@ -288,17 +317,21 @@ count <- function(data){
   ))
 }
 
-filter_by_n_groups <- function(data, threshold=3){
-  ddply(data, .(cluster), function(df){
+n_groups_by_cluster <- function(data, cluster_column) {
+  data$original_order <- 1:nrow(data)
+  data <- ddply(data, cluster_column, function(df){
     n_groups = length(unique(paste(df$dose,
                                    df$dose_rate,
                                    df$fractions)))
-    if(n_groups >= threshold){
-      return(df)
-    } else {
-      return(NULL)
-    }
+    df$n_groups_by_cluster <- n_groups
+    df
   })
+  
+  data$n_groups_by_cluster[order(data$original_order)]
+}
+
+filter_by_n_groups <- function(data, threshold=3){
+  data[n_groups_by_cluster(data, 'cluster') >= threshold,]
 }
 
 update_report <- function(report, d, criteria) {
@@ -554,7 +587,7 @@ for(ex in exclusions){
   print(count(d))
 }
 count(d)
-report <- update_report(report, d, "Without major contradictions in the primary literature")
+report <- update_report(report, d, "Treatment and lifespan results confirmed by primary literature")
 
 # Remove leucopus
 # (becuase they all have very small doses 0, 0.008, 0.013 Gy)
@@ -569,8 +602,6 @@ report <- update_report(report, d, "At least three distinct treatment groups so 
 
 # How many duplicates after filtering?
 table0(d$duplicates)  # 19462 FALSE 9610 TRUE
-
-
 
 #   studies   clusters treatments    animals not vetted to exclude 
 #         8         16         91      28289          0          0 
@@ -591,6 +622,22 @@ d_wo_warnings <- filter_by_n_groups(d_wo_warnings)
 count(d_wo_warnings)
 #    studies   clusters treatments    animals not vetted to exclude
 #          6         13         73      18903          0          0
+
+
+# Cluster by study
+#
+# Mark those that would have too few treatment groups to be included
+# if we were clustering by study.
+d$study_cluster <- paste(d$cluster, 'study', d$study_id)
+d$n_groups_per_study_cluster <- n_groups_by_cluster(d, 'study_cluster')
+d$in_study_cluster_anlaysis <- d$n_groups_per_study_cluster >= 3
+count(d[d$in_study_cluster_anlaysis,])
+report <- update_report(report, 
+                        d[d$in_study_cluster_anlaysis,], 
+                        "(optional) At least three distinct treatment groups after clustering by study id")
+
+#    studies   clusters treatments    animals not vetted to exclude 
+#          9         16         71      20325          0          0 
 
 # Save
 setwd('~/janus')
@@ -634,13 +681,20 @@ d = d %>%
   mutate(n_in_cluster=length(cluster))
 
 # Give the clusters pretty names
-for(c in unique(d$cluster)) {
+prettify_cluster_name <- function(c) {
   elements = as.list(strsplit(c, '--')[[1]])
   names(elements) <- c('sex', 'strain', 'species', 'lab', 'age', 'quality')
   pretty_cluster = with(elements, paste(
     sex, strain, pluralize(species), lab,
     '\n', quality, 'at', age, 'days old'))
-  d$cluster[d$cluster == c] <- pretty_cluster
+  
+  pretty_cluster
+}
+for(c in unique(d$cluster)) {
+  d$cluster[d$cluster == c] <- prettify_cluster_name(c)
+}
+for(c in unique(d$study_cluster)) {
+  d$study_cluster[d$study_cluster == c] <- prettify_cluster_name(c)
 }
 
 # Define Acute
@@ -747,7 +801,6 @@ ggplot(d,
   expand_limits(x = -4) +
   theme(text = element_text(size = 10)) +
   xlab("age (days)") 
-
 
 ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/survival.png")
 ```
@@ -1407,7 +1460,7 @@ setwd('~/janus')
 source('scripts/util/util.R') # http://goo.gl/VYzkAs
 
 # Data
-data <- read.csv('data/edwards_1992.csv', sep='\t')
+data <- read.csv('data/edwards_1992.csv')
 
 # Apply selection criteria
 data <- data %>%
@@ -1416,6 +1469,12 @@ data <- data %>%
          dose <= 2.0)
 
 # Fit model to each facet
+# 
+# note: The weighting is 1/sd^2 unlike lifespan data which was evenly
+#       weighted.  The BEIR VII report is not clear about the lifespan
+#       approach, but they are clear that this is weighted.
+#
+#       see: http://dl.dropbox.com/u/1131693/bloodrop/beir_vii_page_255.png
 data <- ddply(data, .(facet), function(df){
   model <- lm(risk ~ dose + I(dose^2), df, weights=(1/error^2))
   df$seperate_prediction <- predict(model)
@@ -1428,13 +1487,16 @@ model_10B2 <- function(data, o){
   lm(
     risk ~ factor(facet) * I(dose + o*dose^2),
     data,
-    weights=(1/error^2)
+    weights=(1/(error)^2)
   )
 }
-fits <- get_likelihoods(data, model_10B2)
+fits <- get_likelihoods(data, 
+                        model_10B2,
+                        o_range=seq(-2, 6, 0.02))
 
 ggplot(fits, aes(o, l)) + 
-  geom_path()
+  geom_path() +  
+  scale_y_continuous(breaks = c(0:6)/5, limits=c(0,1.2))
 
 
 # Make predictions for most likely model
@@ -1443,6 +1505,7 @@ model <- lm(risk ~ factor(facet) * I(dose + o*dose^2),
               data,
               weights=(1/error^2))
 data$single_prediction <- predict(model)
+
 
 
 # Plot a reproduction of 10B2
@@ -1470,7 +1533,8 @@ ggplot(data,
              ncol=3) +
   xlim(0, 2) +
   xlab("Dose (Gy)") +
-  ylab("Risk %")
+  ylab("Risk %") + 
+  coord_cartesian(ylim=)
 
 ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/beir-10b2-reproduction.png")
 
@@ -1504,6 +1568,13 @@ Reproduce BEIR 10B3
 Reproduce the BEIR estimates on the oak ridge lifespan data
 from storer 1979 (3575012.pdf).
 
+*note*: It took a long time to figure out the right data set and modeling parameters to reproduce 10B4 (below).  The following values made for a [good fit][good fit].
+This fit looks best.  The summary is:
+- Theta range from -2 to 6
+- Weighting - equal, 1, for everypoint
+- Female and Male (with seperate strata)
+- Only RFM mice (the BALB/c were excluded)
+
 *note*: Apparently BEIR VII grouped together acute exposures from tables 1 and 2 if they had the same total dose ([without grouping][ungrouped], [with grouping][grouped]).
 
 [ungrouped]: http://dl.dropbox.com/u/1131693/bloodrop/10b3_temp_before.png
@@ -1520,7 +1591,6 @@ data <- read.csv('~/janus/data/storer_1979.csv', sep='\t')
 # Constants
 threshold_dose_to_model = 1.5001
 strain_to_model = 'RFM'
-sex_to_model = 'F'
 type_in_my_analysis = 'A'
 chronic_threshold_for_dose_rate = 0.1
 rate_to_fraction = c('6.9e-05'=Inf, '0.4'=1, '0.45'=1)
@@ -1529,34 +1599,21 @@ chronic_to_letter = c('TRUE'='C', 'FALSE'='A')
 # Clean
 # Here we will:
 #   1. Define fractions, chronic, and type
-#   2. Combine acute exposures with the same treatment
-#      (see note above for a justification)
-#   3. Define which data is modeled
+#   2. Define which data is modeled
 data = data %>%
   mutate(fractions = convert(rate, rate_to_fraction),
          chronic = rate < chronic_threshold_for_dose_rate,
-         type = convert(chronic, chronic_to_letter)) %>%
-  group_by(dose, type, sex, fractions, strain) %>%
-  summarise(table=list_unique(table),
-            total_n=sum(n),
-            rate=mean(rate),
-            age= sum(age * n) / total_n,
-            sd= (sum(sd^2 * n) / total_n)^0.5) %>%
-  mutate(modeled_in_10B3 = dose < threshold_dose_to_model &
-                           strain == strain_to_model &
-                           sex == sex_to_model,
+         type = convert(chronic, chronic_to_letter),
+         modeled_in_10B4 = dose < threshold_dose_to_model &
+                           strain == strain_to_model,
          in_my_analysis = type == type_in_my_analysis,
-         n = total_n) %>%
-  select(-total_n) %>%
-  ungroup() %>%
-  group_by(sex, strain) %>%
-  mutate(control_age = age[dose == 0])
+         cluster=sex)
 
 # Save for later use
 write.csv0(data, 'data/storer_1979_processed.csv')
 
-m <- lq_model(data[data$modeled_in_10B3,])
-to_predict <- get_data_to_predict()
+m <- lq_model(data %>% filter(modeled_in_10B4))
+to_predict <- get_data_to_predict(clusters="F")
 to_predict$p <- predict(m, newdata=to_predict)
 ```
 
@@ -1595,7 +1652,7 @@ I am capable of reproducing their results [very well][overlay].  There are a few
 3. The regression is weighted by 1/sd^2
 
 *Data not represented*
-This figure does not include male mice or BALB/c females from [Storer 1979][storer 1979].  Its not clear if these are excluded from the profile likelihood generation as well, or not.  In any case they fit the inclusion criteria, and should have been addressed.
+This figure does not include male mice or BALB/c females from [Storer 1979][storer 1979].  They fit the inclusion criteria, and should have been addressed.
 
 [overlay]: http://dl.dropbox.com/u/1131693/bloodrop/10b3_temp_png.png
 [wo-intercept]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot_2014-05-21_16_45_53_png_-_Dropbox.png
@@ -1615,8 +1672,6 @@ Reproduce the BEIR estimates on the oak ridge lifespan data from storer 1979 (35
 Verify that confidence intervals are the same as those seen in table 10-2.
 
 ```{r}
-# TODO(ben) make sure the reproduction is perfect, instead of almost perfect
-
 # Common
 setwd('~/janus')
 source('scripts/util/util.R') # http://goo.gl/VYzkAs
@@ -1625,7 +1680,10 @@ source('scripts/util/util.R') # http://goo.gl/VYzkAs
 data <- read.csv('data/storer_1979_processed.csv')
 data_10B2 <- read.csv('data/animal_carcinogenesis_likelihoods.csv')
 
-beir_r <- get_likelihoods(data %>% filter(modeled_in_10B3), fixed_o_model)
+# The o_range is necessary for a proper fit
+beir_r <- get_likelihoods(data %>% filter(modeled_in_10B4), 
+                          fixed_o_model,
+                          o_range = seq(-2, 6, by=0.02))
 beir_r <- beir_r %>%
   mutate(likelihood = l) %>%
   select(-l)
@@ -1667,7 +1725,8 @@ ggplot(g, aes(o, likelihood, linetype=source)) +
   geom_path() +
   scale_linetype_manual(values=c('dotted', 'dotdash', 'solid')) +
   scale_y_continuous(breaks = c(0:5)/5, limits=c(0,1.2)) +
-  coord_cartesian(xlim=c(-1.0, 6.0)) +
+  coord_cartesian(xlim=c(-1.0, 6.0), ylim=c(-0.1, 1.1)) +
+  theme(legend.position=c(0.85, 0.8)) +
   xlab("θ (~ DDREF.lss - 1)")
 
 ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/beir-10b4-reproduction.png")
@@ -1688,9 +1747,16 @@ I am faithfully determining confidence intervals and to butress visual proof wit
 Note, my confidence interfal should match the first row and last column, the 95% confidence interval from radiobiology data.
 
 ```{r}
-# is        "0.4 (0.1, 3.1)"
+# is        "0.5 (0.1, 3.0)"
 # should be "0.5 (0.1, 3.2)"
 . <- confidence_interval(data$o, data$mean, 0.05)
+
+
+# Sub results (these were not reported in BEIR VII)
+
+. <- confidence_interval(data$o, data$tumor, 0.05)    # 0.4 (0.1, 1.6)
+. <- confidence_interval(beir_r$o, beir_r$likelihood, 0.05) # 1.0 (0.3, 6.0+) 
+
 ```
 
 
@@ -1700,6 +1766,8 @@ I was able to reproduce figure 10B4 and the confidence intervals very well.  The
 In any case, the estimate has changed a trivial amount from the original.  Making it perfect is a job for later.
 
 ^ back to [table of contents](#contents)
+
+
 
 ___________________________________________________________________
 
@@ -2084,7 +2152,7 @@ source('scripts/util/util.R') # http://goo.gl/VYzkAs
 # Data
 likelihoods <- read.csv('data/animal_likelihoods.csv')
 
-p_different(cdf(likelihoods$tumor), cdf(likelihoods$lifespan))  # 0.079975
+p_different(cdf(likelihoods$tumor), cdf(likelihoods$lifespan))  # 0.127
 ```
 
 They are almost significantly different than one another!
@@ -2133,49 +2201,58 @@ predictions <- ddply(aggregate, .(cluster), function(df){
 })
 
 # Find likelihood profile of theta, o
-likelihoods <- get_likelihoods(aggregate, fixed_o_model)
+likelihoods <- get_likelihoods(aggregate, weighted_fixed_o_model)
 
 # Find best theta (o) value
 o = with(likelihoods, o[which.max(l)])
 print(o)
 
 # Fit with best theta value
-m <- fixed_o_model(aggregate, o)
+m <- weighted_fixed_o_model(aggregate, o)
 predictions$p_all <- predict(m, newdata=predictions)
 
 # Show
 # As in 10B3
 # http://www.nap.edu/openbook.php?record_id=11340&page=257
-
+y_interval <- 0.0001
 scales <- aggregate %>%
   group_by(cluster) %>%
   summarize(min=min(1/age), 
             max=max(1/age),
             range = max - min,
-            type='')
-scales$max <- scales$min + max(scales$range)
+            type='A')
+scales <- scales %>%
+  ungroup()  %>%
+  mutate(max = min + max(scales$range),
+         max = round(max + y_interval, 4),
+         min = round(min - y_interval, 4))
 
 ggplot(aggregate, aes(dose,
                       1/age,
-                      label=type,
-                      group=type)) +
+                      group=type,
+                      color=type)) +
   geom_smooth(
-      data=predictions,
-      aes(dose, p, color=type),
-      method='lm',
-      formula='y ~ x + I(x^2)',
-      se=FALSE
-  ) + 
-  geom_text(size=4) +
-  scale_color_manual(values=c('black', 'grey')) +
+    data=predictions,
+    aes(dose, p_all),
+    method='lm',
+    formula='y ~ x + I(x^2)',
+    se=FALSE,
+    linetype='solid',
+    size=0.5
+  ) +
+  geom_point(alpha=0.5) +
+  geom_linerange(aes(ymax=1/(age + sd),
+                     ymin=1/(age - sd))) +
+  scale_color_manual(values=c('black', 'red4'),
+                     labels = c('acute', 'chronic')) +
   facet_wrap(~ cluster, scales='free_y') + 
   theme(text = element_text(size = 10),
         axis.text.y=element_blank()) +
-  geom_text(data=scales, aes(x=1, y=min)) + 
-  geom_text(data=scales, aes(x=1, y=max)) + 
+  geom_point(data=scales, aes(x=1, y=min), size=0.000001) + 
+  geom_point(data=scales, aes(x=1, y=max), size=0.000001) + 
   ylab("1 / mean age (days)") +
   xlab("dose (Gy)") +
-  theme(legend.position = "none")
+  scale_y_continuous(breaks = seq(0, 1, by = y_interval))
 
 ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/lifeshortening.png")
 ```
@@ -2529,6 +2606,7 @@ m <- model_meta_fixed_o(aggregate, o, negative_dose_responses)
 
 # Find hetorogeneity
 tau2 <- m$tau2
+p_heterogeneity <- m$QEp
 
 # Make predictions
 to_predict <- get_data_to_predict(clusters=aggregate$cluster)
@@ -2552,33 +2630,24 @@ scales$max <- scales$min + max(scales$range)
 ggplot(aggregate, aes(dose,
                       1/age,
                       label=type,
-                      group=type)) +
-  geom_smooth(
-    data=to_predict,
-    aes(dose, p_10B3),
-    method='lm',
-    formula='y ~ x + I(x^2)',
-    se=FALSE,
-    color='black'
-  ) +
+                      group=type,
+                      color=type)) +
   geom_smooth(
     data=to_predict,
     aes(dose, p_my_analysis),
     method='lm',
     formula='y ~ x + I(x^2)',
-    se=FALSE,
-    color='red',
-    linetype='dotted'
+    se=FALSE
   ) +
-  geom_text(size=4, alpha=0.9) +
-  geom_errorbar(aes(ymin=1/age + (vi + tau2)^0.5,
-                    ymax=1/age - (vi + tau2)^0.5), 
-                alpha=0.5, width=.05, color='red') +
-  geom_errorbar(aes(ymin=1/age + (vi)^0.5,
-                    ymax=1/age - (vi)^0.5), 
-                alpha=0.5, width=.15) + 
+  geom_point(alpha=0.5) +
+  geom_linerange(aes(ymin=1/age + (vi + tau2)^0.5,
+                     ymax=1/age - (vi + tau2)^0.5),
+                 color='blue') +
+  geom_linerange(aes(ymin=1/age + (vi)^0.5,
+                     ymax=1/age - (vi)^0.5)) + 
   geom_text(data=scales, aes(x=1, y=min)) + 
   geom_text(data=scales, aes(x=1, y=max)) + 
+  scale_color_manual(values=c('blue', 'black', 'red4')) +
   facet_wrap(~ cluster, scales="free_y") +
   theme(text = element_text(size = 10),
         axis.text.y=element_blank()) +
@@ -2625,7 +2694,7 @@ Analogous to the lifespan likelihood curve from figure 10B4 but using all of the
 ```{r}
 # was 1.4 ( 0.5, 9.9)
 . <- confidence_interval(tenb4$o, tenb4$lifespan, 0.05)       
-# is  0.5 (-0.2, 10+)
+# is  0.5 (-0.2, 10.6)
 . <- confidence_interval(likelihoods$o, likelihoods$l, 0.05)  
 
 p_different(cdf(likelihoods$l), cdf(tenb4$lifespan))  # 0.16
@@ -2673,7 +2742,7 @@ setwd('~/janus')
 source('scripts/util/util.R') # http://goo.gl/VYzkAs
 
 # Data
-data <- read.csv('data/edwards_1992.csv', sep='\t')
+data <- read.csv('data/edwards_1992.csv')
 data_10B2_likelihoods <- read.csv('data/animal_carcinogenesis_likelihoods.csv')
 
 
@@ -2949,7 +3018,7 @@ Profiles after meta-regression
 Combine human and animal curves from the new analysis that used meta-regression restricted to positive coefficients.
 
 ```{r}
-# Common
+# Common 
 setwd('~/janus')
 source('scripts/util/util.R') # http://goo.gl/VYzkAs
 
@@ -3104,39 +3173,39 @@ scales$max <- scales$min + max(scales$range)
 ggplot(aggregate, aes(dose,
                       1/age,
                       label=type,
-                      group=type)) +
+                      group=type,
+                      color=type)) +
+  geom_smooth(
+    data=to_predict,
+    aes(dose, p_my_analysis),
+    method='lm',
+    formula='y ~ x + I(x^2)',
+    se=FALSE
+  ) +
   geom_smooth(
     data=to_predict,
     aes(dose, p_10B3),
     method='lm',
     formula='y ~ x + I(x^2)',
     se=FALSE,
-    color='black'
-  ) +
-  geom_smooth(
-    data=to_predict,
-    aes(dose, p_my_analysis),
-    method='lm',
-    formula='y ~ x + I(x^2)',
-    se=FALSE,
-    color='red',
     linetype='dotted'
   ) +
-  geom_text(size=4, alpha=0.9) +
-  geom_errorbar(aes(ymin=1/age + (vi + tau2)^0.5,
-                    ymax=1/age - (vi + tau2)^0.5), 
-                alpha=0.5, width=.05, color='red') +
-  geom_errorbar(aes(ymin=1/age + (vi)^0.5,
-                    ymax=1/age - (vi)^0.5), 
-                alpha=0.5, width=.15) + 
+  geom_point(alpha=0.5) +
+  geom_linerange(aes(ymin=1/age + (vi + tau2)^0.5,
+                     ymax=1/age - (vi + tau2)^0.5),
+                 color='blue') +
+  geom_linerange(aes(ymin=1/age + (vi)^0.5,
+                     ymax=1/age - (vi)^0.5)) + 
   geom_text(data=scales, aes(x=1, y=min)) + 
   geom_text(data=scales, aes(x=1, y=max)) + 
+  scale_color_manual(values=c('blue', 'black', 'red4')) +
   facet_wrap(~ cluster, scales="free_y") +
   theme(text = element_text(size = 10),
         axis.text.y=element_blank()) +
   ylab("1 / mean age (days)") +
   xlab("dose (Gy)") +
   theme(legend.position = "none") 
+
 
 ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/low-curvature-fits-chronic-acute-comparisons-poorly.png")
 ```
@@ -3202,7 +3271,7 @@ likelihoods_acute_only <- get_likelihoods(
 # Save them for later use
 write.csv0(likelihoods_direct_comparisons, 
            'data/likelihoods_direct_comparisons.csv')
-write.csv0(likelihoods_direct_comparisons, 
+write.csv0(likelihoods_acute_only, 
            'data/likelihoods_acute_only.csv')
 
 # Merge with previous data
@@ -3223,8 +3292,6 @@ ggplot(r, aes(o, l, color=analysis, alpha=analysis)) +
   ylab("likelihood")
 
 ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/seperate-acute-analysis.png")
-
-# 
 ```
 
 #### Figure: Likelihood profile when using meta analysis on all data
@@ -3324,6 +3391,7 @@ m <- model_meta_fixed_o(aggregate, o, negative_dose_responses)
 # Find hetorogeneity
 tau2 <- m$tau2
 print(tau2)   # 4.3e-10
+p_heterogeneity <- m$QEp  # 3.8e-14
 
 # Make predictions
 to_predict <- get_data_to_predict(clusters=aggregate$cluster)
@@ -3347,33 +3415,24 @@ scales$max <- scales$min + max(scales$range)
 ggplot(aggregate, aes(dose,
                       1/age,
                       label=type,
-                      group=type)) +
+                      group=type,
+                      color=type)) +
   geom_smooth(
-    data=to_predict,
-    aes(dose, p_10B3),
-    method='lm',
-    formula='y ~ x + I(x^2)',
-    se=FALSE,
-    color='black'
-  ) +
-  geom_smooth(
-    data=to_predict,
+    data=to_predict %>% filter(type == 'A'),
     aes(dose, p_my_analysis),
     method='lm',
     formula='y ~ x + I(x^2)',
-    se=FALSE,
-    color='red',
-    linetype='dotted'
+    se=FALSE
   ) +
-  geom_text(size=4, alpha=0.9) +
-  geom_errorbar(aes(ymin=1/age + (vi + tau2)^0.5,
-                    ymax=1/age - (vi + tau2)^0.5), 
-                alpha=0.5, width=.05, color='red') +
-  geom_errorbar(aes(ymin=1/age + (vi)^0.5,
-                    ymax=1/age - (vi)^0.5), 
-                alpha=0.5, width=.15) + 
+  geom_point(alpha=0.5) +
+  geom_linerange(aes(ymin=1/age + (vi + tau2)^0.5,
+                     ymax=1/age - (vi + tau2)^0.5),
+                 color='blue') +
+  geom_linerange(aes(ymin=1/age + (vi)^0.5,
+                     ymax=1/age - (vi)^0.5)) + 
   geom_text(data=scales, aes(x=1, y=min)) + 
   geom_text(data=scales, aes(x=1, y=max)) + 
+  scale_color_manual(values=c('blue', 'black', 'red4')) +
   facet_wrap(~ cluster, scales="free_y") +
   theme(text = element_text(size = 10),
         axis.text.y=element_blank()) +
@@ -3386,6 +3445,501 @@ ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/infinite-curv
 
 #### Figure: Limit to studies that directly compared acute and chronic - Infinite curvature
 Analagous to figure 10B3 from BEIR VII we see ordinary linear quadratic models (black) fit to 1/lifespan of acutely, A, and chronically, C, mice at various doses in Gy.  Straight lines correspond to chronic predictions while curved lines correspond to accute predictions.  Grey error bards show measured uncertainty, red error bars show measured uncertainty plus estimated heterogeneity by meta-regression.  The best fit of an infinite curvature is shown in red dotted lines.  These are constrained to positive dose-response values as was the meta-regression.  Infinite curvature is the most likely when these models are analyzed in isolation from the other dose response models.
+
+^ back to [table of contents](#contents)
+
+__________________________________________________________________
+
+<a name="seperate-analysis-leads-to-better-acute-fits"></a>
+
+Seperate analysis leads to better acute fits
+========================================================
+*Last update: October 2014*
+
+Show that the seperate analysis fits acute data pretty well as it did chronic data.
+
+
+```{r}
+# Common
+setwd('~/janus')
+source('scripts/util/util.R') # http://goo.gl/VYzkAs
+
+# Data
+aggregate <- read.csv('data/10B4_all_data_aggregated.csv')
+aggregate <- aggregate %>% mutate(cluster = order_levels_by_number(cluster))
+likelihoods <- read.csv('data/likelihoods_acute_only.csv')
+
+# Limit to acute data
+aggregate <- aggregate %>% filter(type == 'A')
+
+# Prepare for Meta
+aggregate <- aggregate %>%
+  mutate(yi = 1/age,
+         vi = (1/age - 1/(age + sd))^2) %>%
+  mutate(cluster = order_levels_by_number(cluster)) %>%
+  arrange(cluster) 
+
+# Fit with the most likely curvature
+o <- likelihoods$o[which.max(likelihoods$l)]
+negative_dose_responses <- model_meta_get_negative_dose_responses(aggregate, o)
+m <- model_meta_fixed_o(aggregate, o, negative_dose_responses)
+
+# Find hetorogeneity
+tau2 <- m$tau2
+print(tau2)   # 4.3e-10
+p_heterogeneity <- m$QEp  # 4.02e-15
+
+# Make predictions
+to_predict <- get_data_to_predict(clusters=aggregate$cluster)
+to_predict$p_my_analysis <- predict_meta_fixed_o(m, newdata=to_predict, clustered=TRUE, negative_dose_responses)
+to_predict$p_10B3 <- predict(lq_model(aggregate), newdata=to_predict)
+
+# Scaling
+# We want the graphs to have the same scale
+# but start at different y intercepts
+scales <- aggregate %>%
+  group_by(cluster) %>%
+  summarize(min=min(1/age), 
+            max=max(1/age),
+            range = max - min,
+            type='')
+scales$max <- scales$min + max(scales$range)
+
+# Show
+# As in 10B3
+# http://www.nap.edu/openbook.php?record_id=11340&page=257
+ggplot(aggregate, aes(dose,
+                      1/age,
+                      label=type,
+                      group=type,
+                      color=type)) +
+  geom_smooth(
+    data=to_predict,
+    aes(dose, p_my_analysis),
+    method='lm',
+    formula='y ~ x + I(x^2)',
+    se=FALSE
+  ) +
+  geom_point(alpha=0.5) +
+  geom_linerange(aes(ymin=1/age + (vi + tau2)^0.5,
+                     ymax=1/age - (vi + tau2)^0.5),
+                 color='blue') +
+  geom_linerange(aes(ymin=1/age + (vi)^0.5,
+                     ymax=1/age - (vi)^0.5)) + 
+  geom_text(data=scales, aes(x=1, y=min)) + 
+  geom_text(data=scales, aes(x=1, y=max)) + 
+  scale_color_manual(values=c('blue', 'black', 'red4')) +
+  facet_wrap(~ cluster, scales="free_y") +
+  theme(text = element_text(size = 10),
+        axis.text.y=element_blank()) +
+  ylab("1 / mean age (days)") +
+  xlab("dose (Gy)") +
+  theme(legend.position = "none") 
+
+ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/seperate-analysis-leads-to-better-acute-fits.png")
+```
+
+#### Figure: Limit to acute exposures
+Analagous to figure 10B3 from BEIR VII we see ordinary linear quadratic models (black) fit to 1/lifespan of acutely, A, and chronically, C, mice at various doses in Gy.  Straight lines correspond to chronic predictions while curved lines correspond to accute predictions.  Grey error bards show measured uncertainty, red error bars show measured uncertainty plus estimated heterogeneity by meta-regression.  The best fit of an infinite curvature is shown in red dotted lines.  These are constrained to positive dose-response values as was the meta-regression.  
+
+The best curvature is actually slightly negative!
+
+^ back to [table of contents](#contents)
+
+__________________________________________________________________
+
+
+<a name="summary-analysis"></a>
+
+One big bad analysis summarizing the previous ones
+========================================================
+*Last update: December 2014*
+
+I need data on the following:
+
+@here
+
+- Acute vs Comparison
+- models  
+  [x] BEIR VII, 
+  [x] hormetic correction, 
+  [x] meta regression, 
+  [x] stratify by study
+  [ ] survival, 
+- Graphs and DDREF estimates
+
+```{r}
+# Common
+setwd('~/janus')
+source('scripts/util/util.R') # http://goo.gl/VYzkAs
+
+# Data
+data <- readRDS('data/ddref.rds')
+write.csv0(data.frame(low=0, medium=0, high=0, name='placeholder'),
+           'data/theta_estimates.csv')
+
+# Helpers
+
+# Likelihood of varoius theta values
+get_likelihoods <- function(data, 
+                            modeling_function, 
+                            o_range = seq(-1, 20, by=0.02),
+                            likelihood_function=logLik){
+  r <- ldply(o_range, function(o){
+    m <- modeling_function(o, data)
+    l = logLik(m)
+    
+    data.frame(o, l)
+  })
+  
+  delta = o_range[2] - o_range[1]
+  r$l <- normalize_likelihood(r$l, delta)
+  
+  r
+}
+get_negative_coefficients <- function(m) {
+  names(coefficients(m)[coefficients(m) < 0])
+}
+
+# Clusters with acute and chronic data
+get_comparison_clusters = function(data) {
+  data <- unique(data[,c('type', 'cluster')])
+  acute_clusters = unique((data %>% filter(type == "A"))[["cluster"]])
+  protraced_clusters = unique((data %>% filter(type == "C"))[["cluster"]])
+  comparison_clusters = intersect(acute_clusters, protraced_clusters)
+  
+  comparison_clusters
+}
+
+# Pretty graphs
+show <- function(data, to_predict) {
+  # Show
+  # As in 10B3
+  # http://www.nap.edu/openbook.php?record_id=11340&page=257
+  y_interval <- 0.0001
+  scales <- data %>%
+    group_by(cluster) %>%
+    summarize(min=min(inverse_age_mean), 
+              max=max(inverse_age_mean),
+              range = max - min,
+              type='A')
+  scales$max <- scales$min + max(scales$range)
+  scales$max <- round(scales$max + y_interval, 4)
+  scales$min <- round(scales$min - y_interval, 4)
+  
+  print(ggplot(data, aes(dose,
+                        inverse_age_mean,
+                        group=type,
+                        color=type)) +
+    geom_smooth(
+      data=to_predict,
+      aes(dose, prediction),
+      method='lm',
+      formula='y ~ x + I(x^2)',
+      se=FALSE,
+      linetype='solid',
+      size=0.5
+    ) +
+    geom_point(alpha=0.5) +
+    geom_linerange(aes(ymax=inverse_age_mean + inverse_age_sd,
+                       ymin=inverse_age_mean - inverse_age_sd)) +
+    scale_color_manual(values=c('black', 'red4'),
+                       labels = c('acute', 'chronic')) +
+    facet_wrap(~ cluster, scales='free_y') + 
+    theme(text = element_text(size = 10),
+          axis.text.y=element_blank()) +
+    geom_point(data=scales, aes(x=1, y=min), size=0.000001) + 
+    geom_point(data=scales, aes(x=1, y=max), size=0.000001) + 
+    ylab("1 / mean age (days)") +
+    xlab("dose (Gy)") +
+    scale_y_continuous(breaks = seq(0, 1, by = y_interval)))
+}
+
+analyze <- function(name, data, model, predict_fn) {
+  
+  intervals <- read.csv('data/theta_estimates.csv', as.is=TRUE)
+
+  # Find likelihood profile of theta, o
+  likelihoods <- get_likelihoods(data, model)
+
+  # Find best theta (o) value
+  o = with(likelihoods, o[which.max(l)])
+  print(o)
+
+  # Make predictions
+  to_predict <- get_data_to_predict(clusters=data$cluster) %>%
+    filter(type %in% data$type)
+  to_predict$prediction <- predict_fn(model(o, data), newdata=to_predict, o=o)
+
+  # Graph
+  show(data, to_predict)
+  base_path = "/Users/benjaminhaley/Dropbox/Public/thesis-figures/"
+  ggsave_for_ppt(paste0(base_path, name, ".png"))
+  
+  # Confidence
+  o_estimate <- confidence_interval(likelihoods$o, 
+                                   likelihoods$l, 
+                                   0.05)
+  
+  
+  print(o_estimate)
+  intervals <- rbind(intervals, c(o_estimate, name=name))
+  write.csv0(intervals, 'data/theta_estimates.csv')
+}
+
+# Define data
+aggregate = data %>%
+  mutate(inverse_lifespan = 1/lifespan) %>%
+  group_by(cluster, group_id) %>%
+  summarize(inverse_age_mean=mean(inverse_lifespan),
+            n=length(lifespan),
+            inverse_age_sd=sd(inverse_lifespan) / n^0.5,
+            dose=only(dose),
+            fractions=only(fractions),
+            type=only(type))
+
+aggregate_by_study = data %>%
+  filter(in_study_cluster_anlaysis) %>%
+  mutate(inverse_lifespan = 1/lifespan) %>%
+  group_by(study_cluster, group_id) %>%
+  summarize(inverse_age_mean=mean(inverse_lifespan),
+            n=length(lifespan),
+            inverse_age_sd=sd(inverse_lifespan) / n^0.5,
+            dose=only(dose),
+            fractions=only(fractions),
+            type=only(type)) %>%
+  mutate(cluster = study_cluster) %>%
+  ungroup()
+
+
+# Define models
+
+# BEIR
+# The original BEIR VII model
+beir <- function(o, data) lm(
+  inverse_age_mean ~ I(dose + o*dose^2 / fractions)*cluster, 
+  data)
+predict_lm <- function(..., o) predict(...)
+
+# Hormetic correction
+# The beir vii model w/o negative dose/response
+hormetic_correction <- function(o, data) {
+  formula <- inverse_age_mean ~ I(dose + o*dose^2 / fractions) * cluster -
+    I(dose + o*dose^2 / fractions)
+  
+  # Remove negative coeficients
+  m <- lm(formula, data)
+  negative <- get_negative_coefficients(m)
+  negative <- negative[grepl('dose', negative)]
+  negative <- sub(".*:cluster", "", negative)
+  data[data$cluster %in% negative, 'dose'] <- 0
+  
+  lm(formula, data)}
+
+
+# Heterogeneity correction
+# The hormetic analysis accounting for random effects
+meta_regression <- function(o, data){
+  # Formula
+  formula <- ~ I(dose + o*dose^2 / fractions) * cluster -
+    I(dose + o*dose^2 / fractions)
+  
+  # Define outcome and variance
+  yi = data$inverse_age_mean
+  vi = data$inverse_age_sd^2
+  
+  # Determine mods
+  # We determine the model matrix ourselves
+  # in case any mods are to be excluded.
+  data$cluster <- order_levels_by_number(data$cluster)
+  mods <- model.matrix(formula, data)
+    
+  # Find negative dose responses
+  m <- rma(
+    yi,
+    vi,
+    mods = mods,
+    data = data,
+    method='DL',
+    control=list(maxiter=1000, threshold=10e-12)
+  )
+  negative <- get_negative_coefficients(m)
+  negative <- negative[grepl('dose', negative)]
+  mods <- mods[,!colnames(mods) %in% negative]
+
+  # Run the model
+  m <- rma(
+    yi,
+    vi,
+    mods = mods,
+    data = data,
+    method='DL',
+    control=list(maxiter=1000, threshold=10e-12)
+  )
+  
+  m
+}
+predict_meta_regression <- function(m, newdata, o){
+  # Formula
+  formula <- ~ I(dose + o*dose^2 / fractions) * cluster -
+    I(dose + o*dose^2 / fractions)
+
+  # Determine mods
+  # We determine the model matrix ourselves
+  # in case any mods are to be excluded.
+  newmods <- model.matrix(formula, newdata)
+  original_mods <- rownames(m$b)
+  newmods <- newmods[,colnames(newmods) %in% original_mods]
+  
+  # Print tau
+  print(paste("tau", m[['tau2']]))
+  
+  # Predict
+  predict(m, newmods=newmods)$pred
+}
+
+
+
+
+
+
+
+# Analyze
+# Write the ddref range into a csv, e.g. 20 (4, 20)
+analyze(name ="1. BEIR VII all data", 
+        data =aggregate, 
+        model=beir,
+        predict_fn = predict_lm)
+analyze(name ="1. BEIR VII acute", 
+        data =aggregate %>% filter(type == "A"), 
+        model=beir,
+        predict_fn = predict_lm)
+analyze(name ="1. BEIR VII comparison", 
+        data =aggregate %>% 
+          filter(cluster %in% get_comparison_clusters(aggregate)),
+        model=beir,
+        predict_fn = predict_lm)
+analyze(name ="2. Hormetic correction all data", 
+        data =aggregate, 
+        model=hormetic_correction,
+        predict_fn = predict_lm)
+analyze(name ="2. Hormetic correction acute", 
+        data =aggregate %>% filter(type == "A"), 
+        model=hormetic_correction,
+        predict_fn = predict_lm)
+analyze(name ="2. Hormetic correction comparison", 
+        data =aggregate %>% 
+          filter(cluster %in% get_comparison_clusters(aggregate)),
+        model=hormetic_correction,
+        predict_fn = predict_lm)
+analyze(name ="3. Heterogeneity correction all data", 
+        data =aggregate, 
+        model=meta_regression,
+        predict_fn = predict_meta_regression)
+analyze(name ="3. Heterogeneity correction acute", 
+        data =aggregate %>% filter(type == "A"), 
+        model=meta_regression,
+        predict_fn = predict_meta_regression)
+analyze(name ="3. Heterogeneity correction comparison", 
+        data =aggregate %>% 
+          filter(cluster %in% get_comparison_clusters(aggregate)),
+        model=meta_regression,
+        predict_fn = predict_meta_regression)
+analyze(name ="4. Cluster by study all data", 
+        data =aggregate_by_study, 
+        model=meta_regression,
+        predict_fn = predict_meta_regression)
+analyze(name ="4. Cluster by study acute", 
+        data =aggregate_by_study %>% filter(type == "A"), 
+        model=meta_regression,
+        predict_fn = predict_meta_regression)
+analyze(name ="4. Cluster by study comparison", 
+        data =aggregate_by_study %>% 
+          filter(cluster %in% get_comparison_clusters(aggregate_by_study)),
+        model=meta_regression,
+        predict_fn = predict_meta_regression)
+
+
+# Print the results
+thetas <- read.csv('data/theta_estimates.csv', as.is=TRUE)
+
+# Convert theta estimates to ddref
+theta_to_ddref <- function(o) {
+  o <- o + 1
+  o <- sprintf('%.1f', o)
+  o[o == '21.0'] <- '∞'
+  o
+}
+thetas <- thetas %>%
+  mutate(low = theta_to_ddref(low),
+         medium = theta_to_ddref(medium),
+         high = theta_to_ddref(high),
+         estimate = paste0(medium, " (", low, ", ", high, ")"))
+
+# Organize by type
+thetas$type <- "all data"
+thetas$type[grepl("acute", thetas$name)] <- "acute"
+thetas$type[grepl("comparison", thetas$name)] <- "comparison"
+thetas$model <- sub(" (all data|acute|comparison)", "", thetas$name)
+thetas <- thetas %>%
+  select(model, type, estimate) %>%
+  filter(model != "placeholder")
+
+thetas <- dcast(thetas, model ~ type)
+thetas <- thetas[,c(1, 3, 2, 4)]
+
+print(xtable(thetas), 
+    type="html",
+    include.rownames = FALSE,
+    html.table.attributes = getOption("xtable.html.table.attributes", "border=0"))
+
+
+```
+
+
+^ back to [table of contents](#contents)
+
+__________________________________________________________________
+
+
+
+
+
+
+
+
+<a name="plausible-explanations-for-a-failure-to-fit-a-linear-quadratic-mode"></a>
+
+Plausible explanations for a failure to fit a linear quadratic model?
+========================================================
+*Last update: October 2014*
+
+What kind of dose response model would produce curves like the ones that we see?
+
+```{r}
+# Common
+setwd('~/janus')
+source('scripts/util/util.R') # http://goo.gl/VYzkAs
+
+data <- data.frame(
+  dose = seq(0, 1.5, 0.01)) %>%
+  mutate(sigmoid = (2 / (1 + exp(-(1.5*dose)^2)) - 1),
+         threshold = dose - 0.2)
+data$threshold[data$threshold < 0] <- 0
+
+ggplot(data, aes(dose)) +
+  geom_path(aes(y = sigmoid))
+
+ggplot(data, aes(dose)) +
+  geom_path(aes(y = threshold))
+
+ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/seperate-analysis-leads-to-better-acute-fits.png")
+```
+
+#### Figure: Limit to acute exposures
+Analagous to figure 10B3 from BEIR VII we see ordinary linear quadratic models (black) fit to 1/lifespan of acutely, A, and chronically, C, mice at various doses in Gy.  Straight lines correspond to chronic predictions while curved lines correspond to accute predictions.  Grey error bards show measured uncertainty, red error bars show measured uncertainty plus estimated heterogeneity by meta-regression.  The best fit of an infinite curvature is shown in red dotted lines.  These are constrained to positive dose-response values as was the meta-regression.  
+
+The best curvature is actually slightly negative!
 
 ^ back to [table of contents](#contents)
 
@@ -3948,19 +4502,21 @@ l
 # Show
 ggplot(data, aes(x, yi)) +
     geom_point() +
+    geom_linerange(aes(
+        ymin=yi - (vi + tau2)^0.5,
+        ymax=yi + (vi + tau2)^0.5,
+    ), color='blue') +
     geom_errorbar(aes(
         ymin=yi - vi^0.5,
         ymax=yi + vi^0.5,
-    ), width=0.1, alpha=0.5) +
-    geom_errorbar(aes(
-        ymin=yi - (vi + tau2)^0.5,
-        ymax=yi + (vi + tau2)^0.5,
-    ), width=0.1, alpha=0.5, color='red') +
+    ), width=0.1) +
     geom_path(aes(x, p), color='black')
+
+ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/principal-of-metaregression.png")
 ```
 
 ## Figure: The principal of metaregression
-Here we show an artificially generated dataset of 5 points with one outlier in the middle.  The standard error of each point is diplayed in grey error bars, the increased estimate, including random effects is displayed with red error bars.  The best fit after updating the error estimates via metaregression is shown with the line in black.
+Here we show an artificially generated dataset of 5 points with one outlier in the middle.  The standard error of each point is diplayed in grey error bars, the increased estimate, including random effects is displayed with blue error bars.  The best fit after updating the error estimates via metaregression is shown with the line in black.
 
 The essence here is that the initial error estamates are too low if a straight line explains the data.  Specifically the outlier is highly confident, but falls far off the best fit line.  This implies that the confidence is too high or that the relationship is not linear afterall.  With meta-regression we assume the relationship is in-fact linear but that the error of the data points has been systematicaly under-estimated.  The random effects error estimate is added to each point equally so that their distance from the best fit line is a probable number of stadard deviations.
 
@@ -4483,15 +5039,11 @@ ___________________________________________________________________
 
 1/lifespan with high dose limits
 ========================================================
-*Last update: July 2014*
+*Last update: October 2014*
 
 Show graphs like Storer 1979 10-B3 and 10-B4 but for this larger dataset.
 
-TODO: graph sizes should be customized depending on complexity
-
 ```{r}
-@here
-
 # Common
 setwd('~/janus')
 source('scripts/util/util.R') # http://goo.gl/VYzkAs
@@ -4500,39 +5052,32 @@ source('scripts/util/util.R') # http://goo.gl/VYzkAs
 data <- readRDS('data/ddref_2.rds')
 
 # Mean Lifespans
+# TODO: fix more than one dose in group 1003-21-3
 aggregate = data %>%
-  group_by(cluster, group_id, dose) %>%
+  group_by(cluster, group_id, factor(dose), factor(dose_rate)) %>%
   summarize(age=mean(lifespan),
             n=length(lifespan),
             sd=sd(lifespan)/n^0.5,
             dose=only(dose),
             fractions=only(fractions),
-            type=only(type))
-
-data$group_id[906]
+            type=only(type),
+            dose_rate=only(dose_rate))
 
 # Save aggregated data for later use
-write.csv0(aggregate, file='data/10B4_all_data_aggregated.csv')
+# TODO fix write error 'index out of range'
+# write.csv0(aggregate, file='data/10B4_all_data_aggregated_2.csv')
 
-# Model by cluster
-predictions <- ddply(aggregate, .(cluster), function(df){
-  m <- lq_model(df)
-  to_predict <- get_data_to_predict()
-  to_predict$p <- predict(m, newdata=to_predict)
-  to_predict$cluster <- only(df$cluster)
-  to_predict
-})
+# aggregate %>% select(cluster, age, group_id) %>% arrange(age) %>% filter(get_cluster_number(cluster) == 1, age < 900)
 
-# Find likelihood profile of theta, o
-likelihoods <- get_likelihoods(aggregate, fixed_o_model)
 
-# Find best theta (o) value
-o = with(likelihoods, o[which.max(l)])
-print(o)
+# Remove problem data
+# TODO migrage this up the chain
+aggregate <- aggregate %>%
+  filter(!group_id %in% c('1003-21-3', '1003-25-8', '9-4-24', '9-4-25', '9-4-29', '9-4-30', '9-4-31'))
 
-# Fit with best theta value
-m <- fixed_o_model(aggregate, o)
-predictions$p_all <- predict(m, newdata=predictions)
+aggregate <- rbind(
+  aggregate, 
+  aggregate %>% filter(dose == 0) %>% mutate(type = "C"))
 
 # Show
 # As in 10B3
@@ -4551,11 +5096,11 @@ ggplot(aggregate, aes(dose,
                       label=type,
                       group=type)) +
   geom_smooth(
-      data=predictions,
-      aes(dose, p, color=type),
+      aes(dose, 1/age, color=type),
       method='lm',
-      formula='y ~ x + I(x^2)',
-      se=FALSE
+      formula='y ~ x',
+      se=FALSE,
+      fullrange=TRUE
   ) + 
   geom_text(size=4) +
   scale_color_manual(values=c('black', 'grey')) +
@@ -4568,19 +5113,108 @@ ggplot(aggregate, aes(dose,
   xlab("dose (Gy)") +
   theme(legend.position = "none")
 
-ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/lifeshortening.png")
+ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/lifeshortening-2.png")
 ```
 
 #### Results
-The fits are far from well behaved!
+Very linear, chronic seema little smaller.
 
-Chronic effects may appear better or worse than projected acute effects.  Sometimes hormesis like respsonses appear.  Its not obvious from this graph because the y-axis is stretched to fit the data, but the magnitude of the effect is changing wildly too, especially at ORNL, cluster 1, where the effect of radiation is much stronger than in other cases.
+^ back to [table of contents](#contents)
 
-It is no wonder that radiobiology is full of debate!
+___________________________________________________________________
 
-At this point we should be a bit skeptical of organizing the data in this, the BEIR VII manner.  While that approach seemed reasonable given the ORNL data that they worked with, it clearly does not generalize well.  This may be because the underlying statitical approach is flawed, or simply that these graphs a very robust way of displaying the effect.  In any case we question the 'intuitive appeal' of graph 10B3.  While it seemed quite difinitive in isolation, the effect is lost when we try to repeat it on new datasets.
 
-However, we see some glimmers of hope.  While we can't trust these fits outright, in those cases where both chronic and acute exposures are available, the chronic exposure is regularly less damaging, albeit with some wild variation in magnitude.  This suggests that we would do well to be more inclusive in our data aquisition, to include higher doses in our analysis.
+<a name="TODO"></a>
+
+TODO
+========================================================
+*Last update: October 2014*
+
+What if we focus on the direct comparisons?
+
+```{r}
+# Common
+setwd('~/janus')
+source('scripts/util/util.R') # http://goo.gl/VYzkAs
+
+# Data
+data <- readRDS('data/ddref_2.rds')
+
+# Mean Lifespans
+# TODO: fix more than one dose in group 1003-21-3
+aggregate = data %>%
+  group_by(cluster, group_id, factor(dose), factor(dose_rate)) %>%
+  summarize(age=mean(lifespan),
+            n=length(lifespan),
+            sd=sd(lifespan)/n^0.5,
+            dose=only(dose),
+            fractions=only(fractions),
+            type=only(type),
+            dose_rate=only(dose_rate))
+
+aggregate$both <- FALSE
+for(c in unique(aggregate$cluster)){
+  df <- aggregate %>% filter(cluster == c)
+  if ('A' %in% df$type & 'C' %in% df$type){
+    aggregate[aggregate$cluster == c,'both'] <- TRUE
+    }
+}
+aggregate <- aggregate %>% filter(both)
+
+# Remove problem data
+# TODO migrage this up the chain
+aggregate <- aggregate %>%
+  filter(!group_id %in% c('1003-21-3', '1003-25-8', '9-4-24', '9-4-25', '9-4-29', '9-4-30', '9-4-31')) %>%
+  filter(n > 100)
+
+
+# Show
+# As in 10B3
+# http://www.nap.edu/openbook.php?record_id=11340&page=257
+
+scales <- aggregate %>%
+  group_by(cluster) %>%
+  summarize(min=min(1/age), 
+            max=max(1/age),
+            range = max - min,
+            type='')
+scales$max <- scales$min + max(scales$range)
+
+aggregate <- rbind(
+  aggregate, 
+  aggregate %>% filter(dose == 0) %>% mutate(type = "C"))
+
+chronic <- aggregate[aggregate$type == 'C' &
+                     aggregate$dose > 0,]
+
+ggplot(aggregate, aes(dose,
+                      1/age,
+                      group=type,
+                      label=type, 
+                      color=type)) +
+  geom_smooth(
+      method='lm',
+      formula='y ~ x',
+      se=FALSE,
+      fullrange=TRUE,
+      size=0.5
+  ) + 
+  geom_text(aes(label=fractions), alpha=0.5) +
+  scale_color_manual(values=c('blue', 'black', 'red')) +
+  geom_linerange(aes(ymax=1/(age + sd),
+                     ymin=1/(age - sd))) +
+  facet_wrap(~ cluster, scales='free_y') + 
+  theme(text = element_text(size = 10),
+        axis.text.y=element_blank()) +
+  geom_text(data=scales, aes(x=1, y=min)) + 
+  geom_text(data=scales, aes(x=1, y=max)) + 
+  ylab("1 / mean age (days)") +
+  xlab("dose (Gy)") +
+  theme(legend.position = "none")
+
+ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/lifeshortening-2-comparisons-only.png")
+```
+
 
 
 ^ back to [table of contents](#contents)
@@ -4724,4 +5358,99 @@ My heart is at ease.  Over a range compable to ORNL data the inversion makes ver
 ^ back to [table of contents](#contents)
 
 __________________________________________________________________
+  
 
+<a name="cell_killing"><a>
+
+
+Cell Killing effect
+========================================================
+*Last Update: October 2014*
+
+What does cell killing do to a dose response model?
+
+```{r}
+# Common
+setwd('~/janus')
+source('scripts/util/util.R') # http://goo.gl/VYzkAs
+
+
+a = 0.05
+B = 0.1
+data <- data.frame(dose = seq(0, 3, 0.1)) %>%
+  mutate(viable = exp(-a * dose - B * dose^2),
+         transformed = 1 - exp(-a * dose - B * dose^2),
+         "transformed & viable" = transformed * viable)
+
+data <- melt(data, "dose", 
+             variable.name = "type", 
+             value.name="percent")
+
+ggplot(data, aes(dose, percent, color=type, alpha=type, linetype=type)) +
+  scale_color_manual(values=c("black", "black", "red")) + 
+  scale_alpha_manual(values=c(0.5, 0.5, 1)) + 
+  scale_linetype_manual(values=c("dotted", "solid", "solid")) + 
+  geom_path() + 
+  ylab("Percent of cells")
+
+ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/cell-kiling.png")
+
+```
+
+#### Results
+Cell killing could explain a deviation 
+
+^ back to [table of contents](#contents)
+
+__________________________________________________________________
+
+
+
+__________________________________________________________________
+  
+
+<a name="cell_killing"><a>
+
+
+Heterogeniety
+========================================================
+*Last Update: October 2014*
+
+How does dose response change when an organism is composed of a variety of cell types with different radiosensitivies?
+
+```{r}
+# Common
+setwd('~/janus')
+source('scripts/util/util.R') # http://goo.gl/VYzkAs
+
+p1 = 0.5
+a1 = 0.1
+B1 = 0.1
+
+p2 = 1 - p1
+a2 = 0.005
+B2 = 0.005
+
+data <- data.frame(dose = seq(0, 10, 0.01)) %>%
+  mutate(viable1 = exp(-a1 * dose - B1 * dose^2),
+         viable2 = exp(-a2 * dose - B2 * dose^2),
+         viable = p1 * viable1 + p2 * viable2)
+
+data <- melt(data, "dose", 
+             variable.name = "type", 
+             value.name="percent")
+
+ggplot(data, aes(dose, percent, color=type)) +
+  geom_path() + 
+  ylab("Percent of cells")
+
+# ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/cell-kiling.png")
+
+```
+
+#### Results
+Does not follow a linear quadratic curve, really.
+
+^ back to [table of contents](#contents)
+
+  

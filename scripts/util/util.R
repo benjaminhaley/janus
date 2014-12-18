@@ -38,8 +38,8 @@ n_unique <- function(...) length(unique(paste(...)))
 ggsave_for_ppt <- function(...) {
   suppressWarnings(ggsave(..., 
                           dpi=100, 
-                          width=10.24, 
-                          height=7.68, 
+                          width=9.36, 
+                          height=7.02, 
                           units='in'))
 }
 
@@ -197,14 +197,6 @@ pluralize <- function(x) {
     Peromyscus='Peromyscus')[x]
 }
 
-# Save for ppt
-# A size and resolution that fits well in a powerpoint presentation
-ggsave_for_ppt <- function(...) suppressWarnings(ggsave(..., 
-                                                        dpi=100, 
-                                                        width=10.24, 
-                                                        height=7.68, 
-                                                        units='in'))
-
 # Combine all unique values of x into a comma seperated list
 # list_unique(c(2, 1, 1) == '1, 2'
 list_unique <- function(x) paste(sort(unique(x)), sep=', ', collapse=', ')
@@ -217,7 +209,7 @@ convert <- function(x, map) map[as.character(x)]
 # Get the likelihood of a range of o values
 get_likelihoods <- function(data, 
                             modeling_function, 
-                            o_range = seq(-2, 10, by=0.01),
+                            o_range = seq(-2, 20, by=0.02),
                             likelihood_function=logLik){
   r <- ldply(o_range, function(o){
     m <- modeling_function(data, o)
@@ -276,6 +268,11 @@ has_clusters <- function(data) "cluster" %in% names(data) & length(unique(data$c
 
 # lq model
 # The basic linear quadratic model used in the BEIR VII report
+#
+# Notably this seems to conflict with the model used to test various
+# theta values.  Specifcially this seems to be weighted by n, the
+# number of mice in each group, wheras that anlaysis was not weighted,
+# it seems!
 lq_model <- function(data){
   
   formula <- I(1/age) ~ dose + I(dose^2 / (fractions))
@@ -287,7 +284,7 @@ lq_model <- function(data){
   glm(
     formula,
     data=data,
-    weights=1/sd^2
+    weights=n
   )
 }
 
@@ -297,6 +294,26 @@ lq_model <- function(data){
 # of a particular curvature
 fixed_o_model <- function(data, o){
 
+  formula <- I(1/age) ~ I(dose + o*dose^2 / (fractions))
+  
+  # Define a formula that accomidates multiple clusters
+  if(has_clusters(data)) {
+    formula <- I(1/age) ~ I(dose + o*dose^2 / (fractions))*cluster}
+  
+  # Build the model
+  glm(
+    formula,
+    data=data
+  )
+}
+
+# fixed o model
+# A weighted version of the above.  It looks like they didn't use this
+# in the original longevity analysis, but they mention applying it to 
+# cancer data and it appears that they did.  So I think it was there 
+# intent to apply it universally.
+weighted_fixed_o_model <- function(data, o){
+  
   formula <- I(1/age) ~ I(dose + o*dose^2 / (fractions))
   
   # Define a formula that accomidates multiple clusters
