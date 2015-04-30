@@ -1,0 +1,1406 @@
+---
+title: "data.Rmd"
+author: "Benjamin Haley"
+date: "March 30, 2015"
+output: html_document
+---
+
+Check and clean data for thesis.Rmd.
+
+```{r}
+# Libraries
+library(plyr)
+library(dplyr)
+
+# Data
+setwd('~/janus')
+data <- readRDS('data/external5.rds')
+
+# Helpers
+summary <- function(study_id) {
+  data %>% 
+    group_by(lab,
+             study, 
+             group, 
+             species,
+             strain,
+             sex, 
+             treatment_age,
+             fractions, 
+             interval,
+             dose, 
+             rate,
+             quality,
+             use,
+             other_treatments) %>%
+    summarize(n=length(lifespan),
+              'u(age)'=round(mean(lifespan)),
+              'o(age)'=round(sd(lifespan), 1),
+              'o(u(age))'=round(sd(lifespan) / n^0.5, 1),
+              'median age'=median(lifespan/365.25)
+              ) %>%
+    filter(study == study_id) %>%
+    ungroup() %>%
+    select(-study)
+}
+summary2 <- function(study_id) {
+  data %>% 
+    group_by(lab,
+             study, 
+             group, 
+             species,
+             strain,
+             sex, 
+             fractions, 
+             interval,
+             dose, 
+             rate,
+             quality,
+             use,
+             other_treatments) %>%
+    summarize(n=length(lifespan),
+              'u(treatment_age)'=round(mean(treatment_age)),
+              'u(age)'=round(mean(lifespan)),
+              'o(age)'=round(sd(lifespan), 1),
+              'o(u(age))'=round(sd(lifespan) / n^0.5, 1),
+              'median age'=median(lifespan/365.25)
+              ) %>%
+    filter(study == study_id) %>%
+    ungroup() %>%
+    select(-study)
+}
+add_warning <- function(group, message) {
+  subset <- 
+    data$study == study & 
+    (data$group %in% as.character(group))
+  data[subset, 'warnings'] <- paste(
+    data[subset, 'warnings'],
+    message
+  )
+  data
+}
+use <- function(group, value=TRUE) {
+  subset <- 
+    data$study == study & 
+    (data$group %in% as.character(group))
+  data[subset, 'use'] <- value
+  data
+}
+name_stratum <- function(group, name){
+  data$stratum[data$study == study &
+               data$group %in% as.character(group)] = name
+  data
+}
+name_cluster <- function(group, number, name) {
+  subset <- 
+    data$study == study & 
+    (data$group %in% as.character(group))
+  data[subset, 'cluster'] <- name
+  data[subset, 'cluster_number'] <- number
+  data
+}
+controls <- data.frame()
+controls_for <- function(group, stratum) {
+  group=as.character(group)
+  new_mapping = data.frame(
+    study, 
+    group, 
+    stratum
+  )
+  controls = rbind(controls, new_mapping)
+  controls
+}
+
+
+# Clean a little
+data <- data %>%
+  mutate(
+    full_group_id = group_id,
+    study = study_id,
+    group = sub('[0-9]*-[x0-9]*-', '', group_id),
+    group = ifelse(!is.na(tmt), as.character(tmt), group),
+    rate = dose_rate,
+    treatment_age = age_at_treatment,
+    interval = fraction_interval,
+    old_exclude = exclude,
+    old_warning = warning,
+    old_warning_reason = warning_reason
+  )
+
+aliases <- list(
+  'quality'= c(
+    'gamma-rays Co-60'='γ-ray',
+    'gamma-rays Co-60, gamma-rays Co-60'='γ-ray',
+    'gamma-rays Co-60, gamma-rays Co-60, gamma-rays Co-60'='γ-ray',
+    'gamma-rays Cs-137'='γ-ray',
+    'gamma-rays whole body'='γ-ray',
+    'gamma-rays'='γ-ray',
+    'X-rays whole body'='X-ray'
+  ),
+  'sex'= c(
+    Both='♂/♀',
+    Female='♀',
+    Male='♂'
+  ),
+  'lab'= c(
+    '2'='CEN-FAR',
+    '3'='ENEA',
+    '9'='SCK/CEN',
+    '11'='TNO',
+    '1002'='DAVIS',
+    '1003'='ANL',
+    '1005'='ITRI',
+    '1007'='ORNL',
+    '1008'='CSU'
+  )
+)
+
+# Add lab
+data$lab <- sub('(^[0-9]*).*$', '\\1', data$study)
+
+
+# Assign aliases
+# Replace all values in a given column with their aliases
+# e.g. replace gamma-rays with γ
+for(column in names(aliases)) {
+  for(name in names(aliases[[column]])) {
+    alias = aliases[[column]][name]
+    data[data[column] == name & !is.na(data[column]),column] <- alias
+  }
+}
+
+####
+
+# Clean!
+
+data <- data %>%
+  select(
+    study,
+    lab,
+    group,
+    sex,
+    species,
+    strain,
+    lifespan,
+    treatment_age,
+    quality,
+    dose,
+    rate,
+    fractions,
+    interval,
+    other_treatments,
+    old_exclude,
+    old_warning,
+    old_warning_reason) %>%
+  mutate(
+    use = NA,
+    warnings = "",
+    stratum = NA,
+    cluster = NA,
+    cluster_number = NA
+)
+
+####  
+
+study <- "9-5"
+summary(study) %>%
+  filter(quality != 'neutrons>10 MeV') %>%
+  select(-lab)
+# source: 3575970.pdf
+
+# fix
+# 
+stratum_name <- "9-5 SCK/CEN ♂ BALB/c/Cnb mice\n  4 Gy/min γ-ray @84 days"
+data <- name_stratum(1:13, stratum_name)
+data <- name_cluster(1:7, 1, "1. acute")
+data <- name_cluster(8:13, 2, "2. 10 fractions separated by 1 day")
+controls <- controls_for(1, stratum_name)
+
+data <- add_warning(
+  group = 2,
+  message = "Mean lifespan in 3575970.pdf is 743 vs. 738 in mine.")
+data <- add_warning(
+  group = 2,
+  message = "Mean lifespan in 3575970.pdf is 747 vs. 739 in mine."
+)
+data <- add_warning(
+  group = 1:13,
+  message = "SE of mean lifespan reported in in 3575970.pdf are about 4x higher than in mine."
+)
+data <- use(group=1:13)
+
+# check
+#   [x] species
+#   [x] strain
+#   [x] fractions
+#   [x] interval
+#   [x] treatment_age
+#   [x] sex
+#   [x] n
+#   [x] u(age) 
+#        - group 2 is 743 in the source, 738 in mine
+#        - group 10 is 747 in the source, 739 in mine
+#   [x] o(age)
+#        - they are all about 4x higher than mine with no discernable pattern
+#   [x] dose
+#   [x] rate
+#   [x] quality
+#   [x] use
+#   [x] study name
+#   [x] cluster names
+
+
+
+####
+
+study <- "9-6"
+summary(study) %>%
+  filter(quality != "neutrons>10 MeV") %>% 
+  print(n=100)
+# source 3577205.pdf
+
+
+# fix
+# 
+stratum_name <- "9-6 SCK/CEN ♂ C57BL/Cnb mice\n  0.3 Gy/min γ-ray @84 days"
+data <- name_stratum(1:16, stratum_name)
+data <- name_cluster(1:7, 1, "1. acute")
+data <- name_cluster(14:16, 2, "2. 8 fractions separated by 3 hours")
+data <- name_cluster(8:13, 3, "3. 10 fractions separated by 1 day")
+controls <- controls_for(1, stratum_name)
+
+data <- add_warning(
+  group = 1:13,
+  message = "SE of mean lifespan reported in in 3577205.pdf are about 4x higher than in mine (just like 9-5)."
+)
+data <- use(group=1:16)
+
+# check
+#   [x] species
+#   [x] strain
+#   [x] sex
+#   [x] treatment_age
+#   [x] fractions
+#   [x] interval
+#   [x] dose
+#   [x] rate
+#   [x] quality
+#   [x] n
+#   [x] u(age) 
+#   [x] o(age)
+#   [x] use
+#   [x] study name
+#   [x] group names
+
+
+####
+
+study <- "2-10"
+
+# Will not use, all the doses are greater than 6 Gy
+# according to Gerber 1995
+
+
+####
+
+study <- "2-11"
+
+# Will not use, all the doses are similarly protracted
+# accoriding to Gerber 1995
+
+
+####
+
+study <- "7-8"
+
+# Will not use, not archived in the ERA :(
+
+
+
+####
+
+study <- "9-4"
+summary(study) %>%
+  # C57BL/Cnb is the only strain which compares fractionated
+  # and acute exposures. BALB/c/Cnb is only acute.
+  filter(other_treatments == "none",
+         strain == "C57BL/Cnb") %>% 
+  select(-treatment_age, -other_treatments) %>%
+  print(n=100)
+# source 3575315.pdf
+
+
+# fix
+# 
+stratum_name <- "9-4 SCK/CEN ♂ C57BL/Cnb mice\n  0.94 Gy/min X-ray @28 days"
+stratum_groups <- c(24:26, 29:31, 33:35)
+data <- name_stratum(stratum_groups, stratum_name)
+data <- name_cluster(24:26, 1, "1. acute")
+data <- name_cluster(c(29:31, 33:35), 2, "2. 4 fractions separated by 1 week")
+controls <- controls_for(24, stratum_name)
+
+# They labeled the interval (1 week) in minutes (10080)
+# But I want it to be in days (7)
+data$interval[data$study == "9-4" & data$interval == 10080] <- 7
+data <- add_warning(
+  group = stratum_groups,
+  message = "The standard errors reported in 3575315.pdf are regularly ~4x larger than the stardard errors I measure in the data"
+)
+data <- use(stratum_groups)
+
+
+# check
+#   [x] species
+#   [x] strain
+#   [x] sex
+#   [x] treatment_age
+#   [x] fractions
+#   [x] interval
+#   [x] dose
+#   [x] rate
+#   [x] quality
+#   [x] n
+#   [x] u(age) 
+#   [x] o(age)
+#       The standard errors reported in 3575315.pdf are regularly
+#       ~4x larger than the stardard errors I measure in the data
+#   [x] use
+#   [x] study name
+#   [x] group names
+
+
+
+#### 11-2 A
+
+study <- "11-2"
+summary(study) %>%
+  filter(!quality %in% c('accel. neutrons 0.1-10 MeV',
+                         'neutrons 1-10 MeV',
+                         'neutrons>10 MeV',
+                         'X-rays local'),
+         other_treatments %in% c('none'),
+         group %in% 7:19) %>% 
+  select(-lab, -sex, -strain, -treatment_age, -other_treatments) %>%
+  print(n=100)
+
+# sources
+#  Broerse 1989 (doesn't have ages)
+#  717898.pdf (also doesn't have ages)
+
+# define
+stratum_name <- "11-2-A TNO ♀ WAG/RIJ rats\n  0.06 Gy/min X-ray @56 days"
+stratum_groups <- c(1:3)
+data <- name_stratum(stratum_groups, stratum_name)
+data <- name_cluster(1:2, 1, "1. acute")
+data <- name_cluster(3, 2, "2. five fractions separated by 28 days")
+controls <- controls_for(1, stratum_name)
+
+# fix
+data$interval[data$study == study & data$group == 3] <- 7*4
+data <- use(stratum_groups)
+
+
+# check
+#   [x] species
+#   [x] strain
+#   [x] sex
+#   [x] treatment_age
+#   [x] fractions
+#   [x] interval
+#   [x] dose
+#   [x] rate
+#   [x] quality
+#   [x] n
+#   [x] u(age) 
+#   [x] o(age)
+#   [x] use
+#   [x] stratum name
+#   [x] cluster names
+#   [x] defined controls
+#   [x] added warnings
+
+
+### 11-2 B - xray
+
+study <- "11-2"
+summary(study) %>%
+  filter(!quality %in% c('accel. neutrons 0.1-10 MeV',
+                         'neutrons 1-10 MeV',
+                         'neutrons>10 MeV',
+                         'X-rays local'),
+         other_treatments %in% c('none'),
+         group %in% 7:19) %>% 
+  select(-lab, -sex, -strain, -treatment_age, -other_treatments) %>%
+  print(n=100)
+
+# sources
+#  Broerse 1989 (doesn't have ages)
+#  717898.pdf (also doesn't have ages)
+
+# warn
+data <- add_warning(13, "Does not align with Gerber 1996 group 13. Appears to be group 12 in that report and was treated with 2 Gy, not 1 Gy as indicated by the table.")
+data <- add_warning(14, "Does not align with Gerber 1996 group 14. Appears to be group 13 in that report.")
+
+# define
+stratum_name <- "11-2-B TNO ♀ WAG/RIJ rats\n  0.06 Gy/min X-ray @56 days"
+stratum_groups <- c(7:11, 13:14)
+data <- name_stratum(stratum_groups, stratum_name)
+data <- name_cluster(c(7, 10), 1, "1. acute")
+data <- name_cluster(c(8:9, 11), 2, "2. one fraction per month for 10 months")
+data <- name_cluster(13, 3, "3. two fractions per week for 10 weeks")
+data <- name_cluster(14, 4, "4. five fractions per week for 2 weeks")
+controls <- controls_for(7, stratum_name)
+data <- use(stratum_groups)
+
+# check
+#   [x] species
+#   [x] strain
+#   [x] sex
+#   [x] treatment_age
+#   [x] fractions
+#   [x] interval
+#   [x] dose
+#   [x] rate
+#   [x] quality
+#   [x] n
+#   [x] u(age) 
+#   [x] o(age)
+#   [x] use
+#   [x] stratum name
+#   [x] cluster names
+#   [x] defined controls
+#   [x] added warnings
+
+
+### 11-2 B - γ-ray
+
+study <- "11-2"
+summary(study) %>%
+  filter(!quality %in% c('accel. neutrons 0.1-10 MeV',
+                         'neutrons 1-10 MeV',
+                         'neutrons>10 MeV',
+                         'X-rays local'),
+         other_treatments %in% c('none'),
+         group %in% 7:19) %>% 
+  select(-lab, -sex, -strain, -treatment_age, -other_treatments) %>%
+  print(n=100)
+
+# sources
+#  Broerse 1989 (doesn't have ages)
+#  717898.pdf (also doesn't have ages)
+
+# warn
+# define
+stratum_name <- "11-2-B TNO ♀ WAG/RIJ rats\n  γ-ray @56 days"
+stratum_groups <- c(16:19)
+data <- name_stratum(stratum_groups, stratum_name)
+data <- name_cluster(16, 1, "1. acute 0.9 Gy/min γ-ray")
+data <- name_cluster(17, 2, "2. one fractions per month for 10 months 0.001 Gy/min γ-ray")
+data <- name_cluster(18, 3, "3. two fractions per week for 10 weeks 0.001 Gy/min γ-ray")
+data <- name_cluster(19, 4, "4. five fractions per week for 2 weeks 0.001 Gy/min γ-ray")
+controls <- controls_for(7, stratum_name)
+data <- use(stratum_groups)
+
+# fix
+
+# check
+#   [x] species
+#   [x] strain
+#   [x] sex
+#   [x] treatment_age
+#   [x] fractions
+#   [x] interval
+#   [x] dose
+#   [x] rate
+#   [x] quality
+#   [x] n
+#   [x] u(age) 
+#   [x] o(age)
+#   [x] use
+#   [x] stratum name
+#   [x] cluster names
+#   [x] defined controls
+#   [x] added warnings
+
+
+
+### 11-2 D - γ-ray @56 days
+
+study <- "11-2"
+summary(study) %>%
+  filter(!quality %in% c('accel. neutrons 0.1-10 MeV',
+                         'neutrons 1-10 MeV',
+                         'neutrons>10 MeV',
+                         'X-rays local')
+         ,other_treatments %in% c('none')
+         ,group > 30 & group < 45
+         ,treatment_age != 117 | is.na(treatment_age)
+         ) %>% 
+  #  select(-lab, -sex, -strain, -treatment_age, -other_treatments) %>%
+  print(n=100)
+
+# sources
+#  Broerse 1989 (doesn't have ages)
+#  717898.pdf (also doesn't have ages)
+
+
+# define
+stratum_name <- "11-2-D TNO ♀ WAG/RIJ rats\n  γ-ray @56 days"
+stratum_groups <- c(31, 34, 38, 40)
+data <- name_stratum(stratum_groups, stratum_name)
+data <- name_cluster(c(31, 34, 40), 1, "1. acute 0.9 Gy/min")
+data <- name_cluster(c(38), 2, "2. 120 fractions over 12 days 0.001 Gy/min")
+controls <- controls_for(31, stratum_name)
+data <- use(stratum_groups)
+
+# warn
+data <- add_warning(stratum_groups, "Could not confirm age at treatment or age at death")
+
+# fix
+
+# check
+#   [x] species
+#   [x] strain
+#   [x] sex
+#   [x] treatment_age
+#   [x] fractions
+#   [x] interval
+#   [x] dose
+#   [x] rate
+#   [x] quality
+#   [x] n
+#   [?] u(age) 
+#   [?] o(age)
+#   [x] use
+#   [x] stratum name
+#   [x] cluster names
+#   [x] defined controls
+#   [x] added warnings
+
+
+
+
+
+### 11-2 D - γ-ray 117 days
+
+study <- "11-2"
+summary(study) %>%
+  filter(!quality %in% c('accel. neutrons 0.1-10 MeV',
+                         'neutrons 1-10 MeV',
+                         'neutrons>10 MeV',
+                         'X-rays local')
+         ,other_treatments %in% c('none')
+         ,group > 30 & group < 45
+         ,treatment_age != 56 | is.na(treatment_age)
+         ) %>% 
+  #  select(-lab, -sex, -strain, -treatment_age, -other_treatments) %>%
+  print(n=100)
+
+# sources
+#  Broerse 1989 (doesn't have ages)
+#  717898.pdf (also doesn't have ages)
+
+# define
+stratum_name <- "11-2-D TNO ♀ WAG/RIJ rats\n  γ-ray @117 days"
+stratum_groups <- c(31, 36, 42, 44)
+data <- name_stratum(stratum_groups, stratum_name)
+data <- name_cluster(c(31, 36, 42), 1, "1. acute 0.9 Gy/min")
+data <- name_cluster(c(44), 2, "2. 120 fractions over 12 days 0.001 Gy/min")
+controls <- controls_for(31, stratum_name)
+data <- use(stratum_groups)
+
+# warn
+data <- add_warning(stratum_groups, "Could not confirm age at treatment or age at death")
+
+# fix
+
+# check
+#   [x] species
+#   [x] strain
+#   [x] sex
+#   [x] treatment_age
+#   [x] fractions
+#   [x] interval
+#   [x] dose
+#   [x] rate
+#   [x] quality
+#   [x] n
+#   [?] u(age) 
+#   [?] o(age)
+#   [x] use
+#   [x] stratum name
+#   [x] cluster names
+#   [x] defined controls
+#   [x] added warnings
+
+
+
+
+### 11-2 E - WAG/RIJ X-ray 56 days
+
+study <- "11-2"
+summary(study) %>%
+  filter(!quality %in% c('accel. neutrons 0.1-10 MeV',
+                         'neutrons 1-10 MeV',
+                         'neutrons>10 MeV',
+                         'X-rays local')
+         ,other_treatments %in% c('none')
+         ,group %in% c(49:78)
+         ,strain == "WAG/RIJ"
+         #,treatment_age != 56 | is.na(treatment_age)
+         ) %>% 
+  select(-lab, -sex, -strain, -treatment_age, -other_treatments) %>%
+  print(n=100)
+
+# sources
+#  Broerse 1989 (doesn't have ages)
+#  717898.pdf (also doesn't have ages)
+
+# define
+stratum_name <- "11-2-E TNO ♀ WAG/RIJ rats\n  0.06 Gy/min X-ray @56 days"
+stratum_groups <- c(49, 61, 71, 77)
+data <- name_stratum(stratum_groups, stratum_name)
+data <- name_cluster(c(49, 61), 1, "1. acute")
+data <- name_cluster(c(71, 77), 2, "2. 10 fractions over 70 days")
+controls <- controls_for(49, stratum_name)
+data <- use(stratum_groups)
+
+# warn
+data <- add_warning(stratum_groups, "Could not confirm age at death")
+data <- add_warning(c(71, 77), "Could not confirm time between fractions")
+
+# fix
+
+# check
+#   [x] species
+#   [x] strain
+#   [x] sex
+#   [x] treatment_age
+#   [x] fractions
+#   [?] interval
+#   [x] dose
+#   [x] rate
+#   [x] quality
+#   [x] n
+#   [?] u(age) 
+#   [?] o(age)
+#   [x] use
+#   [x] stratum name
+#   [x] cluster names
+#   [x] defined controls
+#   [x] added warnings
+
+
+
+
+### 11-2 E - SD/RIJ X-ray 56 days
+
+study <- "11-2"
+summary(study) %>%
+  filter(!quality %in% c('accel. neutrons 0.1-10 MeV',
+                         'neutrons 1-10 MeV',
+                         'neutrons>10 MeV',
+                         'X-rays local')
+         ,other_treatments %in% c('none')
+         ,group %in% c(49:78)
+         ,strain == "SD/RIJ"
+         #,treatment_age != 56 | is.na(treatment_age)
+         ) %>% 
+#  select(-lab, -sex, -strain, -treatment_age, -other_treatments) %>%
+  print(n=100)
+
+# sources
+#  Broerse 1989 (doesn't have ages)
+#  717898.pdf (also doesn't have ages)
+
+# define
+stratum_name <- "11-2-E TNO ♀ SD/RIJ rats\n  0.06 Gy/min X-ray @56 days"
+stratum_groups <- c(50, 62, 72, 78)
+data <- name_stratum(stratum_groups, stratum_name)
+data <- name_cluster(c(50, 62), 1, "1. acute")
+data <- name_cluster(c(72, 78), 2, "2. 10 fractions over 70 days")
+controls <- controls_for(50, stratum_name)
+data <- use(stratum_groups)
+
+# warn
+data <- add_warning(stratum_groups, "Could not confirm age at death")
+data <- add_warning(c(72, 78), "Could not confirm time between fractions")
+
+# fix
+
+# check
+#   [x] species
+#   [x] strain
+#   [x] sex
+#   [x] treatment_age
+#   [x] fractions
+#   [?] interval
+#   [x] dose
+#   [x] rate
+#   [x] quality
+#   [x] n
+#   [?] u(age) 
+#   [?] o(age)
+#   [x] use
+#   [x] stratum name
+#   [x] cluster names
+#   [x] defined controls
+#   [x] added warnings
+
+
+
+
+### 11-2 E - BN/BRIJ X-ray 56 days
+
+study <- "11-2"
+summary(study) %>%
+  filter(!quality %in% c('accel. neutrons 0.1-10 MeV',
+                         'neutrons 1-10 MeV',
+                         'neutrons>10 MeV',
+                         'X-rays local')
+         ,other_treatments %in% c('none')
+         ,group %in% c(49:78)
+         ,strain == "BN/BRIJ"
+         #,treatment_age != 56 | is.na(treatment_age)
+         ) %>% 
+  select(-lab, -sex, -strain, -treatment_age, -other_treatments) %>%
+  print(n=100)
+
+# sources
+#  Broerse 1989 (doesn't have ages)
+#  717898.pdf (also doesn't have ages)
+
+# define
+stratum_name <- "11-2-E TNO ♀ BN/BRIJ rats\n  0.06 Gy/min X-ray @56 days"
+stratum_groups <- c(51, 53:55, 57:59, 75)
+data <- name_stratum(stratum_groups, stratum_name)
+data <- name_cluster(c(51, 53:55, 57, 59, 75), 1, "1. acute")
+data <- name_cluster(c(58), 2, "2. 5 fractions over 35 days")
+controls <- controls_for(51, stratum_name)
+data <- use(stratum_groups)
+
+# warn
+data <- add_warning(stratum_groups, "Could not confirm age at death")
+data <- add_warning(c(58), "Could not confirm time between fractions")
+
+# fix
+
+# check
+#   [x] species
+#   [x] strain
+#   [x] sex
+#   [x] treatment_age
+#   [x] fractions
+#   [?] interval
+#   [x] dose
+#   [x] rate
+#   [x] quality
+#   [x] n
+#   [?] u(age) 
+#   [?] o(age)
+#   [x] use
+#   [x] stratum name
+#   [x] cluster names
+#   [x] defined controls
+#   [x] added warnings
+
+
+
+### 11-2 F - WAG/RIJ X-ray 56 days
+
+study <- "11-2"
+summary(study) %>%
+  filter(!quality %in% c('accel. neutrons 0.1-10 MeV',
+                         'neutrons 1-10 MeV',
+                         'neutrons>10 MeV',
+                         'X-rays local')
+         ,other_treatments %in% c('none')
+         ,group %in% c(98:134)
+         ,strain == "WAG/RIJ"
+         #,treatment_age != 56 | is.na(treatment_age)
+         ) %>% 
+  select(-lab, -sex, -strain, -treatment_age, -other_treatments) %>%
+  print(n=100)
+
+# sources
+#  Broerse 1989 (doesn't have ages)
+#  717898.pdf (also doesn't have ages)
+
+# define
+stratum_name <- "11-2-F TNO ♀ WAG/RIJ rats\n  0.06 Gy/min X-ray @56 days"
+stratum_groups <- c(98, 102, 108, 110, 116, 118)
+data <- name_stratum(stratum_groups, stratum_name)
+data <- name_cluster(c(98, 102, 108, 116), 1, "1. acute")
+data <- name_cluster(c(110, 118), 2, "2. 20 fractions over 28 days")
+controls <- controls_for(98, stratum_name)
+data <- use(stratum_groups)
+
+# warn
+data <- add_warning(stratum_groups, "Could not confirm age at death")
+data <- add_warning(98, "Removed one animal with age at death 6993 (way too high)")
+
+# fix
+data <- data %>%
+  filter(!(study == "11-2" &
+           group == 98 &
+           lifespan == 6993))
+
+# check
+#   [x] species
+#   [x] strain
+#   [x] sex
+#   [x] treatment_age
+#   [x] fractions
+#   [x] interval
+#   [x] dose
+#   [x] rate
+#   [x] quality
+#   [x] n
+#   [?] u(age) 
+#   [?] o(age)
+#   [x] use
+#   [x] stratum name
+#   [x] cluster names
+#   [x] defined controls
+#   [x] added warnings
+
+
+
+####
+
+
+### 11-2 F - BN/BRIJ X-ray 56 days
+
+study <- "11-2"
+summary(study) %>%
+  filter(!quality %in% c('accel. neutrons 0.1-10 MeV',
+                         'neutrons 1-10 MeV',
+                         'neutrons>10 MeV',
+                         'X-rays local')
+         ,other_treatments %in% c('none')
+         ,group %in% c(98:134)
+         ,strain == "BN/BRIJ"
+         #,treatment_age != 56 | is.na(treatment_age)
+         ) %>% 
+  select(-lab, -sex, -strain, -treatment_age, -other_treatments) %>%
+  print(n=100)
+
+# sources
+#  Broerse 1989 (doesn't have ages)
+#  717898.pdf (also doesn't have ages)
+
+# define
+stratum_name <- "11-2-F TNO ♀ BN/BRIJ rats\n  0.06 Gy/min X-ray @56 days"
+stratum_groups <- c(99, 100, 104, 112, 114, 119, 121)
+data <- name_stratum(stratum_groups, stratum_name)
+data <- name_cluster(c(99, 100, 104, 112, 119), 1, "1. acute")
+data <- name_cluster(c(114, 121), 2, "2. 20 fractions over 28 days")
+controls <- controls_for(99, stratum_name)
+data <- use(stratum_groups)
+
+# warn
+data <- add_warning(stratum_groups, "Could not confirm age at death")
+
+# fix
+data <- add_warning(99, "Removed one animal with age at death 6993 (way too high)")
+
+# fix
+data <- data %>%
+  filter(!(study == "11-2" &
+           group == 99 &
+           lifespan == 6993))
+
+# check
+#   [x] species
+#   [x] strain
+#   [x] sex
+#   [x] treatment_age
+#   [x] fractions
+#   [?] interval
+#   [x] dose
+#   [x] rate
+#   [x] quality
+#   [x] n
+#   [?] u(age) 
+#   [?] o(age)
+#   [x] use
+#   [x] stratum name
+#   [x] cluster names
+#   [x] defined controls
+#   [x] added warnings
+
+
+####
+
+study <- "13-4"
+
+# Will not use (data is not the era)
+
+
+####
+
+study <- "13-15"
+
+# Will not use (data is not the era)
+
+
+####
+
+study <- "13-17"
+
+# Will not use (data is not the era)
+
+####
+
+study <- "13-22"
+
+# Will not use (data is not the era)
+
+
+
+####
+
+#### WILL NOT USE ####
+# This data cannot be aligned with the published literature 3572640.pdf
+#
+# I began the process noticing small errors and omissions, animal counts
+# slightly different, missing dose rate definitions. But the real problem
+# is that the ages of animals do not align closely. I looked at this
+# for individual dogs in the control (which are listed in 3572640.pdf).
+# I found many errors and omissions (though it is obvious that these are
+# from the same study, because many are the same). See [1] for details
+# of that comparison.
+#
+# [1]: lifespans from group 1 of beagles in study 1002-1.xlsx
+# 
+# study <- "1002-1"
+# summary(study) %>%
+# #  filter(TODO) %>% 
+#   select(-lab, -species, -strain, -sex, -quality, -other_treatments) %>%
+#   print(n=100)
+# # source 3572640.pdf
+# 
+# 
+# # define
+# stratum_name <- "1002-F beagle dogs\n  ?? Gy/min X-ray @400 days"
+# stratum_groups <- c(1:15)
+# data <- name_stratum(stratum_groups, stratum_name)
+# data <- name_cluster(groups_TODO, number_TODO, TODO)
+# controls <- controls_for(group_TODO, stratum_name)
+# #data <- use(stratum_groups)
+# 
+# # warn
+# data <- add_warning(1, "Number of dogs is 56 in mine and 57 in 3572640.pdf table 1")
+# data <- add_warning(8, "Number of dogs is 19 in mine and 23 in 3572640.pdf table 1")
+# data <- add_warning(9, "Number of dogs is 21 in mine and 22 in 3572640.pdf table 1")
+# data <- add_warning(11, "Number of dogs is 27 in mine and 26 in 3572640.pdf table 1")
+# data <- add_warning(12, "Number of dogs is 23 in mine and 25 in 3572640.pdf table 1")
+# data <- add_warning(14, "Number of dogs is 22 in mine and 23 in 3572640.pdf table 1")
+# 
+# 
+# # fix
+# # treatment_age
+# #   "X-irradiation was performed when the beagles were 10 to 12 months of 
+# #    age." - 3572640.pdf
+# #    *Notably this is close to the time of puberty
+# data[data$study == study, 'treatment_age'] <- 335.5
+# # fractions
+# #   Table 1, 3572640.pdf
+# data[data$study == study & data$group %in%   2:4, 'fractions'] <- 4
+# data[data$study == study & data$group %in%   5:7, 'fractions'] <- 2
+# data[data$study == study & data$group %in%     8, 'fractions'] <- 1
+# data[data$study == study & data$group %in%  9:11, 'fractions'] <- 4
+# data[data$study == study & data$group %in% 12:14, 'fractions'] <- 2
+# data[data$study == study & data$group %in%    15, 'fractions'] <- 1
+# # interval
+# #   Table 1, 3572640.pdf
+# data[data$study == study & data$group %in% c(2, 5,  9, 12), 'interval'] <- 28
+# data[data$study == study & data$group %in% c(3, 6, 10, 13), 'interval'] <- 14
+# data[data$study == study & data$group %in% c(4, 7, 11, 14), 'interval'] <-  7
+# # dose
+# #   Table 1, 3572640.pdf
+# #   R -> Gy
+# data[data$study == study, 'dose'] <- data[data$study == study, 'dose'] / 100
+# # dose rate
+# #   "dose rate averaged 8.5 R/min"
+# data[data$study == study, 'rate'] <- 8.5 / 100
+# 
+# # check
+# #   [x] species
+# #   [x] strain
+# #   [x] sex
+# #   [x] treatment_age
+# #   [x] fractions
+# #   [x] interval
+# #   [x] dose
+# #   [x] rate
+# #   [x] quality
+# #   [x] n
+
+##### ABANDONED ######
+# at this piont in the review I opted to reject this study. see reason above.
+
+
+#### "1003-5" WILL NOT USE
+#
+# All of these argonne dogs recieved doses greater than 3 Gy.
+# I found some problems with the data noted below in case I ever come
+# back to this.
+# 
+# summary <- function(study_id) {
+#   data %>% 
+#     group_by(lab,
+#              study, 
+#              group, 
+#              species,
+#              strain,
+# #             sex, 
+# #             treatment_age,
+# #             fractions, 
+#              interval,
+# #             dose, 
+#              rate,
+#              quality,
+#              use,
+#              other_treatments) %>%
+#     summarize(n=length(lifespan),
+#               'u(treatment_age)'=round(mean(treatment_age)),
+#               'u(fractions)'=round(mean(fractions)),
+#               'u(dose)'=round(mean(dose)),
+#               'u(age)'=round(mean(lifespan)),
+#               'o(age)'=round(sd(lifespan), 1),
+#               'o(u(age))'=round(sd(lifespan) / n^0.5, 1),
+#               'median age'=median(lifespan/365.25)
+#               ) %>%
+#     filter(study == study_id) %>%
+#     ungroup() %>%
+#     select(-study)
+# }
+# 
+# study <- "1003-5"
+# summary(study) %>%
+#   select(-species, -strain, -other_treatments) %>%
+#   arrange(rate) %>%
+#   mutate(rate = round(rate * 60*24*1000 / 1.17)) %>%
+# #  filter(TODO) %>% 
+#   print(n=100)
+# # source 3578646.pdf
+# 
+# 4, 5, 6, 8 checks out n and lifespan
+# 7, 9 do not
+# 2 "2610 is different in mine (n = 39, lifespan = 3879) than in theirs (n = 46, lifespan = 3818)"
+# 3 "2510 is different in mine (n = 44, lifespan = 3087) than in theirs (n = 46, lifespan = 3179)"
+# 7 "2110 is different in mine (n = 8, lifespan = 705) than in theirs (n = 16, lifespan = 583)"
+# 9 "5100 where rate is 503 mGy/day is different in mine (n = 8, lifespan = 442) than in theirs (n = 4, lifespan = 473)"
+# 
+# # stratum_name <- ""11-2-F TNO ♀ BN/BRIJ rats\n  0.06 Gy/min X-ray @56 days"
+# # stratum_groups <- c(1:15)
+# 
+# # define
+# stratum_name <- "1003-5 ANL beagle dogs\n  γ-ray"
+# stratum_groups <- TODO
+# data <- name_stratum(stratum_groups, stratum_name) # "+sex, + rate, +age"
+# data <- name_cluster(groups_TODO, number_TODO, TODO)
+# controls <- controls_for(group_TODO, stratum_name)
+# data <- use(stratum_groups)
+# 
+# # warn
+# data <- add_warning(stratum_groups, "could not validate number of animals by sex")
+# 
+# # fix
+# 
+# # check
+# #   [x] species
+# #   [x] strain
+# #   [-] sex
+# #   [ ] treatment_age
+# #   [ ] fractions
+# #   [ ] interval
+# #   [ ] dose
+# #   [ ] rate
+# #   [ ] quality
+# #   [ ] n
+# #   [ ] u(age) 
+# #   [ ] o(age)
+# #   [ ] use
+# #   [ ] stratum name
+# #   [ ] cluster names
+# #   [ ] defined controls
+# #   [ ] added warnings
+
+
+#### 1003-6
+# 
+# Will not use because all of the doses are greater than 4 Gy
+
+#### 
+#
+@here
+study <- "1003-20"
+summary2(study) %>%
+  select(-lab, -species, -strain, -other_treatments) %>%
+  print(n=100)
+# source TODO
+
+
+# define
+stratum_name <- TODO
+stratum_groups <- TODO
+data <- name_stratum(stratum_groups, stratum_name)
+data <- name_cluster(groups_TODO, number_TODO, TODO)
+controls <- controls_for(group_TODO, stratum_name)
+data <- use(stratum_groups)
+
+# warn
+data <- add_warning(groups_TODO, message_TODO)
+
+# fix
+
+# check
+#   [ ] species
+#   [ ] strain
+#   [ ] sex
+#   [ ] treatment_age
+#   [ ] fractions
+#   [ ] interval
+#   [ ] dose
+#   [ ] rate
+#   [ ] quality
+#   [ ] n
+#   [ ] u(age) 
+#   [ ] o(age)
+#   [ ] use
+#   [ ] stratum name
+#   [ ] cluster names
+#   [ ] defined controls
+#   [ ] added warnings
+
+
+####
+
+study <- "TODO"
+summary(study) %>%
+  filter(TODO) %>% 
+  print(n=100)
+# source TODO
+
+
+# define
+stratum_name <- TODO
+stratum_groups <- TODO
+data <- name_stratum(stratum_groups, stratum_name)
+data <- name_cluster(groups_TODO, number_TODO, TODO)
+controls <- controls_for(group_TODO, stratum_name)
+data <- use(stratum_groups)
+
+# warn
+data <- add_warning(groups_TODO, message_TODO)
+
+# fix
+
+# check
+#   [ ] species
+#   [ ] strain
+#   [ ] sex
+#   [ ] treatment_age
+#   [ ] fractions
+#   [ ] interval
+#   [ ] dose
+#   [ ] rate
+#   [ ] quality
+#   [ ] n
+#   [ ] u(age) 
+#   [ ] o(age)
+#   [ ] use
+#   [ ] stratum name
+#   [ ] cluster names
+#   [ ] defined controls
+#   [ ] added warnings
+
+
+####
+
+study <- "TODO"
+summary(study) %>%
+  filter(TODO) %>% 
+  print(n=100)
+# source TODO
+
+
+# define
+stratum_name <- TODO
+stratum_groups <- TODO
+data <- name_stratum(stratum_groups, stratum_name)
+data <- name_cluster(groups_TODO, number_TODO, TODO)
+controls <- controls_for(group_TODO, stratum_name)
+data <- use(stratum_groups)
+
+# warn
+data <- add_warning(groups_TODO, message_TODO)
+
+# fix
+
+# check
+#   [ ] species
+#   [ ] strain
+#   [ ] sex
+#   [ ] treatment_age
+#   [ ] fractions
+#   [ ] interval
+#   [ ] dose
+#   [ ] rate
+#   [ ] quality
+#   [ ] n
+#   [ ] u(age) 
+#   [ ] o(age)
+#   [ ] use
+#   [ ] stratum name
+#   [ ] cluster names
+#   [ ] defined controls
+#   [ ] added warnings
+
+
+####
+
+study <- "TODO"
+summary(study) %>%
+  filter(TODO) %>% 
+  print(n=100)
+# source TODO
+
+
+# define
+stratum_name <- TODO
+stratum_groups <- TODO
+data <- name_stratum(stratum_groups, stratum_name)
+data <- name_cluster(groups_TODO, number_TODO, TODO)
+controls <- controls_for(group_TODO, stratum_name)
+data <- use(stratum_groups)
+
+# warn
+data <- add_warning(groups_TODO, message_TODO)
+
+# fix
+
+# check
+#   [ ] species
+#   [ ] strain
+#   [ ] sex
+#   [ ] treatment_age
+#   [ ] fractions
+#   [ ] interval
+#   [ ] dose
+#   [ ] rate
+#   [ ] quality
+#   [ ] n
+#   [ ] u(age) 
+#   [ ] o(age)
+#   [ ] use
+#   [ ] stratum name
+#   [ ] cluster names
+#   [ ] defined controls
+#   [ ] added warnings
+
+
+####
+
+study <- "TODO"
+summary(study) %>%
+  filter(TODO) %>% 
+  print(n=100)
+# source TODO
+
+
+# define
+stratum_name <- TODO
+stratum_groups <- TODO
+data <- name_stratum(stratum_groups, stratum_name)
+data <- name_cluster(groups_TODO, number_TODO, TODO)
+controls <- controls_for(group_TODO, stratum_name)
+data <- use(stratum_groups)
+
+# warn
+data <- add_warning(groups_TODO, message_TODO)
+
+# fix
+
+# check
+#   [ ] species
+#   [ ] strain
+#   [ ] sex
+#   [ ] treatment_age
+#   [ ] fractions
+#   [ ] interval
+#   [ ] dose
+#   [ ] rate
+#   [ ] quality
+#   [ ] n
+#   [ ] u(age) 
+#   [ ] o(age)
+#   [ ] use
+#   [ ] stratum name
+#   [ ] cluster names
+#   [ ] defined controls
+#   [ ] added warnings
+
+
+####
+
+study <- "TODO"
+summary(study) %>%
+  filter(TODO) %>% 
+  print(n=100)
+# source TODO
+
+
+# define
+stratum_name <- TODO
+stratum_groups <- TODO
+data <- name_stratum(stratum_groups, stratum_name)
+data <- name_cluster(groups_TODO, number_TODO, TODO)
+controls <- controls_for(group_TODO, stratum_name)
+data <- use(stratum_groups)
+
+# warn
+data <- add_warning(groups_TODO, message_TODO)
+
+# fix
+
+# check
+#   [ ] species
+#   [ ] strain
+#   [ ] sex
+#   [ ] treatment_age
+#   [ ] fractions
+#   [ ] interval
+#   [ ] dose
+#   [ ] rate
+#   [ ] quality
+#   [ ] n
+#   [ ] u(age) 
+#   [ ] o(age)
+#   [ ] use
+#   [ ] stratum name
+#   [ ] cluster names
+#   [ ] defined controls
+#   [ ] added warnings
+
+
+
+### Finaly tidy
+
+to_save <- data %>%
+  # Remove old columns
+  select(-old_exclude, 
+         -old_warning, 
+         -old_warning_reason,
+         -other_treatments) %>%
+  # Only selected
+  filter(use)
+
+to_save$fractions[to_save$dose == 0] <- NA
+
+saveRDS(to_save, file='data/thesis.rds')
+saveRDS(controls, file='data/thesis_controls.rds')
+```
+

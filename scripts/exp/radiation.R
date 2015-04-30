@@ -1566,7 +1566,6 @@ external_studies <- c(
 		'necrosopy_proctor',
 		'autopsy_type',
 		'has_micro',
-		'tmt',
 		'was_control_mock_treated'	
 	)
 	janus <- janus[,! names(janus) %in% to_remove]
@@ -1651,7 +1650,7 @@ external_studies <- c(
   # Remove animals that died of un-natural causes
   natural_deaths <- c('Died',
                       'Sacrifice, moribund')
-  janus <- janus %.% filter(cause_of_death %in% natural_deaths)
+  janus <- janus %>% filter(cause_of_death %in% natural_deaths)
 	
 	# Remove Janus from era
 	jdata <- grepl('1003.2', data$study.id)
@@ -1701,7 +1700,7 @@ era_beagle_study_id <- '1003'
 # Limit to those in documented studies that only involved
 # external radiation exposure (5, and 6) see [1]
 # [1]: http://www.ustur.wsu.edu/nra/pdf/ira.pdf
-basics <- basics %.% 
+basics <- basics %>% 
   filter(study %in% 5:6)
 
 # Remove unnecessary columns
@@ -1749,11 +1748,11 @@ basics$sex <- recode_factor(basics$sex, 'F', 'Female')
 basics$sex <- recode_factor(basics$sex, 'M', 'Male')
 basics$sex <- recode_factor(basics$sex, 'U', 'Both')
 
-chronic <- chronic %.%
+chronic <- chronic %>%
   mutate(dose = dose / 100, 
          dose_rate = dose_rate / (100 * 22*60 ))
 
-fractionated <- fractionated %.%
+fractionated <- fractionated %>%
   mutate(dose = dose / 100,
          dose_rate = dose_rate / (100))
 
@@ -1768,7 +1767,7 @@ beagle <- merge(basics,
               all.x=TRUE)
 
 # Normalize ID values
-beagle <- beagle %.%
+beagle <- beagle %>%
   mutate(study.id = paste0(era_beagle_study_id, '-', study.id),
          group.id = paste0(study.id, '-', group.id),
          id = paste0(group.id, '-', id))
@@ -1792,7 +1791,7 @@ beagle$file <- beagle$study_id
 # Remove animals that died of un-natural causes
 natural_deaths <- c('Radiation',
                     'Sacrificed Moribund')
-beagle <- beagle %.% filter(cause_of_death %in% natural_deaths)
+beagle <- beagle %>% filter(cause_of_death %in% natural_deaths)
 
 # Remove Beagles from era
 bdata <- 

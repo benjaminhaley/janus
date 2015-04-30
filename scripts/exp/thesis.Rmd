@@ -1,0 +1,183 @@
+---
+title: "thesis.Rmd"
+author: "Benjamin Haley"
+date: "March 30, 2015"
+output: html_document
+---
+
+## Overview
+
+Here we extend the work of ddref.Rmd. But this time I will look at higher exposures and will not be constrained by the BEIR VII methodology.
+
+Our central question: What is the shape of the dose response function. Concretely can it be fit to a sigmodial model, of the kind proposed by BEIR VII. Concretely:
+
+  risk ~ LQ(dose) * viability(dose)
+
+where
+
+  LQ(dose) ~ a * dose + (B ^ dose^2) / fractions
+
+and
+
+  viability(dose) = 1 - exp(-c * Dose - (D * Dose^2) / fractions)
+
+## See data
+
+Lets make survival curves for the data we have.
+
+```{r}
+# Common
+setwd('~/janus')
+source('scripts/util/util.R') # http://goo.gl/VYzkAs
+data <- readRDS('data/thesis.rds')
+controls <- readRDS('data/thesis_controls.rds')
+
+# Filter
+data <- data %>%
+  filter(dose < 4)
+
+# Calculate survival
+data <- data %>%
+  group_by(study, sex, dose, rate, fractions, group) %>%
+  arrange(lifespan) %>%
+  mutate(survival=rank(-lifespan) / length(lifespan))
+
+# Organize strata by number of animals
+order <- data %>% 
+  group_by(stratum) %>%
+  summarize(n=length(stratum)) %>%
+  arrange(-n) %>%
+  select(stratum)
+data$stratum <- factor(data$stratum, levels=order$stratum)
+
+# Show survival
+ggplot(data,
+       aes(lifespan,
+           survival,
+           color=dose,
+           group=factor(paste(dose, rate, fractions)))) +
+  geom_path() +
+  facet_wrap(~ stratum) +
+  scale_color_continuous(
+    guide = guide_legend(title = "dose (Gy)"),
+    trans = "sqrt"
+  ) +
+  geom_vline(
+    aes(xintercept=treatment_age),
+    alpha=0.5
+  ) +
+  expand_limits(x = -4) +
+  theme(text = element_text(size = 10)) +
+  xlab("age (days)") 
+```
+
+Not much signt of acute death yet, thought it is fascinating that the shape of the dose response curves change, essentially they seem to linearize!
+
+## Inverse lifespan
+Lets try beir VII's presentation
+
+```{r}
+# Mean Lifespans
+aggregate = data %>%
+  ungroup() %>%
+  group_by(study,
+           stratum,
+           cluster_number,
+           cluster,
+           group,
+           sex, 
+           dose, 
+           rate, 
+           fractions) %>%
+  summarize(mortality=mean(1/lifespan),
+            n=length(lifespan),
+            sem=sd(1/lifespan)/n^0.5,
+            variance=var(1/lifespan))
+
+# Add clusters to facet labels
+aggregate <- ddply(aggregate, .(stratum), function(df) {
+  clusters <- paste(
+    "    ",
+    unique(df$cluster),
+    collapse="\n")
+  df$stratum_full_name <- paste0(
+    "  ", 
+    df$stratum, 
+    "\n",
+    clusters
+  )
+  
+  df
+})
+
+# Add controls to each cluster
+aggregate <- ddply(aggregate, .(stratum), function(df) {
+  control <- controls[controls$stratum == only(df$stratum),]
+  control <- aggregate %>% 
+    filter(as.character(study) == only(control$study),
+           as.character(group) == only(control$group))
+  df <- ddply(df, .(cluster), function(df2) {
+    # If the control is not already in this cluster
+      # Add the control to the cluster
+      control$cluster <- only(df2$cluster)
+      control$stratum <- only(df2$stratum)
+      control$stratum_full_name <- only(df2$stratum_full_name)
+      control$cluster_number <- only(df2$cluster_number)
+      df2 <- rbind(df2, control)
+    df2
+  })
+  
+  unique(df)
+})
+
+# Organize strata by number of animals
+order <- aggregate %>% 
+  group_by(stratum_full_name) %>%
+  summarize(n=sum(n)) %>%
+  arrange(-n) %>%
+  select(stratum_full_name)
+aggregate$stratum_full_name <- factor(
+  aggregate$stratum_full_name, 
+  levels=order$stratum_full_name
+)
+
+# Add predictions
+model <- lm(mortality ~ stratum * factor(cluster_number) * dose -
+              stratum * factor(cluster_number) +
+              stratum,
+            weights=1/(sem + 1e-4)^2,
+            aggregate)
+aggregate$prediction <- predict(model)
+
+
+# Show
+ggplot(aggregate, aes(dose,
+                      mortality,
+                      group=factor(cluster_number),
+                      color=cluster_number == 1)) +
+  geom_smooth(aes(y=prediction),
+              method="lm",
+              formula="y ~ x",
+              se=FALSE,
+              size=2) +
+  geom_linerange(aes(ymax=mortality + sem + 1e-4,
+                     ymin=mortality - sem - 1e-4,
+                     size=1/sem),
+                 alpha=0.2) +
+  geom_point(color="white", size=7) +
+  geom_text(aes(label=cluster_number),
+            color="black",
+            alpha=0.7) +
+  facet_wrap(~ stratum_full_name, scales='free_y') + 
+  theme(text = element_text(size = 10),
+        axis.text.y=element_blank()) +
+  ylab("mean(1 / age)") +
+  xlab("dose (Gy)") +
+  scale_colour_manual(values=c("black", "red"),
+                      guide = FALSE) +
+  scale_size_continuous(guide = FALSE) +
+  theme(strip.text.x = element_text(hjust=0))
+
+```
+
+

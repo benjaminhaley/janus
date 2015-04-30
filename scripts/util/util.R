@@ -16,6 +16,18 @@ library(directlabels)
 library(metafor)
 library(reshape2)
 library(xtable)
+library(pander)
+library(lme4)
+library(coxme)
+
+# pretty_table
+#
+# An html table, nicely formatted
+pretty_table <- function(df) 
+  print(xtable(df), 
+      type="html",
+      include.rownames = FALSE,
+      html.table.attributes = getOption("xtable.html.table.attributes", "border=0"))
 
 # table0
 # Just like table, but show's NA's by default
@@ -66,7 +78,7 @@ normalize_likelihood <- function(log_likelihood, delta){
 #
 # To find the most probably value for the data we simply find the
 # maximum likelihood and corresponding data... easy.  To find the
-# 95% confidence interval we can subtract 1.96 from the log of this
+# 95% confidence interval we can subtract 1.92 from the log of this
 # likelihood maximum then find the data points which the most 
 # extreme values for o that have log likelihoods above this value 
 # [1].
@@ -210,18 +222,33 @@ convert <- function(x, map) map[as.character(x)]
 get_likelihoods <- function(data, 
                             modeling_function, 
                             o_range = seq(-2, 20, by=0.02),
-                            likelihood_function=logLik){
+                            likelihood_function=logLik,
+                            other_functions = list()){
   r <- ldply(o_range, function(o){
     m <- modeling_function(data, o)
-    l = logLik(m)
+    l = likelihood_function(m)
+    result <- data.frame(o, l)
     
-    data.frame(o, l)
+    for(fn in names(other_functions)) {
+      result[[fn]] = other_functions[[fn]](
+        data=data, 
+        o=o, 
+        model=m, 
+        likelihood=l
+      )
+    }
+    
+    result
   })
   
   delta = o_range[2] - o_range[1]
   r$l <- normalize_likelihood(r$l, delta)
   
   r
+}
+mse <- function(sm) { 
+  mse <- mean(sm$residuals^2)
+  return(mse)
 }
 
 # Write csv with good defaults
