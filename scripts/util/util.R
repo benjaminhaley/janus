@@ -12,7 +12,7 @@ library(plyr)
 library(dplyr)
 library(ggplot2)
 library(survival)
-library(directlabels)
+library(scales)
 library(metafor)
 library(reshape2)
 library(xtable)
@@ -203,10 +203,10 @@ closest <- function(value, list) {
 # Pluralize
 # pluralize('Mouse') == 'Mice'
 pluralize <- function(x) {
-  c(Mouse='Mice',
-    Rat='Rats',
-    Dog='Dogs',
-    Peromyscus='Peromyscus')[x]
+  c(Mouse='mice',
+    Rat='rats',
+    Dog='dogs',
+    Peromyscus='peromyscus')[x]
 }
 
 # Combine all unique values of x into a comma seperated list

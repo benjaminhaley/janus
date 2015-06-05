@@ -790,7 +790,7 @@ sort_by_n <- function(x) {
 }
 d$cluster = sort_by_n(d$cluster)
 d$cluster_id <- as.numeric(d$cluster)
-d$cluster <- with(d, paste0(cluster_id, ' - ', cluster))
+d$cluster <- with(d, paste0(cluster_id, '. ', cluster))
 d$cluster = sort_by_n(d$cluster)
 
 # Save Data for later use
@@ -858,28 +858,55 @@ Clusters are sepperated by facets and labeled with sex, strain, species, lab, qu
 
 ```{r}
 d <- d %>%
-  group_by(cluster, dose, dose_rate, fractions) %>%
+  mutate(group = paste(cluster, dose, dose_rate, fractions)) %>%
+  group_by(group) %>%
   arrange(lifespan) %>%
   mutate(survival=rank(-lifespan) / length(lifespan))
 
-ggplot(d,
-       aes(lifespan,
-           survival,
-           color=dose,
-           group=factor(paste(dose, dose_rate, fractions)))) +
-  geom_path() +
+# Add an observation at 100% survival for each group
+g <- ddply(d, .(group), function(df) {
+  top <- df[1,]
+  top$survival = 1
+  top$lifespan = only(df$intended_assignment_age)
+  rbind(top, df)
+})
+
+# Show
+ggplot(g) +
+  geom_path(
+    aes(lifespan,
+        survival,
+        color=dose,
+        group=group,
+        linetype=fractions > 1)) +
   facet_wrap(~ cluster) +
+  scale_linetype(
+    labels = c("acute", "fractionated"),
+    guide = guide_legend(title = "")
+  ) +
   scale_color_continuous(
-    guide = guide_legend(title = "dose (Gy)"),
+    labels = c("controls", "0.5 Gy", "1.0 Gy", "1.5 Gy"),
+    guide = guide_legend(title = ""),
     trans = "sqrt"
   ) +
   geom_vline(
     aes(xintercept=intended_assignment_age),
-    alpha=0.5
+    color="grey",
+    size=1
   ) +
+  scale_y_continuous(labels=percent) +
   expand_limits(x = -4) +
-  theme(text = element_text(size = 10)) +
-  xlab("age (days)") 
+  theme(
+    text = element_text(size = 11, color="black"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_rect(colour = "black", fill=NA),
+    panel.background = element_blank(),
+    legend.key = element_blank(),
+    strip.background = element_blank()
+    ) +
+  ylab("survival\n") +
+  xlab("\nage (days)") 
 
 ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/survival.png")
 ```
@@ -3785,10 +3812,16 @@ show <- function(data, to_predict) {
                        ymin=inverse_age_mean - inverse_age_sd)) +
     scale_color_manual(values=c('black', 'red4'),
                        labels = c('acute', 'chronic'),
-                       name="type of exposure") +
+                       name="") +
     facet_wrap(~ cluster, scales='free_y') + 
-    theme(text = element_text(size = 10),
-          axis.text.y=element_blank()) +
+    theme(text = element_text(size = 11, color="black"),
+          axis.text.y=element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.border = element_rect(colour = "black", fill=NA),
+          panel.background = element_blank(),
+          legend.key = element_blank(),
+          strip.background = element_blank()) +
     geom_point(data=scales, aes(x=1, y=min), size=0.000001) + 
     geom_point(data=scales, aes(x=1, y=max), size=0.000001) + 
     ylab("1 / mean age (days)") +
@@ -5829,6 +5862,160 @@ ggsave("legend in my own mind.png")
 __________________________________________________________________
 
 
+
+__________________________________________________________________
+
+
+<a name="beir_vii_alternatives_simple"><a>
+
+BEIR VII Alternatives (simple version)
+========================================================
+*Last Update: January 2015*
+
+Graphs that illustrate the BEIR VII model vs the observed dose response.
+
+```{r}
+# Common
+setwd('~/janus')
+source('scripts/util/util.R') # http://goo.gl/VYzkAs
+
+# Universal parameters
+dose = seq(0, 3, .01)
+
+# Basic LQ model
+alpha = 0.002
+DDREF = 3.5
+Beta = alpha*(DDREF - 1)
+quadratic_response = alpha * dose + Beta * dose^2
+linear_response = alpha * dose
+
+# Graphing constants
+size = 4.0
+thin_size = size / 2
+alpha=0.3
+p <- function(...) paste(..., sep="\n", collapse="\n")
+clean_theme <- function() {
+  theme_bw() +
+  theme(
+    plot.background = element_blank()
+   ,panel.grid.major = element_blank()
+   ,panel.grid.minor = element_blank()
+   ,panel.border = element_blank()
+   ,axis.text=element_blank()
+   ,axis.ticks=element_blank()
+   ,axis.title = element_text(size = rel(2))
+   ,plot.title = element_text(size = rel(2))
+  ) +
+  theme(axis.line = element_line(color = 'black'))
+}
+no_theme <- function() {
+  theme_bw() +
+  theme(plot.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        line = element_blank(),
+        text = element_blank(),
+        line = element_blank(),
+        title = element_blank())
+}
+
+# BEIR VII model
+ggplot(NULL) +
+  geom_smooth(aes(
+                dose[dose < 1.5], 
+                quadratic_response[dose < 1.5]
+              ), 
+              method="lm", 
+              formula="y ~ I(x^2) + x - 1",
+              size=thin_size,
+              color='black') +
+  geom_smooth(aes(
+                dose[dose < 1.5], 
+                linear_response[dose < 1.5]
+              ), 
+              method="lm", 
+              formula="y ~ x - 1",
+              size=thin_size,
+              color='red') +
+  xlab("dose") +
+  ylab("risk") +
+  ggtitle("BEIR VII model") +
+  geom_text(aes(1.6, 0.014, 
+    label=p("Acute exposures should exhibit a", 
+            "linear quadratic dose response,",
+            "α × Dose + ß × Dose².")),
+    hjust=0) +
+  geom_text(aes(1.6, 0.003, 
+    label=p("Protracted exposures should exhibit a",
+            "linear dose response, α × Dose, equal",
+            "to the linear component of the acute",
+            "dose response.")),
+    color='red',
+    hjust=0) +
+  geom_text(aes(0.0, 0.006, 
+    label=p("At low doses, acute and",
+            "protracted exposures lead",
+            "to identical effects.")),
+    color='black',
+    hjust=0) +
+  geom_segment(aes(x=0.1, xend=0.1, y=0.0033, yend=0.0015),
+               color="black") +
+  ylim(0, 0.015) + 
+  xlim(0, 2.4) +
+  clean_theme()
+
+ggsave("BEIR VII model.png")
+
+
+# Observed dose response
+ggplot(NULL) +
+  geom_smooth(aes(
+                dose[dose < 1.5], 
+                quadratic_response[dose < 1.5]
+              ), 
+              method="lm", 
+              formula="y ~ x - 1",
+              size=thin_size,
+              se=F,
+              color='black') +
+  geom_smooth(aes(
+                dose[dose < 1.5], 
+                linear_response[dose < 1.5]
+              ), 
+              method="lm", 
+              formula="y ~ x - 1",
+              size=thin_size,
+              color='red') +
+  xlab("dose") +
+  ylab("risk") +
+  clean_theme() +
+  ggtitle("Observed dose response (idealized)") +
+  ylim(0, 0.015) + 
+  xlim(0, 2.4) +
+  geom_text(aes(1.6, 0.012, 
+                label=p(
+                  "Acute exposures exhibit a linear",
+                  "dose response.")),
+            hjust=0) +
+  geom_text(aes(1.6, 0.003,
+                label=p(
+                  "Protrated exposures induce less risk ",
+                  "than equivilant acute exposures.")),
+            color="red",
+            hjust=0)
+
+ggsave("observed dose response.png")
+```
+
+#### Results
+
+^ back to [table of contents](#contents)
+
+
+__________________________________________________________________
+
+
 <a name="hormetic_paradox"><a>
 
 Hormetic Paradox
@@ -6165,7 +6352,7 @@ So how did BEIR VII make their assumptions. Let's look.
 library(plyr)
 library(ggplot2)
 
-a <- 1
+a <- 2
 o_range <- c(-2, -1, 0, 1, 2)
 dose = seq(0, 1.3, 0.1)
 

@@ -1536,7 +1536,7 @@ external_studies <- c(
 	
 	# Constants
 	era_janus_study_id <- '1003'
-		
+
 	# Make names compatiable
 	names(janus) <- c(
 		'id',
