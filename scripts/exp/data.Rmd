@@ -2069,9 +2069,126 @@ data <- add_warning(37, "mean age 868 in my data, 865 in 430 mice in 3576356.pdf
 #   [x] defined controls
 #   [x] added warnings
 
+#### 2-11 ♀
+# 
+# Not enough distinct treatment groups to use
 
-@here
-3-5 females
+#### 2-11 ♂
+#
+# Will not use. There are not controls. No way to consult primary sources
+# and lots of weirdness in the data. Too bad too, its one of the few studies
+# I have on lifespan effects :(.
+
+# study <- "2-11"
+# summary(study) %>%
+#   filter(sex == '♂',
+#          !group %in% c(1, 2, 3, 4)) %>% 
+#   select(-lab, -species, -strain, -sex) %>%
+#   arrange(as.numeric(group)) %>%
+#   print(n=100)
+# # source TODO.pdf
+# 
+# 
+# # define
+# stratum_name <- "TODO-TODO TODO ♀ TODO mice\n  TODO-ray"
+# stratum_groups <- TODO:TODO
+# data <- name_stratum(stratum_groups, stratum_name)
+# data <- name_cluster(TODO:TODO, 1, "acute TODO Gy/min @TODO days")
+# controls <- controls_for(TODO, get_cluster(TODO))
+# data <- use(stratum_groups)
+# 
+# # warn
+# # data <- add_warning(groups_TODO, message_TODO)
+# 
+# # fix
+# data[data$study == study, 'strain'] <- 'Sprague-Dawley'
+# data[data$study == study & data$group == 6, 'treatment_age'] <- -21 + 8
+# data[data$study == study & data$group == 8, 'treatment_age'] <- -21 + 8
+# data[data$study == study & data$group == 10, 'treatment_age'] <- -21 + 8
+# data[data$study == study & data$group == 11, 'treatment_age'] <- round(3 * 30.5)
+# data[data$study == study & data$group == 12, 'treatment_age'] <- round(3 * 30.5)
+# data[data$study == study & data$group == 13, 'treatment_age'] <- round(3 * 30.5)
+# data[data$study == study & data$group == 15, 'treatment_age'] <- round(9 * 30.5)
+# 
+# data[data$study == study & data$group == 6, 'fractions'] <- 
+#   round((2.66 * 1000) / (4.5 * 53))  # ~ 
+# data[data$study == study & data$group == 8, 'fractions'] <- 
+#   round((5.96 * 1000) / (3.4 * 53))   # ~ 33
+# data[data$study == study & data$group == 10, 'fractions'] <- 
+#   round((14.74 * 1000) / (3.4 * 53))  # ~ 82
+# data[data$study == study & data$group == 11, 'fractions'] <- 
+#   round((1 * 1000) / (2.6 * 78))
+# 
+# 78 (≈2.6h/d 5d)
+# 
+# data[data$study == study & data$group == 15, 'dose'] <- 3.0
+# 
+# # check
+# #   [x] species
+# #   [x] strain
+# #   [x] sex
+# #   [x] treatment_age
+# #   [ ] fractions
+# #   [ ] interval
+# #   [x] dose
+# #   [ ] rate
+# #   [ ] quality
+# #   [ ] n
+# #   [ ] u(age) 
+# #   [ ] o(age)
+# #   [ ] use
+# #   [ ] stratum name
+# #   [ ] cluster names
+# #   [ ] defined controls
+# #   [ ] added warnings
+# 
+
+
+
+#### 9-7
+#
+study <- "9-7"
+summary(study) %>%
+  filter(quality != 'neutrons 1-10 MeV') %>% 
+  arrange(as.numeric(group)) %>%
+  print(n=100)
+# source 3579307.pdf
+
+
+# define
+stratum_name <- "9-7 SCK/CEN ♂ C57BL/Cnb mice\n  X-ray"
+stratum_groups <- c(1, 10:15)
+data <- name_stratum(stratum_groups, stratum_name)
+data <- name_cluster(10:12, 1, "acute 1 Gy/min @7 days")
+data <- name_cluster(13:15, 2, "acute 1 Gy/min @21 days")
+controls <- controls_for(1, stratum_name, get_cluster(1))
+controls <- controls_for(1, stratum_name, get_cluster(2))
+data <- use(stratum_groups)
+
+# warn
+data <- add_warning(1, "I have 105 animals, Gerber says I should have 165")
+data <- add_warning(10, "My mean age is 777, 3579307.pdf says it should be 774")
+
+# fix
+
+# check
+#   [x] species
+#   [x] strain
+#   [x] sex
+#   [x] treatment_age
+#   [x] fractions
+#   [x] interval
+#   [x] dose
+#   [x] rate
+#   [x] quality
+#   [x] n
+#   [x] u(age) 
+#   [x] o(age)
+#   [x] use
+#   [x] stratum name
+#   [x] cluster names
+#   [x] defined controls
+#   [x] added warnings
 
 
 
@@ -2120,9 +2237,32 @@ data <- use(stratum_groups)
 #   [ ] defined controls
 #   [ ] added warnings
 
+# Split Janus clusters by age
+#
+# Most of the janus studies included animals irradiated at slightly
+# different ages (+/- 1 week) these can be treated as independent
+# clusters to test the effects age at exposore
+quantile0 <- function(...) quantile(..., na.rm = TRUE)
+split_point <- function(x) {
+  as.numeric((quantile0(x, 0.25) + quantile0(x, 0.75)) / 2)
+}
+anl <- 
+  !is.na(data$treatment_age) &
+  !is.na(data$use) & 
+  data$use & 
+  data$lab == "ANL" & 
+  data$dose > 0
+
+# Modify data cluster
+data$older = NA
+data[anl,] <- ddply(data[anl,], .(stratum, cluster), function(df) {
+  df$older <- df$treatment_age > split_point(df$treatment_age)
+
+  df
+})
+
 
 ### Finaly tidy
-
 to_save <- data %>%
   # Remove old columns
   select(-old_exclude, 

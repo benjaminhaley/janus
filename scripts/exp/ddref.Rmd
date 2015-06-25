@@ -66,7 +66,7 @@ Table of contents
   - [DDREF derived from cells](#DDREF_derived_from_cells) - If we look at alpha/Beta ratios in cell studies what can we learn about the effects of protraction?
   - [DDREF vs theta](#DDREF_vs_theta) - How is it that BEIR VII can say that DDREF of atomic bomb survivors is always DDREF at 1 Gy regardless of the dose?
   - [Estimating tau from meta-regression](#how_tau) - How can we calculate tau^2 from a meta-regression using the Der Simonaian Laird method?
-
+  - [LQ through the ages](#lq-through-the-ages) - How do other radiaiton protection groups estimate the risk of low dose and protracted exposurs?
 
 
 ___________________________________________________________________
@@ -241,9 +241,11 @@ o2 = with(data,
 )
 my_likelihood <- with(
   data,
-  -(n/2) * log(2*pi) +
-  -(n/2) * log(o2) +
-  -(1/(2*o2)) * sum(e^2)
+  -1/2 * (
+    n * log(2*pi) +
+    n * log(o2) +
+    (1/o2) * sum(e^2)
+  )
 )
 glm_likelihood <- as.numeric(logLik(model))
 
@@ -263,6 +265,7 @@ data <- data.frame(
 )
 n <- nrow(data)
 w <- (1:n)
+v <- 1/w
 model <- lm(y ~ x, data=data, weights=w)
 data$p <- predict(model)
 data$e <- data$y - data$p
@@ -270,9 +273,13 @@ o2 = with(data,
     sum((e^2)) / (n)
 )
 
-my_likelihood <-  
-  (1/2) * sum(log(w)) +
- -(n/2) * (1 + log(2*pi*sum(w * data$e^2)/n))
+my_likelihood <- 
+  -(n/2) * (
+    log(2*pi/n) +
+    sum(log(v))/n +
+    log(sum(w * data$e^2)) +
+    1
+  )
 
 glm_likelihood <- as.numeric(logLik(model))
 
@@ -881,7 +888,7 @@ ggplot(g) +
         linetype=fractions > 1)) +
   facet_wrap(~ cluster) +
   scale_linetype(
-    labels = c("acute", "fractionated"),
+    labels = c("acute", "protracted"),
     guide = guide_legend(title = "")
   ) +
   scale_color_continuous(
@@ -898,6 +905,7 @@ ggplot(g) +
   expand_limits(x = -4) +
   theme(
     text = element_text(size = 11, color="black"),
+    axis.text.x = element_text(color="black"),
     panel.grid.major = element_blank(),
     panel.grid.minor = element_blank(),
     panel.border = element_rect(colour = "black", fill=NA),
@@ -2404,7 +2412,7 @@ ggplot(aggregate, aes(dose,
   geom_linerange(aes(ymax=1/(age + sd),
                      ymin=1/(age - sd))) +
   scale_color_manual(values=c('black', 'red4'),
-                     labels = c('acute', 'chronic'),
+                     labels = c('acute', 'protracted'),
                      name="type of exposure") +
   facet_wrap(~ cluster, scales='free_y') + 
   theme(text = element_text(size = 10),
@@ -3736,6 +3744,21 @@ source('scripts/util/util.R') # http://goo.gl/VYzkAs
 data <- readRDS('data/ddref.rds')
 write.csv0(data.frame(low=0, medium=0, high=0, name='placeholder'),
            'data/theta_estimates.csv')
+write.csv0(data.frame(cluster = "",
+                      low=0, 
+                      middle=0, 
+                      high=0, 
+                      a = 0,
+                      B = 0,
+                      name='placeholder'),
+           'data/by_stratum_estimates.csv')
+write.csv0(data.frame(fractions = "",
+                      dose=0, 
+                      cluster="", 
+                      type="", 
+                      prediction = 0,
+                      name='placeholder'),
+           'data/saved_predictions.csv')
 
 # Helpers
 
@@ -3799,26 +3822,36 @@ show <- function(data, to_predict) {
                         group=type,
                         color=type)) +
     geom_smooth(
-      data=to_predict,
-      aes(dose, prediction),
+      data=to_predict %>% filter(linetype == "solid"),
+      aes(dose, prediction, linetype=linetype),
       method='lm',
       formula='y ~ x + I(x^2)',
       se=FALSE,
       linetype='solid',
       size=0.5
     ) +
+    geom_smooth(
+      data=to_predict %>% filter(linetype == "dashed"),
+      aes(dose, prediction, linetype=linetype),
+      method='lm',
+      formula='y ~ x + I(x^2)',
+      se=FALSE,
+      linetype='dotted',
+      size=0.5
+    ) +
     geom_point(alpha=0.5) +
     geom_linerange(aes(ymax=inverse_age_mean + inverse_age_sd,
                        ymin=inverse_age_mean - inverse_age_sd)) +
     scale_color_manual(values=c('black', 'red4'),
-                       labels = c('acute', 'chronic'),
+                       labels = c('acute', 'protracted'),
                        name="") +
     facet_wrap(~ cluster, scales='free_y') + 
     theme(text = element_text(size = 11, color="black"),
-          axis.text.y=element_blank(),
+          axis.text.x = element_text(color="black"),
+          axis.text.y = element_blank(),
           panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
-          panel.border = element_rect(colour = "black", fill=NA),
+          panel.border = element_rect(fill=NA),
           panel.background = element_blank(),
           legend.key = element_blank(),
           strip.background = element_blank()) +
@@ -3828,8 +3861,6 @@ show <- function(data, to_predict) {
     xlab("dose (Gy)") +
     scale_y_continuous(breaks = seq(0, 1, by = y_interval)))
 }
-
-
 
 # Estimate by strata
 # PLOSone requires that meta-analyses show the estimates for each
@@ -3854,7 +3885,28 @@ by_strata <- function(m, o, l, data) {
   return(data.frame(mean_squared_error, by_strata))
 }
 
-estimate_ddref_by_strata = function(data, model, o_range) {
+# Get a and B
+# for each stratum
+get_alpha_and_beta <- function(data, likelihoods, o_range) {
+  ddply(data, .(cluster), function(df) {
+    cluster = only(df$cluster)
+    o = likelihoods$middle[likelihoods$cluster == cluster]
+    df$o = o
+    model <- glm(inverse_age_mean ~ I(dose + o * dose^2 / fractions),
+                 data=df,
+                 weights = 1/inverse_age_sd^2)
+    a = model$coefficients[2]
+    B = a * o
+    
+    # Check if alpha is actually zero
+    a = ifelse(o == max(o_range), 0, a)
+    
+    data.frame(cluster, a, B)
+  })
+}
+
+# Estimate ddref (and alpha and Beta) for each stratum
+estimate_ddref_by_strata = function(data, model, o_range, predict_fn) {
 
   likelihoods_by_strata <- get_likelihoods(
     data, 
@@ -3879,6 +3931,11 @@ estimate_ddref_by_strata = function(data, model, o_range) {
       o_estimate
     })
   
+  # Get alpha and beta values for each stratum
+  alpha_and_beta = get_alpha_and_beta(data, likelihoods_by_strata, o_range)
+  
+  likelihoods_by_strata = join(likelihoods_by_strata, alpha_and_beta)
+  
   likelihoods_by_strata
 }
 
@@ -3900,19 +3957,27 @@ add_ddref_estimates_to_strata <- function(data, ddref_by_strata, o_range) {
                          as.character(high)),
            new_name = paste0(cluster, 
                              "\n", 
-                             "DDREF_lss estimate ",
+                             "DDREF_lss ~ ",
                              middle,
                              " (",
                              low,
                              ", ",
                              high,
                              ")")
-           )
+           ) %>%
+    select(cluster, new_name)
+  
   data <- merge(data, ddref_by_strata)
   data <- data %>%
-    mutate(cluster = order_levels_by_number(new_name))
+    mutate(cluster = order_levels_by_number(new_name)) %>%
+    select(-new_name)
 
   data
+}
+
+# Remove them from the name again
+strip_ddref_estimate <- function(x) {
+  order_levels_by_number(sub('\nDDREF.lss ~ .*$', '', x))
 }
 
 analyze <- function(name, data, model, 
@@ -3920,11 +3985,11 @@ analyze <- function(name, data, model,
                     show_fn = show,
                     o_range = seq(-1, 20, by=0.02),
                     should_graph = TRUE,
-                    estimate_by_strata_hack = FALSE){
+                    estimate_by_strata_hack = FALSE,
+                    to_superimpose = NA){
   
   intervals <- read.csv('data/theta_estimates.csv', as.is=TRUE)
 
-  
 
   # Find likelihood profile of theta, o
   likelihoods <- get_likelihoods(data, 
@@ -3933,30 +3998,64 @@ analyze <- function(name, data, model,
 
   # Estimate likelihoods for each stata individually
   if(estimate_by_strata_hack) {
-    ddref_by_strata <- estimate_ddref_by_strata(data, model, o_range)
+    ddref_by_strata <- estimate_ddref_by_strata(data, 
+                                                model, 
+                                                o_range, 
+                                                predict_fn)
+    # Save/show
+    by_strata <- read.csv('data/by_stratum_estimates.csv', as.is=TRUE)
+    ddref_by_strata$name = name
+    by_strata <- rbind(by_strata, ddref_by_strata)
+    write.csv0(by_strata, 'data/by_stratum_estimates.csv')
     print(ddref_by_strata)
-    
-    data <- add_ddref_estimates_to_strata(data, ddref_by_strata, o_range)   
   }
 
   # Find best theta (o) value
   o = with(likelihoods, o[which.max(l)])
   print(o)
 
-  # Confidence
+  # Find theta confidence
   o_estimate <- confidence_interval(likelihoods$o, 
                                     likelihoods$l, 
                                     0.05)  
   
+  # Save theta estimates
   print(o_estimate)
   intervals <- rbind(intervals, c(o_estimate, name=name))
   write.csv0(intervals, 'data/theta_estimates.csv')
-
+  
   if(should_graph) {  
     # Make predictions
-    to_predict <- get_data_to_predict(clusters=data$cluster) %>%
-      filter(type %in% data$type)
-    to_predict$prediction <- predict_fn(model(o, data), newdata=to_predict, o=o)
+    to_predict <- get_data_to_predict(clusters=data$cluster)
+    to_predict$prediction <- predict_fn(
+      model(o, data), newdata=to_predict, o=o
+    )
+    
+    # Save predictions
+    to_predict$name <- name
+    saved_predictions <- read.csv('data/saved_predictions.csv', as.is = TRUE)
+    saved_predictions <- rbind(saved_predictions, to_predict)
+    saved_predictions <- saved_predictions %>%
+      filter(name != "placeholder")
+    write.csv0(saved_predictions, 'data/saved_predictions.csv')
+    
+    # Add superimposed prediction
+    to_predict$linetype = "solid"
+    if(!is.na(to_superimpose)) {
+      to_superimpose$linetype = "dashed"
+      to_predict = rbind(to_predict, to_superimpose)
+    }
+    
+    # Add ddref to strata (if asked for)
+    if(estimate_by_strata_hack) {
+      data <- add_ddref_estimates_to_strata(data, 
+                                            ddref_by_strata, 
+                                            o_range) 
+      to_predict <- add_ddref_estimates_to_strata(to_predict,
+                                                  ddref_by_strata, 
+                                                  o_range)
+    }
+
       
     # Graph
     show_fn(data, to_predict)
@@ -3964,6 +4063,8 @@ analyze <- function(name, data, model,
     ggsave_for_ppt(paste0(base_path, name, ".png"))
   }
 }
+
+
 
 # Define data
 aggregate = data %>%
@@ -4129,11 +4230,6 @@ coxme_model <- function(o, data) {
 logLik.coxme = function(m) m$loglik[2]
 
 
-
-
-
-        
-
 # Analyze
 # Write the ddref range into a csv, e.g. 20 (4, 20)
 analyze(name  = "1. BEIR VII all data", 
@@ -4142,7 +4238,7 @@ analyze(name  = "1. BEIR VII all data",
         predict_fn = predict_lm,
         estimate_by_strata_hack = TRUE)
 analyze(name  = "1. BEIR VII acute", 
-        data  =aggregate %>% filter(type == "A"), 
+        data  = aggregate %>% filter(type == "A"), 
         model = beir,
         predict_fn = predict_lm,
         estimate_by_strata_hack = TRUE)
@@ -4151,7 +4247,13 @@ analyze(name  = "1. BEIR VII comparison",
           filter(cluster %in% get_comparison_clusters(aggregate)),
         model = beir,
         predict_fn = predict_lm,
-        estimate_by_strata_hack = TRUE)
+        estimate_by_strata_hack = TRUE,
+        # Hack (superimpose acute predictions on comparison predictions)
+        to_superimpose = read.csv(
+          'data/saved_predictions.csv',
+           as.is=TRUE) %>%
+          filter(name == "1. BEIR VII acute",
+                 cluster %in% get_comparison_clusters(aggregate)))
 analyze(name ="2. Hormetic correction all data", 
         data =aggregate, 
         model=hormetic_correction,
@@ -4435,7 +4537,7 @@ ggplot(aggregate, aes(dose,
   geom_linerange(aes(ymax=1/(age + sd),
                      ymin=1/(age - sd))) +
   scale_color_manual(values=c('black', 'red4'),
-                     labels = c('acute', 'chronic'),
+                     labels = c('acute', 'protracted'),
                      name="type of exposure") +
   facet_wrap(~ cluster, scales='free_y') + 
   theme(text = element_text(size = 10),
@@ -5969,10 +6071,11 @@ ggsave("BEIR VII model.png")
 
 
 # Observed dose response
+range <- 0.1 < dose & dose < 1.5
 ggplot(NULL) +
   geom_smooth(aes(
-                dose[dose < 1.5], 
-                quadratic_response[dose < 1.5]
+                dose[range], 
+                quadratic_response[range]
               ), 
               method="lm", 
               formula="y ~ x - 1",
@@ -5980,8 +6083,8 @@ ggplot(NULL) +
               se=F,
               color='black') +
   geom_smooth(aes(
-                dose[dose < 1.5], 
-                linear_response[dose < 1.5]
+                dose[range], 
+                linear_response[range]
               ), 
               method="lm", 
               formula="y ~ x - 1",
@@ -5993,10 +6096,26 @@ ggplot(NULL) +
   ggtitle("Observed dose response (idealized)") +
   ylim(0, 0.015) + 
   xlim(0, 2.4) +
+  geom_text(aes(0.05, 0.0005, 
+                label=p(
+                  "?")),
+            size=7,
+            hjust=0,
+            color='grey20') +
+  geom_segment(aes(x=0.07, y=0.0042,
+                   xend=0.07, yend=0.0012),
+               color='grey'
+  ) +
+  geom_text(aes(0.05, 0.006,
+                label=p(
+                  "Low-dose responses",
+                  "remain challenging",
+                  "to measure.")),
+            color="grey20",
+            hjust=0) +
   geom_text(aes(1.6, 0.012, 
                 label=p(
-                  "Acute exposures exhibit a linear",
-                  "dose response.")),
+                  "Acute dose responses appear linear.")),
             hjust=0) +
   geom_text(aes(1.6, 0.003,
                 label=p(
@@ -6415,6 +6534,7 @@ library(ggplot2)
 library(metafor)
 
 n = 10
+k = n
 x = rnorm(n)
 z = rnorm(n)
 y = z + x + rnorm(n)
@@ -6457,3 +6577,64 @@ The solution is above. Essentially, build a fixed effect model. Tau2 is the summ
 
 [1]: http://www.ncbi.nlm.nih.gov/pmc/articles/PMC4145560/#B12
 [2]: http://web.mit.edu/people/jeffrey/DuMouchel_Harris_JASA1983.pdf
+
+
+
+__________________________________________________________________
+
+
+<a name="lq-through-the-ages"></a>
+
+LQ through the ages
+========================================================
+*Last Update: June 2015*
+
+How do other radiation protection agencies estimate the risk of low dose and protracted exposures?
+
+Generally radiation protection agencies (NCRP, ICRP, UNSCEAR) believe that dose response is linear-quadratic (which is wrong according to my paper). But some of them estimate DDREF in a valid way, either by comparing linear fits to the acute and protracted exposure (as I recommend) or by fitting linear-quadratic-exponential models to atomic bomb survivor data (a model which could explain my results).
+
+- [UNSCEAR 2006](#unscear-2006): I like one of the two models that they propose. Rather than estimating DDREF, they fit a LQ model directly to LSS data. However, this is equivilant to estimating DDREF only from LSS data using a LQ model. Our work shows that this estimate is wrong and likely over-estimates the risk of low-dose exposures. They also fit a linear quadratic-exponential model, which, based on our work, could be right. Finally it is worth noting that, according to [UNSCEAR 2012](#unscear-2012) previous reports, written before 2006, did use DDREF.
+
+- [ICRP 2005](#icrp-2005): They didn't do their own analyses. Instead they reference work from NCRP 1980 and ICRP 1991.
+
+- [ICRP 1991](#icrp-1991): This group is 1/2 right, 1/2 wrong. Their correct half references to animal studies done by NCRP 1980. Their incorrect half refers to curvature in atomic bomb survivor data.
+
+- [NCRP 1980](#ncrp-1980): This group actually did things right. They estimate DDREF (which they call DREF, though it is identically applied) based on a direct comparison of linear fits to acute and protracted exposures. They also acknowledge that dose-response may not actually be quadratic, though it fits quadratic curves rather nicely.
+
+
+## ICRP 1991
+*ICRP Publication 60. Recommendations of the International Commission on Radiological Protection. Publication 60. Annals of ICRP 20 (1-3), 1991.*
+> ![](http://dl.dropbox.com/u/1131693/bloodrop/icrp110.png)
+> ![](http://dl.dropbox.com/u/1131693/bloodrop/icrp111.png)
+> ![](http://dl.dropbox.com/u/1131693/bloodrop/icrp112.png)
+
+
+## NCRP 1980
+*NCRP, 1980. Influence of dose and its distribution in time on dose-response relationships for low LET radiations. NCRP Report No. 64, National Council on Radiation Protection and Measurements, Bethesda, Maryland.*
+> ![](http://dl.dropbox.com/u/1131693/bloodrop/aslkdjflkasdjf.png)
+
+
+## UNSCEAR 2006
+*UNSCEAR 2006 Annex A: Epidemiological studies of radiation and cancer*
+> "586. The risk estimates derived here using linear models are nominally exposure risks for high dose rates, and take no account of possible effects due to dose rate or fraction- ation. As discussed in section I.J (see also table 8), a DDREF of about 2 may be applied to obtain cancer risks at low doses and low dose rates. However, those models in which a linear–quadratic or more general (linear–quadratic– exponential) dose response is assumed (in particular the Bayesian MCMC model fits) implicitly take account of extrapolation of dose (if not dose rate), so that to some extent they take account of DDREF. As can be seen from tables 59, 63 and 64, these models predict solid cancer mor- tality risks (REID) per unit dose at high dose (1 Sv) that are between 20% and 185% larger than those at low doses (0.01 Sv). Likewise it is seen from tables 65, 68 and 69 that the leukaemia mortality risks (REID) per unit dose at high dose (1 Sv) are at least 100% larger than those at low doses (0.01 Sv)."
+
+## UNSCEAR 2012
+*UNSCEAR 2012 Annex B: Uncertainties in risk estimates for radiation-induced cancer*
+> "In its 2006 Report, the Committee notes that a value of DDREF much larger than 2 would not be consistent with the data for the atomic bombing survivors ([U12] annex A). In contrast to its earlier reports, the Committee explicitly calculated lifetime cancer risks using a linear–quadratic and a linear– quadratic–exponential dose–response model. In a related publication, the linear–quadratic model was favoured [L19]. According to this model, the lifetime risks per unit dose at doses of 0.01 Sv and 0.1 Sv were lower than that at a dose of 1.0 Sv by about 20%. In the linear–quadratic–exponential model, the risks per unit dose at 0.01 and 0.1 Sv were lower than that at a dose of 1.0 Sv by about a factor of 2 and 3, respectively. Both models implicitly adjust for extrapolation to low doses. The Committee added that no extra adjustment for chronic exposure (i.e. the application of a DDREF) was needed. Because of the large uncertainties involved, the calculations are consistent with an assumed value of 2 for the DDREF at low-dose and low-dose-rate exposures. Based on these considerations, the Committee defined a value of 0.1 Gy as an upper value of the low dose range ([U12] annex A, table 6).
+C30."
+
+## ICRP 2005
+*ICRP 99: Low-dose Extrapolation of Radiation-Related Cancer Risk. Ann. ICRP 35 (4), 2005*
+> “Models of radiation action as well as a wide range of molecular, cellular and animal data have been used to argue that data on radiation-induced cancer in human populations derived from studies following acute radiation exposures tend to overestimate radiation risks at low doses and dose rates (NCRP 1980; ICRP 1991). In this regard, a number of advisory groups have used a similar approach to quantify the degree to which extrapolation of acute high dose data might tend to overestimate risks at low doses and low dose rates. Essentially, the effectiveness per unit dose for acute exposures has been determined using a linear interpolation of data between the 2-3 Gy dose range and control data at 0 Gy. Effects per unit dose following low dose rate exposures were derived by calculating the slope of the entire dose response (not just in the 2-3 Gy dose range). By dividing the tumorigenic effectiveness per unit dose of acute exposures using the high dose data and low dose rate exposures, an effectiveness ratio was obtained. This ratio has been termed the Dose and Dose Rate Effectiveness Factor.
+
+> The rationale for using only the high dose data and not data at lower doses was based on the assumption that this would simulate analyses of risks from epidemiological studies where most of the available data were for single acute exposures at relatively high doses. Since the actual dose response for most radiation-induced tumors following single acute exposures has generally been found to be linear quadratic (see discussion above), this procedure would tend to overestimate effects for low single acute radiation doses (in the dose range where the response is predominantly linear) and for low dose rate exposures over a wide range of total doses.
+
+> In spite of its apparent simplicity, the derivation and application of dose and dose rate effectiveness factors (DDREF) must be performed with caution. Tumors for which there is evidence (from knowledge of their mechanisms), that they are unlikely to be applicable to radiation carcinogenesis in human populations, should not be considered. This leaves a limited data set upon which to base DDREF calculations. These data sets include myeloid leukemia, and a few solid tumors including Harderian gland (for which there is no comparable tissue in humans), lung adenocarcinomas, and mammary tumors. All the data sets for myeloid leukemia support a reduced carcinogenic effect when comparing high and low dose rate exposures over the 0 to 3 Gy dose range. Calculation of DDREF values using the procedures described above yield estimates on the order of 2 to 6 with most values in the range of 4-5. For lung adenocarcinomas and for Harderian gland tumors DDREF values of approximately three have been calculated over the 0 to 2 Gy dose range. For mammary tumors all of the data suggest a DDREF value of less than 2 and more nearly close to a value of 1 when effects of high dose rate and low dose rate exposures are compared in this 0-2 Gy dose range. Thus, it appears that myeloid leukemia is probably more sensitive to dose rate effects than are solid tumors.
+
+> It should emphasized that these values are based upon extrapolation of data from acute doses of 2-3 Gy, and may represent maximum DDREF values (NCRP 1980). Total dose-dependent dose-rate effects have also been reported and quantified for cytogenetic endpoints by Sorensen and co workers (Sorensen et al 2000). The impact of dose range must be considered when applying DDREF factors to human risk estimates for which there are now reliable data at and below 1 Gy.
+
+> It has been argued that life shortening data may be a more appropriate measure of overall risk, and therefore, the use of these data is a better approach to the derivation of a single DDREF value. The complications of life shortening data have been described in an earlier section including changes in disease spectrum as a function of dose and dose rate, and complications associated with terminated versus life-time exposures. These complications notwithstanding, DDREF values determined from terminated radiation experiments indicate maximum DDREF values following extrapolation of acute effects in the 2 Gy dose range on the order of 2. Protraction of the radiation exposure over a significant portion of an animal’s life-time tends to reduce the effectiveness of the exposure more than that observed following a simple reduction of dose rate to specific total doses. However, as discussed earlier this experimental approach makes the determination of true effects per unit dose difficult if not impossible. Because of this, the application of these large (i.e., >2) protraction factors to human risks is problematic.”
+
+
+
+

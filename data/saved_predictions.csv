@@ -1,0 +1,2305 @@
+"fractions","dose","cluster","type","prediction","name"
+1,0,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00187110578175441,"1. BEIR VII all data"
+Inf,0,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00187110578175441,"1. BEIR VII all data"
+1,0.1,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.0018751960792707,"1. BEIR VII all data"
+Inf,0.1,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00187246921425984,"1. BEIR VII all data"
+1,0.2,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00188474010680871,"1. BEIR VII all data"
+Inf,0.2,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00187383264676527,"1. BEIR VII all data"
+1,0.3,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00189973786436845,"1. BEIR VII all data"
+Inf,0.3,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.0018751960792707,"1. BEIR VII all data"
+1,0.4,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.0019201893519499,"1. BEIR VII all data"
+Inf,0.4,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00187655951177613,"1. BEIR VII all data"
+1,0.5,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00194609456955308,"1. BEIR VII all data"
+Inf,0.5,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00187792294428156,"1. BEIR VII all data"
+1,0.6,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00197745351717798,"1. BEIR VII all data"
+Inf,0.6,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00187928637678699,"1. BEIR VII all data"
+1,0.7,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.0020142661948246,"1. BEIR VII all data"
+Inf,0.7,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00188064980929242,"1. BEIR VII all data"
+1,0.8,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00205653260249294,"1. BEIR VII all data"
+Inf,0.8,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00188201324179785,"1. BEIR VII all data"
+1,0.9,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.002104252740183,"1. BEIR VII all data"
+Inf,0.9,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00188337667430328,"1. BEIR VII all data"
+1,1,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00215742660789479,"1. BEIR VII all data"
+Inf,1,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00188474010680871,"1. BEIR VII all data"
+1,1.1,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00221605420562829,"1. BEIR VII all data"
+Inf,1.1,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00188610353931414,"1. BEIR VII all data"
+1,1.2,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00228013553338352,"1. BEIR VII all data"
+Inf,1.2,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00188746697181957,"1. BEIR VII all data"
+1,1.3,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00234967059116047,"1. BEIR VII all data"
+Inf,1.3,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00188883040432501,"1. BEIR VII all data"
+1,1.4,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00242465937895914,"1. BEIR VII all data"
+Inf,1.4,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00189019383683044,"1. BEIR VII all data"
+1,1.5,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00250510189677953,"1. BEIR VII all data"
+Inf,1.5,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00189155726933587,"1. BEIR VII all data"
+1,0,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.00108817357709892,"1. BEIR VII all data"
+Inf,0,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.00108817357709892,"1. BEIR VII all data"
+1,0.1,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.0010890673731476,"1. BEIR VII all data"
+Inf,0.1,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.00108847150911515,"1. BEIR VII all data"
+1,0.2,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.00109115289726119,"1. BEIR VII all data"
+Inf,0.2,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.00108876944113138,"1. BEIR VII all data"
+1,0.3,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.0010944301494397,"1. BEIR VII all data"
+Inf,0.3,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.0010890673731476,"1. BEIR VII all data"
+1,0.4,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.00109889912968311,"1. BEIR VII all data"
+Inf,0.4,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.00108936530516383,"1. BEIR VII all data"
+1,0.5,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.00110455983799143,"1. BEIR VII all data"
+Inf,0.5,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.00108966323718006,"1. BEIR VII all data"
+1,0.6,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.00111141227436466,"1. BEIR VII all data"
+Inf,0.6,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.00108996116919629,"1. BEIR VII all data"
+1,0.7,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.0011194564388028,"1. BEIR VII all data"
+Inf,0.7,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.00109025910121251,"1. BEIR VII all data"
+1,0.8,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.00112869233130585,"1. BEIR VII all data"
+Inf,0.8,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.00109055703322874,"1. BEIR VII all data"
+1,0.9,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.0011391199518738,"1. BEIR VII all data"
+Inf,0.9,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.00109085496524497,"1. BEIR VII all data"
+1,1,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.00115073930050667,"1. BEIR VII all data"
+Inf,1,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.00109115289726119,"1. BEIR VII all data"
+1,1.1,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.00116355037720445,"1. BEIR VII all data"
+Inf,1.1,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.00109145082927742,"1. BEIR VII all data"
+1,1.2,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.00117755318196714,"1. BEIR VII all data"
+Inf,1.2,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.00109174876129365,"1. BEIR VII all data"
+1,1.3,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.00119274771479474,"1. BEIR VII all data"
+Inf,1.3,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.00109204669330988,"1. BEIR VII all data"
+1,1.4,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.00120913397568724,"1. BEIR VII all data"
+Inf,1.4,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.0010923446253261,"1. BEIR VII all data"
+1,1.5,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.00122671196464466,"1. BEIR VII all data"
+Inf,1.5,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.00109264255734233,"1. BEIR VII all data"
+1,0,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.00105716755573398,"1. BEIR VII all data"
+Inf,0,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.00105716755573398,"1. BEIR VII all data"
+1,0.1,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.00105791494941747,"1. BEIR VII all data"
+Inf,0.1,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.00105741668696181,"1. BEIR VII all data"
+1,0.2,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.00105965886801226,"1. BEIR VII all data"
+Inf,0.2,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.00105766581818964,"1. BEIR VII all data"
+1,0.3,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.00106239931151837,"1. BEIR VII all data"
+Inf,0.3,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.00105791494941747,"1. BEIR VII all data"
+1,0.4,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.0010661362799358,"1. BEIR VII all data"
+Inf,0.4,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.00105816408064529,"1. BEIR VII all data"
+1,0.5,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.00107086977326453,"1. BEIR VII all data"
+Inf,0.5,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.00105841321187312,"1. BEIR VII all data"
+1,0.6,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.00107659979150458,"1. BEIR VII all data"
+Inf,0.6,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.00105866234310095,"1. BEIR VII all data"
+1,0.7,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.00108332633465594,"1. BEIR VII all data"
+Inf,0.7,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.00105891147432878,"1. BEIR VII all data"
+1,0.8,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.00109104940271862,"1. BEIR VII all data"
+Inf,0.8,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.00105916060555661,"1. BEIR VII all data"
+1,0.9,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.00109976899569261,"1. BEIR VII all data"
+Inf,0.9,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.00105940973678444,"1. BEIR VII all data"
+1,1,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.00110948511357791,"1. BEIR VII all data"
+Inf,1,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.00105965886801226,"1. BEIR VII all data"
+1,1.1,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.00112019775637452,"1. BEIR VII all data"
+Inf,1.1,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.00105990799924009,"1. BEIR VII all data"
+1,1.2,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.00113190692408245,"1. BEIR VII all data"
+Inf,1.2,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.00106015713046792,"1. BEIR VII all data"
+1,1.3,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.00114461261670168,"1. BEIR VII all data"
+Inf,1.3,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.00106040626169575,"1. BEIR VII all data"
+1,1.4,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.00115831483423224,"1. BEIR VII all data"
+Inf,1.4,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.00106065539292358,"1. BEIR VII all data"
+1,1.5,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.0011730135766741,"1. BEIR VII all data"
+Inf,1.5,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.0010609045241514,"1. BEIR VII all data"
+1,0,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.0018361007318581,"1. BEIR VII all data"
+Inf,0,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.0018361007318581,"1. BEIR VII all data"
+1,0.1,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00183911668667397,"1. BEIR VII all data"
+Inf,0.1,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00183710605013006,"1. BEIR VII all data"
+1,0.2,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00184615391457766,"1. BEIR VII all data"
+Inf,0.2,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00183811136840201,"1. BEIR VII all data"
+1,0.3,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00185721241556918,"1. BEIR VII all data"
+Inf,0.3,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00183911668667397,"1. BEIR VII all data"
+1,0.4,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00187229218964852,"1. BEIR VII all data"
+Inf,0.4,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00184012200494592,"1. BEIR VII all data"
+1,0.5,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00189139323681568,"1. BEIR VII all data"
+Inf,0.5,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00184112732321788,"1. BEIR VII all data"
+1,0.6,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00191451555707067,"1. BEIR VII all data"
+Inf,0.6,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00184213264148984,"1. BEIR VII all data"
+1,0.7,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00194165915041348,"1. BEIR VII all data"
+Inf,0.7,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00184313795976179,"1. BEIR VII all data"
+1,0.8,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00197282401684412,"1. BEIR VII all data"
+Inf,0.8,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00184414327803375,"1. BEIR VII all data"
+1,0.9,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00200801015636258,"1. BEIR VII all data"
+Inf,0.9,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.0018451485963057,"1. BEIR VII all data"
+1,1,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00204721756896887,"1. BEIR VII all data"
+Inf,1,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00184615391457766,"1. BEIR VII all data"
+1,1.1,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00209044625466298,"1. BEIR VII all data"
+Inf,1.1,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00184715923284962,"1. BEIR VII all data"
+1,1.2,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00213769621344491,"1. BEIR VII all data"
+Inf,1.2,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00184816455112157,"1. BEIR VII all data"
+1,1.3,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00218896744531467,"1. BEIR VII all data"
+Inf,1.3,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00184916986939353,"1. BEIR VII all data"
+1,1.4,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00224425995027225,"1. BEIR VII all data"
+Inf,1.4,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00185017518766548,"1. BEIR VII all data"
+1,1.5,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00230357372831766,"1. BEIR VII all data"
+Inf,1.5,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00185118050593744,"1. BEIR VII all data"
+1,0,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00157507299343571,"1. BEIR VII all data"
+Inf,0,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00157507299343571,"1. BEIR VII all data"
+1,0.1,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00157649678738904,"1. BEIR VII all data"
+Inf,0.1,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00157554759142015,"1. BEIR VII all data"
+1,0.2,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00157981897328012,"1. BEIR VII all data"
+Inf,0.2,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.0015760221894046,"1. BEIR VII all data"
+1,0.3,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00158503955110897,"1. BEIR VII all data"
+Inf,0.3,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00157649678738904,"1. BEIR VII all data"
+1,0.4,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00159215852087558,"1. BEIR VII all data"
+Inf,0.4,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00157697138537348,"1. BEIR VII all data"
+1,0.5,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00160117588257996,"1. BEIR VII all data"
+Inf,0.5,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00157744598335792,"1. BEIR VII all data"
+1,0.6,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.0016120916362221,"1. BEIR VII all data"
+Inf,0.6,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00157792058134236,"1. BEIR VII all data"
+1,0.7,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.001624905781802,"1. BEIR VII all data"
+Inf,0.7,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.0015783951793268,"1. BEIR VII all data"
+1,0.8,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00163961831931966,"1. BEIR VII all data"
+Inf,0.8,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00157886977731124,"1. BEIR VII all data"
+1,0.9,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00165622924877509,"1. BEIR VII all data"
+Inf,0.9,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00157934437529568,"1. BEIR VII all data"
+1,1,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00167473857016828,"1. BEIR VII all data"
+Inf,1,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00157981897328012,"1. BEIR VII all data"
+1,1.1,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00169514628349924,"1. BEIR VII all data"
+Inf,1.1,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00158029357126456,"1. BEIR VII all data"
+1,1.2,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00171745238876796,"1. BEIR VII all data"
+Inf,1.2,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.001580768169249,"1. BEIR VII all data"
+1,1.3,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00174165688597444,"1. BEIR VII all data"
+Inf,1.3,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00158124276723344,"1. BEIR VII all data"
+1,1.4,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00176775977511868,"1. BEIR VII all data"
+Inf,1.4,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00158171736521789,"1. BEIR VII all data"
+1,1.5,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00179576105620069,"1. BEIR VII all data"
+Inf,1.5,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00158219196320233,"1. BEIR VII all data"
+1,0,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00144504740507529,"1. BEIR VII all data"
+Inf,0,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00144504740507529,"1. BEIR VII all data"
+1,0.1,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00144532822102797,"1. BEIR VII all data"
+Inf,0.1,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00144514101039285,"1. BEIR VII all data"
+1,0.2,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.0014459834582509,"1. BEIR VII all data"
+Inf,0.2,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00144523461571041,"1. BEIR VII all data"
+1,0.3,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00144701311674407,"1. BEIR VII all data"
+Inf,0.3,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00144532822102797,"1. BEIR VII all data"
+1,0.4,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00144841719650748,"1. BEIR VII all data"
+Inf,0.4,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00144542182634553,"1. BEIR VII all data"
+1,0.5,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00145019569754114,"1. BEIR VII all data"
+Inf,0.5,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00144551543166309,"1. BEIR VII all data"
+1,0.6,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00145234861984504,"1. BEIR VII all data"
+Inf,0.6,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00144560903698065,"1. BEIR VII all data"
+1,0.7,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00145487596341919,"1. BEIR VII all data"
+Inf,0.7,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00144570264229821,"1. BEIR VII all data"
+1,0.8,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00145777772826358,"1. BEIR VII all data"
+Inf,0.8,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00144579624761577,"1. BEIR VII all data"
+1,0.9,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00146105391437821,"1. BEIR VII all data"
+Inf,0.9,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00144588985293334,"1. BEIR VII all data"
+1,1,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00146470452176309,"1. BEIR VII all data"
+Inf,1,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.0014459834582509,"1. BEIR VII all data"
+1,1.1,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00146872955041821,"1. BEIR VII all data"
+Inf,1.1,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00144607706356846,"1. BEIR VII all data"
+1,1.2,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00147312900034357,"1. BEIR VII all data"
+Inf,1.2,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00144617066888602,"1. BEIR VII all data"
+1,1.3,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00147790287153918,"1. BEIR VII all data"
+Inf,1.3,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00144626427420358,"1. BEIR VII all data"
+1,1.4,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00148305116400503,"1. BEIR VII all data"
+Inf,1.4,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00144635787952114,"1. BEIR VII all data"
+1,1.5,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00148857387774113,"1. BEIR VII all data"
+Inf,1.5,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.0014464514848387,"1. BEIR VII all data"
+1,0,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","A",0.00118729408897772,"1. BEIR VII all data"
+Inf,0,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","C",0.00118729408897772,"1. BEIR VII all data"
+1,0.1,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","A",0.00119113162966135,"1. BEIR VII all data"
+Inf,0.1,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","C",0.0011885732692056,"1. BEIR VII all data"
+1,0.2,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","A",0.00120008589125647,"1. BEIR VII all data"
+Inf,0.2,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","C",0.00118985244943347,"1. BEIR VII all data"
+1,0.3,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","A",0.0012141568737631,"1. BEIR VII all data"
+Inf,0.3,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","C",0.00119113162966135,"1. BEIR VII all data"
+1,0.4,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","A",0.00123334457718123,"1. BEIR VII all data"
+Inf,0.4,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","C",0.00119241080988922,"1. BEIR VII all data"
+1,0.5,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","A",0.00125764900151086,"1. BEIR VII all data"
+Inf,0.5,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","C",0.0011936899901171,"1. BEIR VII all data"
+1,0.6,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","A",0.00128707014675199,"1. BEIR VII all data"
+Inf,0.6,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","C",0.00119496917034497,"1. BEIR VII all data"
+1,0.7,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","A",0.00132160801290461,"1. BEIR VII all data"
+Inf,0.7,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","C",0.00119624835057285,"1. BEIR VII all data"
+1,0.8,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","A",0.00136126259996875,"1. BEIR VII all data"
+Inf,0.8,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","C",0.00119752753080072,"1. BEIR VII all data"
+1,0.9,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","A",0.00140603390794438,"1. BEIR VII all data"
+Inf,0.9,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","C",0.0011988067110286,"1. BEIR VII all data"
+1,1,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","A",0.00145592193683151,"1. BEIR VII all data"
+Inf,1,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","C",0.00120008589125647,"1. BEIR VII all data"
+1,1.1,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","A",0.00151092668663014,"1. BEIR VII all data"
+Inf,1.1,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","C",0.00120136507148435,"1. BEIR VII all data"
+1,1.2,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","A",0.00157104815734027,"1. BEIR VII all data"
+Inf,1.2,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","C",0.00120264425171222,"1. BEIR VII all data"
+1,1.3,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","A",0.00163628634896191,"1. BEIR VII all data"
+Inf,1.3,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","C",0.0012039234319401,"1. BEIR VII all data"
+1,1.4,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","A",0.00170664126149504,"1. BEIR VII all data"
+Inf,1.4,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","C",0.00120520261216797,"1. BEIR VII all data"
+1,1.5,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","A",0.00178211289493968,"1. BEIR VII all data"
+Inf,1.5,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","C",0.00120648179239585,"1. BEIR VII all data"
+1,0,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00113736658595757,"1. BEIR VII all data"
+Inf,0,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00113736658595757,"1. BEIR VII all data"
+1,0.1,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00113701236432845,"1. BEIR VII all data"
+Inf,0.1,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00113724851208119,"1. BEIR VII all data"
+1,0.2,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00113618584719383,"1. BEIR VII all data"
+Inf,0.2,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00113713043820482,"1. BEIR VII all data"
+1,0.3,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00113488703455372,"1. BEIR VII all data"
+Inf,0.3,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00113701236432845,"1. BEIR VII all data"
+1,0.4,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00113311592640811,"1. BEIR VII all data"
+Inf,0.4,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00113689429045207,"1. BEIR VII all data"
+1,0.5,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00113087252275701,"1. BEIR VII all data"
+Inf,0.5,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.0011367762165757,"1. BEIR VII all data"
+1,0.6,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00112815682360041,"1. BEIR VII all data"
+Inf,0.6,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00113665814269933,"1. BEIR VII all data"
+1,0.7,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00112496882893831,"1. BEIR VII all data"
+Inf,0.7,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00113654006882295,"1. BEIR VII all data"
+1,0.8,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00112130853877072,"1. BEIR VII all data"
+Inf,0.8,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00113642199494658,"1. BEIR VII all data"
+1,0.9,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00111717595309764,"1. BEIR VII all data"
+Inf,0.9,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.0011363039210702,"1. BEIR VII all data"
+1,1,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00111257107191906,"1. BEIR VII all data"
+Inf,1,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00113618584719383,"1. BEIR VII all data"
+1,1.1,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00110749389523499,"1. BEIR VII all data"
+Inf,1.1,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00113606777331746,"1. BEIR VII all data"
+1,1.2,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00110194442304541,"1. BEIR VII all data"
+Inf,1.2,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00113594969944108,"1. BEIR VII all data"
+1,1.3,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00109592265535035,"1. BEIR VII all data"
+Inf,1.3,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00113583162556471,"1. BEIR VII all data"
+1,1.4,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00108942859214979,"1. BEIR VII all data"
+Inf,1.4,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00113571355168833,"1. BEIR VII all data"
+1,1.5,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00108246223344373,"1. BEIR VII all data"
+Inf,1.5,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00113559547781196,"1. BEIR VII all data"
+1,0,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00134799313583915,"1. BEIR VII all data"
+Inf,0,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00134799313583915,"1. BEIR VII all data"
+1,0.1,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00135020586884632,"1. BEIR VII all data"
+Inf,0.1,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00134873071350821,"1. BEIR VII all data"
+1,0.2,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00135536891252971,"1. BEIR VII all data"
+Inf,0.2,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00134946829117727,"1. BEIR VII all data"
+1,0.3,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00136348226688933,"1. BEIR VII all data"
+Inf,0.3,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00135020586884632,"1. BEIR VII all data"
+1,0.4,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00137454593192517,"1. BEIR VII all data"
+Inf,0.4,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00135094344651538,"1. BEIR VII all data"
+1,0.5,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00138855990763723,"1. BEIR VII all data"
+Inf,0.5,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00135168102418443,"1. BEIR VII all data"
+1,0.6,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00140552419402552,"1. BEIR VII all data"
+Inf,0.6,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00135241860185349,"1. BEIR VII all data"
+1,0.7,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00142543879109003,"1. BEIR VII all data"
+Inf,0.7,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00135315617952255,"1. BEIR VII all data"
+1,0.8,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00144830369883076,"1. BEIR VII all data"
+Inf,0.8,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.0013538937571916,"1. BEIR VII all data"
+1,0.9,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00147411891724772,"1. BEIR VII all data"
+Inf,0.9,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00135463133486066,"1. BEIR VII all data"
+1,1,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.0015028844463409,"1. BEIR VII all data"
+Inf,1,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00135536891252971,"1. BEIR VII all data"
+1,1.1,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.0015346002861103,"1. BEIR VII all data"
+Inf,1.1,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00135610649019877,"1. BEIR VII all data"
+1,1.2,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00156926643655593,"1. BEIR VII all data"
+Inf,1.2,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00135684406786782,"1. BEIR VII all data"
+1,1.3,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00160688289767778,"1. BEIR VII all data"
+Inf,1.3,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00135758164553688,"1. BEIR VII all data"
+1,1.4,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00164744966947586,"1. BEIR VII all data"
+Inf,1.4,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00135831922320594,"1. BEIR VII all data"
+1,1.5,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00169096675195016,"1. BEIR VII all data"
+Inf,1.5,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00135905680087499,"1. BEIR VII all data"
+1,0,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00122553781341776,"1. BEIR VII all data"
+Inf,0,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00122553781341776,"1. BEIR VII all data"
+1,0.1,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00122566245037488,"1. BEIR VII all data"
+Inf,0.1,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00122557935907013,"1. BEIR VII all data"
+1,0.2,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00122595326994151,"1. BEIR VII all data"
+Inf,0.2,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00122562090472251,"1. BEIR VII all data"
+1,0.3,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00122641027211763,"1. BEIR VII all data"
+Inf,0.3,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00122566245037488,"1. BEIR VII all data"
+1,0.4,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00122703345690325,"1. BEIR VII all data"
+Inf,0.4,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00122570399602726,"1. BEIR VII all data"
+1,0.5,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00122782282429836,"1. BEIR VII all data"
+Inf,0.5,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00122574554167963,"1. BEIR VII all data"
+1,0.6,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00122877837430298,"1. BEIR VII all data"
+Inf,0.6,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00122578708733201,"1. BEIR VII all data"
+1,0.7,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.0012299001069171,"1. BEIR VII all data"
+Inf,0.7,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00122582863298438,"1. BEIR VII all data"
+1,0.8,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00123118802214071,"1. BEIR VII all data"
+Inf,0.8,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00122587017863676,"1. BEIR VII all data"
+1,0.9,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00123264211997382,"1. BEIR VII all data"
+Inf,0.9,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00122591172428913,"1. BEIR VII all data"
+1,1,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00123426240041643,"1. BEIR VII all data"
+Inf,1,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00122595326994151,"1. BEIR VII all data"
+1,1.1,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00123604886346854,"1. BEIR VII all data"
+Inf,1.1,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00122599481559388,"1. BEIR VII all data"
+1,1.2,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00123800150913015,"1. BEIR VII all data"
+Inf,1.2,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00122603636124625,"1. BEIR VII all data"
+1,1.3,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00124012033740126,"1. BEIR VII all data"
+Inf,1.3,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00122607790689863,"1. BEIR VII all data"
+1,1.4,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00124240534828186,"1. BEIR VII all data"
+Inf,1.4,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.001226119452551,"1. BEIR VII all data"
+1,1.5,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00124485654177197,"1. BEIR VII all data"
+Inf,1.5,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00122616099820338,"1. BEIR VII all data"
+1,0,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.0014370368457199,"1. BEIR VII all data"
+Inf,0,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.0014370368457199,"1. BEIR VII all data"
+1,0.1,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00143754495665271,"1. BEIR VII all data"
+Inf,0.1,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00143720621603083,"1. BEIR VII all data"
+1,0.2,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00143873054882928,"1. BEIR VII all data"
+Inf,0.2,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00143737558634177,"1. BEIR VII all data"
+1,0.3,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00144059362224961,"1. BEIR VII all data"
+Inf,0.3,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00143754495665271,"1. BEIR VII all data"
+1,0.4,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00144313417691369,"1. BEIR VII all data"
+Inf,0.4,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00143771432696365,"1. BEIR VII all data"
+1,0.5,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00144635221282153,"1. BEIR VII all data"
+Inf,0.5,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00143788369727459,"1. BEIR VII all data"
+1,0.6,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00145024772997313,"1. BEIR VII all data"
+Inf,0.6,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00143805306758553,"1. BEIR VII all data"
+1,0.7,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00145482072836847,"1. BEIR VII all data"
+Inf,0.7,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00143822243789647,"1. BEIR VII all data"
+1,0.8,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00146007120800758,"1. BEIR VII all data"
+Inf,0.8,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00143839180820741,"1. BEIR VII all data"
+1,0.9,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00146599916889044,"1. BEIR VII all data"
+Inf,0.9,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00143856117851835,"1. BEIR VII all data"
+1,1,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00147260461101705,"1. BEIR VII all data"
+Inf,1,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00143873054882928,"1. BEIR VII all data"
+1,1.1,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00147988753438742,"1. BEIR VII all data"
+Inf,1.1,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00143889991914022,"1. BEIR VII all data"
+1,1.2,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00148784793900155,"1. BEIR VII all data"
+Inf,1.2,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00143906928945116,"1. BEIR VII all data"
+1,1.3,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00149648582485943,"1. BEIR VII all data"
+Inf,1.3,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.0014392386597621,"1. BEIR VII all data"
+1,1.4,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00150580119196106,"1. BEIR VII all data"
+Inf,1.4,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00143940803007304,"1. BEIR VII all data"
+1,1.5,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00151579404030646,"1. BEIR VII all data"
+Inf,1.5,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00143957740038398,"1. BEIR VII all data"
+1,0,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","A",0.00127570057286417,"1. BEIR VII all data"
+Inf,0,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","C",0.00127570057286417,"1. BEIR VII all data"
+1,0.1,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","A",0.00127941485408843,"1. BEIR VII all data"
+Inf,0.1,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","C",0.00127693866660559,"1. BEIR VII all data"
+1,0.2,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","A",0.00128808151027838,"1. BEIR VII all data"
+Inf,0.2,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","C",0.00127817676034701,"1. BEIR VII all data"
+1,0.3,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","A",0.00130170054143402,"1. BEIR VII all data"
+Inf,0.3,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","C",0.00127941485408843,"1. BEIR VII all data"
+1,0.4,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","A",0.00132027194755534,"1. BEIR VII all data"
+Inf,0.4,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","C",0.00128065294782986,"1. BEIR VII all data"
+1,0.5,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","A",0.00134379572864234,"1. BEIR VII all data"
+Inf,0.5,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","C",0.00128189104157128,"1. BEIR VII all data"
+1,0.6,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","A",0.00137227188469504,"1. BEIR VII all data"
+Inf,0.6,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","C",0.0012831291353127,"1. BEIR VII all data"
+1,0.7,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","A",0.00140570041571341,"1. BEIR VII all data"
+Inf,0.7,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","C",0.00128436722905412,"1. BEIR VII all data"
+1,0.8,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","A",0.00144408132169747,"1. BEIR VII all data"
+Inf,0.8,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","C",0.00128560532279554,"1. BEIR VII all data"
+1,0.9,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","A",0.00148741460264722,"1. BEIR VII all data"
+Inf,0.9,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","C",0.00128684341653696,"1. BEIR VII all data"
+1,1,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","A",0.00153570025856265,"1. BEIR VII all data"
+Inf,1,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","C",0.00128808151027838,"1. BEIR VII all data"
+1,1.1,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","A",0.00158893828944377,"1. BEIR VII all data"
+Inf,1.1,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","C",0.00128931960401981,"1. BEIR VII all data"
+1,1.2,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","A",0.00164712869529058,"1. BEIR VII all data"
+Inf,1.2,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","C",0.00129055769776123,"1. BEIR VII all data"
+1,1.3,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","A",0.00171027147610306,"1. BEIR VII all data"
+Inf,1.3,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","C",0.00129179579150265,"1. BEIR VII all data"
+1,1.4,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","A",0.00177836663188124,"1. BEIR VII all data"
+Inf,1.4,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","C",0.00129303388524407,"1. BEIR VII all data"
+1,1.5,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","A",0.0018514141626251,"1. BEIR VII all data"
+Inf,1.5,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","C",0.00129427197898549,"1. BEIR VII all data"
+1,0,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","A",0.001472165696487,"1. BEIR VII all data"
+Inf,0,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","C",0.001472165696487,"1. BEIR VII all data"
+1,0.1,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","A",0.00146954100477927,"1. BEIR VII all data"
+Inf,0.1,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","C",0.00147129079925109,"1. BEIR VII all data"
+1,0.2,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","A",0.00146341672412788,"1. BEIR VII all data"
+Inf,0.2,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","C",0.00147041590201518,"1. BEIR VII all data"
+1,0.3,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","A",0.00145379285453286,"1. BEIR VII all data"
+Inf,0.3,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","C",0.00146954100477927,"1. BEIR VII all data"
+1,0.4,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","A",0.00144066939599418,"1. BEIR VII all data"
+Inf,0.4,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","C",0.00146866610754335,"1. BEIR VII all data"
+1,0.5,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","A",0.00142404634851186,"1. BEIR VII all data"
+Inf,0.5,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","C",0.00146779121030744,"1. BEIR VII all data"
+1,0.6,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","A",0.00140392371208589,"1. BEIR VII all data"
+Inf,0.6,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","C",0.00146691631307153,"1. BEIR VII all data"
+1,0.7,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","A",0.00138030148671628,"1. BEIR VII all data"
+Inf,0.7,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","C",0.00146604141583562,"1. BEIR VII all data"
+1,0.8,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","A",0.00135317967240302,"1. BEIR VII all data"
+Inf,0.8,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","C",0.00146516651859971,"1. BEIR VII all data"
+1,0.9,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","A",0.00132255826914611,"1. BEIR VII all data"
+Inf,0.9,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","C",0.0014642916213638,"1. BEIR VII all data"
+1,1,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","A",0.00128843727694556,"1. BEIR VII all data"
+Inf,1,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","C",0.00146341672412788,"1. BEIR VII all data"
+1,1.1,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","A",0.00125081669580136,"1. BEIR VII all data"
+Inf,1.1,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","C",0.00146254182689197,"1. BEIR VII all data"
+1,1.2,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","A",0.00120969652571351,"1. BEIR VII all data"
+Inf,1.2,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","C",0.00146166692965606,"1. BEIR VII all data"
+1,1.3,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","A",0.00116507676668202,"1. BEIR VII all data"
+Inf,1.3,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","C",0.00146079203242015,"1. BEIR VII all data"
+1,1.4,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","A",0.00111695741870688,"1. BEIR VII all data"
+Inf,1.4,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","C",0.00145991713518424,"1. BEIR VII all data"
+1,1.5,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","A",0.0010653384817881,"1. BEIR VII all data"
+Inf,1.5,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","C",0.00145904223794833,"1. BEIR VII all data"
+1,0,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00142149194343027,"1. BEIR VII all data"
+Inf,0,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00142149194343027,"1. BEIR VII all data"
+1,0.1,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00141985465823679,"1. BEIR VII all data"
+Inf,0.1,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00142094618169911,"1. BEIR VII all data"
+1,0.2,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00141603432611867,"1. BEIR VII all data"
+Inf,0.2,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00142040041996795,"1. BEIR VII all data"
+1,0.3,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00141003094707591,"1. BEIR VII all data"
+Inf,0.3,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00141985465823679,"1. BEIR VII all data"
+1,0.4,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.0014018445211085,"1. BEIR VII all data"
+Inf,0.4,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00141930889650563,"1. BEIR VII all data"
+1,0.5,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00139147504821646,"1. BEIR VII all data"
+Inf,0.5,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00141876313477447,"1. BEIR VII all data"
+1,0.6,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00137892252839977,"1. BEIR VII all data"
+Inf,0.6,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00141821737304331,"1. BEIR VII all data"
+1,0.7,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00136418696165845,"1. BEIR VII all data"
+Inf,0.7,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00141767161131215,"1. BEIR VII all data"
+1,0.8,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00134726834799248,"1. BEIR VII all data"
+Inf,0.8,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00141712584958099,"1. BEIR VII all data"
+1,0.9,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00132816668740187,"1. BEIR VII all data"
+Inf,0.9,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00141658008784983,"1. BEIR VII all data"
+1,1,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00130688197988662,"1. BEIR VII all data"
+Inf,1,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00141603432611867,"1. BEIR VII all data"
+1,1.1,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00128341422544672,"1. BEIR VII all data"
+Inf,1.1,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00141548856438751,"1. BEIR VII all data"
+1,1.2,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00125776342408219,"1. BEIR VII all data"
+Inf,1.2,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00141494280265635,"1. BEIR VII all data"
+1,1.3,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00122992957579302,"1. BEIR VII all data"
+Inf,1.3,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00141439704092519,"1. BEIR VII all data"
+1,1.4,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.0011999126805792,"1. BEIR VII all data"
+Inf,1.4,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00141385127919403,"1. BEIR VII all data"
+1,1.5,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00116771273844074,"1. BEIR VII all data"
+Inf,1.5,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00141330551746287,"1. BEIR VII all data"
+1,0,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.0013104323778648,"1. BEIR VII all data"
+Inf,0,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.0013104323778648,"1. BEIR VII all data"
+1,0.1,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00131002700721484,"1. BEIR VII all data"
+Inf,0.1,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00131029725431481,"1. BEIR VII all data"
+1,0.2,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00130908114236493,"1. BEIR VII all data"
+Inf,0.2,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00131016213076483,"1. BEIR VII all data"
+1,0.3,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00130759478331507,"1. BEIR VII all data"
+Inf,0.3,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00131002700721484,"1. BEIR VII all data"
+1,0.4,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00130556793006526,"1. BEIR VII all data"
+Inf,0.4,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00130989188366485,"1. BEIR VII all data"
+1,0.5,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00130300058261551,"1. BEIR VII all data"
+Inf,0.5,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00130975676011486,"1. BEIR VII all data"
+1,0.6,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00129989274096581,"1. BEIR VII all data"
+Inf,0.6,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00130962163656488,"1. BEIR VII all data"
+1,0.7,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00129624440511616,"1. BEIR VII all data"
+Inf,0.7,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00130948651301489,"1. BEIR VII all data"
+1,0.8,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00129205557506656,"1. BEIR VII all data"
+Inf,0.8,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.0013093513894649,"1. BEIR VII all data"
+1,0.9,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00128732625081701,"1. BEIR VII all data"
+Inf,0.9,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00130921626591492,"1. BEIR VII all data"
+1,1,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00128205643236751,"1. BEIR VII all data"
+Inf,1,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00130908114236493,"1. BEIR VII all data"
+1,1.1,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00127624611971807,"1. BEIR VII all data"
+Inf,1.1,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00130894601881494,"1. BEIR VII all data"
+1,1.2,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00126989531286867,"1. BEIR VII all data"
+Inf,1.2,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00130881089526495,"1. BEIR VII all data"
+1,1.3,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00126300401181933,"1. BEIR VII all data"
+Inf,1.3,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00130867577171497,"1. BEIR VII all data"
+1,1.4,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00125557221657004,"1. BEIR VII all data"
+Inf,1.4,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00130854064816498,"1. BEIR VII all data"
+1,1.5,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.0012475999271208,"1. BEIR VII all data"
+Inf,1.5,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00130840552461499,"1. BEIR VII all data"
+1,0,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","A",0.00114756295611792,"1. BEIR VII all data"
+Inf,0,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","C",0.00114756295611792,"1. BEIR VII all data"
+1,0.1,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","A",0.00114783639695982,"1. BEIR VII all data"
+Inf,0.1,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","C",0.00114765410306522,"1. BEIR VII all data"
+1,0.2,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","A",0.00114847442559091,"1. BEIR VII all data"
+Inf,0.2,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","C",0.00114774525001252,"1. BEIR VII all data"
+1,0.3,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","A",0.00114947704201121,"1. BEIR VII all data"
+Inf,0.3,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","C",0.00114783639695982,"1. BEIR VII all data"
+1,0.4,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","A",0.0011508442462207,"1. BEIR VII all data"
+Inf,0.4,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","C",0.00114792754390712,"1. BEIR VII all data"
+1,0.5,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","A",0.0011525760382194,"1. BEIR VII all data"
+Inf,0.5,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","C",0.00114801869085442,"1. BEIR VII all data"
+1,0.6,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","A",0.00115467241800729,"1. BEIR VII all data"
+Inf,0.6,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","C",0.00114810983780172,"1. BEIR VII all data"
+1,0.7,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","A",0.00115713338558437,"1. BEIR VII all data"
+Inf,0.7,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","C",0.00114820098474902,"1. BEIR VII all data"
+1,0.8,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","A",0.00115995894095066,"1. BEIR VII all data"
+Inf,0.8,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","C",0.00114829213169631,"1. BEIR VII all data"
+1,0.9,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","A",0.00116314908410615,"1. BEIR VII all data"
+Inf,0.9,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","C",0.00114838327864361,"1. BEIR VII all data"
+1,1,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","A",0.00116670381505083,"1. BEIR VII all data"
+Inf,1,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","C",0.00114847442559091,"1. BEIR VII all data"
+1,1.1,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","A",0.00117062313378471,"1. BEIR VII all data"
+Inf,1.1,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","C",0.00114856557253821,"1. BEIR VII all data"
+1,1.2,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","A",0.00117490704030779,"1. BEIR VII all data"
+Inf,1.2,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","C",0.00114865671948551,"1. BEIR VII all data"
+1,1.3,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","A",0.00117955553462007,"1. BEIR VII all data"
+Inf,1.3,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","C",0.00114874786643281,"1. BEIR VII all data"
+1,1.4,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","A",0.00118456861672155,"1. BEIR VII all data"
+Inf,1.4,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","C",0.00114883901338011,"1. BEIR VII all data"
+1,1.5,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","A",0.00118994628661223,"1. BEIR VII all data"
+Inf,1.5,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","C",0.00114893016032741,"1. BEIR VII all data"
+1,0,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00178274790039231,"1. BEIR VII acute"
+Inf,0,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00178274790039231,"1. BEIR VII acute"
+1,0.1,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00181535673129249,"1. BEIR VII acute"
+Inf,0.1,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00181434560475295,"1. BEIR VII acute"
+1,0.2,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00184998781527175,"1. BEIR VII acute"
+Inf,0.2,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00184594330911359,"1. BEIR VII acute"
+1,0.3,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00188664115233009,"1. BEIR VII acute"
+Inf,0.3,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00187754101347422,"1. BEIR VII acute"
+1,0.4,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00192531674246751,"1. BEIR VII acute"
+Inf,0.4,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00190913871783486,"1. BEIR VII acute"
+1,0.5,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00196601458568401,"1. BEIR VII acute"
+Inf,0.5,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.0019407364221955,"1. BEIR VII acute"
+1,0.6,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.0020087346819796,"1. BEIR VII acute"
+Inf,0.6,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00197233412655614,"1. BEIR VII acute"
+1,0.7,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00205347703135426,"1. BEIR VII acute"
+Inf,0.7,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00200393183091678,"1. BEIR VII acute"
+1,0.8,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00210024163380801,"1. BEIR VII acute"
+Inf,0.8,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00203552953527742,"1. BEIR VII acute"
+1,0.9,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00214902848934083,"1. BEIR VII acute"
+Inf,0.9,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00206712723963806,"1. BEIR VII acute"
+1,1,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00219983759795274,"1. BEIR VII acute"
+Inf,1,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.0020987249439987,"1. BEIR VII acute"
+1,1.1,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00225266895964373,"1. BEIR VII acute"
+Inf,1.1,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00213032264835934,"1. BEIR VII acute"
+1,1.2,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.0023075225744138,"1. BEIR VII acute"
+Inf,1.2,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00216192035271997,"1. BEIR VII acute"
+1,1.3,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00236439844226295,"1. BEIR VII acute"
+Inf,1.3,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00219351805708061,"1. BEIR VII acute"
+1,1.4,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00242329656319118,"1. BEIR VII acute"
+Inf,1.4,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00222511576144125,"1. BEIR VII acute"
+1,1.5,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00248421693719849,"1. BEIR VII acute"
+Inf,1.5,"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00225671346580189,"1. BEIR VII acute"
+1,0,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.00108693701250052,"1. BEIR VII acute"
+Inf,0,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.00108693701250052,"1. BEIR VII acute"
+1,0.1,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.00109125079408596,"1. BEIR VII acute"
+Inf,0.1,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.00109111703341664,"1. BEIR VII acute"
+1,0.2,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.00109583209701002,"1. BEIR VII acute"
+Inf,0.2,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.00109529705433276,"1. BEIR VII acute"
+1,0.3,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.00110068092127271,"1. BEIR VII acute"
+Inf,0.3,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.00109947707524887,"1. BEIR VII acute"
+1,0.4,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.00110579726687404,"1. BEIR VII acute"
+Inf,0.4,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.00110365709616499,"1. BEIR VII acute"
+1,0.5,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.001111181133814,"1. BEIR VII acute"
+Inf,0.5,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.0011078371170811,"1. BEIR VII acute"
+1,0.6,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.00111683252209259,"1. BEIR VII acute"
+Inf,0.6,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.00111201713799722,"1. BEIR VII acute"
+1,0.7,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.00112275143170981,"1. BEIR VII acute"
+Inf,0.7,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.00111619715891334,"1. BEIR VII acute"
+1,0.8,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.00112893786266566,"1. BEIR VII acute"
+Inf,0.8,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.00112037717982945,"1. BEIR VII acute"
+1,0.9,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.00113539181496014,"1. BEIR VII acute"
+Inf,0.9,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.00112455720074557,"1. BEIR VII acute"
+1,1,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.00114211328859326,"1. BEIR VII acute"
+Inf,1,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.00112873722166168,"1. BEIR VII acute"
+1,1.1,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.001149102283565,"1. BEIR VII acute"
+Inf,1.1,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.0011329172425778,"1. BEIR VII acute"
+1,1.2,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.00115635879987538,"1. BEIR VII acute"
+Inf,1.2,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.00113709726349392,"1. BEIR VII acute"
+1,1.3,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.00116388283752439,"1. BEIR VII acute"
+Inf,1.3,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.00114127728441003,"1. BEIR VII acute"
+1,1.4,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.00117167439651203,"1. BEIR VII acute"
+Inf,1.4,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.00114545730532615,"1. BEIR VII acute"
+1,1.5,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.0011797334768383,"1. BEIR VII acute"
+Inf,1.5,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.00114963732624227,"1. BEIR VII acute"
+1,0,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.00105346356921286,"1. BEIR VII acute"
+Inf,0,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.00105346356921286,"1. BEIR VII acute"
+1,0.1,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.00105850719718714,"1. BEIR VII acute"
+Inf,0.1,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.00105835080562204,"1. BEIR VII acute"
+1,0.2,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.00106386360829159,"1. BEIR VII acute"
+Inf,0.2,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.00106323804203122,"1. BEIR VII acute"
+1,0.3,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.00106953280252624,"1. BEIR VII acute"
+Inf,0.3,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.0010681252784404,"1. BEIR VII acute"
+1,0.4,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.00107551477989107,"1. BEIR VII acute"
+Inf,0.4,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.00107301251484957,"1. BEIR VII acute"
+1,0.5,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.00108180954038609,"1. BEIR VII acute"
+Inf,0.5,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.00107789975125875,"1. BEIR VII acute"
+1,0.6,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.0010884170840113,"1. BEIR VII acute"
+Inf,0.6,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.00108278698766793,"1. BEIR VII acute"
+1,0.7,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.0010953374107667,"1. BEIR VII acute"
+Inf,0.7,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.00108767422407711,"1. BEIR VII acute"
+1,0.8,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.00110257052065228,"1. BEIR VII acute"
+Inf,0.8,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.00109256146048629,"1. BEIR VII acute"
+1,0.9,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.00111011641366805,"1. BEIR VII acute"
+Inf,0.9,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.00109744869689546,"1. BEIR VII acute"
+1,1,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.00111797508981401,"1. BEIR VII acute"
+Inf,1,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.00110233593330464,"1. BEIR VII acute"
+1,1.1,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.00112614654909015,"1. BEIR VII acute"
+Inf,1.1,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.00110722316971382,"1. BEIR VII acute"
+1,1.2,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.00113463079149649,"1. BEIR VII acute"
+Inf,1.2,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.001112110406123,"1. BEIR VII acute"
+1,1.3,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.00114342781703301,"1. BEIR VII acute"
+Inf,1.3,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.00111699764253217,"1. BEIR VII acute"
+1,1.4,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.00115253762569971,"1. BEIR VII acute"
+Inf,1.4,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.00112188487894135,"1. BEIR VII acute"
+1,1.5,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.00116196021749661,"1. BEIR VII acute"
+Inf,1.5,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.00112677211535053,"1. BEIR VII acute"
+1,0,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.001842196991626,"1. BEIR VII acute"
+Inf,0,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.001842196991626,"1. BEIR VII acute"
+1,0.1,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00185955966368842,"1. BEIR VII acute"
+Inf,0.1,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00185902128626012,"1. BEIR VII acute"
+1,0.2,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00187799909060742,"1. BEIR VII acute"
+Inf,0.2,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00187584558089425,"1. BEIR VII acute"
+1,0.3,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00189751527238301,"1. BEIR VII acute"
+Inf,0.3,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00189266987552838,"1. BEIR VII acute"
+1,0.4,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00191810820901518,"1. BEIR VII acute"
+Inf,0.4,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.0019094941701625,"1. BEIR VII acute"
+1,0.5,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00193977790050393,"1. BEIR VII acute"
+Inf,0.5,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00192631846479663,"1. BEIR VII acute"
+1,0.6,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00196252434684927,"1. BEIR VII acute"
+Inf,0.6,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00194314275943076,"1. BEIR VII acute"
+1,0.7,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.0019863475480512,"1. BEIR VII acute"
+Inf,0.7,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00195996705406489,"1. BEIR VII acute"
+1,0.8,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.0020112475041097,"1. BEIR VII acute"
+Inf,0.8,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00197679134869901,"1. BEIR VII acute"
+1,0.9,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.0020372242150248,"1. BEIR VII acute"
+Inf,0.9,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00199361564333314,"1. BEIR VII acute"
+1,1,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00206427768079647,"1. BEIR VII acute"
+Inf,1,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00201043993796727,"1. BEIR VII acute"
+1,1.1,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00209240790142473,"1. BEIR VII acute"
+Inf,1.1,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00202726423260139,"1. BEIR VII acute"
+1,1.2,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00212161487690958,"1. BEIR VII acute"
+Inf,1.2,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00204408852723552,"1. BEIR VII acute"
+1,1.3,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00215189860725101,"1. BEIR VII acute"
+Inf,1.3,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00206091282186965,"1. BEIR VII acute"
+1,1.4,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00218325909244902,"1. BEIR VII acute"
+Inf,1.4,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00207773711650377,"1. BEIR VII acute"
+1,1.5,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00221569633250361,"1. BEIR VII acute"
+Inf,1.5,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.0020945614111379,"1. BEIR VII acute"
+1,0,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00155289441267904,"1. BEIR VII acute"
+Inf,0,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00155289441267904,"1. BEIR VII acute"
+1,0.1,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.001564104442096,"1. BEIR VII acute"
+Inf,0.1,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00156375684428462,"1. BEIR VII acute"
+1,0.2,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00157600966713571,"1. BEIR VII acute"
+Inf,0.2,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00157461927589019,"1. BEIR VII acute"
+1,0.3,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00158861008779818,"1. BEIR VII acute"
+Inf,0.3,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00158548170749577,"1. BEIR VII acute"
+1,0.4,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.0016019057040834,"1. BEIR VII acute"
+Inf,0.4,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00159634413910135,"1. BEIR VII acute"
+1,0.5,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00161589651599138,"1. BEIR VII acute"
+Inf,0.5,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00160720657070692,"1. BEIR VII acute"
+1,0.6,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00163058252352212,"1. BEIR VII acute"
+Inf,0.6,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.0016180690023125,"1. BEIR VII acute"
+1,0.7,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00164596372667562,"1. BEIR VII acute"
+Inf,0.7,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00162893143391808,"1. BEIR VII acute"
+1,0.8,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00166204012545187,"1. BEIR VII acute"
+Inf,0.8,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00163979386552365,"1. BEIR VII acute"
+1,0.9,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00167881171985088,"1. BEIR VII acute"
+Inf,0.9,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00165065629712923,"1. BEIR VII acute"
+1,1,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00169627850987265,"1. BEIR VII acute"
+Inf,1,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00166151872873481,"1. BEIR VII acute"
+1,1.1,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00171444049551718,"1. BEIR VII acute"
+Inf,1.1,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00167238116034038,"1. BEIR VII acute"
+1,1.2,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00173329767678446,"1. BEIR VII acute"
+Inf,1.2,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00168324359194596,"1. BEIR VII acute"
+1,1.3,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00175285005367449,"1. BEIR VII acute"
+Inf,1.3,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00169410602355154,"1. BEIR VII acute"
+1,1.4,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00177309762618729,"1. BEIR VII acute"
+Inf,1.4,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00170496845515711,"1. BEIR VII acute"
+1,1.5,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","A",0.00179404039432284,"1. BEIR VII acute"
+Inf,1.5,"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old","C",0.00171583088676269,"1. BEIR VII acute"
+1,0,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00147099244543027,"1. BEIR VII acute"
+Inf,0,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00147099244543027,"1. BEIR VII acute"
+1,0.1,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00147123694753963,"1. BEIR VII acute"
+Inf,0.1,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00147122936607887,"1. BEIR VII acute"
+1,0.2,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.0014714966125705,"1. BEIR VII acute"
+Inf,0.2,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00147146628672748,"1. BEIR VII acute"
+1,0.3,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00147177144052288,"1. BEIR VII acute"
+Inf,0.3,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00147170320737608,"1. BEIR VII acute"
+1,0.4,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00147206143139677,"1. BEIR VII acute"
+Inf,0.4,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00147194012802469,"1. BEIR VII acute"
+1,0.5,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00147236658519217,"1. BEIR VII acute"
+Inf,0.5,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00147217704867329,"1. BEIR VII acute"
+1,0.6,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00147268690190909,"1. BEIR VII acute"
+Inf,0.6,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00147241396932189,"1. BEIR VII acute"
+1,0.7,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00147302238154751,"1. BEIR VII acute"
+Inf,0.7,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.0014726508899705,"1. BEIR VII acute"
+1,0.8,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00147337302410744,"1. BEIR VII acute"
+Inf,0.8,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.0014728878106191,"1. BEIR VII acute"
+1,0.9,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00147373882958889,"1. BEIR VII acute"
+Inf,0.9,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00147312473126771,"1. BEIR VII acute"
+1,1,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00147411979799184,"1. BEIR VII acute"
+Inf,1,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00147336165191631,"1. BEIR VII acute"
+1,1.1,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00147451592931631,"1. BEIR VII acute"
+Inf,1.1,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00147359857256492,"1. BEIR VII acute"
+1,1.2,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00147492722356229,"1. BEIR VII acute"
+Inf,1.2,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00147383549321352,"1. BEIR VII acute"
+1,1.3,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00147535368072978,"1. BEIR VII acute"
+Inf,1.3,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00147407241386212,"1. BEIR VII acute"
+1,1.4,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00147579530081877,"1. BEIR VII acute"
+Inf,1.4,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00147430933451073,"1. BEIR VII acute"
+1,1.5,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00147625208382928,"1. BEIR VII acute"
+Inf,1.5,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00147454625515933,"1. BEIR VII acute"
+1,0,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","A",0.00116679017624478,"1. BEIR VII acute"
+Inf,0,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","C",0.00116679017624478,"1. BEIR VII acute"
+1,0.1,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","A",0.00119099651414151,"1. BEIR VII acute"
+Inf,0.1,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","C",0.00119024593002068,"1. BEIR VII acute"
+1,0.2,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","A",0.00121670402027991,"1. BEIR VII acute"
+Inf,0.2,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","C",0.00121370168379659,"1. BEIR VII acute"
+1,0.3,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","A",0.00124391269465996,"1. BEIR VII acute"
+Inf,0.3,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","C",0.0012371574375725,"1. BEIR VII acute"
+1,0.4,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","A",0.00127262253728167,"1. BEIR VII acute"
+Inf,0.4,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","C",0.0012606131913484,"1. BEIR VII acute"
+1,0.5,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","A",0.00130283354814503,"1. BEIR VII acute"
+Inf,0.5,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","C",0.00128406894512431,"1. BEIR VII acute"
+1,0.6,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","A",0.00133454572725006,"1. BEIR VII acute"
+Inf,0.6,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","C",0.00130752469890021,"1. BEIR VII acute"
+1,0.7,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","A",0.00136775907459674,"1. BEIR VII acute"
+Inf,0.7,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","C",0.00133098045267612,"1. BEIR VII acute"
+1,0.8,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","A",0.00140247359018508,"1. BEIR VII acute"
+Inf,0.8,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","C",0.00135443620645203,"1. BEIR VII acute"
+1,0.9,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","A",0.00143868927401508,"1. BEIR VII acute"
+Inf,0.9,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","C",0.00137789196022793,"1. BEIR VII acute"
+1,1,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","A",0.00147640612608674,"1. BEIR VII acute"
+Inf,1,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","C",0.00140134771400384,"1. BEIR VII acute"
+1,1.1,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","A",0.00151562414640005,"1. BEIR VII acute"
+Inf,1.1,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","C",0.00142480346777974,"1. BEIR VII acute"
+1,1.2,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","A",0.00155634333495502,"1. BEIR VII acute"
+Inf,1.2,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","C",0.00144825922155565,"1. BEIR VII acute"
+1,1.3,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","A",0.00159856369175165,"1. BEIR VII acute"
+Inf,1.3,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","C",0.00147171497533155,"1. BEIR VII acute"
+1,1.4,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","A",0.00164228521678994,"1. BEIR VII acute"
+Inf,1.4,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","C",0.00149517072910746,"1. BEIR VII acute"
+1,1.5,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","A",0.00168750791006989,"1. BEIR VII acute"
+Inf,1.5,"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old","C",0.00151862648288337,"1. BEIR VII acute"
+1,0,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00113885505863639,"1. BEIR VII acute"
+Inf,0,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00113885505863639,"1. BEIR VII acute"
+1,0.1,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00113691299784038,"1. BEIR VII acute"
+Inf,0.1,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00113697321677979,"1. BEIR VII acute"
+1,0.2,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00113485049916553,"1. BEIR VII acute"
+Inf,0.2,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00113509137492318,"1. BEIR VII acute"
+1,0.3,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00113266756261187,"1. BEIR VII acute"
+Inf,0.3,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00113320953306657,"1. BEIR VII acute"
+1,0.4,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00113036418817938,"1. BEIR VII acute"
+Inf,0.4,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00113132769120996,"1. BEIR VII acute"
+1,0.5,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00112794037586807,"1. BEIR VII acute"
+Inf,0.5,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00112944584935336,"1. BEIR VII acute"
+1,0.6,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00112539612567794,"1. BEIR VII acute"
+Inf,0.6,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00112756400749675,"1. BEIR VII acute"
+1,0.7,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00112273143760898,"1. BEIR VII acute"
+Inf,0.7,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00112568216564014,"1. BEIR VII acute"
+1,0.8,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.0011199463116612,"1. BEIR VII acute"
+Inf,0.8,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00112380032378353,"1. BEIR VII acute"
+1,0.9,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.0011170407478346,"1. BEIR VII acute"
+Inf,0.9,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00112191848192693,"1. BEIR VII acute"
+1,1,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00111401474612917,"1. BEIR VII acute"
+Inf,1,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00112003664007032,"1. BEIR VII acute"
+1,1.1,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00111086830654493,"1. BEIR VII acute"
+Inf,1.1,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00111815479821371,"1. BEIR VII acute"
+1,1.2,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00110760142908185,"1. BEIR VII acute"
+Inf,1.2,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.0011162729563571,"1. BEIR VII acute"
+1,1.3,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00110421411373996,"1. BEIR VII acute"
+Inf,1.3,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00111439111450049,"1. BEIR VII acute"
+1,1.4,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00110070636051924,"1. BEIR VII acute"
+Inf,1.4,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00111250927264389,"1. BEIR VII acute"
+1,1.5,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.0010970781694197,"1. BEIR VII acute"
+Inf,1.5,"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00111062743078728,"1. BEIR VII acute"
+1,0,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00133390101794373,"1. BEIR VII acute"
+Inf,0,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00133390101794373,"1. BEIR VII acute"
+1,0.1,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.0013468137515194,"1. BEIR VII acute"
+Inf,0.1,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00134641335667984,"1. BEIR VII acute"
+1,0.2,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00136052727477417,"1. BEIR VII acute"
+Inf,0.2,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00135892569541595,"1. BEIR VII acute"
+1,0.3,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00137504158770806,"1. BEIR VII acute"
+Inf,0.3,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00137143803415206,"1. BEIR VII acute"
+1,0.4,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00139035669032106,"1. BEIR VII acute"
+Inf,0.4,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00138395037288817,"1. BEIR VII acute"
+1,0.5,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00140647258261317,"1. BEIR VII acute"
+Inf,0.5,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00139646271162428,"1. BEIR VII acute"
+1,0.6,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00142338926458439,"1. BEIR VII acute"
+Inf,0.6,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00140897505036039,"1. BEIR VII acute"
+1,0.7,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00144110673623472,"1. BEIR VII acute"
+Inf,0.7,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.0014214873890965,"1. BEIR VII acute"
+1,0.8,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00145962499756416,"1. BEIR VII acute"
+Inf,0.8,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00143399972783261,"1. BEIR VII acute"
+1,0.9,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00147894404857272,"1. BEIR VII acute"
+Inf,0.9,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00144651206656872,"1. BEIR VII acute"
+1,1,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00149906388926038,"1. BEIR VII acute"
+Inf,1,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00145902440530483,"1. BEIR VII acute"
+1,1.1,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00151998451962716,"1. BEIR VII acute"
+Inf,1.1,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00147153674404094,"1. BEIR VII acute"
+1,1.2,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00154170593967305,"1. BEIR VII acute"
+Inf,1.2,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00148404908277705,"1. BEIR VII acute"
+1,1.3,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00156422814939804,"1. BEIR VII acute"
+Inf,1.3,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00149656142151316,"1. BEIR VII acute"
+1,1.4,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00158755114880215,"1. BEIR VII acute"
+Inf,1.4,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00150907376024927,"1. BEIR VII acute"
+1,1.5,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00161167493788537,"1. BEIR VII acute"
+Inf,1.5,"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00152158609898538,"1. BEIR VII acute"
+1,0,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00122218220549867,"1. BEIR VII acute"
+Inf,0,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00122218220549867,"1. BEIR VII acute"
+1,0.1,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00122332698797914,"1. BEIR VII acute"
+Inf,0.1,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00122329149084796,"1. BEIR VII acute"
+1,0.2,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00122454276472196,"1. BEIR VII acute"
+Inf,0.2,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00122440077619725,"1. BEIR VII acute"
+1,0.3,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00122582953572714,"1. BEIR VII acute"
+Inf,0.3,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00122551006154654,"1. BEIR VII acute"
+1,0.4,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00122718730099467,"1. BEIR VII acute"
+Inf,0.4,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00122661934689584,"1. BEIR VII acute"
+1,0.5,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00122861606052456,"1. BEIR VII acute"
+Inf,0.5,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00122772863224513,"1. BEIR VII acute"
+1,0.6,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00123011581431681,"1. BEIR VII acute"
+Inf,0.6,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00122883791759442,"1. BEIR VII acute"
+1,0.7,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.0012316865623714,"1. BEIR VII acute"
+Inf,0.7,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00122994720294371,"1. BEIR VII acute"
+1,0.8,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00123332830468836,"1. BEIR VII acute"
+Inf,0.8,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00123105648829301,"1. BEIR VII acute"
+1,0.9,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00123504104126766,"1. BEIR VII acute"
+Inf,0.9,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.0012321657736423,"1. BEIR VII acute"
+1,1,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00123682477210933,"1. BEIR VII acute"
+Inf,1,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00123327505899159,"1. BEIR VII acute"
+1,1.1,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00123867949721334,"1. BEIR VII acute"
+Inf,1.1,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00123438434434088,"1. BEIR VII acute"
+1,1.2,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00124060521657972,"1. BEIR VII acute"
+Inf,1.2,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00123549362969018,"1. BEIR VII acute"
+1,1.3,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00124260193020844,"1. BEIR VII acute"
+Inf,1.3,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00123660291503947,"1. BEIR VII acute"
+1,1.4,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00124466963809952,"1. BEIR VII acute"
+Inf,1.4,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00123771220038876,"1. BEIR VII acute"
+1,1.5,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00124680834025296,"1. BEIR VII acute"
+Inf,1.5,"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00123882148573805,"1. BEIR VII acute"
+1,0,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00143301183721316,"1. BEIR VII acute"
+Inf,0,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00143301183721316,"1. BEIR VII acute"
+1,0.1,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00143610556452749,"1. BEIR VII acute"
+Inf,0.1,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00143600963499837,"1. BEIR VII acute"
+1,0.2,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00143939115090009,"1. BEIR VII acute"
+Inf,0.2,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00143900743278358,"1. BEIR VII acute"
+1,0.3,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00144286859633093,"1. BEIR VII acute"
+Inf,0.3,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00144200523056879,"1. BEIR VII acute"
+1,0.4,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00144653790082003,"1. BEIR VII acute"
+Inf,0.4,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.001445003028354,"1. BEIR VII acute"
+1,0.5,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00145039906436738,"1. BEIR VII acute"
+Inf,0.5,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00144800082613921,"1. BEIR VII acute"
+1,0.6,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00145445208697299,"1. BEIR VII acute"
+Inf,0.6,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00145099862392442,"1. BEIR VII acute"
+1,0.7,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00145869696863684,"1. BEIR VII acute"
+Inf,0.7,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00145399642170963,"1. BEIR VII acute"
+1,0.8,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00146313370935896,"1. BEIR VII acute"
+Inf,0.8,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00145699421949485,"1. BEIR VII acute"
+1,0.9,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00146776230913932,"1. BEIR VII acute"
+Inf,0.9,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00145999201728006,"1. BEIR VII acute"
+1,1,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00147258276797794,"1. BEIR VII acute"
+Inf,1,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00146298981506527,"1. BEIR VII acute"
+1,1.1,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00147759508587482,"1. BEIR VII acute"
+Inf,1.1,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00146598761285048,"1. BEIR VII acute"
+1,1.2,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00148279926282994,"1. BEIR VII acute"
+Inf,1.2,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00146898541063569,"1. BEIR VII acute"
+1,1.3,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00148819529884332,"1. BEIR VII acute"
+Inf,1.3,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.0014719832084209,"1. BEIR VII acute"
+1,1.4,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00149378319391496,"1. BEIR VII acute"
+Inf,1.4,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00147498100620611,"1. BEIR VII acute"
+1,1.5,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","A",0.00149956294804484,"1. BEIR VII acute"
+Inf,1.5,"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old","C",0.00147797880399132,"1. BEIR VII acute"
+1,0,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","A",0.00126728673101652,"1. BEIR VII acute"
+Inf,0,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","C",0.00126728673101652,"1. BEIR VII acute"
+1,0.1,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","A",0.00128647847474096,"1. BEIR VII acute"
+Inf,0.1,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","C",0.00128588338191229,"1. BEIR VII acute"
+1,0.2,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","A",0.00130686040412272,"1. BEIR VII acute"
+Inf,0.2,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","C",0.00130448003280806,"1. BEIR VII acute"
+1,0.3,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","A",0.00132843251916181,"1. BEIR VII acute"
+Inf,0.3,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","C",0.00132307668370383,"1. BEIR VII acute"
+1,0.4,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","A",0.00135119481985823,"1. BEIR VII acute"
+Inf,0.4,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","C",0.0013416733345996,"1. BEIR VII acute"
+1,0.5,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","A",0.00137514730621198,"1. BEIR VII acute"
+Inf,0.5,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","C",0.00136026998549537,"1. BEIR VII acute"
+1,0.6,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","A",0.00140028997822306,"1. BEIR VII acute"
+Inf,0.6,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","C",0.00137886663639113,"1. BEIR VII acute"
+1,0.7,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","A",0.00142662283589147,"1. BEIR VII acute"
+Inf,0.7,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","C",0.0013974632872869,"1. BEIR VII acute"
+1,0.8,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","A",0.00145414587921721,"1. BEIR VII acute"
+Inf,0.8,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","C",0.00141605993818267,"1. BEIR VII acute"
+1,0.9,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","A",0.00148285910820027,"1. BEIR VII acute"
+Inf,0.9,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","C",0.00143465658907844,"1. BEIR VII acute"
+1,1,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","A",0.00151276252284067,"1. BEIR VII acute"
+Inf,1,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","C",0.00145325323997421,"1. BEIR VII acute"
+1,1.1,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","A",0.00154385612313839,"1. BEIR VII acute"
+Inf,1.1,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","C",0.00147184989086998,"1. BEIR VII acute"
+1,1.2,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","A",0.00157613990909345,"1. BEIR VII acute"
+Inf,1.2,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","C",0.00149044654176575,"1. BEIR VII acute"
+1,1.3,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","A",0.00160961388070583,"1. BEIR VII acute"
+Inf,1.3,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","C",0.00150904319266151,"1. BEIR VII acute"
+1,1.4,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","A",0.00164427803797554,"1. BEIR VII acute"
+Inf,1.4,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","C",0.00152763984355728,"1. BEIR VII acute"
+1,1.5,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","A",0.00168013238090259,"1. BEIR VII acute"
+Inf,1.5,"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old","C",0.00154623649445305,"1. BEIR VII acute"
+1,0,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","A",0.00148220675525369,"1. BEIR VII acute"
+Inf,0,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","C",0.00148220675525369,"1. BEIR VII acute"
+1,0.1,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","A",0.00146797759662113,"1. BEIR VII acute"
+Inf,0.1,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","C",0.00146841881084229,"1. BEIR VII acute"
+1,0.2,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","A",0.00145286600954623,"1. BEIR VII acute"
+Inf,0.2,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","C",0.00145463086643089,"1. BEIR VII acute"
+1,0.3,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","A",0.001436871994029,"1. BEIR VII acute"
+Inf,0.3,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","C",0.00144084292201948,"1. BEIR VII acute"
+1,0.4,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","A",0.00141999555006944,"1. BEIR VII acute"
+Inf,0.4,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","C",0.00142705497760808,"1. BEIR VII acute"
+1,0.5,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","A",0.00140223667766756,"1. BEIR VII acute"
+Inf,0.5,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","C",0.00141326703319668,"1. BEIR VII acute"
+1,0.6,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","A",0.00138359537682334,"1. BEIR VII acute"
+Inf,0.6,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","C",0.00139947908878527,"1. BEIR VII acute"
+1,0.7,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","A",0.00136407164753679,"1. BEIR VII acute"
+Inf,0.7,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","C",0.00138569114437387,"1. BEIR VII acute"
+1,0.8,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","A",0.00134366548980792,"1. BEIR VII acute"
+Inf,0.8,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","C",0.00137190319996247,"1. BEIR VII acute"
+1,0.9,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","A",0.00132237690363671,"1. BEIR VII acute"
+Inf,0.9,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","C",0.00135811525555107,"1. BEIR VII acute"
+1,1,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","A",0.00130020588902317,"1. BEIR VII acute"
+Inf,1,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","C",0.00134432731113966,"1. BEIR VII acute"
+1,1.1,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","A",0.00127715244596731,"1. BEIR VII acute"
+Inf,1.1,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","C",0.00133053936672826,"1. BEIR VII acute"
+1,1.2,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","A",0.00125321657446911,"1. BEIR VII acute"
+Inf,1.2,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","C",0.00131675142231686,"1. BEIR VII acute"
+1,1.3,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","A",0.00122839827452859,"1. BEIR VII acute"
+Inf,1.3,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","C",0.00130296347790545,"1. BEIR VII acute"
+1,1.4,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","A",0.00120269754614573,"1. BEIR VII acute"
+Inf,1.4,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","C",0.00128917553349405,"1. BEIR VII acute"
+1,1.5,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","A",0.00117611438932054,"1. BEIR VII acute"
+Inf,1.5,"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old","C",0.00127538758908265,"1. BEIR VII acute"
+1,0,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00144199683241726,"1. BEIR VII acute"
+Inf,0,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00144199683241726,"1. BEIR VII acute"
+1,0.1,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00142973459580058,"1. BEIR VII acute"
+Inf,0.1,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00143011482019179,"1. BEIR VII acute"
+1,0.2,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00141671191040147,"1. BEIR VII acute"
+Inf,0.2,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00141823280796633,"1. BEIR VII acute"
+1,0.3,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00140292877621993,"1. BEIR VII acute"
+Inf,0.3,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00140635079574086,"1. BEIR VII acute"
+1,0.4,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00138838519325596,"1. BEIR VII acute"
+Inf,0.4,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.0013944687835154,"1. BEIR VII acute"
+1,0.5,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00137308116150956,"1. BEIR VII acute"
+Inf,0.5,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00138258677128993,"1. BEIR VII acute"
+1,0.6,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00135701668098073,"1. BEIR VII acute"
+Inf,0.6,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00137070475906447,"1. BEIR VII acute"
+1,0.7,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00134019175166948,"1. BEIR VII acute"
+Inf,0.7,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.001358822746839,"1. BEIR VII acute"
+1,0.8,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00132260637357579,"1. BEIR VII acute"
+Inf,0.8,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00134694073461354,"1. BEIR VII acute"
+1,0.9,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00130426054669967,"1. BEIR VII acute"
+Inf,0.9,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00133505872238807,"1. BEIR VII acute"
+1,1,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00128515427104112,"1. BEIR VII acute"
+Inf,1,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00132317671016261,"1. BEIR VII acute"
+1,1.1,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00126528754660014,"1. BEIR VII acute"
+Inf,1.1,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00131129469793714,"1. BEIR VII acute"
+1,1.2,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00124466037337674,"1. BEIR VII acute"
+Inf,1.2,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00129941268571168,"1. BEIR VII acute"
+1,1.3,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.0012232727513709,"1. BEIR VII acute"
+Inf,1.3,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00128753067348622,"1. BEIR VII acute"
+1,1.4,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00120112468058263,"1. BEIR VII acute"
+Inf,1.4,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00127564866126075,"1. BEIR VII acute"
+1,1.5,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00117821616101194,"1. BEIR VII acute"
+Inf,1.5,"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00126376664903529,"1. BEIR VII acute"
+1,0,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00131164208966294,"1. BEIR VII acute"
+Inf,0,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00131164208966294,"1. BEIR VII acute"
+1,0.1,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00130903662309986,"1. BEIR VII acute"
+Inf,0.1,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00130911741276073,"1. BEIR VII acute"
+1,0.2,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00130626957721503,"1. BEIR VII acute"
+Inf,0.2,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00130659273585851,"1. BEIR VII acute"
+1,0.3,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00130334095200846,"1. BEIR VII acute"
+Inf,0.3,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.0013040680589563,"1. BEIR VII acute"
+1,0.4,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00130025074748015,"1. BEIR VII acute"
+Inf,0.4,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00130154338205409,"1. BEIR VII acute"
+1,0.5,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.0012969989636301,"1. BEIR VII acute"
+Inf,0.5,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00129901870515187,"1. BEIR VII acute"
+1,0.6,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00129358560045831,"1. BEIR VII acute"
+Inf,0.6,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00129649402824966,"1. BEIR VII acute"
+1,0.7,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00129001065796478,"1. BEIR VII acute"
+Inf,0.7,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00129396935134745,"1. BEIR VII acute"
+1,0.8,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.0012862741361495,"1. BEIR VII acute"
+Inf,0.8,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00129144467444523,"1. BEIR VII acute"
+1,0.9,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00128237603501248,"1. BEIR VII acute"
+Inf,0.9,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00128891999754302,"1. BEIR VII acute"
+1,1,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00127831635455372,"1. BEIR VII acute"
+Inf,1,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00128639532064081,"1. BEIR VII acute"
+1,1.1,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00127409509477322,"1. BEIR VII acute"
+Inf,1.1,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00128387064373859,"1. BEIR VII acute"
+1,1.2,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00126971225567098,"1. BEIR VII acute"
+Inf,1.2,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00128134596683638,"1. BEIR VII acute"
+1,1.3,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00126516783724699,"1. BEIR VII acute"
+Inf,1.3,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00127882128993416,"1. BEIR VII acute"
+1,1.4,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.00126046183950127,"1. BEIR VII acute"
+Inf,1.4,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00127629661303195,"1. BEIR VII acute"
+1,1.5,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","A",0.0012555942624338,"1. BEIR VII acute"
+Inf,1.5,"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old","C",0.00127377193612974,"1. BEIR VII acute"
+1,0,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","A",0.00114858613289913,"1. BEIR VII acute"
+Inf,0,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","C",0.00114858613289913,"1. BEIR VII acute"
+1,0.1,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","A",0.00114973134931139,"1. BEIR VII acute"
+Inf,0.1,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","C",0.00114969583872496,"1. BEIR VII acute"
+1,0.2,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","A",0.0011509475868965,"1. BEIR VII acute"
+Inf,0.2,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","C",0.00115080554455079,"1. BEIR VII acute"
+1,0.3,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","A",0.00115223484565446,"1. BEIR VII acute"
+Inf,0.3,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","C",0.00115191525037662,"1. BEIR VII acute"
+1,0.4,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","A",0.00115359312558527,"1. BEIR VII acute"
+Inf,0.4,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","C",0.00115302495620245,"1. BEIR VII acute"
+1,0.5,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","A",0.00115502242668894,"1. BEIR VII acute"
+Inf,0.5,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","C",0.00115413466202828,"1. BEIR VII acute"
+1,0.6,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","A",0.00115652274896546,"1. BEIR VII acute"
+Inf,0.6,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","C",0.00115524436785411,"1. BEIR VII acute"
+1,0.7,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","A",0.00115809409241483,"1. BEIR VII acute"
+Inf,0.7,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","C",0.00115635407367993,"1. BEIR VII acute"
+1,0.8,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","A",0.00115973645703706,"1. BEIR VII acute"
+Inf,0.8,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","C",0.00115746377950576,"1. BEIR VII acute"
+1,0.9,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","A",0.00116144984283214,"1. BEIR VII acute"
+Inf,0.9,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","C",0.00115857348533159,"1. BEIR VII acute"
+1,1,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","A",0.00116323424980007,"1. BEIR VII acute"
+Inf,1,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","C",0.00115968319115742,"1. BEIR VII acute"
+1,1.1,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","A",0.00116508967794086,"1. BEIR VII acute"
+Inf,1.1,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","C",0.00116079289698325,"1. BEIR VII acute"
+1,1.2,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","A",0.0011670161272545,"1. BEIR VII acute"
+Inf,1.2,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","C",0.00116190260280908,"1. BEIR VII acute"
+1,1.3,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","A",0.00116901359774099,"1. BEIR VII acute"
+Inf,1.3,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","C",0.00116301230863491,"1. BEIR VII acute"
+1,1.4,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","A",0.00117108208940033,"1. BEIR VII acute"
+Inf,1.4,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","C",0.00116412201446073,"1. BEIR VII acute"
+1,1.5,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","A",0.00117322160223253,"1. BEIR VII acute"
+Inf,1.5,"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old","C",0.00116523172028656,"1. BEIR VII acute"
+1,0,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.00108817357709892,"1. BEIR VII comparison"
+Inf,0,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.00108817357709892,"1. BEIR VII comparison"
+1,0.1,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.0010890673731476,"1. BEIR VII comparison"
+Inf,0.1,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.00108847150911515,"1. BEIR VII comparison"
+1,0.2,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.0010911528972612,"1. BEIR VII comparison"
+Inf,0.2,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.00108876944113138,"1. BEIR VII comparison"
+1,0.3,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.0010944301494397,"1. BEIR VII comparison"
+Inf,0.3,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.0010890673731476,"1. BEIR VII comparison"
+1,0.4,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.00109889912968311,"1. BEIR VII comparison"
+Inf,0.4,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.00108936530516383,"1. BEIR VII comparison"
+1,0.5,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.00110455983799143,"1. BEIR VII comparison"
+Inf,0.5,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.00108966323718006,"1. BEIR VII comparison"
+1,0.6,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.00111141227436466,"1. BEIR VII comparison"
+Inf,0.6,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.00108996116919629,"1. BEIR VII comparison"
+1,0.7,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.0011194564388028,"1. BEIR VII comparison"
+Inf,0.7,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.00109025910121251,"1. BEIR VII comparison"
+1,0.8,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.00112869233130585,"1. BEIR VII comparison"
+Inf,0.8,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.00109055703322874,"1. BEIR VII comparison"
+1,0.9,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.00113911995187381,"1. BEIR VII comparison"
+Inf,0.9,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.00109085496524497,"1. BEIR VII comparison"
+1,1,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.00115073930050667,"1. BEIR VII comparison"
+Inf,1,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.0010911528972612,"1. BEIR VII comparison"
+1,1.1,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.00116355037720445,"1. BEIR VII comparison"
+Inf,1.1,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.00109145082927742,"1. BEIR VII comparison"
+1,1.2,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.00117755318196714,"1. BEIR VII comparison"
+Inf,1.2,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.00109174876129365,"1. BEIR VII comparison"
+1,1.3,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.00119274771479474,"1. BEIR VII comparison"
+Inf,1.3,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.00109204669330988,"1. BEIR VII comparison"
+1,1.4,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.00120913397568724,"1. BEIR VII comparison"
+Inf,1.4,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.00109234462532611,"1. BEIR VII comparison"
+1,1.5,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","A",0.00122671196464466,"1. BEIR VII comparison"
+Inf,1.5,"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old","C",0.00109264255734233,"1. BEIR VII comparison"
+1,0,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.00105716755573398,"1. BEIR VII comparison"
+Inf,0,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.00105716755573398,"1. BEIR VII comparison"
+1,0.1,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.00105791494941747,"1. BEIR VII comparison"
+Inf,0.1,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.00105741668696181,"1. BEIR VII comparison"
+1,0.2,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.00105965886801226,"1. BEIR VII comparison"
+Inf,0.2,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.00105766581818964,"1. BEIR VII comparison"
+1,0.3,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.00106239931151837,"1. BEIR VII comparison"
+Inf,0.3,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.00105791494941747,"1. BEIR VII comparison"
+1,0.4,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.0010661362799358,"1. BEIR VII comparison"
+Inf,0.4,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.00105816408064529,"1. BEIR VII comparison"
+1,0.5,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.00107086977326453,"1. BEIR VII comparison"
+Inf,0.5,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.00105841321187312,"1. BEIR VII comparison"
+1,0.6,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.00107659979150458,"1. BEIR VII comparison"
+Inf,0.6,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.00105866234310095,"1. BEIR VII comparison"
+1,0.7,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.00108332633465594,"1. BEIR VII comparison"
+Inf,0.7,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.00105891147432878,"1. BEIR VII comparison"
+1,0.8,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.00109104940271862,"1. BEIR VII comparison"
+Inf,0.8,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.00105916060555661,"1. BEIR VII comparison"
+1,0.9,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.00109976899569261,"1. BEIR VII comparison"
+Inf,0.9,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.00105940973678444,"1. BEIR VII comparison"
+1,1,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.00110948511357791,"1. BEIR VII comparison"
+Inf,1,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.00105965886801226,"1. BEIR VII comparison"
+1,1.1,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.00112019775637452,"1. BEIR VII comparison"
+Inf,1.1,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.00105990799924009,"1. BEIR VII comparison"
+1,1.2,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.00113190692408245,"1. BEIR VII comparison"
+Inf,1.2,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.00106015713046792,"1. BEIR VII comparison"
+1,1.3,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.00114461261670168,"1. BEIR VII comparison"
+Inf,1.3,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.00106040626169575,"1. BEIR VII comparison"
+1,1.4,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.00115831483423224,"1. BEIR VII comparison"
+Inf,1.4,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.00106065539292358,"1. BEIR VII comparison"
+1,1.5,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","A",0.0011730135766741,"1. BEIR VII comparison"
+Inf,1.5,"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old","C",0.0010609045241514,"1. BEIR VII comparison"
+1,0,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.0018361007318581,"1. BEIR VII comparison"
+Inf,0,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.0018361007318581,"1. BEIR VII comparison"
+1,0.1,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00183911668667397,"1. BEIR VII comparison"
+Inf,0.1,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00183710605013006,"1. BEIR VII comparison"
+1,0.2,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00184615391457766,"1. BEIR VII comparison"
+Inf,0.2,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00183811136840201,"1. BEIR VII comparison"
+1,0.3,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00185721241556918,"1. BEIR VII comparison"
+Inf,0.3,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00183911668667397,"1. BEIR VII comparison"
+1,0.4,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00187229218964852,"1. BEIR VII comparison"
+Inf,0.4,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00184012200494592,"1. BEIR VII comparison"
+1,0.5,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00189139323681568,"1. BEIR VII comparison"
+Inf,0.5,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00184112732321788,"1. BEIR VII comparison"
+1,0.6,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00191451555707067,"1. BEIR VII comparison"
+Inf,0.6,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00184213264148984,"1. BEIR VII comparison"
+1,0.7,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00194165915041348,"1. BEIR VII comparison"
+Inf,0.7,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00184313795976179,"1. BEIR VII comparison"
+1,0.8,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00197282401684412,"1. BEIR VII comparison"
+Inf,0.8,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00184414327803375,"1. BEIR VII comparison"
+1,0.9,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00200801015636258,"1. BEIR VII comparison"
+Inf,0.9,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.0018451485963057,"1. BEIR VII comparison"
+1,1,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00204721756896887,"1. BEIR VII comparison"
+Inf,1,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00184615391457766,"1. BEIR VII comparison"
+1,1.1,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00209044625466298,"1. BEIR VII comparison"
+Inf,1.1,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00184715923284962,"1. BEIR VII comparison"
+1,1.2,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00213769621344491,"1. BEIR VII comparison"
+Inf,1.2,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00184816455112157,"1. BEIR VII comparison"
+1,1.3,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00218896744531467,"1. BEIR VII comparison"
+Inf,1.3,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00184916986939353,"1. BEIR VII comparison"
+1,1.4,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00224425995027225,"1. BEIR VII comparison"
+Inf,1.4,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00185017518766548,"1. BEIR VII comparison"
+1,1.5,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00230357372831766,"1. BEIR VII comparison"
+Inf,1.5,"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00185118050593744,"1. BEIR VII comparison"
+1,0,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00144504740507529,"1. BEIR VII comparison"
+Inf,0,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00144504740507529,"1. BEIR VII comparison"
+1,0.1,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00144532822102797,"1. BEIR VII comparison"
+Inf,0.1,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00144514101039285,"1. BEIR VII comparison"
+1,0.2,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.0014459834582509,"1. BEIR VII comparison"
+Inf,0.2,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00144523461571041,"1. BEIR VII comparison"
+1,0.3,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00144701311674407,"1. BEIR VII comparison"
+Inf,0.3,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00144532822102797,"1. BEIR VII comparison"
+1,0.4,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00144841719650748,"1. BEIR VII comparison"
+Inf,0.4,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00144542182634553,"1. BEIR VII comparison"
+1,0.5,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00145019569754114,"1. BEIR VII comparison"
+Inf,0.5,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00144551543166309,"1. BEIR VII comparison"
+1,0.6,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00145234861984504,"1. BEIR VII comparison"
+Inf,0.6,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00144560903698065,"1. BEIR VII comparison"
+1,0.7,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00145487596341919,"1. BEIR VII comparison"
+Inf,0.7,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00144570264229821,"1. BEIR VII comparison"
+1,0.8,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00145777772826358,"1. BEIR VII comparison"
+Inf,0.8,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00144579624761577,"1. BEIR VII comparison"
+1,0.9,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00146105391437821,"1. BEIR VII comparison"
+Inf,0.9,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00144588985293334,"1. BEIR VII comparison"
+1,1,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00146470452176309,"1. BEIR VII comparison"
+Inf,1,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.0014459834582509,"1. BEIR VII comparison"
+1,1.1,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00146872955041821,"1. BEIR VII comparison"
+Inf,1.1,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00144607706356846,"1. BEIR VII comparison"
+1,1.2,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00147312900034357,"1. BEIR VII comparison"
+Inf,1.2,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00144617066888602,"1. BEIR VII comparison"
+1,1.3,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00147790287153918,"1. BEIR VII comparison"
+Inf,1.3,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00144626427420358,"1. BEIR VII comparison"
+1,1.4,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00148305116400503,"1. BEIR VII comparison"
+Inf,1.4,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.00144635787952114,"1. BEIR VII comparison"
+1,1.5,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","A",0.00148857387774113,"1. BEIR VII comparison"
+Inf,1.5,"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old","C",0.0014464514848387,"1. BEIR VII comparison"

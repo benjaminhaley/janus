@@ -1,0 +1,74 @@
+"cluster","low","middle","high","a","B","name"
+NA,0,0,0,0,0,"placeholder"
+"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old",-0.28,-0.1,0.5,0.000562396034412113,-5.62396034412112e-05,"1. BEIR VII all data"
+"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old",-0.28,20,20,0,7.37656716023608e-05,"1. BEIR VII all data"
+"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old",-0.34,2.32,20,2.06395818885186e-05,4.78838299813632e-05,"1. BEIR VII all data"
+"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old",-1,20,20,0,0.000223048279051201,"1. BEIR VII all data"
+"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old",-0.46,-0.2,20,0.00023328617446727,-4.6657234893454e-05,"1. BEIR VII all data"
+"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old",-1,-0.38,20,5.94727996777465e-05,-2.25996638775437e-05,"1. BEIR VII all data"
+"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old",0.62,20,20,0,0.00021324708331978,"1. BEIR VII all data"
+"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old",-1,20,20,0,-2.34089299894459e-05,"1. BEIR VII all data"
+"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old",-0.58,1.24,20,7.48759830400766e-05,9.2846218969695e-05,"1. BEIR VII all data"
+"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old",-1,20,20,0,2.06878316314641e-05,"1. BEIR VII all data"
+"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old",-1,20,20,0,3.84320473394777e-05,"1. BEIR VII all data"
+"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old",0,20,20,0,0.00012750846077388,"1. BEIR VII all data"
+"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old",-0.48,20,20,0,-0.000179652461337905,"1. BEIR VII all data"
+"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old",-0.36,1.7,20,-4.73899681553338e-05,-8.05629458640675e-05,"1. BEIR VII all data"
+"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old",-1,-0.74,-0.4,-4.31699404975563e-05,3.19457559681917e-05,"1. BEIR VII all data"
+"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old",-1,20,20,0,1.84949092869302e-05,"1. BEIR VII all data"
+"1. ♀ RFM/Un mice ORNL 
+ γ-ray at 70 days old",-0.28,-0.1,0.34,0.000562396034412113,-5.62396034412112e-05,"1. BEIR VII acute"
+"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old",-0.36,0.42,20,4.90098743279198e-05,2.05841472177263e-05,"1. BEIR VII acute"
+"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old",-0.4,0.04,20,7.57008854513571e-05,3.02803541805429e-06,"1. BEIR VII acute"
+"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old",-0.5,-0.14,20,0.000289940227513949,-4.05916318519528e-05,"1. BEIR VII acute"
+"5. ♂ RFM/Un mice ORNL 
+ γ-ray at 70 days old",-0.44,-0.2,1.96,0.00023328617446727,-4.6657234893454e-05,"1. BEIR VII acute"
+"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old",-1,-1,20,0.000414723177323998,-0.000414723177323998,"1. BEIR VII acute"
+"7. ♀ BC3F1 mice ENEA 
+ X-ray at 91 days old",0.6,20,20,0,0.00021324708331978,"1. BEIR VII acute"
+"8. ♂ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old",-1,0.34,20,-1.80685151642077e-05,-6.14329515583062e-06,"1. BEIR VII acute"
+"9. ♀ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old",-0.52,0.2,20,0.000139003683199419,2.78007366398839e-05,"1. BEIR VII acute"
+"10. ♀ C57BL/6Bd mice ORNL 
+ γ-ray at 70 days old",-1,0.26,20,2.12448854844435e-05,5.52367022595531e-06,"1. BEIR VII acute"
+"11. ♂ C3Hf/Bd mice ORNL 
+ γ-ray at 70 days old",-1,0.26,20,3.43912951521526e-05,8.94173673955967e-06,"1. BEIR VII acute"
+"12. ♂ BC3F1 mice ENEA 
+ X-ray at 92 days old",0.28,20,20,0,0.00012750846077388,"1. BEIR VII acute"
+"13. ♂ C57BL/Cnb mice SCK/CEN 
+ X-ray at 7 days old",-0.46,20,20,0,-0.000179652461337905,"1. BEIR VII acute"
+"14. ♂ BC3F1 mice ENEA 
+ X-ray at -4 days old",-0.34,0.58,20,-9.46209248958221e-05,-5.48801364395768e-05,"1. BEIR VII acute"
+"15. ♀ BC3F1 mice ENEA 
+ X-ray at -4 days old",-1,-0.76,-0.44,-4.70882340011838e-05,3.57870578408997e-05,"1. BEIR VII acute"
+"16. ♂ BC3F1 mice ENEA 
+ X-ray at 580 days old",-1,0.38,20,1.13566969795751e-05,4.31554485223853e-06,"1. BEIR VII acute"
+"2. ♀ B6CF1 mice ANL 
+ γ-ray at 114 days old",0.2,20,20,0,7.37656716023608e-05,"1. BEIR VII comparison"
+"3. ♂ B6CF1 mice ANL 
+ γ-ray at 113 days old",-0.46,20,20,0,5.92592435551874e-05,"1. BEIR VII comparison"
+"4. ♂ C57BL/Cnb mice SCK/CEN 
+ γ-ray at 84 days old",-1,20,20,0,0.000223048279051201,"1. BEIR VII comparison"
+"6. ♂ BALB/c/Cnb mice SCK/CEN 
+ γ-ray at 84 days old",-1,-0.14,20,5.04107899771852e-05,-7.05751059680593e-06,"1. BEIR VII comparison"
