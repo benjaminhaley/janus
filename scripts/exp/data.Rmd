@@ -1569,10 +1569,10 @@ summary2(study) %>%
 stratum_name <- "1003-24 ANL ♀ B6CF1 mice\n  γ-ray"
 stratum_groups <- split("00♀ Q1♀γ Q2♀γ R1♀γ R2♀γ")
 data <- name_stratum(stratum_groups, stratum_name)
-data <- name_cluster(split("R2♀γ"), 1, "acute 0.27 Gy/min at 520 days old  (end of fractionated series)")
-data <- name_cluster(split("R1♀γ"), 2, "acute 0.099 Gy/min at 520 days old  (end of fractionated series)")
-data <- name_cluster(split("Q2♀γ"), 3, "60 over 420 days 0.0068 Gy/min  starting at 100 days old")
-data <- name_cluster(split("Q1♀γ"), 4, "60 over 420 days 0.0015 Gy/min  starting at 100 days old")
+data <- name_cluster(split("R2♀γ"), 1, "acute 0.27 Gy/min @520 days")
+data <- name_cluster(split("R1♀γ"), 2, "acute 0.099 Gy/min @520 days")
+data <- name_cluster(split("Q2♀γ"), 3, "60 over 420 days 0.0068 Gy/min @100 days")
+data <- name_cluster(split("Q1♀γ"), 4, "60 over 420 days 0.0015 Gy/min @100 days")
 controls <- controls_for("00♀", stratum_name)
 data <- use(stratum_groups)
 
@@ -1627,10 +1627,10 @@ summary2(study) %>%
 stratum_name <- "1003-24 ANL ♂ B6CF1 mice\n  γ-ray"
 stratum_groups <- split("00♂ Q1♂γ Q2♂γ R1♂γ R2♂γ")
 data <- name_stratum(stratum_groups, stratum_name)
-data <- name_cluster(split("R2♂γ"), 1, "acute 0.27 Gy/min at 520 days old  (end of fractionated series)")
-data <- name_cluster(split("R1♂γ"), 2, "acute 0.099 Gy/min at 520 days old  (end of fractionated series)")
-data <- name_cluster(split("Q2♂γ"), 3, "60 over 420 days 0.0068 Gy/min starting at 100 days old")
-data <- name_cluster(split("Q1♂γ"), 4, "60 over 420 days 0.0015 Gy/min starting at 100 days old")
+data <- name_cluster(split("R2♂γ"), 1, "acute 0.27 Gy/min @520 days")
+data <- name_cluster(split("R1♂γ"), 2, "acute 0.099 Gy/min @520 days")
+data <- name_cluster(split("Q2♂γ"), 3, "60 over 420 days 0.0068 Gy/min @100 days")
+data <- name_cluster(split("Q1♂γ"), 4, "60 over 420 days 0.0015 Gy/min @100 days")
 
 controls <- controls_for("00♂", stratum_name)
 data <- use(stratum_groups)

@@ -15,544 +15,113 @@ I will look at animal survival data and ask two central questions:
 2. Are fractionated exposures safer than acute exposures?
 
 ```{r echo=FALSE, message=FALSE}
-# Libraries
-library(plyr)
-library(dplyr)
-library(ggplot2)
-library(scales)
-
-# Helpers
-
-# Retrieve the one unique value of x,
-# raise an error if x has more than one value
-only <- function(x) { 
-  u <- unique(x)
-  n <- length(u)
-  if(n > 1) stop(paste("More than one value", paste(head(u), collapse=', ')))
-  u
-}
-renumber <- function(the_data) {
-  # Renumber clusters now that some are gone
-  the_data %>%
-    group_by(study) %>%
-    mutate(cluster_number = reorder(cluster_number)) %>%
-    ungroup()
-}
-show_survival <- function(the_data) {
-  # Calculate survival
-  the_data <- the_data %>%
-    group_by(study, dose, group) %>%
-    arrange(lifespan) %>%
-    mutate(survival=rank(-lifespan) / length(lifespan))
-  
-  # Organize strata by number of animals
-  order <- the_data %>% 
-    group_by(stratum) %>%
-    summarize(n=length(stratum)) %>%
-    arrange(-n) %>%
-    select(stratum)
-  the_data$stratum <- factor(the_data$stratum, levels=order$stratum)
-  
-  # Show survival
-  ggplot(the_data,
-         aes(lifespan,
-             survival,
-             color=dose,
-             group=group)) +
-    geom_rect(
-      aes(xmin=first,
-          xmax=last,
-          ymin=0,
-          ymax=1),
-      color="black"
-    ) +
-    geom_path() +
-    facet_wrap(~ stratum, scales="free_x") +
-    scale_color_continuous(
-      guide = guide_legend(title = "dose (Gy)"),
-      trans = "sqrt"
-    ) +
-    expand_limits(x = -4) +
-    theme(text = element_text(size = 10)) +
-    xlab("age (days)")
-}
-
-# Re-number the clusters to account for any filtered out
-# reorder(c(2, 2, 4, 4)) == c(1, 1, 2, 2)
-reorder <- function(x) {
-  unique <- sort(unique(x), decreasing=FALSE)
-  original <- unique
-  new_value <- rank(unique)
-  for(i in 1:length(original)) {
-    x[x == original[i]] <- new_value[i]
-  }
-  x
-}
-
-# The number of distinct values not equal to na
-# n_unique_values(c(0, 0, NA)) == 1
-n_unique_values <- function(x) length(unique(x)[!is.na(unique(x))])
+setwd('~/janus')
+source('scripts/util/thesis.R') # http://goo.gl/VYzkAs
 
 # Data
 setwd('~/janus')
-the_data <- readRDS('data/thesis.rds')
+original_data <- readRDS('data/thesis.rds')
 controls <- readRDS('data/thesis_controls.rds')
 ```
 
-
-## Filter Data
-
-I will look at data that is comparable to atomic bomb survivor data. Exposures less than 4 Gy to low-LET radiation.
-
-```{r}
-# Filter
-the_data <- the_data %>%
-  filter(dose <= 4)
-
-# Censor animals that died before the final treatment in thier stratum
-treatment_span <- the_data %>%
-  group_by(stratum) %>%
-  summarize(first = min(treatment_age, na.rm=TRUE),
-            last = max(last_treatment_age, na.rm=TRUE))
-the_data <- merge(the_data, treatment_span, by="stratum")
-nrow(the_data) # 20157
-the_data <- the_data %>%
-  filter(lifespan > last)
-nrow(the_data) # 20001
-the_data <- renumber(the_data)
-
-show_survival(the_data)
-```
-
-Note the awefulness in 9-4, 9-6, and 9-7! What if we filter their acute deaths out?
-
-```{r}
-# WARNING THIS REQUIRES JUSTIFICATION!!!!! #
-# I think I should just base things on atomic bomb surivivors who
-# were not monitored until 5 years after the initial exposure
-# (~ 5% of lifespan, 50 days in mice)
-
-# Censor animals in 9-4, 9-6, and 9-7 because they look so damn bad
-nrow(the_data) # 21625
-the_data <- the_data %>%
-  filter(lifespan > 300)
-nrow(the_data) # 21157
-the_data <- renumber(the_data)
-
-show_survival(the_data)
-```
-
-Looks much better!
-
-## Inverse lifespan
-Lets try beir VII's presentation
-
-```{r}
-# Mean Lifespans
-aggregate = the_data %>%
-  ungroup() %>%
-  group_by(study,
-           stratum,
-           cluster_number,
-           cluster,
-           group,
-           sex, 
-           dose, 
-           rate, 
-           fractions,
-           interval) %>%
-  summarize(
-    avg_treatment_age = mean((last_treatment_age + treatment_age)/2),
-    treatment_age = mean(treatment_age),
-    last_treatment_age = mean(last_treatment_age),
-    n=length(lifespan),
-    sem=sd(lifespan)/n^0.5,
-    lifespan=mean(lifespan)
-  )
-
-# Add clusters to facet labels
-aggregate <- ddply(aggregate, .(stratum), function(df) {
-  number <- df$cluster_number[!is.na(df$cluster_number)]
-  cluster <- df$cluster[!is.na(df$cluster)]
-  clusters <- paste0(
-    "     ",
-    unique(number), ". ",
-    unique(cluster),
-    collapse="\n")
-  df$stratum_full_name <- paste0(
-    "  ", 
-    df$stratum, 
-    "\n",
-    clusters
-  )
-  
-  df
-})
-
-# Add controls to each cluster
-aggregate <- ddply(aggregate, .(stratum, cluster), function(df) {
-
-  # Look for a control exactly matches to the cluster
-  control <- controls %>% 
-    filter(stratum %in% only(df$stratum),
-           cluster %in% only(df$cluster))
-  
-  # If that can't be found, look for a match to the whole stratum
-  if(nrow(control) == 0) {
-    control <- controls %>% 
-      filter(stratum %in% only(df$stratum))
-  }
-  
-  # Find the control in the aggregate data
-  control <- aggregate %>% 
-    filter(as.character(study) == only(control$study),
-           as.character(group) %in% control$group)
-  
-  # Add the control to the cluster
-  control$cluster <- only(df$cluster)
-  control$stratum <- only(df$stratum)
-  control$fractions <- mean(df$fractions)
-  control$rate <- mean(df$rate)
-  control$treatment_age <- mean(df$treatment_age)
-  control$last_treatment_age <- mean(df$last_treatment_age)
-  control$avg_treatment_age <- mean(df$avg_treatment_age)
-  control$stratum_full_name <- only(df$stratum_full_name)
-  control$cluster_number <- only(df$cluster_number)
-  df <- rbind(df, control)
-  
-  df
-})
-
-# Remove groups that aren't a part of a cluster
-# (this can happen if controls were not put in a specific cluster)
-aggregate <- aggregate %>%
-  filter(!is.na(cluster))
-
-# Remove clusters that are only controls
-# (this can happen if controls were not put in a specific cluster)
-aggregate <- ddply(aggregate, .(stratum, cluster), function(df){
-  if(all(df$dose == 0)) { return(NULL) }
-  
-  df
-})
-
-# Scale to control lifespans
-aggregate <- ddply(aggregate, .(stratum, cluster), function(df){
-  control_lifespan = only(df$lifespan[df$dose == 0])
-  scale <- function(x) x / control_lifespan
-  df <- df %>%
-    mutate(lifespan = scale(lifespan),
-           avg_treatment_age = scale(avg_treatment_age),
-           treatment_age = scale(treatment_age),
-           last_treatment_age = scale(last_treatment_age),
-           sem = scale(sem)
-           )
-
-  df
-})
-
-# Make relative
-# Factors like rate, # of fractions, and age at exposure should
-# be available as relative values as well.
-aggregate <- ddply(aggregate, .(stratum), function(df) {
-  df <- df %>%
-    mutate(relative_rate = rate / max(rate),
-           fractionation = 1 / fractions,
-           relative_fractionation = max(fractionation) - fractionation,
-           relative_age = avg_treatment_age - min(avg_treatment_age))
-
-  df
-})
-
-# Organize strata by number of animals
-order <- aggregate %>% 
-  group_by(stratum_full_name) %>%
-  summarize(n=sum(n)) %>%
-  arrange(-n) %>%
-  select(stratum_full_name)
-aggregate$stratum_full_name <- factor(
-  aggregate$stratum_full_name, 
-  levels=order$stratum_full_name
-)
-
-# Add predictions
-model <- lm(lifespan ~ stratum * cluster * dose -
-              stratum * cluster +
-              stratum,
-            weights=1/(sem)^2,
-            aggregate)
-aggregate$prediction <- predict(model)
-
-# Unique id for each stratum
-aggregate <- aggregate %>%
-  mutate(stratum_id = paste(stratum, cluster))
-
-## Overall graph
-ggplot(aggregate,
-       aes(dose,
-           lifespan,
-           label=cluster_number,
-           group=cluster,
-           color=cluster_number == 1)) +
-  geom_text() +
-  geom_smooth(method="lm", formula="y ~ x", se=FALSE) +
-  facet_wrap(~ stratum_full_name) +
-  theme(text = element_text(size = 10)) +
-  xlab("dose (Gy)") +
-  xlab("lifespan (relative to controls)") +
-  scale_color_manual(values=c("black", "red"))
-```
-
-
-Overall the acute exposures are more dangerous. But the effect is by no means clean.
-
-
-## Log link
-```{r}
-
-# Relative
-aggregate <- ddply(aggregate, .(stratum), function(df) {
-  df %>%
-    mutate(
-      age             = avg_treatment_age,
-      age_log         = log(age + 0.1),
-      age_log_diff    = age_log - min(age_log),
-
-      fractionation   = 1 - 1/fractions,
-      fractionation_diff = fractionation - min(fractionation),
-      
-      rate_log        = log(rate),
-      rate_log_diff   = rate_log - min(rate_log)
-    )
-})
-
-
-formulas <- c(
-  "log(lifespan) ~ 1",
-  "log(lifespan) ~ dose - 1",
-  "log(lifespan) ~ dose * age_log - dose - age_log - 1",
-  "log(lifespan) ~ dose * fractionation - dose - fractionation - 1",
-  "log(lifespan) ~ dose * rate_log - dose - rate_log - 1",
-  "log(lifespan) ~ dose * stratum - dose - stratum - 1",
-  "log(lifespan) ~ dose * stratum + dose * age_log - stratum - dose - age_log - 1",
-  "log(lifespan) ~ dose * stratum + dose * fractionation - stratum - dose - fractionation - 1",
-  "log(lifespan) ~ dose * stratum + dose * rate_log - stratum - dose - rate_log - 1",
-  "log(lifespan) ~ dose * stratum + dose * rate_log - stratum - dose - rate_log - 1"
-)
-
-model <- function(formula) {
-  lm(formula,
-     aggregate,
-     weights = 1 / (sem + 0.01)^2)
-}
-
-ldply(formulas, function(formula) {
-  fit <- model(formula)
-  c(formula=formula, 
-    aic=round(AIC(fit), 1),
-    bic=round(BIC(fit), 1)
-  )
-}) %>%
-  arrange(aic)
-
-
-fit <- model(log(lifespan) ~ dose + stratum + age_log_diff + fractionation_diff - 1)
-my_summary <- function(fit) {
-  coefficients <- data.frame(summary(fit)$coefficients)
-  coefficients <- coefficients[!grepl("stratum", rownames(coefficients)),]
-  coefficients$variable <- rownames(coefficients)
-  coefficients <- coefficients %>%
-    mutate(multiplier = exp(Estimate),
-           lower = exp(Estimate - 1.96 * Std..Error),
-           upper = exp(Estimate + 1.96 * Std..Error),
-           p = round(Pr...t.., 3)) %>%
-    select(variable, multiplier, lower, upper, p)
-  coefficients
-}
-
-summary(model(log(lifespan) ~ dose * stratum + dose * fractionation - stratum - dose - fractionation - 1))
-
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ## Dose response
+Show dose response by group.
 
 ```{r}
-tau <- 0.01
-
-# Find the dose response for each cluster
-dose_response <- ddply(aggregate, .(cluster, stratum), function(df) {
-  control = df %>% filter(dose == 0)
-  dose_response <- df %>% 
-    mutate(
-      dose_response = (only(control$lifespan) - lifespan) / dose,
-      age = avg_treatment_age,
-      fractionation = 1 - 1/fractions,
-      sem = ((control$sem^2 + sem^2)^0.5)/dose + tau
-    ) %>%
-    select(dose_response, dose, rate, age, fractionation, sem) %>%
-    filter(dose > 0)
-  dose_response
-})
-
-# Which stratum have comparisons?
-dose_response <- ddply(dose_response, .(stratum), function(df) {
-  multiple <- function(x) length(unique(x)) > 1
-  df$rate_comparison <- multiple(df$rate)
-  df$fraction_comparison <- multiple(df$fraction)
-  df$age_comparison <- multiple(round(df$age*20))
-  df
-})
-
-# Relative
-dose_response <- ddply(dose_response, .(stratum), function(df) {
-  df %>%
-    mutate(
-      age_log         = log(age + 0.1),
-      age_log_diff    = age_log - min(age_log),
-
-      fractionation_diff = fractionation - min(fractionation),
-      
-      rate_log        = log(rate),
-      rate_log_diff   = rate_log - min(rate_log)
-    )
-}) %>% 
-  select(-age, -rate)
-
-```
-
-
-## show
-```{r}
-library(reshape2)
-g <- melt(dose_response, id.vars = c("cluster", 
-                                     "stratum", 
-                                     "dose_response",
-                                     "dose",
-                                     "sem",
-                                     "rate_comparison",
-                                     "fraction_comparison",
-                                     "age_comparison"
-                                     )) %>%
-  mutate(relative = grepl("_diff", variable),
-         variable = sub("_diff", "", variable))
-
-# Make predictions
-to_predict <- ddply(g, .(variable, relative), function(df) {
-  low <- df %>% mutate(value = min(value))
-  high <- df %>% mutate(value = max(value))
-  rbind(low, high)
-})
-model <- lm(dose_response ~ variable * value * relative -
-              variable * value -
-              variable * relative -
-              value * relative +
-              stratum, 
-            g,
-            weights = 1 / sem^2)
-to_predict$prediction <- predict(model, to_predict)
-summary(model)
-
-ggplot(g, aes(value, dose_response)) + 
-  geom_smooth(data=to_predict,
-              aes(value, prediction),
-              method="lm", 
-              formula="y ~ x",
-              color='white',
-              size=4,
-              se=FALSE) +
-  geom_linerange(
-    aes(ymin=dose_response - sem * 1.96, 
-        ymax = dose_response + sem * 1.96,
-        size=1/sem),
-        color='grey'
-    ) +
-  geom_point() +
-  facet_wrap(relative ~ variable, scales="free_x") +
-  scale_y_continuous(labels=percent) +
-  scale_size(range=c(0, 6), guide=FALSE) +
-  coord_cartesian(ylim=c(-0.10, 0.25))
-```
-
-What is quite surprising about this data is that dose response is relatively stable all of the time, given that we account for the per-stratum effects. I suspect that they, in essence, mask the true dose response which is, in fact fairly stable across all animals.
-
-## models
-
-```{r}
-
-formulas <- c(
-  "log(dose_response) ~ 1",
-  "log(dose_response) ~ age_log",
-  "log(dose_response) ~ fractionation",
-  "log(dose_response) ~ rate_log",
-  "log(dose_response) ~ age_log_diff",
-  "log(dose_response) ~ fractionation_diff",
-  "log(dose_response) ~ rate_log_diff",
-  "log(dose_response) ~ stratum",
-  "log(dose_response) ~ I(dose_response)",
-  "log(dose_response) ~ stratum + age_log_diff",
-  "log(dose_response) ~ stratum + fractionation_diff",
-  "log(dose_response) ~ stratum + rate_log_diff",
-  "log(dose_response) ~ stratum + age_log_diff + fractionation_diff",
-  "log(dose_response) ~ stratum + age_log_diff + rate_log_diff",
-  "log(dose_response) ~ stratum + rate_log_diff + fractionation_diff",
-  "log(dose_response) ~ stratum + rate_log_diff + fractionation_diff + age_log_diff",
-  "log(dose_response) ~ stratum + age_log",
-  "log(dose_response) ~ stratum + fractionation",
-  "log(dose_response) ~ stratum + rate_log",
-  "log(dose_response) ~ stratum + age_log + fractionation",
-  "log(dose_response) ~ stratum + age_log + rate_log",
-  "log(dose_response) ~ stratum + rate_log + fractionation",
-  "log(dose_response) ~ stratum + rate_log + fractionation + age_log"
-)
-
-model <- function(formula) {
-  lm(formula,
-     dose_response,
-     weights = 1 / sem^2)
+basic_analysis <- function(name, dose_limit=4, exclude=c(), censor=0.0) {
+  ## Get data
+  data <- get_data(dose_limit = dose_limit, exclude=exclude, censor=censor)
+  aggregated <- aggregate(data)
+  
+  # Find dose response by cluster
+  dose_response <- get_dose_response_by_cluster(aggregated)
+  by_cluster <- aggregate_by_cluster(aggregated)
+  by_cluster <- merge(by_cluster, dose_response)
+  
+  # Show survival
+  g <- show_survival(data); print(g)
+  ggsave_for_publication(paste(name, "survival.png"), g)
+  
+  # Show overall effect
+  g <- show_overall_dose_response(by_cluster); print(g)
+  ggsave_for_publication(paste(name, "overall.png"), g)
+  
+  # Model
+  model <- model_response(by_cluster)
+  by_cluster <- add_predictions(by_cluster, model)
+  aggregated <- add_cluster_predictions_to_aggregated(by_cluster, aggregated)
+  g <- show_aggregated(aggregated); print(g)
+  ggsave_for_publication(paste(name, "by cluster.png"), g)
+  
+  # Report the results
+  coefficients <- get_coefficients(model)
+  report_the_effects_of_age_and_fractionation(coefficients)
 }
 
-ldply(formulas, function(formula) {
-  fit <- model(formula)
-  c(formula=formula, 
-    aic=round(AIC(fit), 1),
-    bic=round(BIC(fit), 1)
-  )
-}) %>%
-  arrange(aic)
 
-summary(model(dose_response ~ stratum + fractionation_diff))
-summary(model(dose_response ~ 1))
+basic_analysis("basic 1 - 4 Sv", dose_limit = 4)
+# fractionation: 
+# 2.7 (1.6, 4.5)
+# 
+# age: 
+# 0.7 (0.7, 0.8)
 
-acute <- rnorm(1000, 0.063775, 0.018229) 
-/ rnorm(1000, -0.031005, 0.009431)
+
+basic_analysis("basic 1 - 3 Sv", dose_limit = 3)
+# fractionation: 
+# 9.7 (2.3, 40.2)
+# 
+# age: 
+# 0.6 (0.4, 0.7)
+
+basic_analysis("basic 1 - 4 Sv exclude weird strata", 
+               dose_limit = 4,
+               stratum_with_weird_survivals)
+# fractionation: 
+# 2.8 (1.6, 5)
+# 
+# age: 
+# 0.7 (0.6, 0.8)
+
+
+basic_analysis("basic 1 - 4 Sv censor 5 years", 
+               dose_limit = 4, 
+               censor=5/75)
+# fractionation: 
+# 3.5 (2.1, 5.8)
+# 
+# age: 
+# 0.6 (0.5, 0.6)
+
+
+basic_analysis("basic 1 - 4 Sv censor 10 years", 
+               dose_limit = 4, 
+               censor=10/75)
+# fractionation: 
+# 2.6 (1.8, 3.6)
+# 
+# age: 
+# 0.9 (0.8, 1)
+
+basic_analysis("basic 1 - 4 Sv censor 20 years", 
+               dose_limit = 4, 
+               censor=20/75)
+# fractionation: 
+# 2.5 (1.6, 3.8)
+# 
+# age: 
+# 1.1 (1, 1.3)
+
 ```
 
-# Fractionation and stratum matter
-According to AIC the best model is one that includes stratum and fractionation (or fractionation_diff). Log age almost makes the cut, but it is not quite significant.
+From these plots we can see that both age and fractionation matter. The effects of fractionation reduce risk by 1.6 fold or more, signficantly higher than BEIR VII's 1.5 estimate. 
+
+Reassuringly mortality descreases with average age at exposure with an effect shockingly similar to the decrease in atomic bomb survivors. Concretely the risk reduces by 10-20% for every 13% that animals age (13% is a decade for a human that lives 75 years). The risk of solid cancer development in atomic bomb survivors drops by 10-30% per decade and a decade. These are remarkably similar estimates!
+
+```{r}
+# TODO: Used ln(age) to model dose response. It fits much better.
+```
+
 
 
 *Things I have checked*
@@ -563,8 +132,266 @@ I worry about all sorts of random stuff. Here are things I worried about, but se
 *To Try*  
 - Rerun the analysis without 9-4, 9-6, and 9-7 ![][1] (and anything else that shows signs of acute death)
 - Use only one gender at a time
-- Remove any animals that died before the age at last treatment (if there are any this is a good justification for using individual level data)
-- Add interval information for acute exposures (the total length of their exposure)
-- Use log(age) instead of age (because it behaves better)
+- 
 
 [1]: http://dl.dropbox.com/u/1131693/bloodrop/Screenshot%202015-05-27%2014.28.22.png
+
+
+
+
+
+
+
+
+
+
+# Supplemental
+## Age effects in atomic bomb survivors
+Data is from table 12D2 of the BEIR VII report. The estimated risk of cancer mortality following a 1 mSv exposure.
+
+```{r}
+library(ggplot2)
+library(scales)
+ggsave_for_publication <- function(name, graph, width=7.2, height=5.4, ...) {
+  suppressWarnings(ggsave(name,
+                          graph,
+                          dpi=600, 
+                          width=width,   # < 7.5 in
+                          height=height,  # < 8.75 in
+                          units='in',
+                          ...))
+}
+split <- function(x) as.numeric(strsplit(x, '\t')[[1]])
+
+age <- 
+  split("0	5	10	15	20	30	40	50	60	70	80")
+cancer <- 
+  split("1434.5	1099.5	908	758.5	636.5	461.5	442	414.5	364	283.5	171.5") 
+cancer <- cancer * 10 / 100000  # convert risk per Sv to one individual
+
+g <- ggplot(NULL, aes(age, cancer)) +
+  geom_path(color='red', size=5, lineend="round") +
+  scale_y_continuous(labels=percent, limits=c(0, 0.15)) + 
+  ylab("Excess cancer mortality\n(% per Sv)") +
+  xlab("Age at exposure\n(years)") +
+  theme_bw() +
+  theme(text = element_text(size=18))
+g
+
+ggsave_for_publication("age at exposure effects.png", g)
+```
+
+
+
+
+
+
+## Show models
+```{r}
+clean_theme <- function() {
+  theme_bw() +
+  theme(
+    plot.background = element_blank()
+   ,panel.grid.major = element_blank()
+   ,panel.grid.minor = element_blank()
+   ,panel.border = element_blank()
+   ,axis.text.x = element_text(size = rel(2))
+   ,axis.text.y = element_blank()
+   ,axis.ticks = element_blank()
+   ,axis.title = element_text(size = rel(2))
+   ,plot.title = element_text(size = rel(2))
+  ) +
+  theme(axis.line = element_line(color = 'black'))
+}
+ggsave_for_publication <- function(name, graph, width=7.2, height=5.4, ...) {
+  suppressWarnings(ggsave(name,
+                          graph,
+                          dpi=600, 
+                          width=width,   # < 7.5 in
+                          height=height,  # < 8.75 in
+                          units='in',
+                          ...))
+}
+dose <- function(to, from=0) seq(from, to, 0.01)
+
+# BEIR VII model
+g <- ggplot(NULL) +
+  geom_smooth(method="lm", 
+              formula="y ~ I(x^2) + x",
+              aes(x=dose(1.5),
+                  y=dose(1.5) + dose(1.5)^2),
+              color="black",
+              size=3) +
+  geom_smooth(method="lm", 
+              formula="y ~ x",
+              aes(x=dose(1.5),
+                  y=dose(1.5)),
+              color="red",
+              size=3) +
+  scale_x_continuous(breaks = c(0, 1.5), labels=c("0", "1.5 Gy")) +
+  ylab("ERR") +
+  xlab("dose") +
+  ggtitle("BEIR VII's linear quadratic model") +
+  clean_theme()
+g
+ggsave_for_publication("BEIR VII's linear quadratic model.png", g)
+
+# My model
+g <- ggplot(NULL) +
+  geom_smooth(method="lm", 
+              formula="y ~ x",
+              aes(x=dose(4),
+                  y=dose(4) + dose(4)),
+              color="black",
+              size=3) +
+  geom_smooth(method="lm", 
+              formula="y ~ x",
+              aes(x=dose(4),
+                  y=dose(4)),
+              color="red",
+              size=3) +
+  geom_point(aes(x=0, y=0),
+             size = 40,
+             color="white") +
+  geom_text(label = "?", 
+            aes(x=0, y=0),
+            size = 10,
+            vjust=0.2) +
+  scale_x_continuous(breaks = c(0, 4), labels=c("0", "4 Gy")) +
+  ylab("ERR") +
+  xlab("") +
+  ggtitle("Linear-linear model") +
+  clean_theme()
+g
+ggsave_for_publication("Our linear-linear model.png", g)
+
+
+# Age adjustment
+g <- ggplot(NULL) +
+  geom_path(  
+    aes(x=dose(1),
+        y=exp(-1.73*dose(1))),
+    color="black",
+    size=3) +
+  scale_x_continuous(breaks = c(0, 1), labels=c("young", "old")) +
+  ylab("ERR per Sv") +
+  xlab("") +
+  ggtitle("Adjustment for age at exposure") +
+  clean_theme()
+g
+ggsave_for_publication("Adjustment for age at exposure.png", g)
+
+
+# Adaptive effects hypothesis
+g <- ggplot(NULL) +
+  geom_path(  
+    aes(x=dose(1),
+        y=dose(1)),
+    color="black",
+    size=3) +
+  geom_path(  
+    aes(x=seq(0, 1, 0.01),
+        y=c(seq(0, 0.1, 0.01) * 1, 0.1 + seq(0.11, 1, 0.01) * 0.1)),
+    color="red",
+    size=3) +
+  scale_x_continuous(
+    breaks = c(), 
+    labels=c()) +
+  ylab("ERR per Sv") +
+  xlab("dose") +
+  ggtitle("Adaptive effects") +
+  clean_theme()
+g
+ggsave_for_publication("Adaptive effects hypothesis.png", g)
+
+
+# Threshold hypothesis
+response <- c(rep(0, 10), 
+              seq(0, 0.9, 0.01) * 1)
+
+protracted <- c(
+  rep(0.0, 10),
+  seq(0.00, 0.1, 0.01) * 1 + 0,
+  rep(0.1, 10),
+  seq(0.01, 0.1, 0.01) * 1 + 0.1,
+  rep(0.2, 10),
+  seq(0.01, 0.1, 0.01) * 1 + 0.2,
+  rep(0.3, 10),
+  seq(0.01, 0.1, 0.01) * 1 + 0.3,
+  rep(0.4, 10),
+  seq(0.01, 0.1, 0.01) * 1 + 0.4
+)
+
+g <- ggplot(NULL) +
+  geom_path(  
+    aes(x=dose(1),
+        y=response),
+    color="black",
+    size=3) +
+  geom_path(  
+    aes(x=dose(1),
+        y=protracted),
+    color="red",
+    size=3) +
+  scale_x_continuous(
+    breaks = c(), 
+    labels=c()) +
+  ylab("ERR per Sv") +
+  xlab("dose") +
+  ggtitle("Threshold") +
+  clean_theme()
+g
+ggsave_for_publication("Threshold hypothesis.png", g)
+
+
+# Unknown hypothesis
+
+g <- ggplot(NULL) +
+  geom_text(aes(x=0.5, y=0.5, label="?"), size=100) +
+  scale_x_continuous(
+    breaks = c(), 
+    labels=c()) +
+  ylab("ERR per Sv") +
+  xlab("dose") +
+  ggtitle("Something else") +
+  clean_theme()
+g
+ggsave_for_publication("Unknown hypothesis.png", g)
+
+
+
+```
+
+
+## Why an exponential model is different.
+
+The problem with the exponential model is that it weights low dose response data higher than high dose response data. We can prove that pretty easily.
+
+```{r}
+low_response_dref  <- 20
+high_response_dref <- 10
+
+low_response <- 50
+high_response <- 20
+
+n <- 2000
+data <- ldply(1:n, function(i){
+  data.frame(
+    response=c(
+      low_response + rnorm(1, 0, 0.01),
+      high_response + rnorm(1, 0, 0.01),
+      low_response / low_response_dref + rnorm(1, 0, 0.01),
+      high_response / high_response_dref + rnorm(1, 0, 0.01)
+    ),
+    strata = c(1, 0, 1, 0),
+    protracted = c(0, 0, 1, 1)
+  )
+})
+
+model <- lm(log(response) ~ protracted + factor(strata), data=data)
+summary(model)
+```
+
+I find that we end up with a ddref estimate that is the geometric mean of the values seen in each individual strata. This means if we have estimates of 10 and 1 we will get a final estimate of 10^0.5, about 3. So basically we will probably under-estimate DDREF by this approach.
+
+

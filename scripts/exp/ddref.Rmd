@@ -80,8 +80,8 @@ opts_chunk$set(fig.width=10,
                fig.height=6,
                fig.path='Figs/',
                #echo=FALSE,         # Toggle this to show the code
-               warning=FALSE,
-               message=FALSE,
+#               warning=FALSE,
+#               message=FALSE,
                cache=TRUE,
                results='asis',
                root.dir = '~/janus/')
@@ -823,7 +823,7 @@ like.
 ```{r}
 # Common
 setwd('~/janus')
-source('scripts/util/util.R') # http://goo.gl/VYzkAs
+source('scripts/util/util.R') # http://goo.gl/VYzkAs 
 
 # Data
 setwd('~/janus')
@@ -879,7 +879,7 @@ g <- ddply(d, .(group), function(df) {
 })
 
 # Show
-ggplot(g) +
+plot <- ggplot(g) +
   geom_path(
     aes(lifespan,
         survival,
@@ -904,8 +904,8 @@ ggplot(g) +
   scale_y_continuous(labels=percent) +
   expand_limits(x = -4) +
   theme(
-    text = element_text(size = 11, color="black"),
-    axis.text.x = element_text(color="black"),
+    text = element_text(size = 8, color="black"),
+    axis.text = element_text(color="black"),
     panel.grid.major = element_blank(),
     panel.grid.minor = element_blank(),
     panel.border = element_rect(colour = "black", fill=NA),
@@ -916,7 +916,12 @@ ggplot(g) +
   ylab("survival\n") +
   xlab("\nage (days)") 
 
-ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/survival.png")
+plot
+
+ggsave_for_publication(
+  "/Users/benjaminhaley/Dropbox/Public/thesis-figures/survival.tiff",
+  plot
+)
 ```
 
 #### Figure: Survival plots
@@ -1015,15 +1020,9 @@ comparables <- comparables %>%
          control = dose == 0,
          type=c('protracted', 'acute', 'control')[acute + control + 1])
 
-# Add mean survival by group
-median_survival <- comparables %>%
-  summarize(median_survival = median(lifespan))
-comparables <- merge(comparables, median_survival) %>%
-  arrange(lifespan)
-
 # Elaborate on the groups
 details <- comparables %>%
-  arrange(-median_survival) %>%
+#  arrange(-median_survival) %>%
   group_by(facet) %>%
   summarize(groups=paste(unique(paste(
       sprintf("%.3f", dose_rate), 
@@ -1033,19 +1032,19 @@ details <- comparables %>%
     )), collapse='\n'))
 
 # Show
-comparables$is_neutron <- grepl('neutron', comparables$quality)
-ggplot(comparables) +
-  geom_path(aes(lifespan,
-           survival,
-           group=group,
-           alpha=control,
-           color=type,
-           linetype=is_neutron)) +
-  facet_wrap(~ facet) +
-  scale_color_manual(values=c("red", "black", "black")) +
-  scale_alpha_manual(values=c(1, 0.5)) + 
-  expand_limits(x = -4) +
-  geom_text(data=details, aes(1200, 0.8, label=groups), size=3, lineheight=1, family="mono")
+# comparables$is_neutron <- grepl('neutron', comparables$quality)
+# ggplot(comparables) +
+#   geom_path(aes(lifespan,
+#            survival,
+#            group=group,
+#            alpha=control,
+#            color=type,
+#            linetype=is_neutron)) +
+#   facet_wrap(~ facet) +
+#   scale_color_manual(values=c("red", "black", "black")) +
+#   scale_alpha_manual(values=c(1, 0.5)) + 
+#   expand_limits(x = -4) +
+#   geom_text(data=details, aes(1200, 0.8, label=groups), size=3, lineheight=1, family="mono")
 ```
 
 #### Figure: Directly comparable protracted exposures
@@ -1159,7 +1158,6 @@ For comparison, let's load data from the atomic bomb survivors, [lss14][lss], an
 [lss]: http://rerf.jp/library/dl_e/lss14_document.pdf
 
 ```{r}
-
 # Common
 setwd('~/janus')
 source('scripts/util/util.R') # http://goo.gl/VYzkAs
@@ -1796,17 +1794,25 @@ This is the original [10B3 figure][10B3-citation] from the beir VII report [beir
 ##### Reproduce 10B3
 This is my reproduction of 10B3 to prove that I am faithfully applying their methodology.
 ```{r}
-g <- data[with(data,
+d <- data[with(data,
     strain == 'RFM' &
     sex == 'F' &
     rate != 0.4
 ),]
-ggplot(g, aes(dose, 1/age)) +
-  geom_text(size=5, aes(label=type, group=type)) +
+g <- ggplot(d, aes(dose, 1/age)) +
+  geom_text(size = 3.8, 
+            family = "Helvetica",
+#            fontface = "bold",
+            aes(label=type, group=type),
+            vjust=0.2) +
   geom_path(data=to_predict, aes(dose, p, group=type)) +
-  scale_y_continuous(breaks = 0.0002*0:4+0.0016)
+  scale_y_continuous(breaks = 0.0002*0:4+0.0016) +
+  xlab("\nDose (Gy)") +
+  ylab("Reciprocal of Mean Life in days\n") +
+  theme_bw()
+g
 
-ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/beir-10b3-reproduction.png")
+ggsave_for_publication("/Users/benjaminhaley/Dropbox/Public/thesis-figures/beir-10b3-reproduction.png", g)
 ```
 
 ### Results
@@ -1848,7 +1854,7 @@ data_10B2 <- read.csv('data/animal_carcinogenesis_likelihoods.csv')
 
 # The o_range is necessary for a proper fit
 beir_r <- get_likelihoods(data %>% filter(modeled_in_10B4), 
-                          fixed_o_model,
+                          weighted_fixed_o_model,
                           o_range = seq(-2, 6, by=0.02))
 beir_r <- beir_r %>%
   mutate(likelihood = l) %>%
@@ -1883,6 +1889,8 @@ This is the original [10B4 figure][10B4-citation] from the beir VII report [beir
 ##### Reproduce 10B4
 This is my reproduction of 10B4 to prove that I am faithfully applying their methodology.
 ```{r}
+
+# All of it
 g <- melt(data,
           id.vars='o',
           value.name='likelihood',
@@ -1896,6 +1904,32 @@ ggplot(g, aes(o, likelihood, linetype=source)) +
   xlab("θ (~ DDREF.lss - 1)")
 
 ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/beir-10b4-reproduction.png")
+
+
+# Just the mortality portion
+d <- melt(data,
+          id.vars='o',
+          value.name='likelihood',
+          variable.name='source') %>%
+  filter(source == 'lifespan')
+
+g <- ggplot(d, aes(o, likelihood)) +
+  geom_path(linetype='dotdash') +
+  scale_y_continuous(breaks = c(0:5)/5, limits=c(0,1.2)) +
+  coord_cartesian(xlim=c(-1.0, 6.0), 
+                  ylim=c(-0.04, 1.04)) +
+  xlab("θ (~ DDREF.lss - 1)") +
+  theme_bw() +
+  theme(legend.position=c(0.85, 0.8),
+        aspect.ratio=0.8) +
+  ylab("Likelihood Value") +
+  xlab("Possible Values of θ, in 1/Gy")
+g
+
+ggsave_for_publication("/Users/benjaminhaley/Dropbox/Public/thesis-figures/beir-10b4-partial-reproduction.png", g)
+
+
+
 ```
 
 ##### Table 10-2
@@ -1951,7 +1985,7 @@ setwd('~/janus')
 source('scripts/util/util.R') # http://goo.gl/VYzkAs
 
 # Data
-data <- read.csv('~/janus/data/lss14/lss14_spruced_up.csv')
+data <- read.csv('data/lss14/lss14_spruced_up.csv')
 
 # Constants
 graphable_threshold = 2.0
@@ -2002,11 +2036,10 @@ err <- function(model, data) {
 }
 to_predict$err <- err(factor_fit, to_predict)
 
-# Average by Dose and city
+# Average by Dose and city 
 aggregate <- to_predict %>%
   group_by(dose) %>%
   summarize(err=mean(err))
-
 ```
 
 #### Show
@@ -2021,7 +2054,7 @@ This is the original [10-2 figure][10-2-citation] from the beir VII report.
 ##### Reproduce 10-2
 This is my attempt to reproduce 10-2 to prove that I am faithfully applying their methodology.
 ```{r}
-# Show data
+# Show data 
 lm_smooth <- function(...) geom_smooth(method='lm',
                                        se=FALSE,
                                        color='black',
@@ -2129,7 +2162,7 @@ data_to_model <- data %>%
 modeler <- function(data, o) glm(err ~ I(dose + o*dose^2),
                                  data=data,
                                  weights=1/sd^2)
-likelihoods <- get_likelihoods(data_to_model, modeler)
+likelihoods <- get_likelihoods(data_to_model, modeler, o_range=seq(-0.3, 4, 0.02))
 
 # save for later
 setwd('~/janus')
@@ -2141,15 +2174,13 @@ write.csv0(likelihoods, file='data/10-3-lss.csv')
 ggplot(likelihoods, aes(o, l)) +
   geom_path(linetype='dotdash') +
   scale_y_continuous(breaks = c(0, 0.5, 1.0, 1.5), limits=c(0,1.5)) + 
-  coord_cartesian(xlim=c(-2, 6.0)) +
+  coord_cartesian(xlim=c(-1, 4.0)) +
   xlab("θ (~ DDREF.lss - 1)") + 
   ylab("likelihood")
 ```
 
 #### BEIR 10-3 reproduction of lss analysis
 We are able to form a 'reasonable' reproduction of the atomic bomb survivor curve from 10-3.  It's peak does not rise quite as high as the original firgure.  This may be because of errors when re-constructing the data used in this figure, or because of unknown differences in methodology.  In any case, the difference is small and difficult to resolve because the original data and full methodology is un-available.
-
-![10-3-image]:
 
 ##### BEIR 10-3
 This is the original [10-3 figure][10-3-citation] from the beir VII report [beir-10-3].
@@ -2210,7 +2241,8 @@ data_animal <- data_animal %>%
 # Merge likelihoods from 10-3 and 10B4
 data <- merge(
   data_lss %>% mutate(o=round(o, 2)),
-  data_animal %>% mutate(o=round(o, 2)))
+  data_animal %>% mutate(o=round(o, 2)),
+  all = TRUE)
 
 # Determine profile resolutions
 # (this is needed to normalize the profile likelihood curves for
@@ -2219,7 +2251,9 @@ delta = data_lss$o[2] - data_lss$o[1]
 
 # Find the posterior distribution
 # (by baysian update)
-data <- data %>%
+data$Combined_posterior <- NA
+LSS <- !is.na(data$LSS_likelihood)
+data[LSS,] <- data[LSS,] %>%
   mutate(Combined_posterior = normalize_likelihood(
            log(Radiobiological_prior) + log(LSS_likelihood),
            delta)
@@ -2229,18 +2263,34 @@ data <- data %>%
 write.csv0(data, "data/10-3.csv")
 
 # Show
-g <- melt(data,
+d <- melt(data,
           id.vars='o',
           value.name='likelihood',
           variable.name='source')
-ggplot(g, aes(o, likelihood, linetype=source)) +
+d$source <- factor(as.character(d$source), 
+                   levels=c("Radiobiological_prior",
+                            "LSS_likelihood",
+                            "Combined_posterior"))
+x_breaks <- c(-0.5, 0, 1, 2, 3, 4)
+x_labels <- paste(0:3, 1:4, sep="\n")
+x_labels <- c("Theta:\nLSS DDREF:", x_labels, 4)
+g <- ggplot(d, aes(o, likelihood, linetype=source)) +
   geom_path() +
-  scale_linetype_manual(values=c('dotted', 'dotdash', 'solid')) +
+  scale_linetype_manual(values=c('dotted', 'dotdash', 'solid'),
+                        labels=c("Radiobiological prior",
+                                 "LSS likelihood",
+                                 "Combined posterior")) +
   scale_y_continuous(breaks = c(0, 0.5, 1, 1.5)) +
-  coord_cartesian(ylim=c(-0.1, 1.6), xlim=c(-2, 6))
+  scale_x_continuous(breaks = x_breaks,
+                     labels = x_labels) +
+  coord_cartesian(ylim=c(-0.1, 1.6), xlim=c(-0.5, 4.2)) +
+  ylab("Likelihood") +
+  xlab("") +
+  theme_bw() +
+  theme(legend.position = c(0.7, 0.7))
+g
 
-
-ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/beir-10-3-reproduction.png")
+ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/beir-10-3-reproduction.png", g)
 ```
 
 #### BEIR 10-3 reproduction
@@ -2268,11 +2318,12 @@ Reproduce confidence intervals from my profile likelihood curve reproductions, t
 
 ```{r}
 o = data$o
+lss <- !is.na(data[['LSS_likelihood']])
 
 t <- data.frame(t(data.frame(
   confidence_interval(o, data[['Radiobiological_prior']], 0.05),
-  confidence_interval(o, data[['LSS_likelihood']], 0.05),
-  confidence_interval(o, data[['Combined_posterior']], 0.05)
+  confidence_interval(o[lss], data[lss, 'LSS_likelihood'], 0.05),
+  confidence_interval(o[lss], data[lss, 'Combined_posterior'], 0.05)
 )))
 names(t) <- c("low", "median", "high")
 
@@ -3846,7 +3897,7 @@ show <- function(data, to_predict) {
                        labels = c('acute', 'protracted'),
                        name="") +
     facet_wrap(~ cluster, scales='free_y') + 
-    theme(text = element_text(size = 11, color="black"),
+    theme(text = element_text(size = 8, color="black"),
           axis.text.x = element_text(color="black"),
           axis.text.y = element_blank(),
           panel.grid.major = element_blank(),
@@ -3857,8 +3908,8 @@ show <- function(data, to_predict) {
           strip.background = element_blank()) +
     geom_point(data=scales, aes(x=1, y=min), size=0.000001) + 
     geom_point(data=scales, aes(x=1, y=max), size=0.000001) + 
-    ylab("1 / mean age (days)") +
-    xlab("dose (Gy)") +
+    ylab("1 / mean age (days)\n") +
+    xlab("\ndose (Gy)") +
     scale_y_continuous(breaks = seq(0, 1, by = y_interval)))
 }
 
@@ -4060,7 +4111,7 @@ analyze <- function(name, data, model,
     # Graph
     show_fn(data, to_predict)
     base_path = "/Users/benjaminhaley/Dropbox/Public/thesis-figures/"
-    ggsave_for_ppt(paste0(base_path, name, ".png"))
+    ggsave_for_publication(paste0(base_path, name, ".tiff"))
   }
 }
 
@@ -4228,6 +4279,7 @@ coxme_model <- function(o, data) {
   ) 
 }
 logLik.coxme = function(m) m$loglik[2]
+
 
 
 # Analyze
@@ -5964,18 +6016,7 @@ ggsave("legend in my own mind.png")
 __________________________________________________________________
 
 
-
-__________________________________________________________________
-
-
-<a name="beir_vii_alternatives_simple"><a>
-
-BEIR VII Alternatives (simple version)
-========================================================
-*Last Update: January 2015*
-
-Graphs that illustrate the BEIR VII model vs the observed dose response.
-
+Simplification of the above figure
 ```{r}
 # Common
 setwd('~/janus')
@@ -5991,6 +6032,24 @@ Beta = alpha*(DDREF - 1)
 quadratic_response = alpha * dose + Beta * dose^2
 linear_response = alpha * dose
 
+# Including cell killing (BEIR VII)
+D_zero = 3.0  # based on Hall "has a value close to 3 Gy for cells of human origin."
+B_over_alpha = 1 # based on intuition
+alpha = 1 / (D_zero + B_over_alpha * D_zero^2) # from formula
+Beta = alpha * B_over_alpha
+cell_killing = exp(-1/(alpha*dose + Beta*dose^2))
+bier_vii_response = quadratic_response * (1 - cell_killing)
+
+# More cell killing
+D_zero = 1.2  # based on Hall "has a value close to 3 Gy for cells of human origin."
+B_over_alpha = 40 # based on intuition
+alpha = 1 / (D_zero + B_over_alpha * D_zero^2) # from formula
+Beta = alpha * B_over_alpha
+cell_killing = exp(-1/(alpha*dose + Beta*dose^2))
+more_killing_response = quadratic_response * (1 - cell_killing)
+
+
+
 # Graphing constants
 size = 4.0
 thin_size = size / 2
@@ -6005,8 +6064,196 @@ clean_theme <- function() {
    ,panel.border = element_blank()
    ,axis.text=element_blank()
    ,axis.ticks=element_blank()
-   ,axis.title = element_text(size = rel(2))
-   ,plot.title = element_text(size = rel(2))
+   ,axis.title = element_text(size = rel(3))
+   ,plot.title = element_text(size = rel(3))
+  ) +
+  theme(axis.line = element_line(color = 'black'))
+}
+
+
+# BEIR VII model
+ggplot(NULL) +
+  geom_smooth(aes(
+                dose[dose < 1.5], 
+                bier_vii_response[dose < 1.5]
+              ), 
+              method="lm", 
+              formula="y ~ I(x^2) + x - 1",
+              size=size,
+              color='black') +
+  geom_smooth(aes(
+                dose[dose < 1.5], 
+                linear_response[dose < 1.5]
+              ), 
+              method="lm", 
+              formula="y ~ x - 1",
+              size=size,
+              color='red') +
+  xlab("dose") +
+  ylab("ERR") +
+  ggtitle("BEIR VII model") +
+  clean_theme()
+
+ggsave("BEIR VII simple model.png")
+
+# Observed dose response
+ggplot(NULL) +
+  geom_smooth(aes(
+                dose[dose < 1.5], 
+                more_killing_response[dose < 1.5]
+              ), 
+              method="lm", 
+              formula="y ~ x - 1",
+              size=size,
+              color='black') +
+  geom_smooth(aes(
+                dose[dose < 1.5], 
+                0.4*linear_response[dose < 1.5]
+              ), 
+              method="lm", 
+              formula="y ~ x - 1",
+              size=size,
+              color='red') +
+  geom_point(aes(x=0, y=0),
+             color = "white",
+             size=20) +
+  geom_text(aes(x=0, y=0, label="?"),
+            size = 12) +
+  xlab("dose") +
+  ylab("ERR") +
+  clean_theme() +
+  ggtitle("Observed dose response (idealized)")
+
+ggsave("observed dose simple response.png")
+```
+
+
+__________________________________________________________________
+
+
+Show the extra cell killing hypothesis
+
+```{r}
+# Common
+setwd('~/janus')
+source('scripts/util/util.R') # http://goo.gl/VYzkAs
+
+# Universal parameters
+dose = seq(0, 4, .01)
+linear = dose
+quadratic <- 10*dose^2
+lq <- linear + quadratic
+response = lq * exp(-0.4*dose)
+
+# Graphing constants
+size = 10.0
+thin_size = size / 2
+alpha=0.3
+p <- function(...) paste(..., sep="\n", collapse="\n")
+clean_theme <- function() {
+  theme_bw() +
+  theme(
+    plot.background = element_blank()
+   ,panel.grid.major = element_blank()
+   ,panel.grid.minor = element_blank()
+   ,panel.border = element_blank()
+   ,axis.text.y=element_blank()
+   ,axis.ticks=element_blank()
+   ,axis.text.x= element_text(size = rel(3))
+   ,axis.title = element_text(size = rel(3))
+   ,plot.title = element_text(size = rel(3))
+  ) +
+  theme(axis.line = element_line(color = 'black'))
+}
+
+
+# BEIR VII model
+ggplot(NULL) +
+  geom_line(aes(
+                dose, 
+                quadratic
+              ),
+              size=thin_size,
+              linetype="dashed",
+              color='grey') +
+  geom_path(aes(
+                dose, 
+                response
+              ),
+              size=thin_size,
+              color='grey') +
+  geom_path(aes(
+                dose, 
+                linear
+              ),
+              size=thin_size,
+              color='red') +
+  geom_line(aes(
+                dose[dose < 1.5], 
+                response[dose < 1.5]
+              ),
+              stat="smooth",
+              method="lm",
+              formula="y ~ x + I(x^2) - 1",
+              size=thin_size,
+              color='black') +
+  coord_cartesian(ylim=c(0, max(response)), xlim=c(0, 3)) +
+  scale_x_continuous(breaks=c(0, 1.5), 
+                     labels=c("0", "1.5 Gy"),
+                     limits=c(0, 3)) +
+  xlab("") +
+  ylab("ERR") +
+  clean_theme()
+
+ggsave("more reproductive cell death.png")
+
+```
+
+
+
+__________________________________________________________________
+
+
+<a name="beir_vii_alternatives_simple"><a>
+
+BEIR VII Alternatives (simple version)
+========================================================
+*Last Update: January 2015*
+
+Graphs that illustrate the BEIR VII model vs the observed dose response.
+
+```{r}
+
+# Common
+setwd('~/janus')
+source('scripts/util/util.R') # http://goo.gl/VYzkAs
+
+# Universal parameters
+dose = seq(0, 3, .01)
+
+# Basic LQ model
+alpha = 0.002
+DDREF = 3.5
+Beta = alpha*(DDREF - 1)
+quadratic_response = alpha * dose + Beta * dose^2
+linear_response = alpha * dose
+
+# Graphing constants
+size = 2.0
+thin_size = size / 2
+alpha=0.3
+p <- function(...) paste(..., sep="\n", collapse="\n")
+clean_theme <- function() {
+  theme_bw() +
+  theme(
+    plot.background = element_blank()
+   ,panel.grid.major = element_blank()
+   ,panel.grid.minor = element_blank()
+   ,panel.border = element_blank()
+   ,axis.text=element_blank()
+   ,axis.ticks=element_blank()
+   ,axis.title = element_text(size = rel(1))
+   ,plot.title = element_text(size = rel(1))
   ) +
   theme(axis.line = element_line(color = 'black'))
 }
@@ -6022,8 +6269,9 @@ no_theme <- function() {
         title = element_blank())
 }
 
+
 # BEIR VII model
-ggplot(NULL) +
+beir <- ggplot(NULL) +
   geom_smooth(aes(
                 dose[dose < 1.5], 
                 quadratic_response[dose < 1.5]
@@ -6042,37 +6290,38 @@ ggplot(NULL) +
               color='red') +
   xlab("dose") +
   ylab("risk") +
-  ggtitle("BEIR VII model") +
+  ggtitle("A. BEIR VII model") +
   geom_text(aes(1.6, 0.014, 
     label=p("Acute exposures should exhibit a", 
             "linear quadratic dose response,",
             "α × Dose + ß × Dose².")),
-    hjust=0) +
+    hjust=0,
+    size=2.3) +
   geom_text(aes(1.6, 0.003, 
     label=p("Protracted exposures should exhibit a",
             "linear dose response, α × Dose, equal",
             "to the linear component of the acute",
             "dose response.")),
     color='red',
-    hjust=0) +
-  geom_text(aes(0.0, 0.006, 
+    hjust=0,
+    size=2.3) +
+  geom_text(aes(0.05, 0.006,
     label=p("At low doses, acute and",
             "protracted exposures lead",
             "to identical effects.")),
-    color='black',
-    hjust=0) +
-  geom_segment(aes(x=0.1, xend=0.1, y=0.0033, yend=0.0015),
+            color="grey20",
+            hjust=0,
+            size=2.3) +
+  geom_segment(aes(x=0.063, xend=0.063, y=0.0035, yend=0.0017),
                color="black") +
   ylim(0, 0.015) + 
-  xlim(0, 2.4) +
+  xlim(0, 2.1) +
   clean_theme()
-
-ggsave("BEIR VII model.png")
 
 
 # Observed dose response
 range <- 0.1 < dose & dose < 1.5
-ggplot(NULL) +
+mine <- ggplot(NULL) +
   geom_smooth(aes(
                 dose[range], 
                 quadratic_response[range]
@@ -6093,38 +6342,48 @@ ggplot(NULL) +
   xlab("dose") +
   ylab("risk") +
   clean_theme() +
-  ggtitle("Observed dose response (idealized)") +
+  ggtitle("B. Observed dose response (idealized)") +
   ylim(0, 0.015) + 
-  xlim(0, 2.4) +
+  xlim(0, 2.1) +
   geom_text(aes(0.05, 0.0005, 
                 label=p(
                   "?")),
-            size=7,
+            size=4,
             hjust=0,
             color='grey20') +
-  geom_segment(aes(x=0.07, y=0.0042,
-                   xend=0.07, yend=0.0012),
-               color='grey'
-  ) +
+  geom_segment(aes(x=0.063, xend=0.063, y=0.0038, yend=0.0020),
+               color="black") +
   geom_text(aes(0.05, 0.006,
                 label=p(
                   "Low-dose responses",
                   "remain challenging",
                   "to measure.")),
             color="grey20",
-            hjust=0) +
+            hjust=0,
+            size=2.3) +
   geom_text(aes(1.6, 0.012, 
                 label=p(
                   "Acute dose responses appear linear.")),
-            hjust=0) +
+            hjust=0,
+            size=2.3) +
   geom_text(aes(1.6, 0.003,
                 label=p(
                   "Protrated exposures induce less risk ",
                   "than equivilant acute exposures.")),
             color="red",
-            hjust=0)
+            hjust=0,
+            size=2.3)
 
-ggsave("observed dose response.png")
+g <- arrangeGrob(beir, mine)
+g
+ggsave_for_publication("paper fig 2.tiff", g)
+
+# Note: saving this file so that it looks good is annoying.
+# 1. zoom
+# 2. copy
+# 3. open preview
+# 4. file -> new from clipboard
+
 ```
 
 #### Results
@@ -6161,7 +6420,8 @@ acute_hormetic_risk = -dose - dose^2
 protracted_hormetic_risk = -dose
 
 # Graphing constants
-size = 4.0
+size = 2.0
+thin_size = size / 2
 alpha=0.3
 p <- function(...) paste(..., sep="\n", collapse="\n")
 clean_theme <- function() {
@@ -6174,7 +6434,7 @@ clean_theme <- function() {
    ,axis.text=element_blank()
    ,axis.ticks=element_blank()
    ,axis.title = element_text(size = rel(2))
-   ,plot.title = element_text(size = rel(2))
+   ,plot.title = element_text(size = rel(1))
    ,axis.line.x=element_blank()
    ,axis.title.x=element_blank()
    ,axis.line.y=element_blank()
@@ -6184,7 +6444,7 @@ clean_theme <- function() {
 }
 
 # Normal dose response
-ggplot(NULL) +
+normal <- ggplot(NULL) +
   
   # Dose response
   geom_path(aes(dose, protracted_risk),
@@ -6219,37 +6479,36 @@ ggplot(NULL) +
   geom_segment(aes(x=0, y=0, xend=1.3, yend=0), 
                color='black',
                size=thin_size) +
-  
+
   # Labels
   geom_text(aes(x=-0.05, y=2, label="2"),
-            size=6) +
+            size=3) +
   geom_text(aes(x=-0.05, y=1, label="1"),
-            size=6,
+            size=3,
             color='red') +
-  geom_text(aes(x=-0.07, y=0, label="risk"),
-            size=8,
+  geom_text(aes(x=-0.07, y=0, label="risk\n"),
+            size=4,
             angle = 90) +
   geom_text(aes(x=0.6, y=-0.4, label="dose"),
-            size=8) +
+            size=4) +
   geom_text(aes(x=0.6, y=-0.4, label="dose"),
-            size=8) +  
-  geom_text(aes(x=0.6, y=3.8, label="Normal dose response"),
-            size=8) +
-  geom_text(aes(x=1.3, y=2.8, label="acute"),
-            size=6) +
-  geom_text(aes(x=1.37, y=1.27, label="protracted"),
-            size=6,
-            color='red') +
-  
+            size=4) +  
+  ggtitle(
+    expression(atop("A. Normal dose response", atop(italic("DDREF = 2/1 = 2"), "")))) +
+  geom_text(aes(x=1.23, y=2.8, label="acute"),
+            size=3,
+            hjust=0) +
+  geom_text(aes(x=1.23, y=1.27, label="protracted"),
+            size=3,
+            color='red',
+            hjust=0) +
   clean_theme() +
-  ylim(-3, 4) +
-  xlim(-0.2, 2.0)
-
-ggsave("normal dose reponse.png")
+  ylim(-3, 3) +
+  xlim(-0.1, 1.7)
 
 
 # Hormetic dose response
-ggplot(NULL) +
+hormetic <- ggplot(NULL) +
   
   # Dose response
   geom_path(aes(dose, -protracted_risk),
@@ -6287,32 +6546,36 @@ ggplot(NULL) +
   
   # Labels
   geom_text(aes(x=-0.05, y=-2, label="-2"),
-            size=6) +
+            size=3) +
   geom_text(aes(x=-0.05, y=-1, label="-1"),
-            size=6,
+            size=3,
             color='red') +
-  geom_text(aes(x=-0.07, y=0, label="risk"),
-            size=8,
+  geom_text(aes(x=-0.07, y=0, label="risk\n"),
+            size=4,
             angle = 90) +
   geom_text(aes(x=0.6, y=+0.4, label="dose"),
-            size=8) +
+            size=4) +
   geom_text(aes(x=0.6, y=+0.4, label="dose"),
-            size=8) +  
-  geom_text(aes(x=0.6, y=3.8, label="Hormetic dose response"),
-            size=8) +
-  geom_text(aes(x=1.3, y=-2.8, label="acute"),
-            size=6) +
-  geom_text(aes(x=1.37, y=-1.27, label="protracted"),
-            size=6,
-            color='red') +
+            size=4) +  
+  ggtitle(
+    expression(atop("B. Hormetic dose response", 
+                    atop(italic("DDREF = -2/-1 = 2"), "")))) +
+  geom_text(aes(x=1.23, y=-2.8, label="acute"),
+            size=3,
+            hjust=0) +
+  geom_text(aes(x=1.23, y=-1.27, label="protracted"),
+            size=3,
+            color='red',
+            hjust=0) +
   
   clean_theme() +
-  ylim(-3, 4) +
-  xlim(-0.2, 2.0)
-
-ggsave("hormetic dose reponse.png")
+  ylim(-3, 3) +
+  xlim(-0.1, 1.7)
 
 
+g <- arrangeGrob(normal, hormetic)
+g
+ggsave_for_publication("paper fig 8.tiff", g, width=4)
 ```
 
 #### Results

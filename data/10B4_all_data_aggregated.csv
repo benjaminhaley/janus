@@ -1,183 +1,183 @@
 "cluster","group_id","age","n","sd","dose","rate","fractions","type"
-"1 - ♀ RFM/Un Mice ORNL 
+"1. ♀ RFM/Un mice ORNL 
  γ-ray at 70 days old","1007-3-10",613.856989247312,930,5.30619229561939,0.25,0.45,1,"A"
-"1 - ♀ RFM/Un Mice ORNL 
+"1. ♀ RFM/Un mice ORNL 
  γ-ray at 70 days old","1007-3-11",552.667293233083,1064,5.30292166692777,0.5,0.45,1,"A"
-"1 - ♀ RFM/Un Mice ORNL 
+"1. ♀ RFM/Un mice ORNL 
  γ-ray at 70 days old","1007-3-12",541.059071729958,237,11.2208932571031,0.75,0.45,1,"A"
-"1 - ♀ RFM/Un Mice ORNL 
+"1. ♀ RFM/Un mice ORNL 
  γ-ray at 70 days old","1007-3-13",538.451674641148,1045,5.42560970350762,1,0.45,1,"A"
-"1 - ♀ RFM/Un Mice ORNL 
+"1. ♀ RFM/Un mice ORNL 
  γ-ray at 70 days old","1007-3-14",487.002985074627,1005,5.84507396754535,1.5,0.45,1,"A"
-"1 - ♀ RFM/Un Mice ORNL 
+"1. ♀ RFM/Un mice ORNL 
  γ-ray at 70 days old","1007-3-9",632.474035608309,2696,3.19307835475736,0.1,0.45,1,"A"
-"2 - ♀ B6CF1 Mice ANL 
+"2. ♀ B6CF1 mice ANL 
  γ-ray at 114 days old","1003-20-2",945.01983663944,857,6.72526329850156,0,0,1,"A"
-"2 - ♀ B6CF1 Mice ANL 
+"2. ♀ B6CF1 mice ANL 
  γ-ray at 114 days old","1003-20-4",902.904282115869,397,8.92600137314852,0.8631,0.043155,1,"A"
-"2 - ♀ B6CF1 Mice ANL 
+"2. ♀ B6CF1 mice ANL 
  γ-ray at 114 days old","1003-21-2",931.94054054054,185,16.020725363892,0,0,1,"A"
-"2 - ♀ B6CF1 Mice ANL 
+"2. ♀ B6CF1 mice ANL 
  γ-ray at 114 days old","1003-21-4",935.98,200,13.1564798792865,0.8631,0.043155,1,"A"
-"2 - ♀ B6CF1 Mice ANL 
+"2. ♀ B6CF1 mice ANL 
  γ-ray at 114 days old","1003-22-2",969.502155172414,464,8.96789703164998,0,0,1,"A"
-"2 - ♀ B6CF1 Mice ANL 
+"2. ♀ B6CF1 mice ANL 
  γ-ray at 114 days old","1003-24-2",991.451428571429,175,14.7557846352451,0,0,1,"A"
-"2 - ♀ B6CF1 Mice ANL 
+"2. ♀ B6CF1 mice ANL 
  γ-ray at 114 days old","1003-25-2",959.5,50,21.4909045782591,0,0,1,"A"
-"2 - ♀ B6CF1 Mice ANL 
+"2. ♀ B6CF1 mice ANL 
  γ-ray at 114 days old","1003-26-2",977.73374340949,1138,5.71862587500375,0,0,1,"A"
-"2 - ♀ B6CF1 Mice ANL 
+"2. ♀ B6CF1 mice ANL 
  γ-ray at 114 days old","1003-26-3",962.923541247485,497,8.72219899267182,0.2157,0.010785,1,"A"
-"2 - ♀ B6CF1 Mice ANL 
+"2. ♀ B6CF1 mice ANL 
  γ-ray at 114 days old","1003-26-4",967.92774566474,346,10.7612686218226,0.4315,0.021575,1,"A"
-"2 - ♀ B6CF1 Mice ANL 
+"2. ♀ B6CF1 mice ANL 
  γ-ray at 114 days old","1003-26-5",934.840206185567,194,13.9571253243986,0.8631,0.043155,1,"A"
-"2 - ♀ B6CF1 Mice ANL 
+"2. ♀ B6CF1 mice ANL 
  γ-ray at 114 days old","1003-29-2",986.369863013699,584,7.71910011185083,0,0,1,"A"
-"2 - ♀ B6CF1 Mice ANL 
+"2. ♀ B6CF1 mice ANL 
  γ-ray at 114 days old","1003-29-4",957.103678929766,598,7.73017461297507,1,0.00083,60,"C"
-"2 - ♀ B6CF1 Mice ANL 
+"2. ♀ B6CF1 mice ANL 
  γ-ray at 114 days old","1003-30-2",976.744360902256,399,9.7276536757206,0,0,1,"A"
-"3 - ♂ B6CF1 Mice ANL 
+"3. ♂ B6CF1 mice ANL 
  γ-ray at 113 days old","1003-20-1",952.421115065243,843,6.63887568860482,0,0,1,"A"
-"3 - ♂ B6CF1 Mice ANL 
+"3. ♂ B6CF1 mice ANL 
  γ-ray at 113 days old","1003-20-3",921.901554404145,386,9.73969540095482,0.8631,0.043155,1,"A"
-"3 - ♂ B6CF1 Mice ANL 
+"3. ♂ B6CF1 mice ANL 
  γ-ray at 113 days old","1003-21-1",985.335,200,13.2808742929419,0,0,1,"A"
-"3 - ♂ B6CF1 Mice ANL 
+"3. ♂ B6CF1 mice ANL 
  γ-ray at 113 days old","1003-21-3",970.276381909548,199,14.1895034442503,0.8631,0.043155,1,"A"
-"3 - ♂ B6CF1 Mice ANL 
+"3. ♂ B6CF1 mice ANL 
  γ-ray at 113 days old","1003-21-5",939.15625,160,16.4011992075625,1.3714,0.06857,1,"A"
-"3 - ♂ B6CF1 Mice ANL 
+"3. ♂ B6CF1 mice ANL 
  γ-ray at 113 days old","1003-22-1",985.26750448833,557,8.86955706915932,0,0,1,"A"
-"3 - ♂ B6CF1 Mice ANL 
+"3. ♂ B6CF1 mice ANL 
  γ-ray at 113 days old","1003-24-1",986.509677419355,310,10.6446064574001,0,0,1,"A"
-"3 - ♂ B6CF1 Mice ANL 
+"3. ♂ B6CF1 mice ANL 
  γ-ray at 113 days old","1003-25-1",1011.11666666667,60,24.6645871584886,0,0,1,"A"
-"3 - ♂ B6CF1 Mice ANL 
+"3. ♂ B6CF1 mice ANL 
  γ-ray at 113 days old","1003-26-1",1042.565,200,12.8814357043002,0,0,1,"A"
-"3 - ♂ B6CF1 Mice ANL 
+"3. ♂ B6CF1 mice ANL 
  γ-ray at 113 days old","1003-28-1",1019.825,120,19.4034984229757,0,0,1,"A"
-"3 - ♂ B6CF1 Mice ANL 
+"3. ♂ B6CF1 mice ANL 
  γ-ray at 113 days old","1003-29-1",992.721283783784,592,7.78054051071116,0,0,1,"A"
-"3 - ♂ B6CF1 Mice ANL 
+"3. ♂ B6CF1 mice ANL 
  γ-ray at 113 days old","1003-29-3",970.599326599327,594,7.48759146731261,1,0.00083,60,"C"
-"3 - ♂ B6CF1 Mice ANL 
+"3. ♂ B6CF1 mice ANL 
  γ-ray at 113 days old","1003-30-1",1007.00508905852,393,9.35784208743675,0,0,1,"A"
-"4 - ♂ C57BL/Cnb Mice SCK/CEN 
+"4. ♂ C57BL/Cnb mice SCK/CEN 
  γ-ray at 84 days old","9-6-1",612.620985010707,467,7.08471702793058,0,0,1,"A"
-"4 - ♂ C57BL/Cnb Mice SCK/CEN 
+"4. ♂ C57BL/Cnb mice SCK/CEN 
  γ-ray at 84 days old","9-6-10",615,115,13.6150912366444,1,0.3,10,"C"
-"4 - ♂ C57BL/Cnb Mice SCK/CEN 
+"4. ♂ C57BL/Cnb mice SCK/CEN 
  γ-ray at 84 days old","9-6-14",621.903846153846,104,16.6844339408946,1,0.3,8,"C"
-"4 - ♂ C57BL/Cnb Mice SCK/CEN 
+"4. ♂ C57BL/Cnb mice SCK/CEN 
  γ-ray at 84 days old","9-6-2",580.589211618257,241,9.46975633955468,0.25,0.3,1,"A"
-"4 - ♂ C57BL/Cnb Mice SCK/CEN 
+"4. ♂ C57BL/Cnb mice SCK/CEN 
  γ-ray at 84 days old","9-6-3",564.495762711864,236,10.1722746334448,0.5,0.3,1,"A"
-"4 - ♂ C57BL/Cnb Mice SCK/CEN 
+"4. ♂ C57BL/Cnb mice SCK/CEN 
  γ-ray at 84 days old","9-6-4",549.846473029046,241,9.58494392579047,1,0.3,1,"A"
-"4 - ♂ C57BL/Cnb Mice SCK/CEN 
+"4. ♂ C57BL/Cnb mice SCK/CEN 
  γ-ray at 84 days old","9-6-8",604.757009345794,107,15.57819305779,0.25,0.3,10,"C"
-"4 - ♂ C57BL/Cnb Mice SCK/CEN 
+"4. ♂ C57BL/Cnb mice SCK/CEN 
  γ-ray at 84 days old","9-6-9",603.56880733945,109,14.3178588383409,0.5,0.3,10,"C"
-"5 - ♂ RFM/Un Mice ORNL 
+"5. ♂ RFM/Un mice ORNL 
  γ-ray at 70 days old","1007-3-1",711.46511627907,430,7.70082037504183,0,0,1,"A"
-"5 - ♂ RFM/Un Mice ORNL 
+"5. ♂ RFM/Un mice ORNL 
  γ-ray at 70 days old","1007-3-2",720.1640625,256,10.8577358382546,0.1,0.45,1,"A"
-"5 - ♂ RFM/Un Mice ORNL 
+"5. ♂ RFM/Un mice ORNL 
  γ-ray at 70 days old","1007-3-3",710.723404255319,94,18.0695193033809,0.25,0.45,1,"A"
-"5 - ♂ RFM/Un Mice ORNL 
+"5. ♂ RFM/Un mice ORNL 
  γ-ray at 70 days old","1007-3-4",679.842105263158,247,11.4048159664799,0.5,0.45,1,"A"
-"5 - ♂ RFM/Un Mice ORNL 
+"5. ♂ RFM/Un mice ORNL 
  γ-ray at 70 days old","1007-3-5",673.308695652174,230,11.9444660522351,1,0.45,1,"A"
-"5 - ♂ RFM/Un Mice ORNL 
+"5. ♂ RFM/Un mice ORNL 
  γ-ray at 70 days old","1007-3-6",650.693467336683,199,13.836569107824,1.5,0.45,1,"A"
-"6 - ♂ BALB/c/Cnb Mice SCK/CEN 
+"6. ♂ BALB/c/Cnb mice SCK/CEN 
  γ-ray at 84 days old","9-5-1",765.60248447205,322,8.8606570402126,0,0,1,"A"
-"6 - ♂ BALB/c/Cnb Mice SCK/CEN 
+"6. ♂ BALB/c/Cnb mice SCK/CEN 
  γ-ray at 84 days old","9-5-10",751.29203539823,113,15.8661221102682,1,4,10,"C"
-"6 - ♂ BALB/c/Cnb Mice SCK/CEN 
+"6. ♂ BALB/c/Cnb mice SCK/CEN 
  γ-ray at 84 days old","9-5-2",745.429319371728,191,13.5358019045621,0.25,4,1,"A"
-"6 - ♂ BALB/c/Cnb Mice SCK/CEN 
+"6. ♂ BALB/c/Cnb mice SCK/CEN 
  γ-ray at 84 days old","9-5-3",735.659793814433,194,13.7056373093185,0.5,4,1,"A"
-"6 - ♂ BALB/c/Cnb Mice SCK/CEN 
+"6. ♂ BALB/c/Cnb mice SCK/CEN 
  γ-ray at 84 days old","9-5-4",732.44502617801,191,10.742717736665,1,4,1,"A"
-"6 - ♂ BALB/c/Cnb Mice SCK/CEN 
+"6. ♂ BALB/c/Cnb mice SCK/CEN 
  γ-ray at 84 days old","9-5-8",777.630630630631,111,12.7720513356269,0.25,4,10,"C"
-"6 - ♂ BALB/c/Cnb Mice SCK/CEN 
+"6. ♂ BALB/c/Cnb mice SCK/CEN 
  γ-ray at 84 days old","9-5-9",739.963636363636,110,16.2344218125699,0.5,4,10,"C"
-"7 - ♀ BC3F1 Mice ENEA 
+"7. ♀ BC3F1 mice ENEA 
  X-ray at 91 days old","3-1-1",889.022662889518,353,8.39695775382461,0,0,1,"A"
-"7 - ♀ BC3F1 Mice ENEA 
+"7. ♀ BC3F1 mice ENEA 
  X-ray at 91 days old","3-1-2",911.59,100,16.9700395230577,0.04,0.06,1,"A"
-"7 - ♀ BC3F1 Mice ENEA 
+"7. ♀ BC3F1 mice ENEA 
  X-ray at 91 days old","3-1-3",892.52380952381,84,18.2731354797468,0.08,0.06,1,"A"
-"7 - ♀ BC3F1 Mice ENEA 
+"7. ♀ BC3F1 mice ENEA 
  X-ray at 91 days old","3-1-4",853.867924528302,53,21.7669747206072,0.16,0.06,1,"A"
-"7 - ♀ BC3F1 Mice ENEA 
+"7. ♀ BC3F1 mice ENEA 
  X-ray at 91 days old","3-1-5",874.396551724138,58,24.5815425084817,0.32,0.06,1,"A"
-"7 - ♀ BC3F1 Mice ENEA 
+"7. ♀ BC3F1 mice ENEA 
  X-ray at 91 days old","3-1-6",833.333333333333,57,20.9891267550172,0.64,0.64,1,"A"
-"7 - ♀ BC3F1 Mice ENEA 
+"7. ♀ BC3F1 mice ENEA 
  X-ray at 91 days old","3-1-7",707.383333333333,60,22.9680949389019,1.28,0.64,1,"A"
-"7 - ♀ BC3F1 Mice ENEA 
+"7. ♀ BC3F1 mice ENEA 
  X-ray at 91 days old","3-1-9",864.806451612903,279,8.53692325535014,0,0,1,"A"
-"8 - ♂ C57BL/6Bd Mice ORNL 
+"8. ♂ C57BL/6Bd mice ORNL 
  γ-ray at 70 days old","1007-2-2",905.896414342629,502,6.06594804906649,0,0,1,"A"
-"8 - ♂ C57BL/6Bd Mice ORNL 
+"8. ♂ C57BL/6Bd mice ORNL 
  γ-ray at 70 days old","1007-2-4",908.625984251968,254,8.45809905442425,0.5,0.4,1,"A"
-"8 - ♂ C57BL/6Bd Mice ORNL 
+"8. ♂ C57BL/6Bd mice ORNL 
  γ-ray at 70 days old","1007-2-6",922.007692307692,260,8.2048251834329,1,0.4,1,"A"
-"9 - ♀ C3Hf/Bd Mice ORNL 
+"9. ♀ C3Hf/Bd mice ORNL 
  γ-ray at 70 days old","1007-2-11",726.682730923695,249,6.88382856654839,0.5,0.4,1,"A"
-"9 - ♀ C3Hf/Bd Mice ORNL 
+"9. ♀ C3Hf/Bd mice ORNL 
  γ-ray at 70 days old","1007-2-13",692.576,250,7.60350696512305,1,0.4,1,"A"
-"9 - ♀ C3Hf/Bd Mice ORNL 
+"9. ♀ C3Hf/Bd mice ORNL 
  γ-ray at 70 days old","1007-2-9",778.319361277445,501,5.8097402218938,0,0,1,"A"
-"10 - ♀ C57BL/6Bd Mice ORNL 
+"10. ♀ C57BL/6Bd mice ORNL 
  γ-ray at 70 days old","1007-2-1",857.928716904277,491,6.94409713920608,0,0,1,"A"
-"10 - ♀ C57BL/6Bd Mice ORNL 
+"10. ♀ C57BL/6Bd mice ORNL 
  γ-ray at 70 days old","1007-2-3",854.802371541502,253,11.1604714088676,0.5,0.4,1,"A"
-"10 - ♀ C57BL/6Bd Mice ORNL 
+"10. ♀ C57BL/6Bd mice ORNL 
  γ-ray at 70 days old","1007-2-5",865.091633466135,251,10.2634483867623,1,0.4,1,"A"
-"11 - ♂ C3Hf/Bd Mice ORNL 
+"11. ♂ C3Hf/Bd mice ORNL 
  γ-ray at 70 days old","1007-2-10",731.856573705179,502,5.77934172224194,0,0,1,"A"
-"11 - ♂ C3Hf/Bd Mice ORNL 
+"11. ♂ C3Hf/Bd mice ORNL 
  γ-ray at 70 days old","1007-2-12",712.647540983607,244,7.91510699335529,0.5,0.4,1,"A"
-"11 - ♂ C3Hf/Bd Mice ORNL 
+"11. ♂ C3Hf/Bd mice ORNL 
  γ-ray at 70 days old","1007-2-14",720.83064516129,248,8.70585084619138,1,0.4,1,"A"
-"12 - ♂ BC3F1 Mice ENEA 
+"12. ♂ BC3F1 mice ENEA 
  X-ray at 92 days old","3-5-19",824.306976744186,430,8.80913836508043,0,0,1,"A"
-"12 - ♂ BC3F1 Mice ENEA 
+"12. ♂ BC3F1 mice ENEA 
  X-ray at 92 days old","3-5-20",827.704545454545,44,27.4340180862505,0.5,0.133,1,"A"
-"12 - ♂ BC3F1 Mice ENEA 
+"12. ♂ BC3F1 mice ENEA 
  X-ray at 92 days old","3-5-21",797.104166666667,48,34.4282098116688,1,0.133,1,"A"
-"13 - ♂ C57BL/Cnb Mice SCK/CEN 
+"13. ♂ C57BL/Cnb mice SCK/CEN 
  X-ray at 7 days old","9-7-1",757.219047619048,105,13.6989410365332,0,0,1,"A"
-"13 - ♂ C57BL/Cnb Mice SCK/CEN 
+"13. ♂ C57BL/Cnb mice SCK/CEN 
  X-ray at 7 days old","9-7-10",776.847222222222,72,21.3611143544548,0.5,1,1,"A"
-"13 - ♂ C57BL/Cnb Mice SCK/CEN 
+"13. ♂ C57BL/Cnb mice SCK/CEN 
  X-ray at 7 days old","9-7-11",809.771428571429,70,16.0768749915595,1,1,1,"A"
-"14 - ♂ BC3F1 Mice ENEA 
+"14. ♂ BC3F1 mice ENEA 
  X-ray at -4 days old","3-5-1",852.823529411765,34,42.3017230907869,0,0,1,"A"
-"14 - ♂ BC3F1 Mice ENEA 
+"14. ♂ BC3F1 mice ENEA 
  X-ray at -4 days old","3-5-3",798.5625,48,26.0584943857901,0.3,0.133,1,"A"
-"14 - ♂ BC3F1 Mice ENEA 
+"14. ♂ BC3F1 mice ENEA 
  X-ray at -4 days old","3-5-5",822.393442622951,61,27.4079211426159,0.9,0.133,1,"A"
-"14 - ♂ BC3F1 Mice ENEA 
+"14. ♂ BC3F1 mice ENEA 
  X-ray at -4 days old","3-5-7",896.913043478261,46,25.4485903311455,1.5,0.133,1,"A"
-"15 - ♀ BC3F1 Mice ENEA 
+"15. ♀ BC3F1 mice ENEA 
  X-ray at -4 days old","3-5-2",865.564102564103,39,25.7489906480843,0,0,1,"A"
-"15 - ♀ BC3F1 Mice ENEA 
+"15. ♀ BC3F1 mice ENEA 
  X-ray at -4 days old","3-5-4",882.85,40,37.1704243817305,0.3,0.133,1,"A"
-"15 - ♀ BC3F1 Mice ENEA 
+"15. ♀ BC3F1 mice ENEA 
  X-ray at -4 days old","3-5-6",849.5,44,22.1797028329729,0.9,0.133,1,"A"
-"15 - ♀ BC3F1 Mice ENEA 
+"15. ♀ BC3F1 mice ENEA 
  X-ray at -4 days old","3-5-8",871.92,50,30.6368704108535,1.5,0.133,1,"A"
-"16 - ♂ BC3F1 Mice ENEA 
+"16. ♂ BC3F1 mice ENEA 
  X-ray at 580 days old","3-5-35",886.121951219512,41,21.8799717728992,0,0,1,"A"
-"16 - ♂ BC3F1 Mice ENEA 
+"16. ♂ BC3F1 mice ENEA 
  X-ray at 580 days old","3-5-36",901.380952380952,42,21.7797003053345,0.5,0.133,1,"A"
-"16 - ♂ BC3F1 Mice ENEA 
+"16. ♂ BC3F1 mice ENEA 
  X-ray at 580 days old","3-5-37",874.395348837209,43,20.1919674043338,1,0.133,1,"A"

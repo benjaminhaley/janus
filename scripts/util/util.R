@@ -19,6 +19,7 @@ library(xtable)
 library(pander)
 library(lme4)
 library(coxme)
+library(gridExtra)
 
 # pretty_table
 #
@@ -53,6 +54,15 @@ ggsave_for_ppt <- function(...) {
                           width=9.36, 
                           height=7.02, 
                           units='in'))
+}
+ggsave_for_publication <- function(name, graph, width=7.2, height=5.4, ...) {
+  suppressWarnings(ggsave(name,
+                          graph,
+                          dpi=600, 
+                          width=width,   # < 7.5 in
+                          height=height,  # < 8.75 in
+                          units='in',
+                          ...))
 }
 
 
@@ -295,11 +305,6 @@ has_clusters <- function(data) "cluster" %in% names(data) & length(unique(data$c
 
 # lq model
 # The basic linear quadratic model used in the BEIR VII report
-#
-# Notably this seems to conflict with the model used to test various
-# theta values.  Specifcially this seems to be weighted by n, the
-# number of mice in each group, wheras that anlaysis was not weighted,
-# it seems!
 lq_model <- function(data){
   
   formula <- I(1/age) ~ dose + I(dose^2 / (fractions))
@@ -311,7 +316,7 @@ lq_model <- function(data){
   glm(
     formula,
     data=data,
-    weights=n
+    weights=1/sd^2
   )
 }
 
@@ -335,9 +340,8 @@ fixed_o_model <- function(data, o){
 }
 
 # fixed o model
-# A weighted version of the above.  It looks like they didn't use this
-# in the original longevity analysis, but they mention applying it to 
-# cancer data and it appears that they did.  So I think it was there 
+# A weighted version of the above. They mention applying it to 
+# cancer data and it appears that they did. So I think it was there 
 # intent to apply it universally.
 weighted_fixed_o_model <- function(data, o){
   
