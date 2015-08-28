@@ -1,0 +1,7 @@
+name: Publish Document
+account: rpubs
+server: rpubs.com
+bundleId:
+        https://api.rpubs.com/api/v1/document/102564/40dbfb7c72204467858a2e2e7155bbef
+url: http://rpubs.com/benjaminhaley/102564
+when: 1440186094.0682

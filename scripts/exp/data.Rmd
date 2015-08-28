@@ -464,22 +464,27 @@ summary(study) %>%
 #  Broerse 1989 (doesn't have ages)
 #  717898.pdf (also doesn't have ages)
 
+# Note: exclusion:
+# I eliminated group 9 from the analysis. It has an extremely low age, 602 days
+# much lower than any other treatment group, many of which had higher doses.
+# Nothing in the sources indicates that there was an extereme reaction at 1 Gy
+# so I am confiedent that there is something screwy about the data. Unfortunately,
+# I can't figure out what that screwy thing is.
+
 # warn
 data <- add_warning(13, "Does not align with Gerber 1996 group 13. Appears to be group 12 in that report and was treated with 2 Gy, not 1 Gy as indicated by the table.")
 data <- add_warning(14, "Does not align with Gerber 1996 group 14. Appears to be group 13 in that report.")
 
 # define
 stratum_name <- "11-2-B TNO ♀ WAG/RIJ rats\n  X-ray @56 days"
-stratum_groups <- c(7:11, 13:14)
+stratum_groups <- c(7:8, 10:11, 13:14)
 data <- name_stratum(stratum_groups, stratum_name)
 data <- name_cluster(c(10), 1, "acute 0.06 Gy/min")
-data <- name_cluster(c(8:9, 11), 2, "10 over 305 days 0.06 Gy/min")
+data <- name_cluster(c(8, 11), 2, "10 over 305 days 0.06 Gy/min")
 data <- name_cluster(13, 3, "20 over 70 days 0.06 Gy/min")
 data <- name_cluster(14, 4, "10 over 14 days 0.06 Gy/min")
 controls <- controls_for(7, stratum_name)
 data <- use(stratum_groups)
-
-@here
 
 # check
 #   [x] species
@@ -2079,13 +2084,13 @@ data <- add_warning(37, "mean age 868 in my data, 865 in 430 mice in 3576356.pdf
 # and lots of weirdness in the data. Too bad too, its one of the few studies
 # I have on lifespan effects :(.
 
-# study <- "2-11"
-# summary(study) %>%
-#   filter(sex == '♂',
-#          !group %in% c(1, 2, 3, 4)) %>% 
-#   select(-lab, -species, -strain, -sex) %>%
-#   arrange(as.numeric(group)) %>%
-#   print(n=100)
+study <- "2-11"
+summary(study) %>%
+  filter(sex == '♂',
+         !group %in% c(1, 2, 3, 4)) %>% 
+  select(-lab, -species, -strain, -sex) %>%
+  arrange(as.numeric(group)) %>%
+  print(n=100)
 # # source TODO.pdf
 # 
 # 
@@ -2192,50 +2197,6 @@ data <- add_warning(10, "My mean age is 777, 3579307.pdf says it should be 774")
 
 
 
-
-
-#### TODO-TODO
-#
-study <- "TODO-TODO"
-summary(study) %>%
-  filter(TODO) %>% 
-  select() %>%
-  arrange(as.numeric(group)) %>%
-  print(n=100)
-# source TODO.pdf
-
-
-# define
-stratum_name <- "TODO-TODO TODO ♀ TODO mice\n  TODO-ray"
-stratum_groups <- TODO:TODO
-data <- name_stratum(stratum_groups, stratum_name)
-data <- name_cluster(TODO:TODO, 1, "acute TODO Gy/min @TODO days")
-controls <- controls_for(TODO, get_cluster(TODO))
-data <- use(stratum_groups)
-
-# warn
-# data <- add_warning(groups_TODO, message_TODO)
-
-# fix
-
-# check
-#   [ ] species
-#   [ ] strain
-#   [ ] sex
-#   [ ] treatment_age
-#   [ ] fractions
-#   [ ] interval
-#   [ ] dose
-#   [ ] rate
-#   [ ] quality
-#   [ ] n
-#   [ ] u(age) 
-#   [ ] o(age)
-#   [ ] use
-#   [ ] stratum name
-#   [ ] cluster names
-#   [ ] defined controls
-#   [ ] added warnings
 
 # Split Janus clusters by age
 #

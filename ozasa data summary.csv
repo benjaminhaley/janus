@@ -1,0 +1,116 @@
+"stratum","cluster","n","age","dose"
+"1. 9-6 SCK/CEN ♂ C57BL/Cnb mice γ-ray @84 days","0. NA",467,"613 +/- 7",0
+"1. 9-6 SCK/CEN ♂ C57BL/Cnb mice γ-ray @84 days","1. acute 0.3 Gy/min",241,"581 +/- 9",0.25
+"1. 9-6 SCK/CEN ♂ C57BL/Cnb mice γ-ray @84 days","1. acute 0.3 Gy/min",236,"564 +/- 10",0.5
+"1. 9-6 SCK/CEN ♂ C57BL/Cnb mice γ-ray @84 days","1. acute 0.3 Gy/min",240,"552 +/- 9",1
+"1. 9-6 SCK/CEN ♂ C57BL/Cnb mice γ-ray @84 days","1. acute 0.3 Gy/min",215,"537 +/- 11",2
+"1. 9-6 SCK/CEN ♂ C57BL/Cnb mice γ-ray @84 days","1. acute 0.3 Gy/min",142,"481 +/- 15",4
+"1. 9-6 SCK/CEN ♂ C57BL/Cnb mice γ-ray @84 days","2. 8 over 1 day 0.3 Gy/min",104,"622 +/- 17",1
+"1. 9-6 SCK/CEN ♂ C57BL/Cnb mice γ-ray @84 days","2. 8 over 1 day 0.3 Gy/min",91,"572 +/- 19",2
+"1. 9-6 SCK/CEN ♂ C57BL/Cnb mice γ-ray @84 days","2. 8 over 1 day 0.3 Gy/min",110,"568 +/- 18",4
+"1. 9-6 SCK/CEN ♂ C57BL/Cnb mice γ-ray @84 days","3. 10 over 10 days 0.3 Gy/min",107,"605 +/- 16",0.25
+"1. 9-6 SCK/CEN ♂ C57BL/Cnb mice γ-ray @84 days","3. 10 over 10 days 0.3 Gy/min",109,"604 +/- 14",0.5
+"1. 9-6 SCK/CEN ♂ C57BL/Cnb mice γ-ray @84 days","3. 10 over 10 days 0.3 Gy/min",115,"615 +/- 14",1
+"1. 9-6 SCK/CEN ♂ C57BL/Cnb mice γ-ray @84 days","3. 10 over 10 days 0.3 Gy/min",113,"619 +/- 13",2
+"1. 9-6 SCK/CEN ♂ C57BL/Cnb mice γ-ray @84 days","3. 10 over 10 days 0.3 Gy/min",117,"522 +/- 19",4
+"2. 1003-22 ANL ♂ B6CF1 mice γ-ray @120 days","0. NA",193,"1040 +/- 14",0
+"2. 1003-22 ANL ♂ B6CF1 mice γ-ray @120 days","0. NA",186,"1000 +/- 13",0
+"2. 1003-22 ANL ♂ B6CF1 mice γ-ray @120 days","0. NA",169,"944 +/- 14",0
+"2. 1003-22 ANL ♂ B6CF1 mice γ-ray @120 days","1. 24 over 168 days 0.0037 Gy/min",399,"909 +/- 9",4
+"2. 1003-22 ANL ♂ B6CF1 mice γ-ray @120 days","2. 24 over 168 days 0.0018 Gy/min",595,"962 +/- 8",1.98
+"2. 1003-22 ANL ♂ B6CF1 mice γ-ray @120 days","3. 120 continuous days 1.3e-5 Gy/min",193,"963 +/- 13",2.06
+"3. 9-5 SCK/CEN ♂ BALB/c/Cnb mice γ-ray @84 days","0. NA",322,"766 +/- 9",0
+"3. 9-5 SCK/CEN ♂ BALB/c/Cnb mice γ-ray @84 days","1. acute 4 Gy/min",191,"745 +/- 14",0.25
+"3. 9-5 SCK/CEN ♂ BALB/c/Cnb mice γ-ray @84 days","1. acute 4 Gy/min",194,"736 +/- 14",0.5
+"3. 9-5 SCK/CEN ♂ BALB/c/Cnb mice γ-ray @84 days","1. acute 4 Gy/min",191,"732 +/- 11",1
+"3. 9-5 SCK/CEN ♂ BALB/c/Cnb mice γ-ray @84 days","1. acute 4 Gy/min",149,"714 +/- 13",2
+"3. 9-5 SCK/CEN ♂ BALB/c/Cnb mice γ-ray @84 days","1. acute 4 Gy/min",92,"610 +/- 22",4
+"3. 9-5 SCK/CEN ♂ BALB/c/Cnb mice γ-ray @84 days","2. 10 over 10 days 4 Gy/min",111,"778 +/- 13",0.25
+"3. 9-5 SCK/CEN ♂ BALB/c/Cnb mice γ-ray @84 days","2. 10 over 10 days 4 Gy/min",110,"740 +/- 16",0.5
+"3. 9-5 SCK/CEN ♂ BALB/c/Cnb mice γ-ray @84 days","2. 10 over 10 days 4 Gy/min",113,"751 +/- 16",1
+"3. 9-5 SCK/CEN ♂ BALB/c/Cnb mice γ-ray @84 days","2. 10 over 10 days 4 Gy/min",74,"726 +/- 16",2
+"3. 9-5 SCK/CEN ♂ BALB/c/Cnb mice γ-ray @84 days","2. 10 over 10 days 4 Gy/min",73,"655 +/- 19",4
+"4. 3-5 ENEA ♂ BC3F1 mice X-ray","0. NA",30,"929 +/- 24",0
+"4. 3-5 ENEA ♂ BC3F1 mice X-ray","0. NA",394,"860 +/- 7",0
+"4. 3-5 ENEA ♂ BC3F1 mice X-ray","0. NA",41,"886 +/- 22",0
+"4. 3-5 ENEA ♂ BC3F1 mice X-ray","1. acute 0.133 Gy/min @-4 days",41,"854 +/- 19",0.3
+"4. 3-5 ENEA ♂ BC3F1 mice X-ray","1. acute 0.133 Gy/min @-4 days",52,"890 +/- 20",0.9
+"4. 3-5 ENEA ♂ BC3F1 mice X-ray","1. acute 0.133 Gy/min @-4 days",43,"922 +/- 22",1.5
+"4. 3-5 ENEA ♂ BC3F1 mice X-ray","1. acute 0.133 Gy/min @-4 days",41,"870 +/- 18",2.1
+"4. 3-5 ENEA ♂ BC3F1 mice X-ray","2. acute 0.133 Gy/min @92 days",41,"856 +/- 23",0.5
+"4. 3-5 ENEA ♂ BC3F1 mice X-ray","2. acute 0.133 Gy/min @92 days",40,"884 +/- 22",1
+"4. 3-5 ENEA ♂ BC3F1 mice X-ray","2. acute 0.133 Gy/min @92 days",41,"848 +/- 23",2
+"4. 3-5 ENEA ♂ BC3F1 mice X-ray","2. acute 0.133 Gy/min @92 days",39,"803 +/- 19",3
+"4. 3-5 ENEA ♂ BC3F1 mice X-ray","2. acute 0.133 Gy/min @92 days",44,"821 +/- 21",4
+"4. 3-5 ENEA ♂ BC3F1 mice X-ray","3. acute 0.133 Gy/min @580 days",42,"901 +/- 22",0.5
+"4. 3-5 ENEA ♂ BC3F1 mice X-ray","3. acute 0.133 Gy/min @580 days",43,"874 +/- 20",1
+"4. 3-5 ENEA ♂ BC3F1 mice X-ray","3. acute 0.133 Gy/min @580 days",45,"908 +/- 22",2
+"4. 3-5 ENEA ♂ BC3F1 mice X-ray","3. acute 0.133 Gy/min @580 days",47,"865 +/- 17",3
+"4. 3-5 ENEA ♂ BC3F1 mice X-ray","3. acute 0.133 Gy/min @580 days",43,"853 +/- 18",4
+"5. 1003-24 ANL ♂ B6CF1 mice γ-ray","0. NA",305,"995 +/- 10",0
+"5. 1003-24 ANL ♂ B6CF1 mice γ-ray","1. acute 0.099 Gy/min @520 days",148,"975 +/- 14",1.98
+"5. 1003-24 ANL ♂ B6CF1 mice γ-ray","2. 60 over 420 days 0.0015 Gy/min @100 days",133,"973 +/- 15",4
+"6. 9-4 SCK/CEN ♂ C57BL/Cnb mice X-ray @28 days","0. NA",131,"699 +/- 11",0
+"6. 9-4 SCK/CEN ♂ C57BL/Cnb mice X-ray @28 days","1. acute",100,"566 +/- 25",3.29
+"6. 9-4 SCK/CEN ♂ C57BL/Cnb mice X-ray @28 days","2. 4 over 28 days 0.94 Gy/min",100,"705 +/- 13",1.88
+"6. 9-4 SCK/CEN ♂ C57BL/Cnb mice X-ray @28 days","2. 4 over 28 days 0.94 Gy/min",98,"538 +/- 26",2.82
+"6. 9-4 SCK/CEN ♂ C57BL/Cnb mice X-ray @28 days","2. 4 over 28 days 0.94 Gy/min",143,"445 +/- 24",3.76
+"7. 9-7 SCK/CEN ♂ C57BL/Cnb mice X-ray","0. NA",105,"757 +/- 14",0
+"7. 9-7 SCK/CEN ♂ C57BL/Cnb mice X-ray","1. acute 1 Gy/min @7 days",72,"777 +/- 21",0.5
+"7. 9-7 SCK/CEN ♂ C57BL/Cnb mice X-ray","1. acute 1 Gy/min @7 days",70,"810 +/- 16",1
+"7. 9-7 SCK/CEN ♂ C57BL/Cnb mice X-ray","1. acute 1 Gy/min @7 days",85,"592 +/- 29",3
+"7. 9-7 SCK/CEN ♂ C57BL/Cnb mice X-ray","2. acute 1 Gy/min @21 days",66,"826 +/- 13",0.5
+"7. 9-7 SCK/CEN ♂ C57BL/Cnb mice X-ray","2. acute 1 Gy/min @21 days",76,"769 +/- 15",1
+"7. 9-7 SCK/CEN ♂ C57BL/Cnb mice X-ray","2. acute 1 Gy/min @21 days",83,"590 +/- 31",3
+"8. 11-2-E TNO ♀ BN/BRIJ rats X-ray @56 days","0. NA",140,"928 +/- 16",0
+"8. 11-2-E TNO ♀ BN/BRIJ rats X-ray @56 days","1. acute 0.06 Gy/min ",80,"892 +/- 21",0.02
+"8. 11-2-E TNO ♀ BN/BRIJ rats X-ray @56 days","1. acute 0.06 Gy/min ",80,"926 +/- 19",0.1
+"8. 11-2-E TNO ♀ BN/BRIJ rats X-ray @56 days","1. acute 0.06 Gy/min ",40,"898 +/- 29",0.25
+"8. 11-2-E TNO ♀ BN/BRIJ rats X-ray @56 days","1. acute 0.06 Gy/min ",80,"895 +/- 21",0.4
+"8. 11-2-E TNO ♀ BN/BRIJ rats X-ray @56 days","1. acute 0.06 Gy/min ",20,"878 +/- 42",1
+"8. 11-2-E TNO ♀ BN/BRIJ rats X-ray @56 days","1. acute 0.06 Gy/min ",20,"698 +/- 33",4
+"8. 11-2-E TNO ♀ BN/BRIJ rats X-ray @56 days","2. 5 over 35 days 0.06 Gy/min",80,"910 +/- 17",0.4
+"9. 11-2-F TNO ♀ BN/BRIJ rats X-ray @56 days","0. NA",83,"923 +/- 24",0
+"9. 11-2-F TNO ♀ BN/BRIJ rats X-ray @56 days","1. acute 0.06 Gy/min",60,"899 +/- 28",0.08
+"9. 11-2-F TNO ♀ BN/BRIJ rats X-ray @56 days","1. acute 0.06 Gy/min",60,"913 +/- 26",0.2
+"9. 11-2-F TNO ♀ BN/BRIJ rats X-ray @56 days","1. acute 0.06 Gy/min",60,"900 +/- 26",0.4
+"9. 11-2-F TNO ♀ BN/BRIJ rats X-ray @56 days","1. acute 0.06 Gy/min",39,"791 +/- 28",1.6
+"9. 11-2-F TNO ♀ BN/BRIJ rats X-ray @56 days","2. 20 over 28 days 0.06 Gy/min",60,"900 +/- 23",0.4
+"9. 11-2-F TNO ♀ BN/BRIJ rats X-ray @56 days","2. 20 over 28 days 0.06 Gy/min",60,"880 +/- 22",1.6
+"10. 11-2-F TNO ♀ WAG/RIJ rats X-ray @56 days","0. NA",99,"949 +/- 16",0
+"10. 11-2-F TNO ♀ WAG/RIJ rats X-ray @56 days","1. acute 0.06 Gy/min",60,"900 +/- 18",0.08
+"10. 11-2-F TNO ♀ WAG/RIJ rats X-ray @56 days","1. acute 0.06 Gy/min",60,"860 +/- 23",0.4
+"10. 11-2-F TNO ♀ WAG/RIJ rats X-ray @56 days","1. acute 0.06 Gy/min",60,"766 +/- 20",1.6
+"10. 11-2-F TNO ♀ WAG/RIJ rats X-ray @56 days","2. 20 over 28 days 0.06 Gy/min",60,"849 +/- 20",0.4
+"10. 11-2-F TNO ♀ WAG/RIJ rats X-ray @56 days","2. 20 over 28 days 0.06 Gy/min",60,"835 +/- 21",1.6
+"11. 11-2-B TNO ♀ WAG/RIJ rats γ-ray @56 days","0. NA",100,"959 +/- 16",0
+"11. 11-2-B TNO ♀ WAG/RIJ rats γ-ray @56 days","1. acute 0.9 Gy/min",40,"844 +/- 27",2
+"11. 11-2-B TNO ♀ WAG/RIJ rats γ-ray @56 days","2. 10 over 305 days 0.001 Gy/min",59,"926 +/- 18",2
+"11. 11-2-B TNO ♀ WAG/RIJ rats γ-ray @56 days","3. 20 over 70 days 0.001 Gy/min",60,"908 +/- 21",2
+"11. 11-2-B TNO ♀ WAG/RIJ rats γ-ray @56 days","4. 10 over 14 days 0.001 Gy/min",60,"844 +/- 21",2
+"12. 11-2-B TNO ♀ WAG/RIJ rats X-ray @56 days","1. acute 0.06 Gy/min",59,"766 +/- 21",2
+"12. 11-2-B TNO ♀ WAG/RIJ rats X-ray @56 days","2. 10 over 305 days 0.06 Gy/min",59,"911 +/- 23",0.2
+"12. 11-2-B TNO ♀ WAG/RIJ rats X-ray @56 days","2. 10 over 305 days 0.06 Gy/min",58,"873 +/- 21",2
+"12. 11-2-B TNO ♀ WAG/RIJ rats X-ray @56 days","3. 20 over 70 days 0.06 Gy/min",58,"886 +/- 19",2
+"12. 11-2-B TNO ♀ WAG/RIJ rats X-ray @56 days","4. 10 over 14 days 0.06 Gy/min",58,"865 +/- 22",2
+"13. 1003-24 ANL ♀ B6CF1 mice γ-ray","0. NA",173,"998 +/- 14",0
+"13. 1003-24 ANL ♀ B6CF1 mice γ-ray","1. acute 0.099 Gy/min @520 days",50,"927 +/- 24",1.98
+"13. 1003-24 ANL ♀ B6CF1 mice γ-ray","2. 60 over 420 days 0.0015 Gy/min @100 days",26,"897 +/- 35",4
+"14. 11-2-E TNO ♀ WAG/RIJ rats X-ray @56 days","0. NA",60,"956 +/- 19",0
+"14. 11-2-E TNO ♀ WAG/RIJ rats X-ray @56 days","1. acute 0.06 Gy/min",40,"777 +/- 27",2
+"14. 11-2-E TNO ♀ WAG/RIJ rats X-ray @56 days","2. 10 over 70 days 0.06 Gy/min",40,"921 +/- 24",2
+"14. 11-2-E TNO ♀ WAG/RIJ rats X-ray @56 days","2. 10 over 70 days 0.06 Gy/min",40,"774 +/- 25",4
+"15. 11-2-E TNO ♀ SD/RIJ rats X-ray @56 days","0. NA",59,"864 +/- 22",0
+"15. 11-2-E TNO ♀ SD/RIJ rats X-ray @56 days","1. acute 0.06 Gy/min",40,"638 +/- 24",2
+"15. 11-2-E TNO ♀ SD/RIJ rats X-ray @56 days","2. 10 over 70 days 0.06 Gy/min",40,"785 +/- 26",2
+"15. 11-2-E TNO ♀ SD/RIJ rats X-ray @56 days","2. 10 over 70 days 0.06 Gy/min",40,"691 +/- 28",4
+"16. 11-2-D TNO ♀ WAG/RIJ rats γ-ray @117 days","0. NA",40,"900 +/- 24",0
+"16. 11-2-D TNO ♀ WAG/RIJ rats γ-ray @117 days","1. acute 0.9 Gy/min",40,"949 +/- 25",0.3
+"16. 11-2-D TNO ♀ WAG/RIJ rats γ-ray @117 days","1. acute 0.9 Gy/min",40,"867 +/- 22",1.2
+"16. 11-2-D TNO ♀ WAG/RIJ rats γ-ray @117 days","2. 120 over 12 days 0.001 Gy/min",40,"886 +/- 21",1.2
+"17. 11-2-A TNO ♀ WAG/RIJ rats X-ray @56 days","0. NA",44,"836 +/- 29",0
+"17. 11-2-A TNO ♀ WAG/RIJ rats X-ray @56 days","1. acute 0.06 Gy/min",40,"712 +/- 21",2
+"17. 11-2-A TNO ♀ WAG/RIJ rats X-ray @56 days","2. five over 153 days 0.06 Gy/min",40,"650 +/- 22",4
+"18. 11-2-D TNO ♀ WAG/RIJ rats γ-ray @56 days","1. acute 0.9 Gy/min",40,"916 +/- 26",0.3
+"18. 11-2-D TNO ♀ WAG/RIJ rats γ-ray @56 days","1. acute 0.9 Gy/min",40,"786 +/- 28",1.2
+"18. 11-2-D TNO ♀ WAG/RIJ rats γ-ray @56 days","2. 120 over 12 days 0.001 Gy/min",40,"910 +/- 20",0.3
