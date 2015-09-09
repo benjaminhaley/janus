@@ -32,3 +32,9 @@ scripts/temp*
 ddref.knit.md
 scripts/exp/ddref_cache/*
 scripts/exp/ddref.html
+
+# Myself
+.gitignore
+
+# rsconnect
+rsconnect/*
