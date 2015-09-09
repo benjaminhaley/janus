@@ -35,6 +35,3 @@ scripts/exp/ddref.html
 
 # Myself
 .gitignore
-
-# rsconnect
-rsconnect/*
