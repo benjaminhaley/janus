@@ -123,6 +123,8 @@ print0 <- function(...) cat(paste(..., sep='', collapse = ''), "\n")
 
 # Count the number of animals, groups, and studies in an analysis
 count <- function(message, data) {
+  data <- data %>% 
+    filter(!duplicate)
   
   cat(message, "\n", 
       nrow(data), "animals", 
@@ -137,7 +139,56 @@ get_data <- function(dose_limit = 4,
                      data=original_data, 
                      exclude=c(),
                      censor=0.0) {
+
+  # Hack
+  # Manually add stratum id's so that they stay uniform
+  map <- data.frame(
+    stratum = c(
+      "9-6 SCK/CEN ♂ C57BL/Cnb mice\n  γ-ray @84 days",
+      "1003-22 ANL ♂ B6CF1 mice\n  γ-ray @120 days",
+      "9-5 SCK/CEN ♂ BALB/c/Cnb mice\n  γ-ray @84 days",
+      "3-5 ENEA ♂ BC3F1 mice\n  X-ray",
+      "1003-24 ANL ♂ B6CF1 mice\n  γ-ray",
+      "9-4 SCK/CEN ♂ C57BL/Cnb mice\n  X-ray @28 days",
+      "9-7 SCK/CEN ♂ C57BL/Cnb mice\n  X-ray",
+      "11-2-E TNO ♀ BN/BRIJ rats\n  X-ray @56 days",
+      "11-2-F TNO ♀ BN/BRIJ rats\n  X-ray @56 days",
+      "11-2-F TNO ♀ WAG/RIJ rats\n  X-ray @56 days",
+      "11-2-B TNO ♀ WAG/RIJ rats\n  γ-ray @56 days",
+      "11-2-B TNO ♀ WAG/RIJ rats\n  X-ray @56 days",
+      "1003-24 ANL ♀ B6CF1 mice\n  γ-ray",
+      "11-2-E TNO ♀ WAG/RIJ rats\n  X-ray @56 days",
+      "11-2-E TNO ♀ SD/RIJ rats\n  X-ray @56 days",
+      "11-2-D TNO ♀ WAG/RIJ rats\n  γ-ray @117 days",
+      "11-2-A TNO ♀ WAG/RIJ rats\n  X-ray @56 days",
+      "11-2-D TNO ♀ WAG/RIJ rats\n  γ-ray @56 days"
+    ),
+    stratum_id = 1:18
+  )
+  data <- merge(data, map)
   
+  # HACK
+  # Duplicate controls
+  # 12 should share 11's control
+  # 18 should share 16's control
+  data$duplicate <- FALSE
+  twelve <- data %>% filter(stratum_id == 12)
+  twelve_control <- data %>% 
+    filter(dose == 0, stratum_id == 11) %>%
+    mutate(stratum_id = only(twelve$stratum_id), 
+           stratum = only(twelve$stratum),
+           duplicate = TRUE
+    )
+  eightteen <- data %>% filter(stratum_id == 18)
+  eightteen_control <- data %>% 
+    filter(dose == 0, stratum_id == 16) %>%
+    mutate(stratum_id = only(eightteen$stratum_id), 
+           stratum = only(eightteen$stratum),
+           duplicate = TRUE
+    )
+  data <- rbind(data, twelve_control, eightteen_control)
+  
+    
   count("Originally: ", data)
   
   data <- data %>%
@@ -147,7 +198,7 @@ get_data <- function(dose_limit = 4,
 
   # See how many animals have direct comparisons  
   data <- data %>% 
-    filter(stratum %in% is_comparison(data))
+    filter(stratum %in% is_comparison(data, dose_limit))
   count("Directly compare acute and fractionated exposures or age at exposure.: ", data)
   
   data <- data %>%
@@ -195,22 +246,11 @@ get_data <- function(dose_limit = 4,
     levels=order$stratum
   )
   
-  # Unique id for each stratum
-  data <- data %>%
-    mutate(stratum_id = as.factor(as.numeric(as.factor(stratum))))
-  
   data
 }
 
 # How to aggregate
-aggregate <- function(data, duplicate_controls=TRUE) {
-#   # Normliaze control data
-#   if(!duplicate_controls) {
-#     data <- data %>%
-#       mutate(cluster = ifelse(is.na(cluster), "control", cluster),
-#              cluster_number = ifelse(is.na(cluster_number), 0, cluster_number))
-#   }
-  
+aggregate <- function(data) {
   # Mean Lifespans
   aggregate = data %>%
     ungroup() %>%
@@ -259,55 +299,6 @@ aggregate <- function(data, duplicate_controls=TRUE) {
     
     df
   })
-  
-  # Add controls to each cluster
-  if(duplicate_controls) {
-    aggregate <- ddply(aggregate, .(stratum, cluster), function(df) {
-      
-      # Look for a control exactly matches to the cluster
-      control <- controls %>% 
-        filter(stratum %in% only(df$stratum),
-               cluster %in% only(df$cluster))
-      
-      # If that can't be found, look for a match to the whole stratum
-      if(nrow(control) == 0) {
-        control <- controls %>% 
-          filter(stratum %in% only(df$stratum))
-      }
-      
-      # Find the control in the aggregate data
-      control <- aggregate %>% 
-        filter(as.character(study) == only(control$study),
-               as.character(group) %in% control$group)
-      
-      # Add the control to the cluster
-      control$cluster <- only(df$cluster)
-      control$stratum <- only(df$stratum)
-      control$fractions <- mean(df$fractions)
-      control$rate <- mean(df$rate)
-      control$treatment_age <- mean(df$treatment_age)
-      control$last_treatment_age <- mean(df$last_treatment_age)
-      control$avg_treatment_age <- mean(df$avg_treatment_age)
-      control$stratum_full_name <- only(df$stratum_full_name)
-      control$cluster_number <- only(df$cluster_number)
-      df <- rbind(df, control)
-      
-      df
-    })
-    
-    # Remove groups that aren't a part of a cluster
-    # (this can happen if controls were not put in a specific cluster)
-    aggregate <- aggregate %>%
-      filter(!is.na(cluster))
-    
-    # Remove clusters that are only controls
-    # (this can happen if controls were not put in a specific cluster)
-    aggregate <- ddply(aggregate, .(stratum, cluster), function(df){
-      if(all(df$dose == 0)) { return(NULL) }
-      
-      df
-    })
-  }
   
   # Scale to max lifespans/mortality
   aggregate <- ddply(aggregate, .(stratum), function(df){
@@ -407,8 +398,15 @@ age_comparisons <- function(data) {
   comparisons$stratum
 }
 
-is_comparison <- function(data) {
-  unique(c(fractionation_comparisons(data), age_comparisons(data)))
+is_comparison <- function(data, dose = 4) {
+  comparisons <- unique(c(fractionation_comparisons(data), age_comparisons(data)))
+  # Hack
+  if(dose <= 3) {
+    exclude <- c("1003-24 ANL ♂ B6CF1 mice\n  γ-ray",
+                 "1003-24 ANL ♀ B6CF1 mice\n  γ-ray")
+    comparisons <- comparisons[!comparisons %in% exclude]
+  }
+  comparisons
 }
 
 get_dose_response_by_cluster <- function(aggregated) {
@@ -480,8 +478,8 @@ show_overall_dose_response <- function(by_cluster) {
                        name="") +
     scale_x_continuous(label=percent) +
     scale_y_continuous(label=percent) +
-    xlab("Average treatment age (relative to control lifespan)") +
-    ylab("Excess Mortality per Gy (relative to control mortality)") +
+    xlab("Average relative treatment age") +
+    ylab("Excess relative mortality per Gy") +
     coord_cartesian(ylim = c(-0.10, 0.30))
 }
 
@@ -531,10 +529,21 @@ ggsave_for_publication <- function(name, graph, width=7.2, height=5.4, ...) {
 }
 
 show_aggregated <- function(aggregated) {
+  # Clean up
   g <- aggregated %>% 
-    filter(stratum %in% fractionation_comparisons(aggregated)) %>%
+#    filter(stratum %in% fractionation_comparisons(aggregated)) %>%
     mutate(cluster_number = ifelse(dose == 0, "C", as.character(cluster_number)),
-           type = ifelse(dose == 0, 'control', ifelse(protracted, 'protracted', 'acute')))
+           type = ifelse(dose == 0, 'control', ifelse(protracted, 'protracted', 'acute')),
+           stratum_full_name = paste0(stratum_id, ". ", stratum_full_name))
+  
+  # Organize strata by number of animals
+  order <- g %>% 
+    group_by(stratum_full_name) %>%
+    summarize(n=sum(n)) %>%
+    arrange(-n) %>%
+    select(stratum_full_name)
+  g$stratum_full_name <- factor(g$stratum_full_name, levels=order$stratum_full_name)
+  
   ggplot(g,
          aes(dose,
              mortality,
@@ -577,13 +586,13 @@ show_aggregated <- function(aggregated) {
     scale_y_continuous(labels=percent) +
     scale_size_continuous(range=c(3, 7)) +
     coord_cartesian(ylim=c(min(g$mortality) * 0.9 , max(g$mortality) * 1.1)) +
-    xlab("dose (Gy)") +
-    ylab("mortality (relative to controls)") +
+    xlab("\ndose (Gy)") +
+    ylab("relative mortality\n") +
     scale_color_manual(values=c("black", "grey30", "red"), 
                        name="") +
     theme(
       strip.text.x = element_text(hjust=0, size = 5),
-      axis.text = element_text(color="black", size=6),
+      axis.text = element_text(color="black", size=5),
       panel.grid.major = element_blank(),
       panel.grid.minor = element_blank(),
       panel.border = element_rect(fill=NA),
@@ -676,8 +685,6 @@ get_likelihood_function <- function(outcome, sem, start, err, baseline) {
     # get predicted rate
     rate <- do.call(rate, a)
     
-    
-    
     # estimate likelihood
     error <- d[[outcome]] - rate
     tau2[tau2 < 0] <- 0
@@ -721,13 +728,12 @@ get_baseline_function <- function(stratum_id) {
   baseline
 }
 
-
 get_err_function <- function(stratum_id) {
   stratum <- unique(stratum_id)
   n <- length(stratum)
   coefficients <- 
-    paste0("err_",1:n," * d$dose * as.integer(d$stratum_id == '", stratum, "') +")
-#    "err_dose * d$dose + "
+#    paste0("err_",1:n," * d$dose * as.integer(d$stratum_id == '", stratum, "') +")
+    "err_dose * d$dose + "
   err <- eval(parse(text=paste0(c(
     "function() {", 
     "ifelse(d$protracted, dref, 1) *",
@@ -749,8 +755,8 @@ get_start_list <- function(stratum_id) {
   start <- eval(parse(text=paste0(c(
     "list(",
     paste0("r_", 1:n, "= 1,"),
-#    "err_dose = 0.1,",
-    paste0("err_", 1:n, "= 0.1,"),
+    "err_dose = 0.1,",
+#    paste0("err_", 1:n, "= 0.1,"),
     "dref = 1,",
     "err_treatment_age = -0.7,",
     "tau2 = 0.1",
@@ -759,5 +765,18 @@ get_start_list <- function(stratum_id) {
   ))))
 
   start
+}
+
+report_poisson <- function(model) {
+  c <- data.frame(coefficients(summary(model))[,1:2])
+  rows <- rownames(c)
+  names(c) <- c('x', 'o')
+  c <- c %>%
+    mutate(lower = exp(x - o * 1.96),
+           middle = exp(x),
+           upper = exp(x + o * 1.96)) %>%
+    select(lower, middle, upper)
+  rownames(c) <- rows
+  c
 }
 
