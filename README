@@ -1,24 +1,4 @@
-R scripts for working with Janus data.  Contact benjamin.haley@gmail.com
+# Is radiation safer when it is protracted?  
 
-
-Checkout repository with:
-
-  git clone git://github.com/benjaminhaley/janus.git
-
-
-There are two working versions
-
-  # Species Comparison
-  cd janus
-  git checkout tags/v0.1
-  cd scripts
-  R
-  source('wLiuPeromyscusAnalysis.R')
-
-  # Gender Comparison
-  cd janus
-  git checkout tags/v0.2
-  cd scripts/exp
-  R
-  source('marissa.R')
+Contact benjamin.haley@gmail.com
  
