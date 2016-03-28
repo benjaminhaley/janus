@@ -2,36 +2,28 @@
 scripts/results/*
 data/ddref.csv
 data/ddref.rds
-
 # Cached data
 cache/*
-
 # Any private keys
 scripts/keys/*
-
 # Ignore Apples's folder customization file 
 .DS_Store
-
 # Ignore R history
 .Rapp.history
 .RData
 .Rhistory
-
 # Ignore Autosaved files
 *(Autosaved)*
-
 # Images
 *.png
 *.jpg
-
 # Anything temp
 temp*
 scripts/temp*
-
 # Markdown Generated
 ddref.knit.md
 scripts/exp/ddref_cache/*
 scripts/exp/ddref.html
-
 # Myself
 .gitignore
+.httr-oauth

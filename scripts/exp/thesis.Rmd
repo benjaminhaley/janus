@@ -28,7 +28,7 @@ controls <- readRDS('data/thesis_controls.rds')
 
 ```{r}
 # Report about the aggregate data
-data <- get_data(dose_limit = 4, exclude=c(), censor=0.0)
+data <- get_data(dose_limit = 4, exclude_stratum=c(), exclude_species=c(), censor=0.0)
 aggregated <- aggregate(data, duplicate_controls = FALSE)
 report <- aggregated %>%
   mutate(cluster_number = ifelse(is.na(cluster), 0, cluster_number)) %>%
@@ -46,7 +46,7 @@ write.csv(report, "ozasa data summary.csv", row.names = FALSE)
 ## Just a poisson
 
 ```{r}
-data <- get_data(dose_limit = 4, exclude=c(), censor=0.0)
+data <- get_data(dose_limit = 4, exclude_stratum=c(), exclude_species=c(), censor=0.0)
 aggregated <- aggregate(data)
 
 model <- glm(n/days_at_risk ~ 
@@ -84,10 +84,10 @@ round(report_poisson(model), 3)
 
 ```{r}
 # Ozasa style
-ozasa_analysis <- function(name, dose_limit=4, exclude=c(), censor=0.0) {
+ozasa_analysis <- function(name, dose_limit=4, exclude_stratum=c(), exclude_species=c(), censor=0.0) {
   
   ## Get data
-  data <- get_data(dose_limit = dose_limit, exclude=exclude, censor=censor)
+  data <- get_data(dose_limit = dose_limit, exclude_stratum=c(), exclude_species=c(), censor=censor)
   aggregated <- aggregate(data)
   d <- aggregated
   assign("d", d, envir = .GlobalEnv)

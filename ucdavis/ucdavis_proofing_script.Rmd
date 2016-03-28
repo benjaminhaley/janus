@@ -1,0 +1,856 @@
+---
+title: "Untitled"
+author: "Benjamin Haley"
+date: "February 20, 2016"
+output: html_document
+---
+
+```{r message=FALSE, echo=FALSE}
+library(plyr)
+library(dplyr)
+library(stringr)
+setwd("~/janus/ucdavis/")
+```
+
+```{r echo=FALSE, cache=TRUE}
+### Clean ###
+#
+# Only do this once per input file
+#
+
+# First test (20 duplicate)
+#   ~/Downloads/Batch_2277844_batch_results (4).csv
+# 
+# Second test (50 triplicate)
+# 
+setwd("~/janus/ucdavis")
+data <- read.csv("~/Downloads/Batch_2280310_batch_results (1).csv", as.is=TRUE)
+data <- data %>% 
+  select(HITId, 
+         WorkerId, 
+         WorkTimeInSeconds, 
+         Input.image, 
+         Answer.AGE, 
+         Answer.BORN, 
+         Answer.DIED,
+         Answer.FINDINGS,
+         Answer.GROUP,
+         Answer.STUDY,
+         Answer.ID,
+         Answer.COMMENTS)
+names(data) <- c(
+  "hit",
+  "worker",
+  "seconds",
+  "image",
+  "age",
+  "born",
+  "died",
+  "findings",
+  "group",
+  "study",
+  "id",
+  "comments"
+)
+clean <- function(x) {
+  x <- tolower(x) 
+  x <- gsub("  +", " ", x)  # Remove two spaces in a row
+  x <- gsub("\\{\\}", "", x)    # mturk lists blanks as {}
+  x
+}
+format_date <- function(date) {
+  date <- data.frame(
+    str_extract_all(date, "[0-9]+", simplify = TRUE),
+    stringsAsFactors = FALSE
+  )
+  names(date) <- c("month", "day", "year")
+  (date %>%
+    mutate(
+      date = paste(
+        as.numeric(month),
+        as.numeric(day),
+        as.numeric(paste0("19", year)),
+        sep="/"
+      )
+    ) %>%
+    select(date))[,1]
+}
+data <- data %>%
+  arrange(image) %>%
+  mutate(
+    age = clean(age),
+    born = clean(born),
+    died = clean(died),
+    findings = clean(findings),
+    group = clean(group),
+    study = clean(study),
+    id = clean(id),
+    id = gsub("o", "0", id),
+    id = sub("^d", "", id),
+    age = gsub("[^0-9]", "", age),
+#    age = ifelse(age == "", "0", age),
+    age = as.numeric(age),
+#    died = ifelse(died == "", born, died),
+    died = format_date(died),
+    born = format_date(born)
+  )
+
+```
+
+```{r, echo=FALSE}
+### Resolve Errors ###
+#
+# Declare the truth
+df <- function(...) data.frame(..., stringsAsFactors = FALSE)
+fixes <- rbind(  
+  df(
+    hit="3KG2UQJ0MJOL6TN13SGJ0MKHS6FQNX",
+    column="findings",
+    value="metastatic mammary carcinoma"
+    ),
+  df(
+    hit="3HFWPF5AK9JQF594DDL9M81C5DA3SK",
+    column="age",
+    value=4702
+    ),
+  df(
+    hit="3GV1I4SEO9P28B1WC6M6HPZ1NA3L6T",
+    column="findings",
+    value="metastatic mammary carcinoma"
+    ),
+  df(
+    hit="39TX062QX1OYBMV37NRWLGI4KSC3XS",
+    column="findings",
+    value="fibrosarcoma oral cavatiy & zygomatic bone; obs: neoplasm was adjacent to bone"
+    ),
+  df(
+    hit="304QEQWKZPKF0LIEN9MH05T45CMO0C",
+    column="age",
+    value=4682
+    ),
+  df(
+    hit="3566S7OX5DJ8M4BX269F3OQJKFJ719",
+    column="findings",
+    value="osteosarcoma mandible and humerus (leg amputation at age 6y, periosteal callus; amputation 9/30/71"
+    ),
+  df(
+    hit="3W31J70BASWG4MSF1XN8OPEWUW9KCH",
+    column="findings",
+    value="cod: convulsions, idiopathic epilepsy, aspiration, pneumonia"
+    ),
+  df(
+    hit="3HRWUH63QU2WD743J0SG2BPQWASN5H",
+    column="findings",
+    value="cod: metastatic mammary carcinoma (disseminated intravascular coagulopathy)"
+    ),
+  df(
+    hit="3BJKPTD2QCCJD77LD3RVEB0ED92RTX",
+    column="study",
+    value="02 davis-1961 strontium-90, dietary"
+    ),
+  df(
+    hit="3OID399FXG7FTS6F0IRMSI49704DF8",
+    column="findings",
+    value="cod: sarcoma near vertebra, origin unknown; obs: neoplasm was adjacent to bone; terminated 9/16/77:"
+    ),
+  df(
+    hit="3UEBBGULPFO1AUH1MDHB2I8XTZYUFW",
+    column="study",
+    value="02 davis-1961 strontium-90, dietary"
+    ),
+  df(
+    hit="3NRZ1LDP7W6UN60563COV41GXO1PZM",
+    column="findings",
+    value="cod: chronic renal failure/central nervous system deficiency"
+    ),
+  df(
+    hit="3GV1I4SEO9P28B1WC6M6HPZ1NA3L6T",
+    column="age",
+    value=4899
+    ),
+  df(
+    hit="39TX062QX1OYBMV37NRWLGI4KRAX3I",
+    column="findings",
+    value="cod: acute endocarditis and myocarditis"
+    ),
+  df(
+    hit="3EN4YVUOUCS9W0XSA8JJ1NZTGOWJXG",
+    column="study",
+    value="02 davis-1961 strontium-90, dietary"
+    ),
+  df(
+    hit="3UDTAB6HH6ZCTYE8LK3Z3FYFAD009A",
+    column="study",
+    value="02 davis-1961 strontium-90, dietary"
+    ),
+  df(
+    hit="3EQPA8A374WY1VX7BQ74Y8F4OOUJZD",
+    column="findings",
+    value="cod: metastatic mammary carcinoma"
+    ),
+  df(
+    hit="3M47JKRKCX17T4HDIHD2CKDV3A486U",
+    column="findings",
+    value="policencephalomalacia (ischemic)"
+    ),
+  df(
+    hit="3WRKFXQBOB721U3WXMKL80R25G2YIS",
+    column="findings",
+    value="metastatic osteosarcoma; terminated 1/08/73: osteosarcoma femur; amputation 1/08/73, removed from"
+    ),
+  df(
+    hit="3W3RSPVVGSRNAMRX8OK9XVDHQVKUL1",
+    column="findings",
+    value="metastatic osteosarcoma; terminated 1/08/73: osteosarcoma femur; amputation 1/08/73, removed from"
+    ),
+  df(
+    hit="3PIOQ99R7YMDYMUIK10OANH6VQKUN3",
+    column="findings",
+    value="hyperadrenalcorticism & thromboembolism"
+    ),
+  df(
+    hit="3B623HUYJ4QCG2FAPUG5DP9NLY0S8X",
+    column="study",
+    value="3 davis-1963 strontium-90, injection"
+    ),
+  df(
+    hit="3PIOQ99R7YMDYMUIK10OANH6VQKUN3",
+    column="study",
+    value="3 davis-1963 strontium-90, injection"
+    ),
+  df(
+    hit="30Z7M1Q8UYK8G6TG8UUESPFHZTU8AK",
+    column="died",
+    value=""
+    ),
+  df(
+    hit="3QXFBUZ4ZKG7OUDWXXNTK389UFZGUK",
+    column="born",
+    value="12/9/1965"
+    ),
+  df(
+    hit="3QXFBUZ4ZKG7OUDWXXNTK389UFZGUK",
+    column="died",
+    value="12/18/1965"
+    ),
+  df(
+    hit="3QXFBUZ4ZKG7OUDWXXNTK389UFZGUK",
+    column="age",
+    value=9
+    ),
+  df(
+    hit="3QXFBUZ4ZKG7OUDWXXNTK389UFZGUK",
+    column="study",
+    value="2 davis -1961 strontium-90, dietary"
+    ),
+  df(
+    hit="3QXFBUZ4ZKG7OUDWXXNTK389UFZGUK",
+    column="group",
+    value="3 4 uci/kg total ingested with food (in-utero to 540 days)"
+    ),
+  df(
+    hit="3QXFBUZ4ZKG7OUDWXXNTK389UFZGUK",
+    column="findings",
+    value=""
+    ),
+  df(
+    hit="3QXFBUZ4ZKG7OUDWXXNTK389UFZGUK",
+    column="id",
+    value="d10f51"
+    ),
+  df(
+    hit="388FBO7JZRTUFVENU2XDD8NJRFWNYX",
+    column="findings",
+    value="metastatic mammary carcinoma"
+    ),
+  df(
+    hit="3T2EL38U0MKQIN155Y3SYOBFUKPQXH",
+    column="findings",
+    value="convulsions (epilepsy or chlordane toxicity)"
+    ),
+  df(
+    hit="3TL87MO8CMPYR4U7DZPABVCEG96LFW",
+    column="findings",
+    value="lymphosarcoma brainstem; obs: neoplasm was adjacent to bone"
+    ),
+  df(
+    hit="3DQYSJDTYLB1LKB0W78S47M1BH2EXU",
+    column="age",
+    value=3889
+    ),
+  df(
+    hit="3AC6MFV69KI2AP2HNQ4JMVZPBXRZHR",
+    column="findings",
+    value="metastatic transitional cell carcinoma urinary bladder"
+    ),
+  df(
+    hit="3GS542CVJVNBO509IQ9BKAU6RLB590",
+    column="findings",
+    value="hepatitis with biliary statis; terminated 6/07/79; fibrosarcoma humerus; amputation 6/07/79, removed"
+    ),
+  df(
+    hit="3W0XM68YZPVWHJIHL0YO7TV5QYHK1O",
+    column="findings",
+    value="intervertebral disc herniation, osteosarcoma 4th lumbar vertebra, nephrosclerosis"
+    ),
+  df(
+    hit="3J94SKDEKIPNRVDQU6ED66DWI6Q5DH",
+    column="findings",
+    value="lymphosarcoma; terminated 6/03/75: osteosarcoma left humerus; amputation 6/03/75, removed from study"
+    ),
+  df(
+    hit="30Z7M1Q8UYK8G6TG8UUESPFHZTU8AK",
+    column="died",
+    value="3/27/1964"
+    ),
+  df(
+    hit="3BA7SXOG1JQ0FNFXA5G0NF4RZXI8RS",
+    column="group",
+    value="8 10.0 uci/kg total injected (8 semi-monthly injections) 60 or 120 days old"
+    ),
+  df(
+    hit="3QHITW7OYO9EMATCUOBEEG0HTZGQAD",
+    column="age",
+    value=4454
+    ),
+  df(
+    hit="3DQYSJDTYLB1LKB0W78S47M1BG0XE9",
+    column="findings",
+    value="squamous cell carcinoma periodontal origin; obs: neoplasm was adjacent to bone"
+    ),
+  df(
+    hit="3R0WOCG21M94CA35V7MLEI5CHNJDU7",
+    column="findings",
+    value="myeloproliferative syndrome"
+    ),
+  df(
+    hit="3Y3N5A7N4G9OXDTNI1ID0TYJMPMYM8",
+    column="findings",
+    value="squamous cell carcinoma periodontal origin; obs: neoplasm was adjacent to bone"
+    ),
+  df(
+    hit="3XD2A6FGFNUCU7YKUMMJDL4Y54IS9M",
+    column="findings",
+    value="squamous cell carcinoma periodontal origin; obs: neoplasm was adjacent to bone"
+    ),
+  df(
+    hit="3OREP8RUT2BSSV4QX66YFDGL5USBGY",
+    column="findings",
+    value=""
+    ),
+  df(
+    hit="3UUIU9GZC55U8K9NGWESBAVILSET5O",
+    column="study",
+    value="02 davis-1961 strontium-90, dietary"
+    ),
+  df(
+    hit="3Y40HMYLL1IIAG8MM7NX8P84X4UUXN",
+    column="findings",
+    value="metastatic osteosarcoma; terminated 12/15/73: osteosarcoma scapula; amputation 12/15/73, removed"
+    ),
+  df(
+    hit="3BVS8WK9Q0V6OMALNU610PT1K7KBIQ",
+    column="findings",
+    value="myeloprofilerative syndrome"
+    ),
+  df(
+    hit="3YCT0L9OMM9XJ92EVW5OVMZIAU0NSJ",
+    column="findings",
+    value="metastatic squamous cell carcinoma periodontal origin; obs: neoplasm was adjacent to bone"
+    ),
+  df(
+    hit="3WA2XVDZEMHO25R4VKZ24U9HED2E6Z",
+    column="findings",
+    value="myeloproliferative syndrome"
+    ),
+  df(
+    hit="31JUPBOORN4PCPKK5LJ413VST5T8L2",
+    column="findings",
+    value="osteosarcoma (amputation death); terminated 7/14/72: osteosarcoma (amputation death); amputation 7/14/72"
+    ),
+  df(
+    hit="37VUR2VJ6APEYL6TTNHQJAIXLQA1CW",
+    column="findings",
+    value="myeloproliferative syndrome"
+    ),
+  df(
+    hit="3CKVGCS3PG5UYDA7UQ3QKA3521P0SL",
+    column="findings",
+    value="myeloproliferative syndrome"
+    ),
+  df(
+    hit="3I01FDIL6M8VSYU3CNCF8ZAKYWZ2DD",
+    column="findings",
+    value="metastatic osteosarcoma; terminated 1/15/71; osteosarcoma humerus; amputation 1/15/71, removed"
+    ),
+  df(
+    hit="3Z3R5YC0P3NMAH2CM8R1XMMVAMSFTT",
+    column="findings",
+    value="metastatic osteosarcoma; terminated 1/09/74: osteosarcoma femur; amputation 1/09/74, removed from"
+    ),
+  df(
+    hit="3BAWBGQGYLZO8GRV9KT4ACXZ9JP7VX",
+    column="findings",
+    value="degenerative arthropathy 2nd cervical vertebra (leg amputation at age 7.4 y, radiation osteodystrophy;"
+    ),
+  df(
+    hit="3LEG2HW4UFNSQI8Z3T75WZD5A9F2FO",
+    column="findings",
+    value="metastatic sclerosing osteosarcoma vertebra c-2"
+    ),
+  df(
+    hit="3ZFRE2BDQ9EZWF2WSUM5PHNJZM9ZXH",
+    column="findings",
+    value="metastatic osteosarcoma; terminated 8/07/70: osteosarcoma humerus; amputation 8/07/70, removed"
+    ),
+  df(
+    hit="3R5OYNIC2C9Y1UR60BN69G0ZCSFPT6",
+    column="findings",
+    value="myelopahty (intervertebral disc disease); terminated 8/23/72; ostosarcoma tibia; amputation 8/23/72"
+    ),
+  df(
+    hit="35XW21VSVGE7V9ZTJJP9IUVT5Z0SLM",
+    column="findings",
+    value="osteosarcoma 4th cervical vertebra; terminated 6/05/74: osteosarcoma radius & ulna; amputation"
+    ),
+  df(
+    hit="3B9XR6P1WEV2JXUR5CR1CQ81XM9BJ2",
+    column="findings",
+    value="severe posterior paresis, acute severe prostatic infection, nephrosclerosis"
+    ),
+  df(
+    hit="3Q9SPIIRWJMJ67PY6XAK65I3H0XAW1",
+    column="findings",
+    value=""
+    ),
+  df(
+    hit="3G3AJKPCXLS8TN4HCXIHEZHJ0Y14YJ",
+    column="study",
+    value="02 davis-1961 strontium-90, dietary"
+    ),
+  df(
+    hit="301KG0KX9CLC4EZ5YJV5ZKPIQOS2HM",
+    column="age",
+    value=5205
+    ),
+  df(
+    hit="35YHTYFL1G31N961R3RGY4AG778FV9",
+    column="study",
+    value="02 davis-1961 strontium-90, dietary"
+    )
+)
+
+for(row in 1:nrow(fixes)) {
+  hit <- fixes[row,'hit']
+  column <- fixes[row,'column']
+  value <- fixes[row,'value']
+  
+  data[data$hit == hit, column] <- value
+}
+```
+
+```{r, results="asis", echo=FALSE}
+### Check for Errors ###
+#
+# Look for erroneous data so that it can be corrected.
+#
+
+show_image <- function(url) cat("\n![](", url, ")\n", sep="")
+show_table <- function(df) {
+  cat("\n```\n")
+  print(df)
+  cat("\n```\n")
+}
+show_hit <- function(df) {
+  cat("Hit: ", unique(df$hit), "  \n", sep="")
+  show_table(df[,'worker'])
+}
+
+show <- function(df, to_show=c("id", "age", "born", "died", "findings", "comments", "group", "study")) {
+  url <- unique(df$image)
+  show_table(df[,to_show])
+  show_hit(df)
+  show_image(url)
+}
+has_majority <- function(x) length(unique(x)) <= ceiling(length(x) / 2)
+# has_majority(c('a', 'a', 'b')) == TRUE
+# has_majority(c('a', 'b', 'c')) == FALSE
+# has_majority(c(NA, 1, 2)) == FALSE
+# has_majority(c(NA, NA, 1)) == TRUE
+get_majority <- function(x) {
+  t <- table(x, useNA = "ifany")
+  names(which.max(t))
+}
+# get_majority(c('a', 'a', 'b')) == "a"
+# get_majority(c('b', 'c', 'c')) == "c"
+# get_majority(c(NA, NA, 1))
+
+n_errors <- 0
+n_checks <- 0
+for(an_image in unique(data$image)) {
+  n_checks <- n_checks + 1
+  cat("Check number:", n_checks, "  \n")
+  df <- data %>% 
+    filter(image == an_image)
+  
+  # Don't squack too much
+  if(n_errors > 10) {
+    break
+  }
+  
+  # Be sure there are 2 results for each image
+  if(nrow(df) < 3) {
+    n_errors <- n_errors + 1
+    cat("Error number:", n_errors, "  \n")
+    cat("\n# Only 1 result\n")
+    show(df)
+    next
+  }
+  if(nrow(df) > 3) {
+    n_errors <- n_errors + 1
+    cat("Error number:", n_errors, "  \n")
+    cat("\n# More than 2 results\n")
+    show(df)
+    next
+  }
+  
+  # Check that first and second annotations match
+  to_check <- c("age", "born", "died", "findings", "group", "study", "id")
+  without_majority <- c()
+  for(check in to_check) {
+    if(!has_majority(df[,check])) {
+      without_majority <- c(without_majority, check)
+    }
+  }
+  if(length(without_majority) > 0) {
+    n_errors <- n_errors + 1
+    cat("Error number:", n_errors, "  \n")
+    cat("\n# Without Majority  \n")
+    cat("**", without_majority, "**\n")
+    show(df, without_majority)
+    next
+  }
+  
+  # Check that born exists
+  if(get_majority(df$born) == "") {
+    n_errors <- n_errors + 1
+    cat("Error number:", n_errors, "  \n")
+    cat("\n# Born doesn't exist  \n")
+    show(df)
+  }
+  
+  # Check that id exists
+  if(get_majority(df$id) == "") {
+    n_errors <- n_errors + 1
+    cat("Error number:", n_errors, "  \n")
+    cat("\n# ID doesn't exist  \n")
+    show(df)
+  }
+  
+  # Check that age = died - born
+  age = get_majority(df$age)
+  born = as.Date(get_majority(df$born), "%m/%d/%Y");
+  died = as.Date(get_majority(df$died), "%m/%d/%Y");
+  equal = (died - born == age)
+  if(!is.na(equal) & !equal) {
+    n_errors <- n_errors + 1
+    cat("Error number:", n_errors, "  \n")
+    cat("\n# Age isn't died minus born  \n")
+    show(df, c("age", "born", "died"))
+  }
+}
+```
+
+
+```{r}
+### Summary report ###
+#
+# Once things are clean, consolidate the triplicate into a
+# a single entry per animal
+
+if(n_errors == 0) {
+  data <- ddply(data, .(image), function(df) {
+    data.frame(
+      age=get_majority(df$age),
+      born=get_majority(df$born),
+      died=get_majority(df$died),
+      findings=get_majority(df$findings),
+      group=get_majority(df$group),
+      study=get_majority(df$study),
+      id=get_majority(df$id),
+      stringsAsFactors = FALSE)
+    })
+  
+  # Merge in pdf names
+  mapping = read.table("get_images.bash", 
+                       sep="\t", 
+                       col.names=c("command")) %>%
+    mutate(
+      pdf = str_extract(command, "https.*\\.pdf"),
+      png = str_extract(command, "[^ ]*pdf.png")
+    ) %>%
+    select(pdf, png)
+  data <- data %>%
+    mutate(
+      png = gsub("https://dl.dropboxusercontent.com/u/1131693/ucdavis/good/", "", image)
+    )
+  data <- merge(mapping, data) %>% 
+    select(-image, -png) %>%
+    mutate(autopsy = pdf) %>%
+    select(study, group, id, age, born, died, findings, autopsy)
+}
+
+summarized_cache <- data
+```
+
+
+```{r, eval=FALSE}
+### Clean again ###
+#
+# Make sure that the summary
+#
+#   1. Uses consistent names (for studies, etc.)
+#   2. Adds in missing animals
+
+df <- function(...) data.frame(..., stringsAsFactors = FALSE)
+
+manual_additions <- rbind(
+  df(
+    study = "2 davis-1961 strontium-90, dietary",
+    group = "4 24 uci/kg total ingested with food (in-utero to 540 days)",
+    id = "d20m10",
+    age = 5149,
+    born = "2/20/1961",
+    died = "3/28/1975",
+    findings = "pulmonary thrombosis",
+    autopsy = "https://s3.amazonaws.com/janus-cloud2/www/PNNL%20and%20UCDAVIS%20SCANNED%20BEAGLE%20DATA/D000366/D20M10%20%231.pdf"
+  ),
+  df(
+    study = "2 davis-1961 strontium-90, dietary",
+    group = "4 24 uci/kg total ingested with food (in-utero to 540 days)",
+    id = "d20m61",
+    age = 6,
+    born = "9/1/1969",
+    died = "9/7/1969",
+    findings = "died young",
+    autopsy = "https://s3.amazonaws.com/janus-cloud2/www/PNNL%20and%20UCDAVIS%20SCANNED%20BEAGLE%20DATA/D000368/D20M61.pdf"
+  ),
+  df(
+    study = "2 davis-1961 strontium-90, dietary",
+    group = "4 24 uci/kg total ingested with food (in-utero to 540 days)",
+    id = "d20m86",
+    age = 0,
+    born = "3/26/1966",
+    died = "3/26/1966",
+    findings = "still born",
+    autopsy = "https://s3.amazonaws.com/janus-cloud2/www/PNNL%20and%20UCDAVIS%20SCANNED%20BEAGLE%20DATA/D000368/D20M86%20%231.pdf"
+  ),
+  df(
+    study = "2 davis-1961 strontium-90, dietary",
+    group = "9 656 uci/kg total ingested with food (in-utero to 540 days)",
+    id = "d50m67",
+    age = 1042,
+    born = "7/14/1964",
+    died = "5/22/1967",
+    findings = "epilepsy",
+    autopsy = "https://s3.amazonaws.com/janus-cloud2/www/PNNL%20and%20UCDAVIS%20SCANNED%20BEAGLE%20DATA/D000596/D50M67.pdf"
+  ),
+  df(
+    study = "2 davis-1961 strontium-90, dietary",
+    group = "9 656 uci/kg total ingested with food (in-utero to 540 days)",
+    id = "d50f79",
+    age = 1083,
+    born = "1/2/1966",
+    died = "12/20/1968",
+    findings = "myeloproliferative syndrome",
+    autopsy = "https://s3.amazonaws.com/janus-cloud2/www/PNNL%20and%20UCDAVIS%20SCANNED%20BEAGLE%20DATA/D000596/D50F79.pdf"
+  ),
+  df(
+    study = "3 davis-1963 strontium-90, injection",
+    group = "1 3.7 uci/kg quantity injected, 540 days old",
+    id = "s20f42",
+    age = 5696,
+    born = "11/06/1965",
+    died = "6/11/1981",
+    findings = "lymphosarcoma",
+    autopsy = NA
+  ),
+  df(
+    study = "3 davis-1963 strontium-90, injection",
+    group = "1 3.7 uci/kg quantity injected, 540 days old",
+    id = "s20m69",
+    age = 3,
+    born = "9/30/1967",
+    died = "10/3/1967",
+    findings = "",
+    autopsy = "https://s3.amazonaws.com/janus-cloud2/www/PNNL%20and%20UCDAVIS%20SCANNED%20BEAGLE%20DATA/D000363/S20M69.pdf"
+  )
+)
+
+data <- rbind(
+  manual_additions,
+  summarized_cache)
+
+study_map <- list(
+  list(
+    from = "02 davis-1961 strontium-90, dietary",
+    to   = "2 davis-1961 strontium-90, dietary"
+  ),
+  list(
+    from = "2 davis -1961 strontium-90, dietary",
+    to   = "2 davis-1961 strontium-90, dietary"
+  )
+)
+
+map <- function(x, map) {
+  for(mapping in map) {
+    x[x == mapping$from] <- mapping$to
+  }
+  x
+}
+library(stringr)
+get_starting_number <- function(x) as.numeric(str_extract(x, "^[0-9]*"))
+remove_starting_number <- function(x) sub("^[0-9]* ", "", x)
+
+# Add in extra manually
+extra <- read.csv("extra.csv") %>%
+  mutate(age = as.numeric(
+           as.Date(died, "%m/%d/%Y") - 
+           as.Date(born, "%m/%d/%Y")))
+data <- rbind(data, extra)
+
+# Remap values
+data <- data %>% 
+  mutate(
+    study = map(study, study_map),
+    study_id = get_starting_number(study),
+    study = remove_starting_number(study),
+    group_id = get_starting_number(group),
+    group = remove_starting_number(group),
+#    findings = map(findings, findings_map),
+    born = as.Date(born, "%m/%d/%Y"),
+    died = as.Date(died, "%m/%d/%Y"),
+    age = as.numeric(age),
+    exclude = 
+      findings %in% c("", "not available") |
+      grepl("remove", findings)
+  )
+
+
+
+# Find gaps
+rotate <- function(x, offset) {
+  if(offset == 0) {
+    return(x)
+  }
+  if(offset < 0 | length(x) < offset) {
+    return(rotate(x, offset %% length(x)))
+  }
+  
+  return(c(
+    x[(1 + offset) : length(x)],
+    x[1 : (offset)]
+  ))
+}
+# rotate(1:10, 0) == 1:10
+# rotate(1:10, -1) == c(10, 1:9)
+previous <- function(x) rotate(x, -1)
+following <- function(x) rotate(x, 1)
+gaps <- data %>% 
+  mutate(
+    head = ifelse(grepl("[mf][0-9]*$", id), sub("[mf][0-9]*$", "mf", id), ""),
+    head = ifelse(grepl("[xy][0-9]*$", id), sub("[xy][0-9]*$", "xy", id), head),
+    tail = as.numeric(str_extract(id, "[0-9]*$"))
+  ) %>%
+  arrange(study_id, group_id, head, tail) %>% 
+  select(study_id, group_id, id, head, tail) %>%
+  mutate(
+    start = 
+      head != following(head) |
+      tail != following(tail) - 1,
+    end = 
+      head != previous(head) |
+      tail != previous(tail) + 1
+  )
+gaps <- paste(
+  gaps$id[gaps$start], 
+  "-", following(gaps$id[gaps$end]))
+checked <- 4
+gaps[(checked + 1):(checked + 3)]
+
+
+# TODO: Why didnt we find these two?
+#       Perhaps a systematic problem with gap finding?
+# d20m62?
+# d50m66
+
+
+
+# Apparently missing
+#   Box       Animal
+#   D000368   D20M58
+#   D000371   whole box
+#   D000372   whole box
+
+# Misc TODO
+# Remove the d's from dr20m70 and ds20f41 for example
+
+
+#### Extra notes
+
+data %>% 
+  filter(!exclude) %>%
+  group_by(study, study_id, group_id, group) %>%
+  summarize(
+    n = length(findings),
+    age = round(median(age / 365.25, na.rm=TRUE), 1)
+  ) %>%
+  ungroup() %>%
+  arrange(study_id, group_id) %>%
+  select(-study)
+
+# Complete
+# 2.1 (except an age mismatch)
+
+# Todo
+# All others starting with 2.2
+
+
+# Three things to investigate
+#
+#   1. Why does 2.3 have a different median age (13 in mine vs 13.5 in red) 
+#      even though it has the same number of animals (42).
+#
+#       a. [wrong] Maybe I'm wrong in assigning unknown death dates to zero?
+#
+#          This is a good theory. For example: There is an animal [1]
+#          that was actually removed from the study [2]. This should not
+#          have a death age of 0. It should be NA.
+#
+#          But after I make this switch the dates are still far off.
+#
+#          [1]: https://dl.dropboxusercontent.com/u/1131693/ucdavis/good/D000D05F03pdf.png
+#          [2]: REMOVED 11/12/68: Culled (epilepsy), REMOVED FROM STUDY
+#
+#       b. [correct] Maybe I am including animals I shouldn't?
+#
+#          Plausible. A quick check reveals 2. One (D10F51) with mislabeled findings that should
+#          have been blank (hence omitted from the analysis.). Another (D10M43) with findings 
+#          "removed from expt" that ought also be omitted.
+# 
+#          Once I removed a couple was fixed right up. Hurray!
+#
+#   2. Why is 2.4 missing so many (45 vs 66)
+#
+#       a. [probably] Perhaps I am missing entire boxes?
+#
+#          Group 5 is clearly missing scans between 27 and 72 corresponding to boxes 371 and 372. 
+#          Group 4 is missing a box at the end, 368.
+#          Group 7 may be missing boxes after D000376. But not clear. 
+#
+#   3. Where are the lifetime feed groups, for example the missing 2.6
+#   4. Why a few missing in 2.1 (76 vs 80).
+
+# Actually we will want to put those with "" or "Not available" findings into their own csv.
+
+```

@@ -10,7 +10,7 @@ library(dplyr)
 library(ggplot2)
 library(scales)
 library(stats4)
-library(bbmle)
+#library(bbmle)
 
 # Retrieve the one unique value of x,
 # raise an error if x has more than one value
@@ -137,7 +137,8 @@ count <- function(message, data) {
 # The ways we want to retrieve the data
 get_data <- function(dose_limit = 4, 
                      data=original_data, 
-                     exclude=c(),
+                     exclude_stratum=c(),
+                     exclude_species=c(),
                      censor=0.0) {
 
   # Hack
@@ -202,10 +203,15 @@ get_data <- function(dose_limit = 4,
   count("Directly compare acute and fractionated exposures or age at exposure.: ", data)
   
   data <- data %>%
-    filter(!stratum %in% exclude)
+    filter(!stratum %in% exclude_stratum)
 
   count("After filtering excluded strata: ", data)
-
+  
+  # Exclude Species
+  data <- data %>%
+    filter(!species %in% exclude_species)
+  count("After filtering excluded species: ", data)
+  
   # Censor animals that died before the final treatment in thier stratum
   treatment_span <- data %>%
     group_by(stratum) %>%
@@ -250,7 +256,7 @@ get_data <- function(dose_limit = 4,
 }
 
 # How to aggregate
-aggregate <- function(data) {
+aggregate <- function(data, duplicate_controls=NULL) {
   # Mean Lifespans
   aggregate = data %>%
     ungroup() %>%
