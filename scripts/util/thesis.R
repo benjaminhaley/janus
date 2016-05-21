@@ -10,7 +10,7 @@ library(dplyr)
 library(ggplot2)
 library(scales)
 library(stats4)
-#library(bbmle)
+library(bbmle)
 
 # Retrieve the one unique value of x,
 # raise an error if x has more than one value
@@ -202,6 +202,7 @@ get_data <- function(dose_limit = 4,
     filter(stratum %in% is_comparison(data, dose_limit))
   count("Directly compare acute and fractionated exposures or age at exposure.: ", data)
   
+  # Exclude strata
   data <- data %>%
     filter(!stratum %in% exclude_stratum)
 
@@ -712,9 +713,9 @@ build_model <- function(likelihood_function, start) {
                method="BFGS"
                ,control = list(
 #                   trace=TRUE
-                 # maxit=1000
+                 maxit=1000,
                  parscale=abs(unlist(start)) + 0.01
-#                  ,ndeps=as.list(rep(1e-3, length(start)))
+#                ,ndeps=as.list(rep(1e-3, length(start)))
                ))
   model
 }
@@ -738,8 +739,8 @@ get_err_function <- function(stratum_id) {
   stratum <- unique(stratum_id)
   n <- length(stratum)
   coefficients <- 
-#    paste0("err_",1:n," * d$dose * as.integer(d$stratum_id == '", stratum, "') +")
-    "err_dose * d$dose + "
+    paste0("err_",1:n," * d$dose * as.integer(d$stratum_id == '", stratum, "') +")
+#    "err_dose * d$dose + "
   err <- eval(parse(text=paste0(c(
     "function() {", 
     "ifelse(d$protracted, dref, 1) *",
@@ -761,15 +762,15 @@ get_start_list <- function(stratum_id) {
   start <- eval(parse(text=paste0(c(
     "list(",
     paste0("r_", 1:n, "= 1,"),
-    "err_dose = 0.1,",
-#    paste0("err_", 1:n, "= 0.1,"),
+#    "err_dose = 0.1,",
+    paste0("err_", 1:n, "= 0.1,"),
     "dref = 1,",
     "err_treatment_age = -0.7,",
     "tau2 = 0.1",
     ")",
     collapse="\n"
   ))))
-
+  
   start
 }
 

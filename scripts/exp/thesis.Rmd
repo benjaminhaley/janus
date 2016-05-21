@@ -87,7 +87,10 @@ round(report_poisson(model), 3)
 ozasa_analysis <- function(name, dose_limit=4, exclude_stratum=c(), exclude_species=c(), censor=0.0) {
   
   ## Get data
-  data <- get_data(dose_limit = dose_limit, exclude_stratum=c(), exclude_species=c(), censor=censor)
+  data <- get_data(dose_limit = dose_limit, 
+                   exclude_stratum=exclude_stratum, 
+                   exclude_species=exclude_species, 
+                   censor=censor)
   aggregated <- aggregate(data)
   d <- aggregated
   assign("d", d, envir = .GlobalEnv)
@@ -158,7 +161,128 @@ ozasa_analysis("without poisioning",
 
 
 
+# Mouse only
+ozasa_analysis("1 - 4 Sv", dose_limit = 4, exclude_species = "Rat")
 
+# Originally:  
+#  14782 animals 143 groups 8 studies. 
+# 
+# After filtering for dose:  
+#  11730 animals 115 groups 8 studies. 
+# 
+# Directly compare acute and fractionated exposures or age at exposure.:  
+#  11730 animals 115 groups 8 studies. 
+# 
+# After filtering excluded strata:  
+#  11730 animals 115 groups 8 studies. 
+# 
+# After filtering excluded species:  
+#  8987 animals 66 groups 7 studies. 
+# 
+# After censoring animals that died before the final treatment in thier strata,  
+#  8793 animals 66 groups 7 studies. 
+# 
+# After censoring animals that died within  0 % of median lifespan after the final treatment  
+#  8793 animals 66 groups 7 studies. 
+# 
+# [1] "modeling"
+# Profiling has found a better solution,so original fit had not converged:
+# 
+# (new deviance=-239.1, old deviance=-238.7, diff=-0.4209)
+# 
+# Returning better fit ...
+# 
+# [1] "modeling"
+#                        0.5 %    99.5 %
+# dref               0.1991222 0.9251228
+# err_treatment_age -6.5608950 1.9424806
+#                        2.5 %    97.5 %
+# dref               0.2658426 0.7886032
+# err_treatment_age -4.6249243 0.7073575
+#                          5 %      95 %
+# dref               0.2999803 0.7339197
+# err_treatment_age -3.8275773 0.2928515
+#                          x       o    lower    upper
+# r_1                1.02279 0.01593  0.99157  1.05401
+# r_2                1.03669 0.01124  1.01466  1.05873
+# r_3                1.01040 0.01649  0.97808  1.04272
+# r_4                1.05319 0.01053  1.03254  1.07383
+# r_5                1.00023 0.01488  0.97107  1.02939
+# r_6                0.95246 0.04922  0.85599  1.04892
+# r_7                0.95275 0.03075  0.89248  1.01303
+# r_8                0.99969 0.01894  0.96256  1.03683
+# err_1              0.07776 0.02138  0.03585  0.11967
+# err_2              0.06406 0.02113  0.02265  0.10548
+# err_3              0.07031 0.01975  0.03160  0.10901
+# err_4              0.01666 0.00722  0.00252  0.03081
+# err_5              0.01929 0.01851 -0.01699  0.05557
+# err_6              0.12600 0.04976  0.02846  0.22354
+# err_7              0.11672 0.04454  0.02943  0.20401
+# err_8              0.08385 0.03315  0.01888  0.14882
+# dref               0.48896 0.12354  0.24682  0.73110
+# err_treatment_age -1.36371 0.00340 -1.37038 -1.35704
+# tau2               0.00010 0.00012 -0.00014  0.00034
+
+
+
+
+# Rat only
+ozasa_analysis("1 - 4 Sv", dose_limit = 4, exclude_species = "Mouse")
+# Originally:  
+#  14782 animals 143 groups 8 studies. 
+# 
+# After filtering for dose:  
+#  11730 animals 115 groups 8 studies. 
+# 
+# Directly compare acute and fractionated exposures or age at exposure.:  
+#  11730 animals 115 groups 8 studies. 
+# 
+# After filtering excluded strata:  
+#  11730 animals 115 groups 8 studies. 
+# 
+# After filtering excluded species:  
+#  2743 animals 49 groups 1 studies. 
+# 
+# After censoring animals that died before the final treatment in thier strata,  
+#  2735 animals 49 groups 1 studies. 
+# 
+# After censoring animals that died within  0 % of median lifespan after the final treatment  
+#  2735 animals 49 groups 1 studies. 
+# 
+# [1] "modeling"
+#                         0.5 %    99.5 %
+# dref                0.2938677 0.7926101
+# err_treatment_age -14.8219386 3.5295786
+#                        2.5 %    97.5 %
+# dref               0.3392212 0.7100047
+# err_treatment_age -9.5699664 2.0889355
+#                          5 %      95 %
+# dref               0.3624265 0.6722088
+# err_treatment_age -8.0020596 1.3518237
+#                          x       o    lower    upper
+# r_1                1.00617 0.01550  0.97579  1.03656
+# r_2                0.99624 0.02737  0.94259  1.04988
+# r_3                1.02987 0.01412  1.00220  1.05754
+# r_4                1.00578 0.01780  0.97090  1.04067
+# r_5                0.99858 0.01881  0.96170  1.03545
+# r_6                0.98835 0.02184  0.94554  1.03115
+# r_7                0.98384 0.04589  0.89390  1.07378
+# r_8                1.02847 0.02707  0.97541  1.08152
+# r_9                0.99321 0.02227  0.94956  1.03686
+# r_10               1.01865 0.06016  0.90074  1.13655
+# err_1              0.08985 0.02768  0.03560  0.14411
+# err_2              0.10824 0.04958  0.01106  0.20542
+# err_3              0.16132 0.04047  0.08200  0.24064
+# err_4              0.13152 0.03060  0.07155  0.19150
+# err_5              0.09457 0.03633  0.02336  0.16578
+# err_6              0.12547 0.03679  0.05336  0.19759
+# err_7              0.19280 0.06267  0.06998  0.31563
+# err_8              0.06991 0.05599 -0.03983  0.17964
+# err_9              0.13785 0.08099 -0.02089  0.29658
+# err_10             0.11206 0.04829  0.01741  0.20670
+# dref               0.49945 0.09171  0.31970  0.67921
+# err_treatment_age -2.46187 2.49732 -7.35661  2.43287
+# tau2              -0.52779 0.00000 -0.52779 -0.52779
 
 
 
