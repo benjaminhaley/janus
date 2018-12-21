@@ -5,6 +5,8 @@ date: "March 30, 2015"
 output:
   html_document:
     css: /Users/benjaminhaley/Dropbox/Public/rmarkdown.css
+root.dir:
+  /Users/benjaminhaley/janus
 ---
 
 ## Is acute radiation most dangerous?
@@ -15,13 +17,11 @@ I will look at animal survival data and ask two central questions:
 2. Are fractionated exposures safer than acute exposures?
 
 ```{r echo=FALSE, message=FALSE}
-setwd('~/janus')
-source('scripts/util/thesis.R') # http://goo.gl/VYzkAs
+source('~/janus/scripts/util/thesis.R') # http://goo.gl/VYzkAs
 
 # Data
-setwd('~/janus')
-original_data <- readRDS('data/thesis.rds')
-controls <- readRDS('data/thesis_controls.rds')
+original_data <- readRDS('~/janus/data/thesis.rds')
+controls <- readRDS('~/janus/data/thesis_controls.rds')
 ```
 
 
@@ -84,13 +84,19 @@ round(report_poisson(model), 3)
 
 ```{r}
 # Ozasa style
-ozasa_analysis <- function(name, dose_limit=4, exclude_stratum=c(), exclude_species=c(), censor=0.0) {
+ozasa_analysis <- function(name, 
+                           dose_limit=4, 
+                           exclude_stratum=c(), 
+                           exclude_species=c(), 
+                           censor=0.0,
+                           additional_filter = function(data) {data}) {
   
   ## Get data
   data <- get_data(dose_limit = dose_limit, 
                    exclude_stratum=exclude_stratum, 
                    exclude_species=exclude_species, 
-                   censor=censor)
+                   censor=censor,
+                   additional_filter=additional_filter)
   aggregated <- aggregate(data)
   d <- aggregated
   assign("d", d, envir = .GlobalEnv)
@@ -141,11 +147,20 @@ ozasa_analysis <- function(name, dose_limit=4, exclude_stratum=c(), exclude_spec
   get_mle_coefficients(model)
 }
 
+# 
+# data <- get_data(dose_limit = dose_limit, 
+#                  exclude_stratum=exclude_stratum, 
+#                  exclude_species=exclude_species, 
+#                  censor=censor)
+# aggregated <- aggregate(data)
+# d <- aggregated
+
+
 ozasa_analysis("1 - 4 Sv", dose_limit = 4)
 # ozasa_analysis("1 - 3 Sv", dose_limit = 3)
-ozasa_analysis("without poisioning", 
-                dose_limit = 4,
-                stratum_with_acute_poisoning)
+# ozasa_analysis("without poisioning", 
+#                 dose_limit = 4,
+#                 exclude_stratum = stratum_with_acute_poisoning)
 # ozasa_analysis("censor 6 percent", 
 #                 dose_limit = 4, 
 #                 censor=5/75)
@@ -157,9 +172,156 @@ ozasa_analysis("without poisioning",
 #                censor=20/75)
 
 
+###
+#
+# Time between first and last exposure
+#
+less_than_14_days_between_first_and_last_exposure_stratum <- c(1,3,16,18)
+more_than_14_days_between_first_and_last_exposure_stratum <- c(2,5,6,8,9,10,11,12,14,15,17)
+short_intervals <- function(data) data %>%
+  filter(!stratum_id %in% more_than_14_days_between_first_and_last_exposure_stratum)
+
+long_intervals <- function(data) data %>%
+  filter(!stratum_id %in% less_than_14_days_between_first_and_last_exposure_stratum)
+
+# < 14 day interval 
+ozasa_analysis("1 - 4 Sv", dose_limit = 4, additional_filter = short_intervals)
+
+# Originally:  
+#  14782 animals 143 groups 8 studies. 
+# 
+# After filtering for dose:  
+#  11730 animals 115 groups 8 studies. 
+# 
+# Directly compare acute and fractionated exposures or age at exposure.:  
+#  11730 animals 115 groups 8 studies. 
+# 
+# After filtering excluded strata:  
+#  11730 animals 115 groups 8 studies. 
+# 
+# After filtering excluded species:  
+#  11730 animals 115 groups 8 studies. 
+# 
+# After filtering other exclusions:  
+#  6352 animals 59 groups 6 studies. 
+# 
+# After censoring animals that died before the final treatment in thier strata,  
+#  6180 animals 59 groups 6 studies. 
+# 
+# After censoring animals that died within  0 % of median lifespan after the final treatment  
+#  6180 animals 59 groups 6 studies. 
+# 
+# [1] "modeling"
+#                       0.5 %    99.5 %
+# dref               0.135202 0.8521602
+# err_treatment_age -8.223323 2.7175765
+#                        2.5 %    97.5 %
+# dref               0.2054717 0.7272625
+# err_treatment_age -5.7250037 0.8754876
+#                          5 %      95 %
+# dref               0.2407915 0.6715366
+# err_treatment_age -4.7486479 0.3651684
+#                          x       o    lower    upper
+# r_1                1.02297 0.01501  0.99356  1.05239
+# r_2                1.01154 0.01584  0.98050  1.04258
+# r_3                1.06065 0.00724  1.04645  1.07484
+# r_4                0.95154 0.02848  0.89572  1.00736
+# r_5                0.99971 0.01612  0.96811  1.03131
+# r_6                1.03074 0.02661  0.97858  1.08290
+# r_7                0.99432 0.02195  0.95131  1.03734
+# err_1              0.08468 0.02677  0.03220  0.13715
+# err_2              0.07201 0.02221  0.02847  0.11554
+# err_3              0.01334 0.00619  0.00121  0.02547
+# err_4              0.11754 0.04320  0.03287  0.20222
+# err_5              0.09869 0.06667 -0.03199  0.22936
+# err_6              0.06085 0.04682 -0.03091  0.15261
+# err_7              0.13030 0.07412 -0.01498  0.27558
+# dref               0.43424 0.12650  0.18630  0.68219
+# err_treatment_age -1.63041 1.23835 -4.05759  0.79676
+# tau2              -0.00039 0.00000 -0.00039 -0.00039
+
+# 1/dref = 0.43 (0.21, 0.73)
+# dref = 2.30 (1.37, 4.86)
+
+# 14+ day interval 
+ozasa_analysis("1 - 4 Sv", dose_limit = 4, additional_filter = long_intervals)
+
+# Originally:  
+#  14782 animals 143 groups 8 studies. 
+# 
+# After filtering for dose:  
+#  11730 animals 115 groups 8 studies. 
+# 
+# Directly compare acute and fractionated exposures or age at exposure.:  
+#  11730 animals 115 groups 8 studies. 
+# 
+# After filtering excluded strata:  
+#  11730 animals 115 groups 8 studies. 
+# 
+# After filtering excluded species:  
+#  11730 animals 115 groups 8 studies. 
+# 
+# After filtering other exclusions:  
+#  7369 animals 83 groups 6 studies. 
+# 
+# After censoring animals that died before the final treatment in thier strata,  
+#  7221 animals 83 groups 6 studies. 
+# 
+# After censoring animals that died within  0 % of median lifespan after the final treatment  
+#  7221 animals 83 groups 6 studies. 
+# 
+# [1] "modeling"
+#                        0.5 %   99.5 %
+# dref               0.3207579 0.739249
+# err_treatment_age -5.9692891 0.117055
+#                        2.5 %      97.5 %
+# dref               0.3562587  0.67745814
+# err_treatment_age -4.6102723 -0.03535974
+#                          5 %       95 %
+# dref               0.3744228  0.6487494
+# err_treatment_age -4.0288323 -0.1133435
+#                          x       o    lower    upper
+# r_1                1.03472 0.00946  1.01619  1.05325
+# r_2                1.06075 0.00720  1.04663  1.07487
+# r_3                1.00038 0.01104  0.97874  1.02202
+# r_4                0.94993 0.04559  0.86058  1.03929
+# r_5                0.95162 0.02846  0.89583  1.00740
+# r_6                1.00614 0.01550  0.97576  1.03652
+# r_7                0.99621 0.02739  0.94253  1.04989
+# r_8                1.02982 0.01410  1.00219  1.05746
+# r_9                1.00414 0.01754  0.96975  1.03852
+# r_10               0.99826 0.01905  0.96093  1.03559
+# r_11               0.99994 0.01608  0.96843  1.03146
+# r_12               0.98825 0.02186  0.94541  1.03110
+# r_13               0.98368 0.04601  0.89350  1.07386
+# r_14               1.01304 0.05926  0.89689  1.12920
+# err_1              0.06903 0.01899  0.03181  0.10626
+# err_2              0.01346 0.00612  0.00147  0.02546
+# err_3              0.02187 0.01836 -0.01412  0.05786
+# err_4              0.12728 0.05040  0.02851  0.22606
+# err_5              0.11763 0.04325  0.03287  0.20240
+# err_6              0.08593 0.02369  0.03950  0.13237
+# err_7              0.10330 0.04586  0.01341  0.19319
+# err_8              0.15434 0.03369  0.08831  0.22036
+# err_9              0.12556 0.02607  0.07445  0.17666
+# err_10             0.08718 0.02939  0.02958  0.14478
+# err_11             0.09659 0.05292 -0.00715  0.20032
+# err_12             0.11856 0.03153  0.05677  0.18036
+# err_13             0.18127 0.05317  0.07705  0.28548
+# err_14             0.10997 0.04464  0.02248  0.19746
+# dref               0.49633 0.07176  0.35567  0.63699
+# err_treatment_age -1.72319 1.04681 -3.77494  0.32857
+# tau2              -0.00003 0.00000 -0.00003 -0.00003
+
+# 1/dref = 0.50 (0.36, 0.68)
+# dref = 2.01 (1.48, 2.81)
 
 
 
+###
+#
+# Species (and sex)
+#
 
 # Mouse only
 ozasa_analysis("1 - 4 Sv", dose_limit = 4, exclude_species = "Rat")

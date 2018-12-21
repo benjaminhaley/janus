@@ -139,8 +139,7 @@ get_data <- function(dose_limit = 4,
                      data=original_data, 
                      exclude_stratum=c(),
                      exclude_species=c(),
-                     censor=0.0,
-                     additional_filter = function(data) {data}) {
+                     censor=0.0) {
 
   # Hack
   # Manually add stratum id's so that they stay uniform
@@ -213,11 +212,6 @@ get_data <- function(dose_limit = 4,
   data <- data %>%
     filter(!species %in% exclude_species)
   count("After filtering excluded species: ", data)
-  
-  # Other exclusions
-  data <- data %>%
-    additional_filter()
-  count("After filtering other exclusions: ", data)
   
   # Censor animals that died before the final treatment in thier stratum
   treatment_span <- data %>%
@@ -566,7 +560,7 @@ show_aggregated <- function(aggregated) {
                 filter(dose == 0 | protracted),
               aes(y=prediction), 
               color="red",
-              show_guide=FALSE,
+              show.legend=FALSE,
               stat="smooth",
               method="lm", 
               formula="y ~ x", 
@@ -576,7 +570,7 @@ show_aggregated <- function(aggregated) {
                 filter(dose == 0 | !protracted),
               aes(y=prediction), 
               color="black",
-              show_guide=FALSE,
+              show.legend=FALSE,
               stat="smooth",
               method="lm", 
               formula="y ~ x", 
@@ -587,14 +581,14 @@ show_aggregated <- function(aggregated) {
                      y = mortality - sem,
                      yend = mortality + sem,
                      size = 1/sem
-    ), alpha=0.3, show_guide=FALSE) +
+    ), alpha=0.3, show.legend=FALSE) +
     geom_point(size=3,
-               show_guide=FALSE,
+               show.legend=FALSE,
                alpha=0.9,
                fill="white",
                pch=21) +
     geom_text(size=2,
-              show_guide=FALSE) +
+              show.legend=FALSE) +
     facet_wrap(~ stratum_full_name) +
     scale_y_continuous(labels=percent) +
     scale_size_continuous(range=c(3, 7)) +

@@ -1,0 +1,198 @@
+---
+title: "Radiation fast and slow"
+author: "Benjamin Haley"
+date: "March 30, 2015"
+output:
+  html_document:
+    css: /Users/benjaminhaley/Dropbox/Public/rmarkdown.css
+root.dir:
+  /Users/benjaminhaley/janus
+---
+
+```{r "setup", include=FALSE}
+require("knitr")
+opts_knit$set(root.dir = "~/janus")
+```
+
+## Is acute radiation most dangerous?
+
+I will look at animal survival data and ask two central questions:
+
+1. Are low dose-rate exposures safer than high dose-rate exposures?
+2. Are fractionated exposures safer than acute exposures?
+
+```{r echo=FALSE, message=FALSE}
+source('scripts/util/paper2.R') # http://goo.gl/VYzkAs
+
+# Data
+original_data <- readRDS('data/thesis.rds')
+controls <- readRDS('data/thesis_controls.rds')
+```
+
+
+
+```{r}
+# Report about the aggregate data
+data <- get_data(dose_limit = 4, data = original_data, exclude_stratum=c(), exclude_species=c(), censor=0.0)
+aggregated <- aggregate(data, duplicate_controls = FALSE)
+report <- aggregated %>%
+  mutate(cluster_number = ifelse(is.na(cluster), 0, cluster_number)) %>%
+  arrange(stratum_id, cluster_number, dose) %>%
+  mutate(stratum = sub("\n *", " ", paste0(stratum_id, ". ", stratum)),
+         cluster = paste0(cluster_number, ". ", cluster),
+         age = paste(round(raw_lifespan), "+/-", round(raw_lifespan_sem)),
+         dose = round(dose, 2)
+         )  %>%
+  select(stratum, cluster, n, age, dose)
+head(report, 3)
+write.csv(report, "ozasa data summary.csv", row.names = FALSE)
+```
+
+## Overall
+
+```{r}
+data <- data.frame(
+  type = c('Acute', 'Protracted'),
+  low = c(NA, 0.38),
+  middle = c(1, 0.47),
+  high = c(NA, 0.58)
+)
+data <- data %>%
+  mutate(labels = paste0(round(middle * 100), '%'))
+
+ggplot(data, aes(type, middle, fill = type)) +
+  geom_bar(stat = "identity") +
+  geom_errorbar(aes(ymin=low, ymax=high, color = type), width=0.2, size = 2, alpha=0.5) +
+  geom_errorbar(aes(ymin=low, ymax=high), width=0.2, size = 2, alpha=0.5, color = 'white') +
+  geom_text(aes(type, 0, label = labels), size = 8, vjust = -2.0,  color = 'white', fontface = "bold") +
+  geom_text(aes(type, 0, label = type), size = 8, vjust = -0.5, color = 'white', fontface = "bold") +
+  scale_fill_manual(values=c('black', 'red')) +
+  scale_color_manual(values=c('black', 'red')) +
+  labs(title = "Relative Risk of Protracted Exposures",
+       subtitle = "Excess Mortality Rate per Gray") +
+  scale_x_discrete(expand = c(0, 0)) +
+  scale_y_discrete(expand = c(0, .01)) +
+  theme(text = element_text(size = 18, color = 'black'),
+        aspect.ratio=1,
+        axis.line=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        legend.position="none",
+        panel.background=element_blank(),
+        panel.border=element_blank(),
+        panel.grid.major=element_blank(),
+        panel.grid.minor=element_blank(),
+        plot.background=element_blank(),
+        axis.text.x=element_blank())
+
+```
+
+
+
+## By species (and sex)
+
+```{r}
+data <- data.frame(
+  type = c('Acute', 'Protracted', 'Acute', 'Protracted'),
+  sex = c('Rats (mostly ♀)', 'Rats (mostly ♀)', 'Mice (♂)', 'Mice (♂)'),
+  low = c(NA, 1/3.1, NA, 1/4.1),
+  middle = c(1, 1/2, 1, 1/2),
+  high = c(NA, 1/1.5, NA, 1/1.4)
+)
+data <- data %>%
+  group_by(sex) %>%
+  mutate(labels = paste0(round(middle * 100), '%'))
+data
+
+ggplot(data, aes(type, middle, fill = type)) +
+  geom_bar(stat = "identity") +
+  geom_errorbar(aes(ymin=low, ymax=high, color = type), width=0.2, size = 2, alpha=0.5) +
+  geom_errorbar(aes(ymin=low, ymax=high), width=0.2, size = 2, alpha=0.5, color = 'white') +
+  geom_text(aes(type, 0, label = labels), size = 6, vjust = -2.0,  color = 'white', fontface = "bold") +
+  geom_text(aes(type, 0, label = type), size = 6, vjust = -0.5, color = 'white', fontface = "bold") +
+  scale_fill_manual(values=c('black', 'red')) +
+  scale_color_manual(values=c('black', 'red')) +
+  labs(title = "Relative Risk of Protracted Exposures\nby Species (and mostly by sex)",
+       subtitle = "Excess Mortality Rate per Gray") +
+  scale_x_discrete(expand = c(0, 0)) +
+  scale_y_discrete(expand = c(0, .01)) +
+  theme(text = element_text(size = 20, color = 'black'),
+        aspect.ratio=1,
+        axis.line=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        legend.position="none",
+        panel.background=element_blank(),
+        panel.border=element_blank(),
+        panel.grid.major=element_blank(),
+        panel.grid.minor=element_blank(),
+        plot.background=element_blank(),
+        axis.text.x=element_blank(),
+        #strip.background = element_blank(),
+        strip.text.x = element_text(size = 20, color = 'black'),
+        panel.spacing = unit(3, "lines")) +
+  facet_wrap( ~ sex, strip.position="bottom")
+
+```
+
+
+
+## By interval
+
+```{r}
+
+data <- data.frame(
+  type = c('Acute', 'Protracted', 'Acute', 'Protracted'),
+  group = c('14+ days', '14+ days', '< 14 days', '< 14 days'),
+  low = c(NA, 1/1.48, NA, 1/4.86),
+  middle = c(1, 1/2.01, 1, 1/2.3),
+  high = c(NA, 1/2.81, NA, 1/1.37)
+)
+
+data <- data %>%
+  group_by(group) %>%
+  mutate(labels = paste0(round(middle * 100), '%'))
+data
+
+ggplot(data, aes(type, middle, fill = type)) +
+  geom_bar(stat = "identity") +
+  geom_errorbar(aes(ymin=low, ymax=high, color = type), width=0.2, size = 2, alpha=0.5) +
+  geom_errorbar(aes(ymin=low, ymax=high), width=0.2, size = 2, alpha=0.5, color = 'white') +
+  geom_text(aes(type, 0, label = labels), size = 6, vjust = -2.0,  color = 'white', fontface = "bold") +
+  geom_text(aes(type, 0, label = type), size = 6, vjust = -0.5, color = 'white', fontface = "bold") +
+  scale_fill_manual(values=c('black', 'red')) +
+  scale_color_manual(values=c('black', 'red')) +
+  labs(title = "Relative Risk of Protracted Exposures\nby Interval Between First and Last Exposures",
+       subtitle = "Excess Mortality Rate per Gray") +
+  scale_x_discrete(expand = c(0, 0)) +
+  scale_y_discrete(expand = c(0, .01)) +
+  theme(text = element_text(size = 20, color = 'black'),
+        aspect.ratio=1,
+        axis.line=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        legend.position="none",
+        panel.background=element_blank(),
+        panel.border=element_blank(),
+        panel.grid.major=element_blank(),
+        panel.grid.minor=element_blank(),
+        plot.background=element_blank(),
+        axis.text.x=element_blank(),
+        #strip.background = element_blank(),
+        strip.text.x = element_text(size = 20, color = 'black'),
+        panel.spacing = unit(3, "lines")) +
+  facet_wrap( ~ group, strip.position="bottom")
+
+
+
+```
+
+
+
+

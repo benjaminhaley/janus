@@ -32,7 +32,6 @@ Table of contents
   - [Atomic Bomb Survivors](#lss) - Load data from atomic bomb survivors as well.
 
 **Analysis**
-
   - [Reproduce BEIR 10-2](#10-2) - Reproduce dose response for atomic bomb survivors. (fail)
   - [Reproduce BEIR 10-3](#10-3) - Reproduce profile likelihood curves that combine animal data with outcomes from atomic bomb survivors.
   - [Reproduce BEIR 10-3 lss curve](#10-3-lss) - Reproduce DDREF likelihood profiles for atomic bomb survivors.
@@ -48,6 +47,7 @@ Table of contents
   - [Animal profiles after meta-regression](#animal-profiles-meta) Determine the profile likelihood function from lifespan and carcinogenesis animal data combined when meta-regression with positive coefficients is applied to the data.
   - [Profiles after meta-regression](#profiles-meta) Determine the profile likelihood function for all data, human, animal, and combined when meta-regression with positive coefficients is applied to the data.
   - [Low Curvature Fits Chronic Acute Comparisons Poorly](#low-curvature-fits-chronic-acute-comparisons-poorly) Studies that directly compared chronic and acute exposures tended to show a stonger effect of protraction.
+  - [Figure of merit](#figure-of-merit) Show that a linear linear model fits our data better.
   - [Seperate acute analysis from direct comparisons of lifespan data](#seperate-acute-analysis) Chronic exposures imply a high DDREF, but this is not apparently from a linear quadratic fit to acute data.
   - [Infinite curvature fits chronic acute comparisons well](#infinite-curvature-fits-chronic-acute-comparisons-well) Studies that directly compared chronic and acute exposures tended to show a stonger effect of protraction.
   - [Seperate analysis leads to better acute fits](#seperate-analysis-leads-to-better-acute-fits) Fitting acute data in isolation works better than fitting dropping in chronic and acute comparisons.
@@ -3425,6 +3425,157 @@ ggplot(aggregate, aes(dose,
   ylab("1 / mean age (days)") +
   xlab("dose (Gy)") +
   theme(legend.position = "none") 
+
+
+ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/low-curvature-fits-chronic-acute-comparisons-poorly.png")
+```
+
+#### Figure: Limit to studies that directly compared acute and chronic
+Analagous to figure 10B3 from BEIR VII we see ordinary linear quadratic models (black) fit to 1/lifespan of acutely, A, and chronically, C, mice at various doses in Gy.  Straight lines correspond to chronic predictions while curved lines correspond to accute predictions.  Grey error bards show measured uncertainty, red error bars show measured uncertainty plus estimated heterogeneity by meta-regression.  The best fit of the most likely curvature determined by meta-regression across all clusters is shown in red dotted lines.  These are constrained to positive dose-response values as was the meta-regression.
+
+^ back to [table of contents](#contents)
+
+__________________________________________________________________
+
+
+
+
+<a name="figure-of-merit"></a>
+
+Figure of merit
+========================================================
+*Last update: December 2016*
+
+Show that a linear linear is best for acute/chronic data. For our [grant application][granted].
+
+[granted]: https://mail.google.com/mail/u/1/#inbox/158d989c885d2973
+
+```{r}
+# Common
+setwd('~/janus')
+source('scripts/util/util.R') # http://goo.gl/VYzkAs
+
+# Data
+aggregate <- read.csv('data/10B4_all_data_aggregated.csv')
+aggregate <- aggregate %>% mutate(cluster = order_levels_by_number(cluster))
+
+# Limit to experiments where both chronic and acute exposures were applied
+aggregate <- ddply(aggregate, .(cluster), function(df) {
+  print(unique(df$type))
+  print(unique(df$type))
+  if ('A' %in% df$type & 'C' %in% df$type){
+    return(df)
+  } else {
+    return(NULL)
+  }
+})
+
+# Prepare for analysis
+aggregate <- aggregate %>%
+  mutate(yi = 1/age,
+         vi = (1/age - 1/(age + sd))^2) %>%
+  mutate(cluster = order_levels_by_number(cluster)) %>%
+  arrange(cluster) 
+
+# A good o_range
+o_range <- c(0:99, 100 * 1:99, 1e6)
+
+# Linear quadratic model
+lq_modeler <- function(data, o) {
+  glm(
+    yi ~ I(dose + o * dose^2 * (type == "A")) * cluster,
+    data = data)
+}
+likelihoods <- get_likelihoods(aggregate, lq_modeler, o_range)
+o <- with(likelihoods, o[which.max(l)])
+print(o)
+lq <- lq_modeler(aggregate, o)
+
+
+# Linear linear model
+ll_modeler <- function(data, o) {
+  glm(
+    yi ~ I(dose + o * dose * (type == "A")) * cluster,
+    data = data)
+}
+likelihoods <- get_likelihoods(aggregate, ll_modeler, o_range)
+o <- with(likelihoods, o[which.max(l)])
+print(o)
+ll <- ll_modeler(aggregate, o)
+
+
+# Make predictions
+to_predict <- get_data_to_predict(clusters=aggregate$cluster)
+to_predict$p_lq <- predict(lq, newdata=to_predict)
+to_predict$p_ll <- predict(ll, newdata=to_predict)
+
+
+# Scaling
+# We want the graphs to have the same scale
+# but start at different y intercepts
+scales <- aggregate %>%
+  group_by(cluster) %>%
+  summarize(min=min(1/age), 
+            max=max(1/age),
+            range = max - min,
+            type='')
+scales$max <- scales$min + max(scales$range)
+
+# Linear linear
+ggplot(aggregate, aes(dose,
+                      1/age,
+                      label=type,
+                      group=type,
+                      color=type)) +
+  geom_smooth(
+    data=to_predict,
+    aes(dose, p_ll),
+    method='lm',
+    formula='y ~ x + I(x^2)',
+    se=FALSE
+  ) +
+  geom_point(alpha=0.5) +
+  geom_text(data=scales, aes(x=1, y=min)) + 
+  geom_text(data=scales, aes(x=1, y=max)) + 
+  geom_linerange(aes(ymin=1/age + (vi)^0.5,
+                     ymax=1/age - (vi)^0.5)) + 
+  scale_color_manual(values=c('blue', 'black', 'red4')) +
+  facet_wrap(~ cluster, scales="free_y") +
+  theme(text = element_text(size = 10),
+        axis.text.y=element_blank()) +
+  ylab("1 / mean age (days)") +
+  xlab("dose (Gy)") +
+  theme(legend.position = "none") +
+  ggtitle(paste("Linear-linear model AIC =", round(ll$aic)))
+
+
+# Linear quadratic
+ggplot(aggregate, aes(dose,
+                      1/age,
+                      label=type,
+                      group=type,
+                      color=type)) +
+  geom_smooth(
+    data=to_predict,
+    aes(dose, p_lq),
+    method='lm',
+    formula='y ~ x + I(x^2)',
+    se=FALSE
+  ) +
+  geom_point(alpha=0.5) +
+  geom_text(data=scales, aes(x=1, y=min)) + 
+  geom_text(data=scales, aes(x=1, y=max)) + 
+  geom_linerange(aes(ymin=1/age + (vi)^0.5,
+                     ymax=1/age - (vi)^0.5)) + 
+  scale_color_manual(values=c('blue', 'black', 'red4')) +
+  facet_wrap(~ cluster, scales="free_y") +
+  theme(text = element_text(size = 10),
+        axis.text.y=element_blank()) +
+  ylab("1 / mean age (days)") +
+  xlab("dose (Gy)") +
+  theme(legend.position = "none") +
+  ggtitle(paste("Linear-quadratic model AIC =", round(lq$aic)))
+
 
 
 ggsave_for_ppt("/Users/benjaminhaley/Dropbox/Public/thesis-figures/low-curvature-fits-chronic-acute-comparisons-poorly.png")

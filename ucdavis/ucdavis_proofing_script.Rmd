@@ -735,8 +735,14 @@ data <- data %>%
       findings %in% c("", "not available") |
       grepl("remove", findings)
   )
+```
 
-
+```{r}
+### Check for gaps ###
+#
+# Look for places where animal ids seem to be missing.
+# For example if we see d20f57 - d20m59 we know we are
+# missing a d20?58
 
 # Find gaps
 rotate <- function(x, offset) {
@@ -760,7 +766,8 @@ gaps <- data %>%
   mutate(
     head = ifelse(grepl("[mf][0-9]*$", id), sub("[mf][0-9]*$", "mf", id), ""),
     head = ifelse(grepl("[xy][0-9]*$", id), sub("[xy][0-9]*$", "xy", id), head),
-    tail = as.numeric(str_extract(id, "[0-9]*$"))
+    tail = as.numeric(str_extract(id, "[0-9]*$")),
+    tail = tail + 99 * grepl("xy", head)
   ) %>%
   arrange(study_id, group_id, head, tail) %>% 
   select(study_id, group_id, id, head, tail) %>%
@@ -775,28 +782,30 @@ gaps <- data %>%
 gaps <- paste(
   gaps$id[gaps$start], 
   "-", following(gaps$id[gaps$end]))
-checked <- 4
-gaps[(checked + 1):(checked + 3)]
+checked <- 2
+gaps[(checked + 1):(checked + 1)]
 
 
-# TODO: Why didnt we find these two?
-#       Perhaps a systematic problem with gap finding?
-# d20m62?
-# d50m66
-
-
-
+# TODO: Look for these manually.
+#
 # Apparently missing
-#   Box       Animal
-#   D000368   D20M58
-#   D000371   whole box
-#   D000372   whole box
+#   Box        # Animal    ids                study (best guess)     neighbor
+#   ===============================================================================
+#   ???         3          D00?97 - D00?99    study 2, group 2       D000283/DO0M96 to D000283/DO0X01
+#   ???         3          D05?97 - D00?99    study 2, group 2       D000266/D05M96 to D000266/D05X01
+#   D000368     1          D20M58             study 2, group 4       D000368/D20M59
+#   D000369   ~16          D20M88 -           study 2, group 4       D000368/D20M88
+#   D000371/2  43          D30?28 - D30?70    study 2, group 5       D000370/D30M27 to D000373/D30F71
+#   ???        12          D50?01 - D50?12    study 2, group 9       D000595/D50F13
+#   ???         3          D50?97 - D50?99    study 2, group 9       D000596/D50M96 to D000596/D50X01
+#   ???        21          D60?01 - D60?21    study 2, group 11      D000277/D60F22
+#   ???        66          R20?01 - R20?66    study 4, group 4       D000362/R20M67
+#   ???         3          R5X?01 - R5X?03    study 4, group 8       D000364/R5XM04
 
-# Misc TODO
-# Remove the d's from dr20m70 and ds20f41 for example
+```
 
-
-#### Extra notes
+```{r}
+### Validate ###
 
 data %>% 
   filter(!exclude) %>%
@@ -809,8 +818,44 @@ data %>%
   arrange(study_id, group_id) %>%
   select(-study)
 
-# Complete
-# 2.1 (except an age mismatch)
+# 
+#    study_id group_id                                                                group     n   age
+#       (dbl)    (dbl)                                                                (chr) (int) (dbl)
+# 1         2        1                                                              control    80  14.7
+# 2         2        2             1 uci/kg total ingested with food (in-utero to 540 days)    74  14.4
+# 3         2        3             4 uci/kg total ingested with food (in-utero to 540 days)    40  13.4
+# 4         2        4            24 uci/kg total ingested with food (in-utero to 540 days)    49  14.1
+# 5         2        5            70 uci/kg total ingested with food (in-utero to 540 days)    38  14.0
+# 6         2        7           226 uci/kg total ingested with food (in-utero to 540 days)    40  10.9
+# 7         2        9           656 uci/kg total ingested with food (in-utero to 540 days)    58   5.3
+# 8         2       11          1940 uci/kg total ingested with food (in-utero to 540 days)    18   2.1
+# 9         3        1                           3.7 uci/kg quantity injected, 540 days old    20  13.8
+# 10        3        2                          33.0 uci/kg quantity injected, 540 days old    25  12.8
+# 11        4        4 0.376 uci/kg total injected (8 semi-monthly injections) 435 days old     1  11.6
+# 12        4        5  1.12 uci/kg total injected (8 semi-monthly injections) 435 days old    26   7.2
+
+# Notes
+# (me vs roy)
+#   group   n animals      age (yrs)    notes
+#   ========================================
+#   2.1     complete       +0.3         
+#   2.2     missing 3      +0.2         missing could be explained above
+#   2.3     missing 2      -0.1         no leads on these missing
+#   2.4     missing 17     -0.3         check for a box after d20m87
+#   2.5     missing 28+     NA          look for D00278 and D00279
+#   2.7     missing 20+     NA
+#   2.9     missing 3 or 9 -0.1
+#   2.11    missing 1      -0.1
+#   3.1     complete       +0.3
+#   3.2     missing 1      -0.5
+#   4.1     gone!
+#   4.2     gone!
+#   4.3     gone!
+#   4.4     missing 43!
+#   4.5     missing 14!
+#   4.6     gone!
+#   4.7     gone!
+#   4.8     gone!
 
 # Todo
 # All others starting with 2.2
